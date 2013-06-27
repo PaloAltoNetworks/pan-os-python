@@ -1,0 +1,30 @@
+<%namespace name="helpers" file="//module/_helpers.html" />
+
+<script type="text/javascript">
+var customExportCallback = function(button) {
+    // kind of ugly, but to open the export form we need a reference to the module (even though we *are* the module)
+    // step 1 -- from the button element, get the id of the containing div. 
+    var moduleId = $(button).parent().parent().attr("id");
+    // step 2 -- ModuleLoader singleton has a public method to get a module reference from an id. 
+    var serverSideIncludeModule = Splunk.Globals["ModuleLoader"].getModuleInstanceById(moduleId);
+    // step 3 -- we get the current context from the module instance.
+    var context = serverSideIncludeModule.getBaseContext();
+    if (context.isJobDispatched()) {
+        var formContainer = $('.exportResultsForm', serverSideIncludeModule.container)[0];
+        Splunk.Popup.createExportResultsForm(formContainer, context.job.getSearchId());
+    } else {
+        alert(_("this custom ServerSideInclude module must be inserted below the point in the hierarchy where the search will have been dispatched."));
+    }
+}
+</script>
+
+<style type="text/css">
+.ServerSideInclude .exportResultsForm {
+    display:none;
+}
+</style>
+<fieldset>
+    <button class="splButton-primary" onclick="customExportCallback(this)"><span>Export</span></button>
+</fieldset>
+
+<%helpers:export className="exportResultsForm" />

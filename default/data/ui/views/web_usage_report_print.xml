@@ -1,0 +1,15 @@
+<view template="dashboard.html" stylesheet="web_activity.css" isSticky="False">
+  <label>Web Activty Report Print</label>
+  <module name="HiddenSearch" layoutPanel="panel_row1_col1" autoRun="True">
+    <param name="search">nothing</param>
+    <module name="HiddenPostProcess" layoutPanel="panel_row1_col1" group="Web Activity Summary">
+      <param name="search">`PAN-Threat-Web-Activty-Web-Summary`</param>
+      <param name="groupLabel">Web Activity Summary</param>
+      <module name="JobProgressIndicator"></module>
+      <module name="SimpleResultsTable">
+        <param name="count">10000</param>
+        <param name="entityName">results</param>
+      </module>
+    </module>
+  </module>
+</view>

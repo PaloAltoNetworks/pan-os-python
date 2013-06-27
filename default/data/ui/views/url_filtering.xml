@@ -1,0 +1,240 @@
+<view template="dashboard.html" stylesheet="threat_overview.css">
+  <label>URL Filtering</label>
+  <module name="AccountBar" layoutPanel="appHeader" />
+  <module name="AppBar" layoutPanel="navigationHeader" />
+  <module name="Message" layoutPanel="messaging">
+    <param name="filter">*</param>
+    <param name="clearOnJobDispatch">False</param>
+    <param name="maxSize">1</param>
+  </module>
+  <module name="TitleBar" layoutPanel="viewHeader">
+    <param name="actionsMenuFilter">dashboard</param>
+  </module>
+  <module name="GenericHeader" layoutPanel="panel_row1_col1">
+    <param name="label">URL Filtering Dashboard</param>
+  </module>
+  <module name="StaticContentSample" layoutPanel="panel_row1_col1">
+    <param name="text">This dashboard provides visibility into the URL Filtering activity in your Palo Alto Networks environment. Content can be filtered by type using the form fields.</param>
+  </module>
+  <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
+    <param name="label">Source IP:</param>
+    <param name="field">src_ip</param>
+    <param name="replacementMap">
+      <param name="arg">
+        <param name="src_ip">
+          <param name="value"></param>
+        </param>
+      </param>
+    </param>
+    <param name="intention">
+      <param name="name">stringreplace</param>
+      <param name="arg">
+        <param name="src_ip">
+          <param name="default"></param>
+          <param name="prefix">src_ip="</param>
+          <param name="suffix">"</param>
+          <param name="fillOnEmpty">false</param>
+        </param>
+      </param>
+    </param>
+    <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
+      <param name="label">Destination IP:</param>
+      <param name="field">dst_ip</param>
+      <param name="replacementMap">
+        <param name="arg">
+          <param name="dst_ip">
+            <param name="value"></param>
+          </param>
+        </param>
+      </param>
+      <param name="intention">
+        <param name="name">stringreplace</param>
+        <param name="arg">
+          <param name="dst_ip">
+            <param name="default"></param>
+            <param name="prefix">dst_ip="</param>
+            <param name="suffix">"</param>
+            <param name="fillOnEmpty">false</param>
+          </param>
+        </param>
+      </param>
+      <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
+        <param name="label">Content Type:</param>
+        <param name="field">content_type</param>
+        <param name="replacementMap">
+          <param name="arg">
+            <param name="content_type">
+              <param name="value"></param>
+            </param>
+          </param>
+        </param>
+        <param name="intention">
+          <param name="name">stringreplace</param>
+          <param name="arg">
+            <param name="content_type">
+              <param name="default"></param>
+              <param name="prefix">content_type="</param>
+              <param name="suffix">"</param>
+              <param name="fillOnEmpty">false</param>
+            </param>
+          </param>
+        </param>
+        <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
+          <param name="label">App:</param>
+          <param name="field">app</param>
+          <param name="replacementMap">
+            <param name="arg">
+              <param name="app">
+                <param name="value"></param>
+              </param>
+            </param>
+          </param>
+          <param name="intention">
+            <param name="name">stringreplace</param>
+            <param name="arg">
+              <param name="app">
+                <param name="default"></param>
+                <param name="prefix">app="</param>
+                <param name="suffix">"</param>
+                <param name="fillOnEmpty">false</param>
+              </param>
+            </param>
+          </param>
+          <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
+            <param name="label">Source User:</param>
+            <param name="field">src_user</param>
+            <param name="replacementMap">
+              <param name="arg">
+                <param name="src_user">
+                  <param name="value"></param>
+                </param>
+              </param>
+            </param>
+            <param name="intention">
+              <param name="name">stringreplace</param>
+              <param name="arg">
+                <param name="src_user">
+                  <param name="default"></param>
+                  <param name="prefix">src_user="</param>
+                  <param name="suffix">"</param>
+                  <param name="fillOnEmpty">false</param>
+                </param>
+              </param>
+            </param><module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
+            <param name="label">Virtual System:</param>
+            <param name="field">vsys</param>
+            <param name="replacementMap">
+              <param name="arg">
+                <param name="vsys">
+                  <param name="value"></param>
+                </param>
+              </param>
+            </param>
+            <param name="intention">
+              <param name="name">stringreplace</param>
+              <param name="arg">
+                <param name="vsys">
+                  <param name="default"></param>
+                  <param name="prefix">vsys="</param>
+                  <param name="suffix">"</param>
+                  <param name="fillOnEmpty">false</param>
+                </param>
+              </param>
+            </param>
+            <module name="TimeRangePicker" layoutPanel="panel_row1_col1" autoRun="True">
+              <param name="selected">Last 60 minutes</param>
+              <param name="searchWhenChanged">True</param>
+              
+                <module name="HiddenSearch" layoutPanel="panel_row2_col1">
+                  <param name="search">|`tstats` count(action) AS ca FROM pan_web WHERE * $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $content_type$ groupby _time action span=5m | timechart values(ca) by action </param>
+                  <module name="HiddenChartFormatter">
+                    <param name="chartTitle">Actions Over Time</param>
+                    <param name="chart">area</param>
+                    <param name="chart.stackMode">stacked</param>
+                    <param name="charting.chart.nullValueMode">connect</param>
+                    <param name="legend.placement">bottom</param>
+                    <module name="JSChart">
+                      <param name="width">100%</param>
+                      <module name="SimpleDrilldown">
+                        <param name="links">
+                          <param name="*">./flashtimeline?q=`pan_web_activity` earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]</param>
+                        </param>
+                      </module>
+                    </module>
+                  </module>
+                </module>
+                <!--<module name="HiddenSearch" layoutPanel="panel_row3_col2">
+                  <param name="search">`PAN-Threat-URL-Timechart-RISK`</param>
+                  <module name="HiddenChartFormatter">
+                    <param name="chartTitle">Average Risk Over Time</param>
+                    <param name="chart">line</param>
+                    <param name="charting.secondaryAxis.minimumNumber">1</param>
+                    <param name="charting.secondaryAxis.maximumNumber">5</param>
+                    <param name="legend.placement">bottom</param>
+                    <module name="JSChart">
+                      <param name="width">100%</param>
+                      <module name="ConvertToDrilldownSearch">
+                        <module name="ViewRedirector">
+                          <param name="viewTarget">flashtimeline</param>
+                        </module>
+                      </module>
+                    </module>
+                  </module>
+                </module>-->
+               <module name="HiddenSearch" layoutPanel="panel_row2_col2">
+                  <param name="search">|`tstats` count(app) AS ca FROM pan_web WHERE * $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $content_type$ groupby _time app span=5m | timechart values(ca) by app</param>
+                  <module name="HiddenChartFormatter">
+                    <param name="chartTitle">Applications Over Time</param>
+                    <param name="chart">area</param>
+                    <param name="chart.stackMode">stacked</param>
+                    <param name="charting.chart.nullValueMode">connect</param>
+                    <param name="legend.placement">bottom</param>
+                    <module name="JSChart">
+                      <param name="width">100%</param>
+                      <module name="SimpleDrilldown">
+                        <param name="links">
+                          <param name="*">./flashtimeline?q=`pan_web_activity` app="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]</param>
+                        </param>
+                      </module>
+                    </module>
+                  </module>
+                </module>
+               <module name="HiddenSearch" layoutPanel="panel_row3_col1" group="Application Users">
+                <param name="search">|`tstats` count(src_user) AS ca FROM pan_web WHERE * $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $content_type$ groupby src_user app | stats values(ca) by src_user app</param>
+                <module name="Paginator">
+                  <param name="count">10</param>
+                  <param name="entityName">results</param>
+                  <module name="SimpleResultsTable">
+                    <param name="drilldown">all</param>
+                    <module name="SimpleDrilldown">
+                      <param name="links">
+                        <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_web_activity` src_user="$row.src_user$" app="$row.app$"</param>
+                      </param>
+                    </module>
+                  </module>
+                </module>
+              </module>
+              <module name="HiddenSearch" layoutPanel="panel_row3_col2" group="Host Categories">
+                <param name="search">|`tstats` count(dst_hostname) AS cc FROM pan_web WHERE * $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $content_type$ groupby dst_hostname category| stats values(cc) by dst_hostname category</param>
+                <module name="Paginator">
+                  <param name="count">10</param>
+                  <param name="entityName">results</param>
+                  <module name="SimpleResultsTable">
+                    <param name="drilldown">all</param>
+                    <module name="SimpleDrilldown">
+                      <param name="links">
+                        <param name="dst_hostname">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_web_activity` dst_hostname="$row.dst_hostname$"</param>
+                        <param name="category">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_web_activity` category="$row.category$"</param>
+                      </param>
+                    </module>
+                  </module>
+                </module>
+              </module>
+              </module>
+            </module>
+          </module>
+        </module>
+      </module>
+    </module>
+</module>
+</view>

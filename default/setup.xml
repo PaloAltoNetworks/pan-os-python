@@ -1,0 +1,14 @@
+<setup>    
+    <block title="Add new credentials for PAN devices" endpoint="admin/passwords" entity="_new">
+    	<text> These are the credentials that will be used to communicate with your Palo Alto Networks Firewall or Panorama. 
+    	</text>
+            <input field="name">
+                    <label>Username</label>
+                    <type>text</type>
+            </input>
+            <input field="password">
+                    <label>Password</label>
+                    <type>password</type>
+            </input>
+	</block>
+</setup>

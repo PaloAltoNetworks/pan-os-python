@@ -1,0 +1,7 @@
+<view template="dashboard.html"> <label>Readme</label> 
+    <module name="AccountBar" layoutPanel="appHeader"/> 
+    <module name="AppBar" layoutPanel="navigationHeader"/> 
+    <module name="ServerSideInclude" layoutPanel="panel_row1_col1"> 
+        <param name="src">README.html</param> 
+    </module> 
+</view>

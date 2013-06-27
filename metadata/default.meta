@@ -1,0 +1,29 @@
+# TODO: should these only exported to app instead of system?
+
+# Application-level permissions
+
+[]
+access = read : [ * ], write : [ admin, power ]
+
+### EVENT TYPES
+
+[eventtypes]
+export = system
+
+
+### PROPS
+
+[props]
+export = system
+
+
+### TRANSFORMS
+
+[transforms]
+export = system
+
+[savedsearches]
+export = none
+
+[lookups]
+export = system

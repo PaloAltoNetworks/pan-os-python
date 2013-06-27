@@ -1,0 +1,7 @@
+# This is a sample inputs.conf stanza. Most users can remove the '#' and 
+# replace the udp port with the port for your log source. 
+#[udp://5155]
+#index= pan_logs
+#connection_host = ip
+#ourcetype = pan_log
+#no_appending_timestamp = true

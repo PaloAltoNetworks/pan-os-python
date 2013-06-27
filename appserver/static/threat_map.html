@@ -1,0 +1,28 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>ammap</title>
+</head>
+
+<body>
+<!-- saved from url=(0013)about:internet -->
+<!-- ammap script-->
+  <script type="text/javascript" src="/static/app/Splunk_CiscoSecuritySuite/ammap/swfobject.js"></script>
+	<div id="flashcontent">
+		<strong>If you see this message you most likley need to adjust your HTML file in this view or you are trying to view the HTML directly instead of in a Splunk view module.</strong>
+	</div>
+
+	<script type="text/javascript">
+		// <![CDATA[		
+		var so = new SWFObject("/static/app/Splunk_CiscoSecuritySuite/ammap/ammap.swf", "ammap", "100%", "350", "8", "#FFFFFF");
+		so.addVariable("path", "/static/app/Splunk_CiscoSecuritySuite/ammap/");
+		so.addVariable("settings_file", escape("/static/app/Splunk_CiscoSecuritySuite/ammap/ammap_settings.xml"));                  // you can set two or more different settings files here (separated by commas)
+		so.addVariable("data_file", escape("/static/app/Splunk_CiscoSecuritySuite/xml_out/home_threat_data.xml"));		
+		so.addParam('wmode', 'transparent');
+		so.write("flashcontent");
+		// ]]>
+	</script>
+<!-- end of ammap script -->
+
+</body>
+</html>

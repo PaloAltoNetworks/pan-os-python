@@ -1,0 +1,18 @@
+#ExtendedFieldSearch_0_0_0 label, 
+#ExtendedFieldSearch_4_4_0 label{
+width: 75px;
+display: inline-block;
+}
+
+
+#ExtendedFieldSearch_1_1_0 label,
+#ExtendedFieldSearch_2_2_0 label{
+width: 95px;
+display: inline-block;
+}
+
+#ExtendedFieldSearch_3_3_0 label,
+#ExtendedFieldSearch_5_5_0 label {
+width: 45px;
+display: inline-block;
+}

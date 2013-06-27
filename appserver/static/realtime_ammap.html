@@ -1,0 +1,16 @@
+
+  <script type="text/javascript" src="/static/app/SplunkforPaloAltoNetworks/ammap/swfobject.js"></script>
+	<div id="flashcontent">
+		<strong>If you see this message you most likley need to adjust your HTML file in this view or you are trying to view the HTML directly instead of in a Splunk view module.</strong>
+	</div>
+
+	<script type="text/javascript">
+		// <![CDATA[		
+		var so = new SWFObject("/static/app/SplunkforPaloAltoNetworks/ammap/ammap.swf", "ammap", "100%", "400", "8", "#FFFFFF");
+		so.addVariable("path", "/static/app/SplunkforPaloAltoNetworks/ammap/");
+		so.addVariable("settings_file", escape("/static/app/SplunkforPaloAltoNetworks/ammap/realtime_ammap_settings.xml"));                  // you can set two or more different settings files here (separated by commas)
+		so.addVariable("data_file", escape("/static/app/SplunkforPaloAltoNetworks/xml_out/realtime_threat_data.xml"));		
+		so.write("flashcontent");
+so.addParam('wmode', 'transparent');
+		// ]]>
+	</script>

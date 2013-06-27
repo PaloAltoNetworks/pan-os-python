@@ -1,0 +1,34 @@
+<view template="dashboard.html">
+  <label>AMMAP View</label>
+  <module name="AccountBar" layoutPanel="appHeader"/>
+  <module name="AppBar" layoutPanel="navigationHeader"/>
+  <module name="Message" layoutPanel="messaging">
+    <param name="filter">*</param>
+    <param name="clearOnJobDispatch">False</param>
+    <param name="maxSize">1</param>
+  </module>
+  <module name="TitleBar" layoutPanel="viewHeader">
+    <param name="actionsMenuFilter">dashboard</param>
+  </module>  
+  <module name="SearchBar" layoutPanel="splSearchControls-inline">
+    <param name="useAssistant">true</param>
+    <param name="useTypeahead">true</param>
+    <param name="useOwnSubmitButton">False</param>
+    <module name="TimeRangePicker">
+      <param name="selected">All time</param>
+      <param name="searchWhenChanged">True</param>
+      <module name="SubmitButton">
+        <param name="allowSoftSubmit">True</param>
+        <module name="ViewRedirector" layoutPanel="viewHeader">
+          <param name="viewTarget">flashtimeline</param>
+        </module>
+      </module>    
+    </module>
+  </module>
+
+  <module name="ServerSideInclude" layoutPanel="panel_row1_col1">
+    <param name="src">ammap.html</param>
+  </module>
+
+
+</view>

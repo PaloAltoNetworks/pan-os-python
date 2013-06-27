@@ -1,0 +1,222 @@
+<view template="dashboard.html" stylesheet="pan_overview.css" refresh="600">
+  <label>PAN Overview</label>
+  <module name="AccountBar" layoutPanel="appHeader"/>
+  <module name="AppBar" layoutPanel="navigationHeader"/>
+  <module name="Message" layoutPanel="messaging">
+    <param name="filter">*</param>
+    <param name="clearOnJobDispatch">False</param>
+    <param name="maxSize">1</param>
+  </module>
+  <module name="TitleBar" layoutPanel="viewHeader">
+    <param name="actionsMenuFilter">dashboard</param>
+  </module>  
+
+  <module name="NullModule" layoutPanel="panel_row1_col1" autoRun="True">
+  <module name="HiddenSearch" layoutPanel="panel_row1_col1_grp1" autoRun="True">
+    <param name="search"> `pan_index` | stats dc(host)</param>
+    <param name="earliest">rt-30s</param>
+    <param name="latest">rt</param>
+    <module name="ViewstateAdapter">
+      <param name="suppressionList">
+        <item>field</item>
+        <item>afterLabel</item>
+        <item>classField</item>
+      </param>
+      <module name="HiddenFieldPicker">
+        <param name="strictMode">True</param>
+        <module name="JobProgressIndicator">
+          <module name="SingleValue">
+            <param name="field">dc(host)</param>
+            <param name="afterLabel">PAN Reporting</param>
+            <param name="classField">range</param>
+            <module name="Gimp"/>
+          </module>
+        </module>
+      </module>
+    </module>
+  </module>
+
+<module name="HiddenSearch" layoutPanel="panel_row1_col1_grp2" autoRun="True">
+    <param name="search">`pan_index` | stats count</param>
+    <param name="earliest">rt-30s</param>
+    <param name="latest">rt</param>
+    <module name="ViewstateAdapter">
+      <param name="suppressionList">
+        <item>field</item>
+        <item>afterLabel</item>
+        <item>classField</item>
+      </param>
+      <module name="HiddenFieldPicker">
+        <param name="strictMode">True</param>
+        <module name="JobProgressIndicator">
+          <module name="SingleValue">
+            <param name="field">count</param>
+            <param name="afterLabel">Events</param>
+            <param name="classField">range</param>
+            <module name="Gimp"/>
+          </module>
+        </module>
+      </module>
+    </module>
+  </module>
+  
+  <module name="HiddenSearch" layoutPanel="panel_row1_col1_grp3" autoRun="True">
+    <param name="search">`pan_index` sourcetype=pan_threat action=block-url | stats count</param>
+    <param name="earliest">rt-30s</param>
+    <param name="latest">rt</param>
+    <module name="ViewstateAdapter">
+      <param name="suppressionList">
+        <item>field</item>
+        <item>afterLabel</item>
+        <item>classField</item>
+      </param>
+      <module name="HiddenFieldPicker">
+        <param name="strictMode">True</param>
+        <module name="JobProgressIndicator">
+          <module name="SingleValue">
+            <param name="field">count</param>
+            <param name="afterLabel">Block-URL</param>
+            <param name="classField">range</param>
+            <module name="Gimp"/>
+          </module>
+        </module>
+      </module>
+    </module>
+  </module>
+  
+    <module name="HiddenSearch" layoutPanel="panel_row1_col1_grp4" autoRun="True">
+    <param name="search">`pan_index` sourcetype=pan_threat | stats count by category | sort -count | head 1</param>
+    <param name="earliest">rt-30s</param>
+    <param name="latest">rt</param>
+    <module name="ViewstateAdapter">
+      <param name="suppressionList">
+        <item>field</item>
+        <item>afterLabel</item>
+        <item>classField</item>
+      </param>
+      <module name="HiddenFieldPicker">
+        <param name="strictMode">True</param>
+        <module name="JobProgressIndicator">
+          <module name="SingleValue">
+            <param name="field">category</param>
+            <param name="afterLabel">Top Category</param>
+            <param name="classField">range</param>
+            <module name="Gimp"/>
+          </module>
+        </module>
+      </module>
+    </module>
+  </module>
+</module>
+  
+  <module name="LinkSwitcher" layoutPanel="panel_row2_col1">
+    <param name="mode">independent</param>
+    <param name="label">Maps</param>
+    
+    <module name="HiddenSearch" layoutPanel="panel_row2_col1" autoRun="true">
+  	 <param name="groupLabel">Google Map</param>
+     <param name="search">`pan_index` sourcetype="pan_traffic" | rename dst_ip as clientip| localop | geoip clientip</param>
+  	 <param name="earliest">rt-5m</param>
+   	 <param name="latest">rt</param>
+      
+      <module name="GoogleMaps" layoutPanel="panel_row2_col1">
+        <param name="mapStyles">roadmap,terrain,satellite</param>
+        <param name="mapType">roadmap</param>
+        <param name="drilldown">true</param>
+        <param name="overlay">clusters</param>
+        <param name="overlay.style">m</param>
+        <param name="overlay.opacity">0.75</param>
+        <param name="overlay.rangeMap">0, 100, 500, 1000, 10000</param>
+        <param name="overlay.roundQuantity">true</param>
+        <param name="height">500px</param>
+        <param name="scrollwheel">on</param>
+           
+        <module name="GeoDrilldown" layoutPanel="panel_row2_col1">
+            <module name="ViewRedirector">
+                <param name="popup">true</param>
+                <param name="viewTarget">flashtimeline</param>
+            </module>
+        </module>
+    </module>
+</module>
+  
+    <module name="HiddenSearch" autoRun="True">
+      <param name="groupLabel">Ammap</param>
+    <param name="search">`pan_index` sourcetype="pan_traffic" | stats count by dst_ip | eval count_label="Event" | eval iterator="dst_ip" | eval iterator_label="IP" | eval movie_color="#33CCFF" | eval output_file="realtime_threat_data.xml" | eval app="SplunkforPaloAltoNetworks" | lookup geoip clientip as dst_ip | mapit</param>
+    <param name="earliest">rt-30s</param>
+    <param name="latest">rt</param>
+  <module name="ServerSideInclude" layoutPanel="panel_row2_col1">
+    <param name="src">realtime_ammap.html</param>
+  </module>
+	<module name="JobProgressIndicator"/>
+</module>
+
+</module>
+
+<module name="HiddenSearch" layoutPanel="panel_row2_col2" autoRun="True">
+    <param name="search">`pan_index` sourcetype=pan_* log_subtype=* | timechart span=10s count by log_subtype</param>
+    <param name="earliest">rt-5m</param>
+    <param name="latest">rt</param>
+    <module name="ViewstateAdapter">
+      <param name="suppressionList">
+        <item>charting.chart</item>
+      </param>
+      <module name="HiddenFieldPicker">
+        <param name="strictMode">True</param>
+        <module name="JobProgressIndicator">
+          <module name="EnablePreview">
+            <param name="enable">True</param>
+            <param name="display">False</param>
+            <module name="HiddenChartFormatter">
+              <param name="chartTitle">Event Types</param>
+              <param name="primaryAxisTitle.text"> </param>
+              <param name="charting.chart">area</param>
+              <param name="charting.chart.stackMode">stacked</param>
+              <param name="charting.chart.nullValueMode">gaps</param>
+              <param name="charting.secondaryAxisTitle.text">Events</param>
+              <module name="JSChart">
+                <param name="width">100%</param>
+                <module name="SimpleDrilldown">
+                  <param name="links">
+                    <param name="*">./flashtimeline?q=`pan_index` log_subtype="$click.name2$" [| stats count | eval latest = $click.value$ %2b 10 | fields latest] earliest = $click.value$</param>
+                  </param>
+                </module>
+              </module>
+            </module>
+          </module>
+        </module>
+      </module>
+    </module>
+  </module>
+  
+    <module name="HiddenSavedSearch" layoutPanel="panel_row2_col2" autoRun="True">
+    <param name="savedSearch">PAN - Traffic - Applications</param>
+    <module name="ViewstateAdapter">
+      <param name="suppressionList"/>
+      <param name="savedSearch">PAN - Traffic - Applications</param>
+      <module name="HiddenFieldPicker">
+        <param name="strictMode">True</param>
+        <module name="JobProgressIndicator"/>
+        <module name="Paginator">
+          <param name="count">10</param>
+          <param name="entityName">results</param>
+          <module name="EnablePreview">
+            <param name="enable">True</param>
+            <param name="display">False</param>
+            <module name="SimpleResultsTable">
+              <param name="entityName">results</param>
+              <param name="allowTransformedFieldSelect">True</param>
+              <param name="drilldown">all</param>
+              <module name="SimpleDrilldown">
+                <param name="links">
+                  <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` app="$row.Application$" vsys="$row.VSYS$" src_zone="$row.Source Zone$"</param>
+                </param>
+              </module>
+            </module>
+          </module>
+        </module>
+      </module>
+    </module>
+  </module>
+
+</view>

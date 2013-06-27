@@ -1,0 +1,272 @@
+<view template="dashboard.html" stylesheet="threat_overview.css">
+  <label>Config Dashboard</label>
+  <module name="AccountBar" layoutPanel="appHeader"/>
+  <module name="AppBar" layoutPanel="navigationHeader"/>
+  <module name="Message" layoutPanel="messaging">
+    <param name="filter">*</param>
+    <param name="clearOnJobDispatch">False</param>
+    <param name="maxSize">1</param>
+  </module>
+  <module name="TitleBar" layoutPanel="viewHeader">
+    <param name="actionsMenuFilter">dashboard</param>
+  </module>
+  <module name="GenericHeader" layoutPanel="panel_row1_col1">
+    <param name="label">Config Dashboard</param>
+  </module>
+  <module name="StaticContentSample" layoutPanel="panel_row1_col1">
+    <param name="text">This dashboard provides visibility into System changes and activity in your Palo Alto Networks
+      environment. Threats can be filtered by type using the form fields.
+    </param>
+  </module>
+  <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
+    <param name="label">Admin:</param>
+    <param name="field">admin</param>
+    <param name="replacementMap">
+      <param name="arg">
+        <param name="admin">
+          <param name="value"></param>
+        </param>
+      </param>
+    </param>
+    <param name="intention">
+      <param name="name">stringreplace</param>
+      <param name="arg">
+        <param name="admin">
+          <param name="default"></param>
+          <param name="prefix">admin="</param>
+          <param name="suffix">"</param>
+          <param name="fillOnEmpty">false</param>
+        </param>
+      </param>
+    </param>
+    <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
+      <param name="label">Command:</param>
+      <param name="field">cmd</param>
+      <param name="replacementMap">
+        <param name="arg">
+          <param name="cmd">
+            <param name="value"></param>
+          </param>
+        </param>
+      </param>
+      <param name="intention">
+        <param name="name">stringreplace</param>
+        <param name="arg">
+          <param name="cmd">
+            <param name="default"></param>
+            <param name="prefix">cmd="</param>
+            <param name="suffix">"</param>
+            <param name="fillOnEmpty">false</param>
+          </param>
+        </param>
+      </param>
+      <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
+        <param name="label">Result:</param>
+        <param name="field">result</param>
+        <param name="replacementMap">
+          <param name="arg">
+            <param name="result">
+              <param name="value"></param>
+            </param>
+          </param>
+        </param>
+        <param name="intention">
+          <param name="name">stringreplace</param>
+          <param name="arg">
+            <param name="result">
+              <param name="default"></param>
+              <param name="prefix">result="</param>
+              <param name="suffix">"</param>
+              <param name="fillOnEmpty">false</param>
+            </param>
+          </param>
+        </param>
+        <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
+          <param name="label">Virtual System:</param>
+          <param name="field">vsys</param>
+          <param name="replacementMap">
+            <param name="arg">
+              <param name="vsys">
+                <param name="value"></param>
+              </param>
+            </param>
+          </param>
+          <param name="intention">
+            <param name="name">stringreplace</param>
+            <param name="arg">
+              <param name="vsys">
+                <param name="default"></param>
+                <param name="prefix">vsys="</param>
+                <param name="suffix">"</param>
+                <param name="fillOnEmpty">false</param>
+              </param>
+            </param>
+          </param>
+
+          <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
+            <param name="label">Client:</param>
+            <param name="field">client</param>
+            <param name="replacementMap">
+              <param name="arg">
+                <param name="client">
+                  <param name="value"></param>
+                </param>
+              </param>
+            </param>
+            <param name="intention">
+              <param name="name">stringreplace</param>
+              <param name="arg">
+                <param name="client">
+                  <param name="default"></param>
+                  <param name="prefix">client="</param>
+                  <param name="suffix">"</param>
+                  <param name="fillOnEmpty">false</param>
+                </param>
+              </param>
+            </param>
+
+
+            <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
+              <param name="label">Host:</param>
+              <param name="field">host</param>
+              <param name="replacementMap">
+                <param name="arg">
+                  <param name="host">
+                    <param name="host"></param>
+                  </param>
+                </param>
+              </param>
+              <param name="intention">
+                <param name="name">stringreplace</param>
+                <param name="arg">
+                  <param name="host">
+                    <param name="default"></param>
+                    <param name="prefix">host="</param>
+                    <param name="suffix">"</param>
+                    <param name="fillOnEmpty">false</param>
+                  </param>
+                </param>
+              </param>
+              <module name="TimeRangePicker" layoutPanel="panel_row1_col1" autoRun="True">
+                <param name="selected">Last 60 minutes</param>
+                <param name="searchWhenChanged">True</param>
+
+                <module name="HiddenSearch" layoutPanel="panel_row2_col1" group="Latest Events">
+                  <param name="search">| `tstats` count(admin) FROM pan_config WHERE * $host$ $admin$ $client$ $result$
+                    $cmd$ groupby _time result serial_number host admin client cmd configuration_path span=5m | table
+                    _time result serial_number host admin client cmd configuration_path result
+                  </param>
+                  <module name="Paginator">
+                    <param name="count">10</param>
+                    <param name="entityName">results</param>
+                    <module name="SimpleResultsTable">
+                      <param name="drilldown">row</param>
+                      <param name="allowTransformedFieldSelect">True</param>
+                      <param name="drilldown">all</param>
+                      <module name="SimpleDrilldown">
+                        <param name="links">
+                          <param name="_time">./flashtimeline?q=`pan_config` _time="$row._time$"</param>
+                          <param name="result">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_config` result="$row.result"</param>
+                          <param name="serial_number">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_config` serial_number="$row.serial_number$"</param>
+                          <param name="host">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_config` host="$row.host"</param>
+                          <param name="admin">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_config` admin="$row.admin"</param>
+                          <param name="client">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_config` client="$row.client"</param>
+                          <param name="configuration_path">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_config` configuration_path="$row.configuration_path"</param>
+                        </param>
+                      </module>
+                    </module>
+                  </module>
+                </module>
+                <module name="HiddenSearch" layoutPanel="panel_row3_col1">
+                  <param name="search">| `tstats` count(cmd) AS cr FROM pan_config WHERE * $host$ $admin$ $client$
+                    $result$ $cmd$ groupby _time cmd span=5m| timechart values(cr) by cmd
+                  </param>
+                  <module name="HiddenChartFormatter">
+                    <param name="chartTitle">Config Events Over Time</param>
+                    <param name="chart">column</param>
+                    <param name="chart.stackMode">stacked</param>
+                    <param name="legend.placement">bottom</param>
+                    <module name="JSChart">
+                      <param name="width">100%</param>
+                      <module name="SimpleDrilldown">
+                        <param name="links">
+                          <param name="*">./flashtimeline?q=`pan_index` cmd="$click.name2$" earliest=$click.value$ [|
+                            stats count | eval latest = $click.value$ %2b 300 | fields latest]
+                          </param>
+                        </param>
+                      </module>
+                    </module>
+                  </module>
+                </module>
+                <module name="HiddenSearch" layoutPanel="panel_row3_col2">
+                  <param name="search">| `tstats` count(admin) AS ca FROM pan_config WHERE * $host$ $admin$ $client$
+                    $result$ $cmd$ groupby _time admin span=5m | timechart values(admin) by admin
+                  </param>
+                  <module name="HiddenChartFormatter">
+                    <param name="chartTitle">Configuration Administrators</param>
+                    <param name="chart">column</param>
+                    <param name="chart.stackMode">stacked</param>
+                    <param name="legend.placement">bottom</param>
+                    <module name="JSChart">
+                      <param name="width">100%</param>
+                      <module name="SimpleDrilldown">
+                        <param name="links">
+                          <param name="*">./flashtimeline?q=`pan_index` admin="$click.name2$" earliest=$click.value$ [|
+                            stats count | eval latest = $click.value$ %2b 300 | fields latest]
+                          </param>
+                        </param>
+                      </module>
+                    </module>
+                  </module>
+                </module>
+                <module name="HiddenSearch" layoutPanel="panel_row4_col1">
+                  <param name="search">| `tstats` count(client) AS cc FROM pan_config WHERE * $host$ $admin$ $client$
+                    $result$ $cmd$ $vsys$ groupby client
+                  </param>
+                  <module name="HiddenChartFormatter">
+                    <param name="chartTitle">Configuration Clients Used</param>
+                    <param name="chart">pie</param>
+                    <param name="legend.placement">bottom</param>
+                    <module name="JSChart">
+                      <param name="width">100%</param>
+                      <param name="height">250px</param>
+                      <module name="SimpleDrilldown">
+                        <param name="links">
+                          <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index`
+                            $click.name$="$click.value$"
+                          </param>
+                        </param>
+                      </module>
+                    </module>
+                  </module>
+                </module>
+                <module name="HiddenSearch" layoutPanel="panel_row4_col2">
+                  <param name="search">| `tstats` count(result) AS cr FROM pan_config WHERE * $host$ $admin$ $client$
+                    $result$ $cmd$ $vsys$ groupby result
+                  </param>
+                  <module name="HiddenChartFormatter">
+                    <param name="chartTitle">Events by Results</param>
+                    <param name="chart">pie</param>
+                    <param name="legend.placement">bottom</param>
+                    <module name="JSChart">
+                      <param name="width">100%</param>
+                      <param name="height">250px</param>
+                      <module name="SimpleDrilldown">
+                        <param name="links">
+                          <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index`
+                            $click.name$="$click.value$"
+                          </param>
+                        </param>
+                      </module>
+                    </module>
+                  </module>
+                </module>
+
+              </module>
+            </module>
+          </module>
+        </module>
+      </module>
+    </module>
+  </module>
+</view>
