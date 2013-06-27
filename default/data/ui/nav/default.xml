@@ -9,7 +9,7 @@
       <a href="flashtimeline?q=search%20%60pan_system%60">System Logs</a>
     </collection>
     <divider />
-    <a href="/manager/SplunkforPaloAltoNetworks">Configuration</a>
+    <a href="/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">Configuration</a>
     <divider />
     <a href="mailto:bd-labs@splunk.com">Send Feedback</a>
   </collection>
