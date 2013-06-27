@@ -11,4 +11,24 @@
                     <type>password</type>
             </input>
 	</block>
+  <block title="WildFire Cloud API Key" endpoint="storage/passwords" entity="_new">
+    <text> Used to retrieve reports from the WildFire Cloud.  API Key is available from the WildFire Portal (https://wildfire.paloaltonetworks.com) under My Account.
+    </text>
+          <input field="name">
+                  <label>API Key Username</label>
+                  <type>text</type>
+          </input>
+          <input field="password">
+                  <label>WildFire API Key</label>
+                  <type>text</type>
+          </input>
+          <text><![CDATA[ <script type="text/javascript">
+            $(function(){
+                var username_div = $('#item-\\/storage\\/passwords\\/_new\\/name');
+                username_div.hide();
+                var username_input = $('#\\/storage\\/passwords\\/_new\\/name_id');
+                username_input.val('wildfire_api_key');
+            });
+          </script> ]]></text>
+  </block>
 </setup>
