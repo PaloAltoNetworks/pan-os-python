@@ -39,11 +39,12 @@
   
     <collection label="Content">
     <view name="content_overview" />
-    <view name="data_filtering" />
     <view name="url_filtering" />
+    <view name="data_filtering" />
     <divider />
     <collection label="Searches &amp; Reports">
-      <a href="flashtimeline?q=search%20%60pan_threat%60">Search Threat Data</a>
+      <a href="flashtimeline?q=search%20%60pan_web_activity%60">Search URL Data</a>
+      <a href="flashtimeline?q=search%20%60pan_data_filtering%60">Search Data Filtering Data</a>
       <divider />
       <saved source="all" match="PAN - Threat" view="flashtimeline" />
     </collection>
@@ -64,6 +65,7 @@
       <saved source="all" match="PAN - Config" view="flashtimeline" />
     </collection>
   </collection>
+
   <!-- Search -->
   <view name="flashtimeline" />
   <!--<collection label="Help">
