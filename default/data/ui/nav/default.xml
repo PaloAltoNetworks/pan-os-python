@@ -49,6 +49,18 @@
       <saved source="all" match="PAN - Threat" view="flashtimeline" />
     </collection>
   </collection>
+
+  <collection label="WildFire">
+    <view name="wildfire_overview" />
+    <view name="wildfire_detail" />
+    <divider />
+    <collection label="Searches &amp; Reports">
+      <a href="flashtimeline?q=search%20%60pan_wildfire%60">Search WildFire Log Data</a>
+      <a href="flashtimeline?q=search%20%60pan_wildfire_report%60">Search WildFire Report Data</a>
+      <divider />
+      <saved source="all" match="PAN - WildFire" view="flashtimeline" />
+    </collection>
+  </collection>
   
   <collection label="Console">
     <view name="system_overview" />
