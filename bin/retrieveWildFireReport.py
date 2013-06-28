@@ -104,6 +104,8 @@ for result in results:
     try:
       # get the report
       wfReportXml = retrieveWildFireData(PAN_WF_APIKEY, result['serial_number'], result['report_id']).read().strip()
+      # Add the report id to the XML for correlation to the original WildFire log from the firewall
+      wfReportXml = wfReportXml.replace("</version>", "</version>\n  <id>"+result['report_id']+"</id>", 1)
       result['wildfire_report'] = wfReportXml
     except:
       logger.warn("Error retrieving WildFire report for report id: %s" % result['report_id'])
