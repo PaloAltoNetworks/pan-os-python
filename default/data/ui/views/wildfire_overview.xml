@@ -165,13 +165,13 @@
                                             </module>
                                         </module>
                                         <module name="HiddenSearch" layoutPanel="panel_row2_col2" group="Recent Malware Download Attempts">
-                                          <param name="search">|`tstats` count(dst_user) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby dst_ip action misc dst_user | table dst_ip dst_user misc action |
+                                          <param name="search">|`tstats` count(dst_user) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time dst_ip action misc dst_user | table _time dst_ip dst_user misc action |
                                             rename dst_user AS "Destination User" |
                                             rename dst_ip AS "Destination IP" |
                                             rename action AS Action |
                                             rename misc AS Filename</param>
                                             <module name="Paginator">
-                                                <param name="count">5</param>
+                                                <param name="count">7</param>
                                                 <param name="entityName">results</param>
                                                 <module name="SimpleResultsTable">
                                                   <param name="allowTransformedFieldSelect">True</param>
