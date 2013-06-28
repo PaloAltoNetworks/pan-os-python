@@ -78,7 +78,8 @@ def getCredentials(sessionKey):
     raise Exception("Could not get %s credentials from splunk. Error: %s" % (myapp, str(e)))
   # return first set of credentials
   for i, c in entities.items():
-    return c['username'], c['clear_password']
+    if c['username'] != 'wildfire_api_key':
+      return c['username'], c['clear_password']
   logger.warn("No credentials")
   raise Exception("No credentials have been found")
 
