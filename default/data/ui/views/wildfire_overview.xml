@@ -150,7 +150,7 @@
                                         <module name="HiddenSearch" layoutPanel="panel_row2_col1">
                                             <param name="search">| tstats count(action) AS cact FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time action span=5m | timechart values(cact) by action</param>
                                             <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">WildFire Event Actions</param>
+                                                <param name="chartTitle">All WildFire Events by Action</param>
                                                 <param name="chart">column</param>
                                                 <param name="chart.stackMode">stacked</param>
                                                 <param name="legend.placement">bottom</param>
@@ -158,41 +158,36 @@
                                                     <param name="width">100%</param>
                                                     <module name="SimpleDrilldown">
                                                         <param name="links">
-                                                            <param name="*">
-                                                                wildfire_overview?earliest=$earliest$&amp;latest=$latest$&amp;form.action=$click.name2$
-                                                            </param>
+                                                            <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_wildfire`"</param>
                                                         </param>
                                                     </module>
                                                 </module>
                                             </module>
                                         </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row2_col2">
-                                          <param name="search">|`tstats` count(dst_user) AS ca FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby dst_user dst_ip misc | stats values(ca) AS Count by dst_user dst_ip misc |
+                                        <module name="HiddenSearch" layoutPanel="panel_row2_col2" group="Recent Malware Download Attempts">
+                                          <param name="search">|`tstats` count(dst_user) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby dst_ip action misc dst_user | table dst_ip dst_user misc action |
                                             rename dst_user AS "Destination User" |
                                             rename dst_ip AS "Destination IP" |
+                                            rename action AS Action |
                                             rename misc AS Filename</param>
                                             <module name="Paginator">
-                                                <param name="count">10</param>
+                                                <param name="count">5</param>
                                                 <param name="entityName">results</param>
                                                 <module name="SimpleResultsTable">
                                                   <param name="allowTransformedFieldSelect">True</param>
                                                   <param name="drilldown">all</param>
                                                   <module name="SimpleDrilldown">
                                                     <param name="links">
-                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index`
-                                                        dst_user="$row.Destination User$"
-                                                        dst_ip="$row.Destination IP$"
-                                                        misc="$row.Filename$"
-                                                      </param>
+                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` dst_user="$row.Destination User$" dst_ip="$row.Destination IP$" misc="$row.Filename$"</param>
                                                     </param>
                                                   </module>
                                                 </module>
                                             </module>
                                         </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row3_col1">
-                                            <param name="search">| tstats count(misc) AS cti FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby misc</param>
+                                        <module name="HiddenSearch" layoutPanel="panel_row4_col1">
+                                            <param name="search">| tstats count(misc) AS cti FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby misc</param>
                                             <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Top Filenames</param>
+                                                <param name="chartTitle">Top Malware</param>
                                                 <param name="chart">pie</param>
                                                 <param name="legend.placement">bottom</param>
                                                 <module name="JSChart">
@@ -208,10 +203,10 @@
                                                 </module>
                                             </module>
                                         </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row3_col2">
-                                            <param name="search">| tstats count(app) AS ca FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby app</param>
+                                        <module name="HiddenSearch" layoutPanel="panel_row4_col2">
+                                            <param name="search">| tstats count(app) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby app</param>
                                             <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">WildFire Events by App</param>
+                                                <param name="chartTitle">Malware Downloads by App</param>
                                                 <param name="chart">pie</param>
                                                 <param name="legend.placement">bottom</param>
                                                 <module name="JSChart">
@@ -227,10 +222,10 @@
                                                 </module>
                                             </module>
                                         </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row3_col3">
-                                            <param name="search">| tstats count(dst_user) AS cti FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ $dst_user$ groupby dst_user </param>
+                                        <module name="HiddenSearch" layoutPanel="panel_row4_col3">
+                                            <param name="search">| tstats count(dst_user) AS cti FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ $dst_user$ groupby dst_user </param>
                                             <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">WildFire Events by User</param>
+                                                <param name="chartTitle">Malware Downloaders by User</param>
                                                 <param name="chart">pie</param>
                                                 <param name="legend.placement">bottom</param>
                                                 <module name="JSChart">
@@ -246,10 +241,10 @@
                                                 </module>
                                             </module>
                                         </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row4_col1">
-                                            <param name="search">| tstats count(src_ip) AS csrc FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby src_ip</param>
+                                        <module name="HiddenSearch" layoutPanel="panel_row5_col1">
+                                            <param name="search">| tstats count(src_ip) AS csrc FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby src_ip</param>
                                             <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Top Source IP</param>
+                                                <param name="chartTitle">Top Malware Sources</param>
                                                 <param name="chart">pie</param>
                                                 <param name="legend.placement">bottom</param>
                                                 <module name="JSChart">
@@ -265,13 +260,13 @@
                                                 </module>
                                             </module>
                                         </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row4_col2">
-                                          <param name="search">|`tstats` count(action) AS cact FROM pan_wildfire WHERE * (action=wildfire-upload-success OR action=wildfire-upload-skip) $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby action |
+                                        <module name="HiddenSearch" layoutPanel="panel_row5_col2">
+                                          <param name="search">|`tstats` count(action) AS cact FROM pan_wildfire WHERE * category="malicious" (action=wildfire-upload-success OR action=wildfire-upload-skip) $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby action |
                                             replace wildfire-upload-success with "New Sample" in action |
-                                            replace wildfire-upload-skip with "Previously Analyzed" in action
+                                            replace wildfire-upload-skip with "Known" in action
                                             </param>
                                             <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Known Malware</param>
+                                                <param name="chartTitle">Previously Analyzed Malware</param>
                                                 <param name="chart">pie</param>
                                                 <param name="legend.placement">bottom</param>
                                                 <module name="JSChart">
@@ -280,18 +275,17 @@
                                                   <module name="SimpleDrilldown">
                                                     <param name="links">
                                                       <!--param name="*">flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_wildfire` severity="$click.value$"</param-->
-                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index`
-                                                        action="$click.value$"
+                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` action="$click.value$"
                                                       </param>
                                                     </param>
                                                   </module>
                                                 </module>
                                             </module>
                                         </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row4_col3">
-                                            <param name="search">| tstats count(dst_ip) AS cti FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby dst_ip</param>
+                                        <module name="HiddenSearch" layoutPanel="panel_row5_col3">
+                                            <param name="search">| tstats count(dst_ip) AS cti FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby dst_ip</param>
                                             <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Top Dest IP</param>
+                                                <param name="chartTitle">Top Malware Downloaders by IP</param>
                                                 <param name="chart">pie</param>
                                                 <param name="legend.placement">bottom</param>
                                                 <module name="JSChart">
@@ -306,6 +300,34 @@
                                                     </module>
                                                 </module>
                                             </module>
+                                        </module>
+                                        <module name="HiddenSearch" layoutPanel="panel_row3_col1" group="Possible Malware Traffic">
+                                          <param name="search"> |`tstats` count(dst_ip) AS cdip FROM pan_wildfire_report_malware_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol |
+                                            join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby src_ip dst_ip dst_port protocol src_user | table src_ip src_user dst_port dst_ip protocol ] |
+                                            rename src_user AS "User" | rename src_ip AS "Compromised IP" |
+                                            join type=left report_id [|`tstats` count(report_id) AS crid FROM pan_wildfire WHERE * groupby report_id misc | table report_id misc ] |
+                                            table "Compromised IP" "User" misc dst_ip dst_port protocol |
+                                            rename misc AS "Malware File" |
+                                            rename dst_ip AS "Traffic Dst_IP" |
+                                            rename dst_port AS "Traffic Dst_Port" |
+                                            rename protocol AS "Protocol"</param>
+                                            <module name="Paginator">
+                                                <param name="count">10</param>
+                                                <param name="entityName">results</param>
+                                                <module name="SimpleResultsTable">
+                                                  <param name="allowTransformedFieldSelect">True</param>
+                                                  <param name="drilldown">all</param>
+                                                  <module name="SimpleDrilldown">
+                                                    <param name="links">
+                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` src_user="$row.User$" src_ip="$row.Compromised IP$" dst_ip="$row.Traffic Dst_IP$" dst_port="$row.Traffic Dst_Port$" protocol="$row.Protocol$"</param>
+                                                    </param>
+                                                  </module>
+                                                </module>
+                                            </module>
+                                          <module name="StaticContentSample" layoutPanel="panel_row3_col1">
+                                            <param name="text">These hosts attempted a connection to servers known to be accessed by malware programs detected by the firewall. These hosts may be compromised as they show network behavior consistent with an analyzed malware sample. This data is based on a correlation of traffic logs and malware network behavior from WildFire Cloud analysis reports.  (Note: This correlation requires a <![CDATA[<a href="http://localhost:8000/en-US/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">WildFire API Key</a>]]>)
+                                            </param>
+                                          </module>
                                         </module>
                                 </module>
                             </module>
