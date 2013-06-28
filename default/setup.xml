@@ -12,7 +12,7 @@
             </input>
 	</block>
   <block title="WildFire Cloud API Key" endpoint="storage/passwords" entity="_new">
-    <text> Used to retrieve reports from the WildFire Cloud.  API Key is available from the WildFire Portal (https://wildfire.paloaltonetworks.com) under My Account.
+    <text> Used to retrieve reports from the WildFire Cloud.  API Key is available from the WildFire Portal (https://wildfire.paloaltonetworks.com) under <![CDATA[<strong>My Account</strong>]]>.
     </text>
           <input field="name">
                   <label>API Key Username</label>
@@ -30,5 +30,9 @@
                 username_input.val('wildfire_api_key');
             });
           </script> ]]></text>
+  </block>
+  <block title="">
+    <text> Note: To change the Credentials or WildFire API Key later, first remove the entry from SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/app.conf.
+    </text>
   </block>
 </setup>
