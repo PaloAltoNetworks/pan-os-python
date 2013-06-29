@@ -29,12 +29,9 @@ Many Thanks to Contributors, Advisors, Testers:
 
 #### Support ####
 
-For fastest response to support, setup, help
-or feedback, please post to
-answers.splunk.com and tag your questions
-with 'palo' or paloalto'
+For fastest response to support, setup, help or feedback, please post to
+answers.splunk.com and tag your questions with `paloalto`.
 
-Alternatively, contact: bd-sec@splunk.com 
 
 ## IMPORTANT ##
 
@@ -59,19 +56,16 @@ To install this app:
 - Unpack the tar ball into `$SPLUNK_HOME/etc/apps`
 - Restart Splunk
 
-Note 
-
-- After restart, it can take up to 5 minutes for new data to show up. 
-- For older data, you can use the backfill feature of splunk to backfill the summary index:
-
-[http://www.splunk.com/base/Documentation/latest/Knowledge/Managesummaryindexgapsandoverlaps#Use_the_backfill_script_to_add_other_data_or_fill_summary_index_gaps](http://www.splunk.com/base/Documentation/latest/Knowledge/Managesummaryindexgapsandoverlaps#Use_the_backfill_script)
+Note: After restart, it can take up to 5 minutes for new data to show up. 
 
 ## Configuring ##
 
-Setup Screen and Custom Commands:
+### Setup Screen and Custom Commands ###
+
 The first time you run the app from the web ui, you will be presented with a setup screen. The credentials are only needed if you wish to use the panblock and panupdate custom commands. These passwords will be stored in Splunk. The same way as other splunk credentials are stored. If you do not wish to use the custom commands, you can leave this page blank or enter garbage values.
 
-To get the firewall data into Splunk:
+### To get the firewall data into Splunk ###
+
 IMPORTANT: When you configure the input port, you must set the sourcetype of the firewall data to pan_log and the index to pan_logs.
 
 From the web ui:
@@ -82,7 +76,7 @@ Manager -> Data Inputs -> UDP -> New -> UDP port:
     Source type: Set Sourcetype From list:
     Select Sourcetype: pan_log -> More -> Index: pan_logs  
 
-For details, [http://www.splunk.com/base/Documentation/latest/admin/MonitorNetworkPorts](http://www.splunk.com/base/Documentation/latest/admin/MonitorNetworkPorts
+For details: [http://www.splunk.com/base/Documentation/latest/admin/MonitorNetworkPorts](http://www.splunk.com/base/Documentation/latest/admin/MonitorNetworkPorts
 )
 
 ### Input configuration via inputs.conf ###
@@ -115,7 +109,7 @@ Lookups are provided for the threat_id and app field to provide additional infor
 
 ### Using the form fields on the dashboards ###
 
-All the dashboards work without any filtering values for the form fields. If you want to filter based on a field you should use asterisks before and after the search terms unless you are absolutely sure of the filter value. e.g. In the Content Filtering View, if you want to filter results by the virtual system called 'vsys1', a good practice would be to enter `#vsys1#` in the Virtual System field.
+All the dashboards work without any filtering values for the form fields. If you want to filter based on a field you should use asterisks before and after the search terms unless you are absolutely sure of the filter value. e.g. In the Content Filtering View, if you want to filter results by the virtual system called 'vsys1', a good practice would be to enter "vsys1" in the Virtual System field.
 
 Keep in mind that searches that have longer time ranges may take a little longer to return the results. 
 
