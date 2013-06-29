@@ -11,9 +11,11 @@ Networks Firewall
 #### Version ####
 
 * Splunk Version: 5.x
-* App Version: 3.2.1
-* Last Modified: May 2013
-* Authors: Monzy Merza - Splunk, Inc.
+* App Version: 3.3
+* Last Modified: June 2013
+* Authors:
+    * Monzy Merza - Splunk, Inc.
+    * Brian Torres-Gil - Palo Alto Networks
 
 #### Credits ####
 
