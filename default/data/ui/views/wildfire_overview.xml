@@ -165,7 +165,7 @@
                                             </module>
                                         </module>
                                         <module name="HiddenSearch" layoutPanel="panel_row2_col2" group="Recent Malware Download Attempts">
-                                          <param name="search">|`tstats` count(dst_user) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time dst_ip action misc dst_user | table _time dst_ip dst_user misc action |
+                                          <param name="search">|`tstats` count(dst_user) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time dst_ip misc dst_user | table _time dst_ip dst_user misc |
                                             rename dst_user AS "Destination User" |
                                             rename dst_ip AS "Destination IP" |
                                             rename action AS Action |
@@ -303,10 +303,11 @@
                                         </module>
                                         <module name="HiddenSearch" layoutPanel="panel_row3_col1" group="Possible Malware Traffic">
                                           <param name="search"> |`tstats` count(dst_ip) AS cdip FROM pan_wildfire_report_malware_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol |
-                                            join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby src_ip dst_ip dst_port protocol src_user | table src_ip src_user dst_port dst_ip protocol ] |
+                                            join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby _time src_ip dst_ip dst_port protocol src_user | table _time src_ip src_user dst_port dst_ip protocol | rename _time AS traffic_time ] |
                                             rename src_user AS "User" | rename src_ip AS "Compromised IP" |
                                             join type=left report_id [|`tstats` count(report_id) AS crid FROM pan_wildfire WHERE * groupby report_id misc | table report_id misc ] |
-                                            table "Compromised IP" "User" misc dst_ip dst_port protocol |
+                                            table traffic_time "Compromised IP" "User" misc dst_ip dst_port protocol |
+                                            rename traffic_time AS _time |
                                             rename misc AS "Malware File" |
                                             rename dst_ip AS "Traffic Dst_IP" |
                                             rename dst_port AS "Traffic Dst_Port" |
