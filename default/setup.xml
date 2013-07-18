@@ -12,7 +12,7 @@
             </input>
 	</block>
   <block title="WildFire Cloud API Key" endpoint="storage/passwords" entity="_new">
-    <text> Used to retrieve reports from the WildFire Cloud.  API Key is available from the WildFire Portal (https://wildfire.paloaltonetworks.com) under <![CDATA[<strong>My Account</strong>]]>.
+    <text> Used to retrieve reports from the WildFire Cloud.  An API Key is available from the WildFire Portal (<![CDATA[<a href="https://wildfire.paloaltonetworks.com/Wildfire/Home/MyAccount" target="_blank">https://wildfire.paloaltonetworks.com/Wildfire/Home/MyAccount</a>)]]>.
     </text>
           <input field="name">
                   <label>API Key Username</label>

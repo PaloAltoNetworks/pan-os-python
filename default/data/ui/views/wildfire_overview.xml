@@ -15,7 +15,7 @@
     </module>
     <module name="StaticContentSample" layoutPanel="panel_row1_col1">
         <param name="text">This dashboard provides visibility into WildFire activity in your Palo Alto Networks
-            environment. WildFire data is collected from the firewall logs and the WildFire Cloud.  Data can be filtered by type using the form fields.
+            environment. WildFire data is collected from the firewall logs and the WildFire Cloud.  Data can be filtered by type using the form fields.  Note:  This dashboard shows statistics for malicious WildFire events only.
         </param>
     </module>
 
@@ -163,6 +163,10 @@
                                                     </module>
                                                 </module>
                                             </module>
+                                          <module name="StaticContentSample" layoutPanel="panel_row2_col1">
+                                            <param name="text">This chart shows all WildFire events.  Other charts on this dashboard only show malicious WildFire events.
+                                            </param>
+                                          </module>
                                         </module>
                                         <module name="HiddenSearch" layoutPanel="panel_row2_col2" group="Recent Malware Download Attempts">
                                           <param name="search">|`tstats` count(dst_user) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time dst_ip misc dst_user | table _time dst_ip dst_user misc |
@@ -274,7 +278,6 @@
                                                     <param name="height">250px</param>
                                                   <module name="SimpleDrilldown">
                                                     <param name="links">
-                                                      <!--param name="*">flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_wildfire` severity="$click.value$"</param-->
                                                       <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` action="$click.value$"
                                                       </param>
                                                     </param>
@@ -336,7 +339,7 @@
                                                 </module>
                                             </module>
                                           <module name="StaticContentSample" layoutPanel="panel_row3_col1">
-                                            <param name="text">This table shows hosts that may be compromised as they show network behavior consistent with an analyzed malware sample. This data is based on a correlation of traffic logs and malware network behavior from WildFire Cloud analysis reports.  (Note: This correlation requires a <![CDATA[<a href="http://localhost:8000/en-US/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">WildFire API Key</a>]]>)
+                                            <param name="text">This table shows hosts that may be compromised because they show network behavior consistent with an analyzed malware sample. This data is based on a correlation of traffic logs and malware network behavior from WildFire Cloud analysis reports.  (Note: To download WildFire reports, this correlation requires a <![CDATA[<a href="http://localhost:8000/en-US/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">WildFire API Key</a>]]>)
                                             </param>
                                           </module>
                                         </module>
