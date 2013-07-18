@@ -39,7 +39,7 @@ This app ONLY works on Splunk 5.x
 
 ## Dependencies ##
 
-The app requires the following Splunk Apps available from Splunk Base [http://splunk-base.splunk.com/apps/] (http://splunk-base.splunk.com/apps/) :
+The app requires the following Splunk Apps available from Splunk Base http://splunk-base.splunk.com/apps/ :
 
 - [Splunk for use with AMMAP Flash maps] (http://splunk-base.splunk.com/apps/22372/splunk-for-use-with-ammap-flash-maps)
 - [Google Maps] (http://splunk-base.splunk.com/apps/22365/google-maps)
@@ -76,8 +76,7 @@ Manager -> Data Inputs -> UDP -> New -> UDP port:
     Source type: Set Sourcetype From list:
     Select Sourcetype: pan_log -> More -> Index: pan_logs  
 
-For details: [http://www.splunk.com/base/Documentation/latest/admin/MonitorNetworkPorts](http://www.splunk.com/base/Documentation/latest/admin/MonitorNetworkPorts
-)
+For details: http://www.splunk.com/base/Documentation/latest/admin/MonitorNetworkPorts
 
 ### Input configuration via inputs.conf ###
 
@@ -121,5 +120,4 @@ Keep in mind that searches that have longer time ranges may take a little longer
     - Graphs of WildFire statistical data
     - Detect compromised hosts using malware behavior to traffic log correlation
 
-Note: Malware analysis report retrieval requires a WildFire API Key from [https://wildfire.paloaltonetworks.com](https://wildfire.paloaltonetworks.com).
-
+Note: Malware analysis report retrieval requires a WildFire API Key from https://wildfire.paloaltonetworks.com
