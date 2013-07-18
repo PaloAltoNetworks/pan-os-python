@@ -148,9 +148,9 @@
                                         </param>
                                     </param>
                                         <module name="HiddenSearch" layoutPanel="panel_row2_col1">
-                                            <param name="search">| tstats count(action) AS cact FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time action span=5m | timechart values(cact) by action</param>
+                                            <param name="search">| tstats count(category) AS ccat FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time category span=5m | timechart values(ccat) by category</param>
                                             <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">All WildFire Events by Action</param>
+                                                <param name="chartTitle">All WildFire Events by Category</param>
                                                 <param name="chart">column</param>
                                                 <param name="chart.stackMode">stacked</param>
                                                 <param name="legend.placement">bottom</param>
@@ -158,7 +158,7 @@
                                                     <param name="width">100%</param>
                                                     <module name="SimpleDrilldown">
                                                         <param name="links">
-                                                            <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_wildfire`"</param>
+                                                            <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_wildfire` category="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]</param>
                                                         </param>
                                                     </module>
                                                 </module>
@@ -266,8 +266,10 @@
                                         </module>
                                         <module name="HiddenSearch" layoutPanel="panel_row5_col2">
                                           <param name="search">|`tstats` count(action) AS cact FROM pan_wildfire WHERE * category="malicious" (action=wildfire-upload-success OR action=wildfire-upload-skip) $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby action |
-                                            replace wildfire-upload-success with "New Sample" in action |
-                                            replace wildfire-upload-skip with "Known" in action
+                                            replace wildfire-upload-success with "New Malware" in action |
+                                            replace alert with "Known Malware" in action |
+                                            replace wildfire-upload-skip with "Known Malware" in action |
+                                            stats sum(cact) by action
                                             </param>
                                             <module name="HiddenChartFormatter">
                                                 <param name="chartTitle">Previously Analyzed Malware</param>
