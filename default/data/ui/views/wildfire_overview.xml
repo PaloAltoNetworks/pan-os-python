@@ -303,30 +303,40 @@
                                         </module>
                                         <module name="HiddenSearch" layoutPanel="panel_row3_col1" group="Possible Malware Traffic">
                                           <param name="search"> |`tstats` count(dst_ip) AS cdip FROM pan_wildfire_report_malware_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol |
-                                            join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby _time src_ip dst_ip dst_port protocol src_user | table _time src_ip src_user dst_port dst_ip protocol | rename _time AS traffic_time ] |
+                                            join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby _time src_ip dst_ip dst_port protocol app src_user | dedup 1 src_ip dst_ip dst_port protocol app src_user | table _time src_ip src_user dst_port dst_ip protocol app | rename _time AS traffic_time ] |
                                             rename src_user AS "User" | rename src_ip AS "Compromised IP" |
-                                            join type=left report_id [|`tstats` count(report_id) AS crid FROM pan_wildfire WHERE * groupby report_id misc | table report_id misc ] |
-                                            table traffic_time "Compromised IP" "User" misc dst_ip dst_port protocol |
+                                            eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View Wildfire Report" |
+                                            table traffic_time "Compromised IP" "User" dst_ip dst_port protocol app report_id "Traffic Link" "WildFire Link" |
                                             rename traffic_time AS _time |
-                                            rename misc AS "Malware File" |
-                                            rename dst_ip AS "Traffic Dst_IP" |
-                                            rename dst_port AS "Traffic Dst_Port" |
-                                            rename protocol AS "Protocol"</param>
+                                            rename dst_ip AS "Dst_IP" |
+                                            rename dst_port AS "Dst_Port" |
+                                            rename protocol AS "Protocol" |
+                                            rename app AS "Application" |
+                                            rename report_id AS "WildFire Report ID"</param>
                                             <module name="Paginator">
                                                 <param name="count">10</param>
                                                 <param name="entityName">results</param>
                                                 <module name="SimpleResultsTable">
                                                   <param name="allowTransformedFieldSelect">True</param>
                                                   <param name="drilldown">all</param>
+                                                  <param name="displayMenu">true</param>
                                                   <module name="SimpleDrilldown">
                                                     <param name="links">
-                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` src_user="$row.User$" src_ip="$row.Compromised IP$" dst_ip="$row.Traffic Dst_IP$" dst_port="$row.Traffic Dst_Port$" protocol="$row.Protocol$"</param>
+                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` src_ip="$row.Compromised IP$" dst_ip="$row.Dst_IP$" dst_port="$row.Dst_Port$" protocol="$row.Protocol$"</param>
+                                                      <param name="Compromised IP">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Compromised IP$</param>
+                                                      <param name="User">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.User$</param>
+                                                      <param name="Dst_IP">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Dst_IP$</param>
+                                                      <param name="Dst_Port">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Dst_Port$</param>
+                                                      <param name="Protocol">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Protocol$</param>
+                                                      <param name="Application">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Application$</param>
+                                                      <param name="WildFire Report ID">./flashtimeline?earliest=0&amp;q=`pan_index` $row.WildFire Report ID$</param>
+                                                      <param name="WildFire Link">./flashtimeline?earliest=0&amp;q=`pan_index` (sourcetype="pan_wildfire_report" wildfire.report.id="$row.WildFire Report ID$") OR (sourcetype="pan_threat" log_subtype="wildfire" threat_id="$row.WildFire Report ID$($row.WildFire Report ID$)")</param>
                                                     </param>
                                                   </module>
                                                 </module>
                                             </module>
                                           <module name="StaticContentSample" layoutPanel="panel_row3_col1">
-                                            <param name="text">These hosts attempted a connection to servers known to be accessed by malware programs detected by the firewall. These hosts may be compromised as they show network behavior consistent with an analyzed malware sample. This data is based on a correlation of traffic logs and malware network behavior from WildFire Cloud analysis reports.  (Note: This correlation requires a <![CDATA[<a href="http://localhost:8000/en-US/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">WildFire API Key</a>]]>)
+                                            <param name="text">This table shows hosts that may be compromised as they show network behavior consistent with an analyzed malware sample. This data is based on a correlation of traffic logs and malware network behavior from WildFire Cloud analysis reports.  (Note: This correlation requires a <![CDATA[<a href="http://localhost:8000/en-US/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">WildFire API Key</a>]]>)
                                             </param>
                                           </module>
                                         </module>
