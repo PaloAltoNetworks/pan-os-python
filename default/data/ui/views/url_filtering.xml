@@ -1,5 +1,5 @@
 <view template="dashboard.html" stylesheet="threat_overview.css">
-  <label>URL Filtering</label>
+  <label>URL Filtering Dashboard</label>
   <module name="AccountBar" layoutPanel="appHeader" />
   <module name="AppBar" layoutPanel="navigationHeader" />
   <module name="Message" layoutPanel="messaging">

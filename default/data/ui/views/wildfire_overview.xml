@@ -1,0 +1,363 @@
+<view template="dashboard.html" stylesheet="wildfire_overview.css">
+    <label>WildFire Dashboard</label>
+    <module name="AccountBar" layoutPanel="appHeader"/>
+    <module name="AppBar" layoutPanel="navigationHeader"/>
+    <module name="Message" layoutPanel="messaging">
+        <param name="filter">*</param>
+        <param name="clearOnJobDispatch">False</param>
+        <param name="maxSize">1</param>
+    </module>
+    <module name="TitleBar" layoutPanel="viewHeader">
+        <param name="actionsMenuFilter">dashboard</param>
+    </module>
+    <module name="GenericHeader" layoutPanel="panel_row1_col1">
+        <param name="label">WildFire Dashboard</param>
+    </module>
+    <module name="StaticContentSample" layoutPanel="panel_row1_col1">
+        <param name="text">This dashboard provides visibility into WildFire activity in your Palo Alto Networks
+            environment. WildFire data is collected from the firewall logs and the WildFire Cloud.  Data can be filtered by type using the form fields.  Note:  This dashboard shows statistics for malicious WildFire events only.
+        </param>
+    </module>
+
+        <module name="TimeRangePicker" layoutPanel="panel_row1_col1" autoRun="True">
+            <param name="selected">Last 60 minutes</param>
+            <param name="searchWhenChanged">True</param>
+            <module name="ViewRedirectorLink">
+                <param name="viewTarget">flashtimeline</param>
+                <param name="label">View Full Report</param>
+            </module>
+            <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
+                <param name="label">Source IP:</param>
+                <param name="field">src_ip</param>
+                <param name="replacementMap">
+                    <param name="arg">
+                        <param name="src_ip">
+                            <param name="value"></param>
+                        </param>
+                    </param>
+                </param>
+                <param name="intention">
+                    <param name="name">stringreplace</param>
+                    <param name="arg">
+                        <param name="src_ip">
+                            <param name="prefix">src_ip="</param>
+                            <param name="suffix">"</param>
+                            <param name="fillOnEmpty">False</param>
+                        </param>
+                    </param>
+                </param>
+                <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
+                    <param name="label">Destination IP:</param>
+                    <param name="field">dst_ip</param>
+                    <param name="replacementMap">
+                        <param name="arg">
+                            <param name="dst_ip">
+                                <param name="value"></param>
+                            </param>
+                        </param>
+                    </param>
+                    <param name="intention">
+                        <param name="name">stringreplace</param>
+                        <param name="arg">
+                            <param name="dst_ip">
+                                <param name="prefix">dst_ip="</param>
+                                <param name="suffix">"</param>
+                                <param name="fillOnEmpty">false</param>
+                            </param>
+                        </param>
+                    </param>
+                    <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
+                        <param name="label">User:</param>
+                        <param name="field">dst_user</param>
+                        <param name="replacementMap">
+                            <param name="arg">
+                                <param name="dst_user">
+                                    <param name="value"></param>
+                                </param>
+                                <param name="src_user">
+                                    <param name="value"></param>
+                                </param>
+                            </param>
+                        </param>
+                        <param name="intention">
+                            <param name="name">stringreplace</param>
+                            <param name="arg">
+                                <param name="dst_user">
+                                    <param name="prefix">dst_user="</param>
+                                    <param name="suffix">"</param>
+                                    <param name="fillOnEmpty">false</param>
+                                </param>
+                                <param name="src_user">
+                                    <param name="prefix">src_user="</param>
+                                    <param name="suffix">"</param>
+                                    <param name="fillOnEmpty">false</param>
+                                </param>
+                            </param>
+                        </param>
+                        <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
+                            <param name="label">App:</param>
+                            <param name="field">app</param>
+                            <param name="replacementMap">
+                                <param name="arg">
+                                    <param name="app">
+                                        <param name="value"></param>
+                                    </param>
+                                </param>
+                            </param>
+                            <param name="intention">
+                                <param name="name">stringreplace</param>
+                                <param name="arg">
+                                    <param name="app">
+                                        <param name="prefix">app="</param>
+                                        <param name="suffix">"</param>
+                                        <param name="fillOnEmpty">false</param>
+                                    </param>
+                                </param>
+                            </param>
+                            <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
+                                <param name="label">Filename:</param>
+                                <param name="field">misc</param>
+                                <param name="replacementMap">
+                                    <param name="arg">
+                                        <param name="misc">
+                                            <param name="value"></param>
+                                        </param>
+                                    </param>
+                                </param>
+                                <param name="intention">
+                                    <param name="name">stringreplace</param>
+                                    <param name="arg">
+                                        <param name="misc">
+                                            <param name="default"></param>
+                                            <param name="prefix">misc="</param>
+                                            <param name="suffix">"</param>
+                                            <param name="fillOnEmpty">false</param>
+                                        </param>
+                                    </param>
+                                </param>
+                                <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
+                                    <param name="label">Virtual System:</param>
+                                    <param name="field">vsys</param>
+                                    <param name="replacementMap">
+                                        <param name="arg">
+                                            <param name="vsys">
+                                                <param name="value"></param>
+                                            </param>
+                                        </param>
+                                    </param>
+                                    <param name="intention">
+                                        <param name="name">stringreplace</param>
+                                        <param name="arg">
+                                            <param name="vsys">
+                                                <param name="prefix">vsys="</param>
+                                                <param name="suffix">"</param>
+                                                <param name="fillOnEmpty">false</param>
+                                            </param>
+                                        </param>
+                                    </param>
+                                        <module name="HiddenSearch" layoutPanel="panel_row2_col1">
+                                            <param name="search">| tstats count(category) AS ccat FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time category span=5m | timechart values(ccat) by category</param>
+                                            <module name="HiddenChartFormatter">
+                                                <param name="chartTitle">All WildFire Events by Category</param>
+                                                <param name="chart">column</param>
+                                                <param name="chart.stackMode">stacked</param>
+                                                <param name="legend.placement">bottom</param>
+                                                <module name="JSChart">
+                                                    <param name="width">100%</param>
+                                                    <module name="SimpleDrilldown">
+                                                        <param name="links">
+                                                            <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_wildfire` category="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]</param>
+                                                        </param>
+                                                    </module>
+                                                </module>
+                                            </module>
+                                          <module name="StaticContentSample" layoutPanel="panel_row2_col1">
+                                            <param name="text">This chart shows all WildFire events including benign events.  Other charts on this dashboard only show malicious WildFire events.
+                                            </param>
+                                          </module>
+                                        </module>
+                                        <module name="HiddenSearch" layoutPanel="panel_row2_col2" group="Recent Malware Download Attempts">
+                                          <param name="search">|`tstats` count(dst_user) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time dst_ip misc dst_user | table _time dst_ip dst_user misc |
+                                            rename dst_user AS "Destination User" |
+                                            rename dst_ip AS "Destination IP" |
+                                            rename action AS Action |
+                                            rename misc AS Filename</param>
+                                            <module name="Paginator">
+                                                <param name="count">7</param>
+                                                <param name="entityName">results</param>
+                                                <module name="SimpleResultsTable">
+                                                  <param name="allowTransformedFieldSelect">True</param>
+                                                  <param name="drilldown">all</param>
+                                                  <module name="SimpleDrilldown">
+                                                    <param name="links">
+                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` dst_user="$row.Destination User$" dst_ip="$row.Destination IP$" misc="$row.Filename$"</param>
+                                                    </param>
+                                                  </module>
+                                                </module>
+                                            </module>
+                                        </module>
+                                        <module name="HiddenSearch" layoutPanel="panel_row4_col1">
+                                            <param name="search">| tstats count(misc) AS cti FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby misc</param>
+                                            <module name="HiddenChartFormatter">
+                                                <param name="chartTitle">Top Malware</param>
+                                                <param name="chart">pie</param>
+                                                <param name="legend.placement">bottom</param>
+                                                <module name="JSChart">
+                                                    <param name="width">100%</param>
+                                                    <param name="height">250px</param>
+                                                    <module name="SimpleDrilldown">
+                                                        <param name="links">
+                                                            <param name="*">
+                                                                wildfire_overview?earliest=$earliest$&amp;latest=$latest$&amp;form.misc=$click.value$
+                                                            </param>
+                                                        </param>
+                                                    </module>
+                                                </module>
+                                            </module>
+                                        </module>
+                                        <module name="HiddenSearch" layoutPanel="panel_row4_col2">
+                                            <param name="search">| tstats count(app) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby app</param>
+                                            <module name="HiddenChartFormatter">
+                                                <param name="chartTitle">Malware Downloads by App</param>
+                                                <param name="chart">pie</param>
+                                                <param name="legend.placement">bottom</param>
+                                                <module name="JSChart">
+                                                    <param name="width">100%</param>
+                                                    <param name="height">250px</param>
+                                                    <module name="SimpleDrilldown">
+                                                        <param name="links">
+                                                            <param name="*">
+                                                                wildfire_overview?earliest=$earliest$&amp;latest=$latest$&amp;form.application=$click.value$
+                                                            </param>
+                                                        </param>
+                                                    </module>
+                                                </module>
+                                            </module>
+                                        </module>
+                                        <module name="HiddenSearch" layoutPanel="panel_row4_col3">
+                                            <param name="search">| tstats count(dst_user) AS cti FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ $dst_user$ groupby dst_user </param>
+                                            <module name="HiddenChartFormatter">
+                                                <param name="chartTitle">Malware Downloaders by User</param>
+                                                <param name="chart">pie</param>
+                                                <param name="legend.placement">bottom</param>
+                                                <module name="JSChart">
+                                                    <param name="width">100%</param>
+                                                    <param name="height">250px</param>
+                                                    <module name="SimpleDrilldown">
+                                                        <param name="links">
+                                                            <param name="*">
+                                                                wildfire_overview?earliest=$earliest$&amp;latest=$latest$&amp;form.dst_user=$click.value$
+                                                            </param>
+                                                        </param>
+                                                    </module>
+                                                </module>
+                                            </module>
+                                        </module>
+                                        <module name="HiddenSearch" layoutPanel="panel_row5_col1">
+                                            <param name="search">| tstats count(src_ip) AS csrc FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby src_ip</param>
+                                            <module name="HiddenChartFormatter">
+                                                <param name="chartTitle">Top Malware Sources</param>
+                                                <param name="chart">pie</param>
+                                                <param name="legend.placement">bottom</param>
+                                                <module name="JSChart">
+                                                    <param name="width">100%</param>
+                                                    <param name="height">250px</param>
+                                                    <module name="SimpleDrilldown">
+                                                        <param name="links">
+                                                            <param name="*">
+                                                                wildfire_overview?earliest=$earliest$&amp;latest=$latest$&amp;form.src_ip=$click.value$
+                                                            </param>
+                                                        </param>
+                                                    </module>
+                                                </module>
+                                            </module>
+                                        </module>
+                                        <module name="HiddenSearch" layoutPanel="panel_row5_col2">
+                                          <param name="search">|`tstats` count(action) AS cact FROM pan_wildfire WHERE * category="malicious" (action=wildfire-upload-success OR action=wildfire-upload-skip) $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby action |
+                                            replace wildfire-upload-success with "New Malware" in action |
+                                            replace alert with "Known Malware" in action |
+                                            replace wildfire-upload-skip with "Known Malware" in action |
+                                            stats sum(cact) by action
+                                            </param>
+                                            <module name="HiddenChartFormatter">
+                                                <param name="chartTitle">Previously Analyzed Malware</param>
+                                                <param name="chart">pie</param>
+                                                <param name="legend.placement">bottom</param>
+                                                <module name="JSChart">
+                                                    <param name="width">100%</param>
+                                                    <param name="height">250px</param>
+                                                  <module name="SimpleDrilldown">
+                                                    <param name="links">
+                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` action="$click.value$"
+                                                      </param>
+                                                    </param>
+                                                  </module>
+                                                </module>
+                                            </module>
+                                        </module>
+                                        <module name="HiddenSearch" layoutPanel="panel_row5_col3">
+                                            <param name="search">| tstats count(dst_ip) AS cti FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby dst_ip</param>
+                                            <module name="HiddenChartFormatter">
+                                                <param name="chartTitle">Top Malware Downloaders by IP</param>
+                                                <param name="chart">pie</param>
+                                                <param name="legend.placement">bottom</param>
+                                                <module name="JSChart">
+                                                    <param name="width">100%</param>
+                                                    <param name="height">250px</param>
+                                                    <module name="SimpleDrilldown">
+                                                        <param name="links">
+                                                            <param name="*">
+                                                                wildfire_overview?earliest=$earliest$&amp;latest=$latest$&amp;form.dst_ip=$click.value$
+                                                            </param>
+                                                        </param>
+                                                    </module>
+                                                </module>
+                                            </module>
+                                        </module>
+                                        <module name="HiddenSearch" layoutPanel="panel_row3_col1" group="Possible Malware Traffic">
+                                          <param name="search"> |`tstats` count(dst_ip) AS cdip FROM pan_wildfire_report_malware_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol |
+                                            join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE * (NOT (protocol=udp AND dst_port=53)) $src_ip$ $dst_ip$ $src_user$ $vsys$ $app$ groupby _time src_ip dst_ip dst_port protocol app src_user | dedup 1 src_ip dst_ip dst_port protocol app src_user | table _time src_ip src_user dst_port dst_ip protocol app | rename _time AS traffic_time ] |
+                                            rename src_user AS "User" | rename src_ip AS "Source IP" |
+                                            eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View Wildfire Report" |
+                                            table traffic_time "Source IP" "User" dst_ip dst_port protocol app report_id "Traffic Link" "WildFire Link" |
+                                            rename traffic_time AS _time |
+                                            rename dst_ip AS "Dst_IP" |
+                                            rename dst_port AS "Dst_Port" |
+                                            rename protocol AS "Protocol" |
+                                            rename app AS "Application" |
+                                            rename report_id AS "WildFire Report ID"</param>
+                                            <module name="Paginator">
+                                                <param name="count">10</param>
+                                                <param name="entityName">results</param>
+                                                <module name="SimpleResultsTable">
+                                                  <param name="allowTransformedFieldSelect">True</param>
+                                                  <param name="drilldown">all</param>
+                                                  <param name="displayMenu">true</param>
+                                                  <module name="SimpleDrilldown">
+                                                    <param name="links">
+                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` src_ip="$row.Source IP$" dst_ip="$row.Dst_IP$" dst_port="$row.Dst_Port$" protocol="$row.Protocol$"</param>
+                                                      <param name="Source IP">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Source IP$</param>
+                                                      <param name="User">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.User$</param>
+                                                      <param name="Dst_IP">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Dst_IP$</param>
+                                                      <param name="Dst_Port">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Dst_Port$</param>
+                                                      <param name="Protocol">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Protocol$</param>
+                                                      <param name="Application">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Application$</param>
+                                                      <param name="WildFire Report ID">./flashtimeline?earliest=0&amp;q=`pan_index` $row.WildFire Report ID$</param>
+                                                      <param name="WildFire Link">./flashtimeline?earliest=0&amp;q=`pan_index` (sourcetype="pan_wildfire_report" wildfire.report.id="$row.WildFire Report ID$") OR (sourcetype="pan_threat" log_subtype="wildfire" threat_id="$row.WildFire Report ID$($row.WildFire Report ID$)")</param>
+                                                    </param>
+                                                  </module>
+                                                </module>
+                                            </module>
+                                          <module name="StaticContentSample" layoutPanel="panel_row3_col1">
+                                            <param name="text">This table shows hosts that may be compromised because they show network behavior consistent with an analyzed malware sample. This data is based on a correlation of traffic logs and malware network behavior from WildFire Cloud analysis reports.  (Note: To download WildFire reports, this correlation requires a <![CDATA[<a href="http://localhost:8000/en-US/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">WildFire API Key</a>]]>)
+                                            </param>
+                                          </module>
+                                        </module>
+                                </module>
+                            </module>
+                        </module>
+                    </module>
+                </module>
+            </module>
+        </module>
+</view>
