@@ -30,8 +30,10 @@ Many Thanks to Contributors, Advisors, Testers:
 #### Support ####
 
 For fastest response to support, setup, help or feedback, please post to
-answers.splunk.com and tag your questions with `paloalto`.
+http://answers.splunk.com and tag your questions with `paloalto`.
 
+For bugs or feature requests, you can also open an issue on github at 
+https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks/issues
 
 ## IMPORTANT ##
 
@@ -39,47 +41,46 @@ This app ONLY works on Splunk 5.x
 
 ## Dependencies ##
 
-The app requires the following Splunk Apps available from Splunk Base [http://splunk-base.splunk.com/apps/] (http://splunk-base.splunk.com/apps/) :
+This app depends on the following Splunk Apps available from Splunk Base http://splunk-base.splunk.com/apps/ :
 
 - [Splunk for use with AMMAP Flash maps] (http://splunk-base.splunk.com/apps/22372/splunk-for-use-with-ammap-flash-maps)
 - [Google Maps] (http://splunk-base.splunk.com/apps/22365/google-maps)
 - [Geo Location Lookup Script] (http://splunk-base.splunk.com/apps/22282/geo-location-lookup-script-powered-by-maxmind)
 
-You do not need to install these apps if you do not wish to use the Apps mapping and geo location features. The main dashboard will not render properly without the above apps.
+You do not need to install these apps if you do not wish to use the mapping and geo location features. The main dashboard will not render properly without the above apps.
 
 ## Installing ##
 
-Ensure that the apps listed in the Dependencies section are installed.
-
-To install this app:
-
+- Ensure that the apps listed in the Dependencies section are installed.
 - Unpack the tar ball into `$SPLUNK_HOME/etc/apps`
 - Restart Splunk
 
-Note: After restart, it can take up to 5 minutes for new data to show up. 
+Note: After restart, it can take up to 5 minutes for new data to show up in the dashboards.
 
 ## Configuring ##
 
 ### Setup Screen and Custom Commands ###
 
-The first time you run the app from the web ui, you will be presented with a setup screen. The credentials are only needed if you wish to use the panblock and panupdate custom commands. These passwords will be stored in Splunk. The same way as other splunk credentials are stored. If you do not wish to use the custom commands, you can leave this page blank or enter garbage values.
+The first time you run the app from the web ui, you will be presented with a setup screen. The credentials are only needed if you wish to use the `panblock` and `panupdate` custom commands. The WildFire API is only needed if you are a WildFire subscriber and want Splunk to index WildFire analysis reports from the cloud when a malware sample is analyzed.  These credentials will be stored in Splunk using encryption the same way other Splunk credentials are stored.
+
+If you do not wish to use these extra features, you can enter garbage values.
 
 ### To get the firewall data into Splunk ###
 
-IMPORTANT: When you configure the input port, you must set the sourcetype of the firewall data to pan_log and the index to pan_logs.
+IMPORTANT: When you configure the input port, you must set the sourcetype of the firewall data to pan_log and the index to pan_logs.  This can be done from the Web UI or the CLI.  Then, configure the firewall to set traffic to Splunk.
 
-From the web ui:
+#### From the Splunk Web UI ####
 
-Manager -> Data Inputs -> UDP -> New -> UDP port:
+- Navigate to Manager -> Data Inputs -> UDP -> New
+- Set the UDP port (Palo Alto Networks firewalls default to port 514)
+- Set sourcetype: From list
+- Select source type From list: pan_log
+- Click on More settings
+- Index: pan_logs
 
-    Palo Alto Networks firewalls default to UDP.
-    Source type: Set Sourcetype From list:
-    Select Sourcetype: pan_log -> More -> Index: pan_logs  
+For details: http://www.splunk.com/base/Documentation/latest/admin/MonitorNetworkPorts
 
-For details: [http://www.splunk.com/base/Documentation/latest/admin/MonitorNetworkPorts](http://www.splunk.com/base/Documentation/latest/admin/MonitorNetworkPorts
-)
-
-### Input configuration via inputs.conf ###
+#### From the CLI via inputs.conf ####
 
 - Edit `$SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/inputs.conf` 
 
@@ -91,13 +92,30 @@ Example:  (Palo Alto Networks firewalls default to udp port 514)
     sourcetype = pan_log
     no_appending_timestamp = true
 
-- Next, configure the firewall device to direct log traffic to the Splunk server on the network port that you specified.
+#### Configure the Firewall ####
 
-- Refer to the Palo Alto documentation for details on PAN log forwarding. The Palo Alto devices have a variety of different logs. This app works with the default log configuration. If you use any customized log types that are not defined in the Palo Alto syslog configuration documentation (PANOS-Syslog-Integration-TN-RevM), some of the apps features may not work. 
+Next, on the Palo Alto Networks firewall or Panorama management center, create a Log Forwarding object to send desired syslogs to the Splunk Server. Refer to the Palo Alto Networks documentation for details on log forwarding.  https://live.paloaltonetworks.com/community/documentation
+
+Note: Palo Alto Networks devices have a variety of different logs including traffic, threat, url filtering, malware, etc. This app works with the all the default log types. Customized log types may not work, if they are not defined in the Palo Alto Networks syslog configuration documentation (PANOS-Syslog-Integration-TN-RevM).
+
+## Hints and Tips ##
 
 ### Source types ###
 
 As Splunk indexes your Palo Alto Networks firewall data, the app will rename the sourcetypes to pan_threat, pan_traffic, pan_config, and pan_system depending on the logging facility. 
+
+Log can be further filtered by type during search by using predefined macros.  The following macros are available in the search bar to filter on logs of a specific type.
+
+- pan_traffic
+- pan_threat
+- pan_url
+- pan_data
+- pan_wildfire
+- pan_wildfire_report
+- pan_config
+- pan_system
+
+Use these macros in the search bar by surrounding them with back-ticks.
 
 ### High Performance Value Store (HPVS) ###
 
@@ -105,21 +123,27 @@ The app uses the HPVS feature introduced in Splunk 5.0. This feature provides a 
 
 ### Lookups ###
 
-Lookups are provided for the threat_id and app field to provide additional information about threats and applications on the network. 
+Lookups are provided for the threat_id and app field to provide additional information about threats and applications on the network.
 
 ### Using the form fields on the dashboards ###
 
-All the dashboards work without any filtering values for the form fields. If you want to filter based on a field you should use asterisks before and after the search terms unless you are absolutely sure of the filter value. e.g. In the Content Filtering View, if you want to filter results by the virtual system called 'vsys1', a good practice would be to enter "vsys1" in the Virtual System field.
+All the dashboards work without any filtering values for the form fields. If you want to filter based on a field you should use asterisks before and after the search terms unless you are absolutely sure of the filter value.
 
 Keep in mind that searches that have longer time ranges may take a little longer to return the results. 
 
 ## What's new in this version ##
 
-- Malware analysis reports from the WildFire Cloud are dynamically downloaded and indexed when a WildFire log is recieved from a firewall.
+- Malware analysis reports from the WildFire Cloud are dynamically downloaded and indexed when a WildFire log is received from a firewall.
 - WildFire dashboard
     - Recent WildFire events
     - Graphs of WildFire statistical data
     - Detect compromised hosts using malware behavior to traffic log correlation
 
-Note: Malware analysis report retrieval requires a WildFire API Key from [https://wildfire.paloaltonetworks.com](https://wildfire.paloaltonetworks.com).
+Note: Malware analysis report retrieval requires a WildFire API Key from https://wildfire.paloaltonetworks.com
 
+## Installing from Git ##
+
+This app is available on [Splunkbase](http://splunk-base.splunk.com/apps/22327/splunk-for-palo-alto-networks) and [Github](https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks).  Optionally, you can clone the github repository to install the app.
+From the directory `$SPLUNK_HOME/etc/apps/`, type the following command:
+
+    git clone https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks.git
