@@ -32,7 +32,7 @@
           </script> ]]></text>
   </block>
   <block title="">
-    <text> Note: To change the Credentials or WildFire API Key later, first remove the entry from SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/app.conf.
+    <text> Note: To change the Credentials or WildFire API Key later, first remove the entry from SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/app.conf and restart Splunk.
     </text>
   </block>
 </setup>
