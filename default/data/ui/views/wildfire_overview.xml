@@ -74,6 +74,9 @@
                                 <param name="dst_user">
                                     <param name="value"></param>
                                 </param>
+                                <param name="src_user">
+                                    <param name="value"></param>
+                                </param>
                             </param>
                         </param>
                         <param name="intention">
@@ -81,6 +84,11 @@
                             <param name="arg">
                                 <param name="dst_user">
                                     <param name="prefix">dst_user="</param>
+                                    <param name="suffix">"</param>
+                                    <param name="fillOnEmpty">false</param>
+                                </param>
+                                <param name="src_user">
+                                    <param name="prefix">src_user="</param>
                                     <param name="suffix">"</param>
                                     <param name="fillOnEmpty">false</param>
                                 </param>
@@ -164,7 +172,7 @@
                                                 </module>
                                             </module>
                                           <module name="StaticContentSample" layoutPanel="panel_row2_col1">
-                                            <param name="text">This chart shows all WildFire events.  Other charts on this dashboard only show malicious WildFire events.
+                                            <param name="text">This chart shows all WildFire events including benign events.  Other charts on this dashboard only show malicious WildFire events.
                                             </param>
                                           </module>
                                         </module>
@@ -308,10 +316,10 @@
                                         </module>
                                         <module name="HiddenSearch" layoutPanel="panel_row3_col1" group="Possible Malware Traffic">
                                           <param name="search"> |`tstats` count(dst_ip) AS cdip FROM pan_wildfire_report_malware_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol |
-                                            join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby _time src_ip dst_ip dst_port protocol app src_user | dedup 1 src_ip dst_ip dst_port protocol app src_user | table _time src_ip src_user dst_port dst_ip protocol app | rename _time AS traffic_time ] |
-                                            rename src_user AS "User" | rename src_ip AS "Compromised IP" |
+                                            join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE * (NOT (protocol=udp AND dst_port=53)) $src_ip$ $dst_ip$ $src_user$ $vsys$ $app$ groupby _time src_ip dst_ip dst_port protocol app src_user | dedup 1 src_ip dst_ip dst_port protocol app src_user | table _time src_ip src_user dst_port dst_ip protocol app | rename _time AS traffic_time ] |
+                                            rename src_user AS "User" | rename src_ip AS "Source IP" |
                                             eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View Wildfire Report" |
-                                            table traffic_time "Compromised IP" "User" dst_ip dst_port protocol app report_id "Traffic Link" "WildFire Link" |
+                                            table traffic_time "Source IP" "User" dst_ip dst_port protocol app report_id "Traffic Link" "WildFire Link" |
                                             rename traffic_time AS _time |
                                             rename dst_ip AS "Dst_IP" |
                                             rename dst_port AS "Dst_Port" |
@@ -327,8 +335,8 @@
                                                   <param name="displayMenu">true</param>
                                                   <module name="SimpleDrilldown">
                                                     <param name="links">
-                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` src_ip="$row.Compromised IP$" dst_ip="$row.Dst_IP$" dst_port="$row.Dst_Port$" protocol="$row.Protocol$"</param>
-                                                      <param name="Compromised IP">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Compromised IP$</param>
+                                                      <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` src_ip="$row.Source IP$" dst_ip="$row.Dst_IP$" dst_port="$row.Dst_Port$" protocol="$row.Protocol$"</param>
+                                                      <param name="Source IP">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Source IP$</param>
                                                       <param name="User">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.User$</param>
                                                       <param name="Dst_IP">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Dst_IP$</param>
                                                       <param name="Dst_Port">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $row.Dst_Port$</param>
