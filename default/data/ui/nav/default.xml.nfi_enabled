@@ -9,11 +9,11 @@
       <a href="flashtimeline?q=search%20%60pan_system%60">System Logs</a>
     </collection>
     <divider />
-    <a href="/manager/SplunkforPaloAltoNetworks">Configuration</a>
+    <a href="/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">Configuration</a>
     <divider />
     <a href="mailto:bd-labs@splunk.com">Send Feedback</a>
   </collection>
-
+  
   <collection label="Traffic">
     <view name="traffic_overview" />
     <divider />
@@ -39,13 +39,26 @@
   
     <collection label="Content">
     <view name="content_overview" />
-    <view name="data_filtering" />
     <view name="url_filtering" />
+    <view name="data_filtering" />
     <divider />
     <collection label="Searches &amp; Reports">
-      <a href="flashtimeline?q=search%20%60pan_threat%60">Search Threat Data</a>
+      <a href="flashtimeline?q=search%20%60pan_web_activity%60">Search URL Data</a>
+      <a href="flashtimeline?q=search%20%60pan_data_filtering%60">Search Data Filtering Data</a>
       <divider />
       <saved source="all" match="PAN - Threat" view="flashtimeline" />
+    </collection>
+  </collection>
+
+  <collection label="WildFire">
+    <view name="wildfire_overview" />
+    <view name="wildfire_detail" />
+    <divider />
+    <collection label="Searches &amp; Reports">
+      <a href="flashtimeline?q=search%20%60pan_wildfire%60">Search WildFire Log Data</a>
+      <a href="flashtimeline?q=search%20%60pan_wildfire_report%60">Search WildFire Report Data</a>
+      <divider />
+      <saved source="all" match="PAN - WildFire" view="flashtimeline" />
     </collection>
   </collection>
   
@@ -64,13 +77,7 @@
       <saved source="all" match="PAN - Config" view="flashtimeline" />
     </collection>
   </collection>
-  <!-- Search -->
-  <view name="flashtimeline" />
-  <!--<collection label="Help">
-    <view name="readme"/>
-    <view name="faq" />
-  </collection>-->
-  
+
   <collection label="NetFlow">
     <view name="nfi_about"/>
     <divider />
@@ -84,13 +91,20 @@
     <view name="nfi_top_apps_users"/>
     <divider />
     <collection label="Searches">
-        <view name="nfi_search_consumers"/>
-        <view name="nfi_search_destinations"/>
-        <view name="nfi_search_violators"/>
-        <view name="nfi_search_connectors"/>
-        <view name="nfi_search_apps"/>
-        <view name="nfi_search_apps_users"/>
+      <view name="nfi_search_consumers"/>
+      <view name="nfi_search_destinations"/>
+      <view name="nfi_search_violators"/>
+      <view name="nfi_search_connectors"/>
+      <view name="nfi_search_apps"/>
+      <view name="nfi_search_apps_users"/>
     </collection>
     <a href="flashtimeline?q=search%20`nfi_pan_unified`">Timeline</a>
   </collection>
+  
+  <!-- Search -->
+  <view name="flashtimeline" />
+  <!--<collection label="Help">
+    <view name="readme"/>
+    <view name="faq" />
+  </collection>-->
 </nav>
