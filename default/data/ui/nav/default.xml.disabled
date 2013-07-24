@@ -1,0 +1,74 @@
+<nav>
+  <collection label="Splunk for Palo Alto Networks">
+    <view name="pan_overview_switcher_maps" default="true"/>
+    <collection label="Search Palo Alto Data">
+      <a href="flashtimeline">Search</a>
+      <a href="flashtimeline?q=search%20%60pan_threat%60">Threat Data</a>
+      <a href="flashtimeline?q=search%20%60pan_traffic%60">Traffic Logs</a>
+      <a href="flashtimeline?q=search%20%60pan_config%60">Config Messages</a>
+      <a href="flashtimeline?q=search%20%60pan_system%60">System Logs</a>
+    </collection>
+    <divider />
+    <a href="/manager/SplunkforPaloAltoNetworks">Configuration</a>
+    <divider />
+    <a href="mailto:bd-labs@splunk.com">Send Feedback</a>
+  </collection>
+
+  <collection label="Traffic">
+    <view name="traffic_overview" />
+    <divider />
+    <view name="web_usage_report" />
+    <divider />
+    <collection label="Searches &amp; Reports">
+      <a href="flashtimeline?q=search%20%60pan_traffic%60">Search Traffic Data</a>
+      <divider />
+      <saved source="all" match="PAN - Traffic" view="flashtimeline" />
+    </collection>
+  </collection>
+  
+  <collection label="Threat">
+    <view name="threat_overview" />
+    <view name="threat_detail" />
+    <divider />
+    <collection label="Searches &amp; Reports">
+      <a href="flashtimeline?q=search%20%60pan_threat%60">Search Threat Data</a>
+      <divider />
+      <saved source="all" match="PAN - Threat" view="flashtimeline" />
+    </collection>
+  </collection>
+  
+    <collection label="Content">
+    <view name="content_overview" />
+    <view name="data_filtering" />
+    <view name="url_filtering" />
+    <divider />
+    <collection label="Searches &amp; Reports">
+      <a href="flashtimeline?q=search%20%60pan_threat%60">Search Threat Data</a>
+      <divider />
+      <saved source="all" match="PAN - Threat" view="flashtimeline" />
+    </collection>
+  </collection>
+  
+  <collection label="Console">
+    <view name="system_overview" />
+    <view name="config_overview" />
+    <divider />
+    <collection label="System Message Reports">
+      <a href="flashtimeline?q=search%20%60pan_system%60">Search System Messages</a>
+      <divider />
+      <saved source="all" match="PAN - System" view="flashtimeline" />
+    </collection>
+    <collection label="Configuration Reports">
+      <a href="flashtimeline?q=search%20%60pan_config%60">Search Config Changes</a>
+      <divider />
+      <saved source="all" match="PAN - Config" view="flashtimeline" />
+    </collection>
+  </collection>
+  <!-- Search -->
+  <view name="flashtimeline" />
+  <!--<collection label="Help">
+    <view name="readme"/>
+    <view name="faq" />
+  </collection>-->
+  
+</nav>

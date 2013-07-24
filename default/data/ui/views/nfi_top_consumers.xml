@@ -1,0 +1,111 @@
+<view template="dashboard.html">
+  <label>Top Consumers</label>
+  <module name="AccountBar" layoutPanel="appHeader"/>
+  <module name="AppBar" layoutPanel="navigationHeader"/>
+  <module name="Message" layoutPanel="messaging">
+    <param name="filter">*</param>
+    <param name="clearOnJobDispatch">False</param>
+    <param name="maxSize">1</param>
+  </module>
+  <module name="TitleBar" layoutPanel="navigationHeader">
+    <param name="actionsMenuFilter">dashboard</param>
+  </module>
+
+  <module name="TimeRangePicker" layoutPanel="panel_row1_col1_grp1">
+    <param name="selected">Last 60 minutes</param>
+    <param name="searchWhenChanged">false</param>
+  
+    <module name="SearchSelectLister" layoutPanel="panel_row1_col1_grp2">
+      <param name="settingToCreate">exp_ip_setting</param>
+      <param name="search">
+        `nfi_pan_unified` | dedup exp_ip | sort exp_ip | table exp_ip
+      </param>
+      <param name="label">PAN IP</param>
+      <param name="searchWhenChanged">false</param>
+      <param name="selected">All</param>
+      <param name="staticFieldsToDisplay">
+        <list>
+          <param name="label">All</param>
+          <param name="value">*</param>
+        </list>
+      </param>
+      <param name="searchFieldsToDisplay">
+        <list>
+          <param name="label">exp_ip</param>
+          <param name="value">exp_ip</param>
+        </list>
+      </param>
+    
+      <module name="SubmitButton" layoutPanel="panel_row1_col1_grp3">
+        <param name="allowSoftSubmit">false</param>
+        <param name="label">Search</param>
+      
+        <module name="ConvertToIntention">
+          <param name="settingToConvert">exp_ip_setting</param>
+          <param name="intention">
+            <param name="name">stringreplace</param>
+            <param name="arg">
+              <param name="exp_ip">
+                <param name="value">$target$</param>
+              </param>
+            </param>
+            <param name="flags"><list>indexed</list></param>
+          </param>
+        
+          <module name="HiddenSearch" autoRun="false" layoutPanel="panel_row2_col1">
+            <param name="search">
+              `nfi_pan_20030` exp_ip="$exp_ip$" | eval bytes=`formatbytestom(bytes)` | strcat src_ip "/" user ip_user | timechart sum(bytes) by ip_user | fields - OTHER
+            </param>
+          
+            <module name="SimpleResultsHeader">
+              <param name="entityName">results</param>
+              <param name="headerFormat">Top Consumers (NFI Rule 10030/20093)</param>
+            </module>
+            
+            <module name="JobProgressIndicator"/>
+            <module name="HiddenChartFormatter">
+              <param name="chart">area</param>
+              <param name="chart.nullValueMode">zero</param>
+              <param name="primaryAxisTitle.text">Time</param>
+              <param name="secondaryAxisTitle.text">MB</param>
+              <param name="legend.placement">right</param>
+              <module name="JSChart">
+                <param name="width">100%</param>
+                <param name="height">200px</param>
+                <param name="enableResize">False</param>
+                <param name="drilldownPrefix">click</param>
+            
+              </module> <!-- end JSChart -->
+            </module> <!-- end HiddenChartFormatter -->
+          </module> <!-- end HiddenSearch -->
+          <module name="HiddenSearch" autoRun="false" layoutPanel="panel_row2_col1">
+            <param name="search">
+              `nfi_pan_20030` exp_ip="$exp_ip$" 
+            | strcat src_ip "/" user ip_user 
+            | stats sum(created_count) as sum_created_count, sum(denied_count) as sum_denied_count, sum(bytes) as sum_bytes by ip_user 
+            | table ip_user sum_created_count sum_denied_count sum_bytes 
+            | rename ip_user as "Source IP/User" 
+            | rename sum_created_count as "Created flows" 
+            | rename sum_denied_count as "Denied flows" 
+            | rename sum_bytes as "Bytes" 
+            </param>
+          
+            <module name="JobProgressIndicator"/>
+            <module name="Paginator">
+              <param name="entityName">results</param>
+              <param name="count">10</param>
+              <param name="maxPages">100</param>
+              <module name="SimpleResultsTable">
+                <param name="entityName">results</param>
+                <param name="displayRowNumbers">true</param>
+                <param name="drilldown">none</param>
+                <param name="drilldownPrefix">click</param>
+            
+              </module> <!-- end SimpleResultsTable -->
+            </module> <!-- end Paginator -->
+          </module> <!-- end HiddenSearch -->
+        </module> <!-- end ConvertToIntention -->
+      </module> <!-- end SubmitButton -->
+    </module> <!-- end SearchSelectLister -->
+  </module> <!-- end TimeRangePicker -->
+</view>

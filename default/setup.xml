@@ -11,4 +11,33 @@
                     <type>password</type>
             </input>
 	</block>
+    <block title="" endpoint="configs/conf-nfi_pages" entity="nfi">
+        <text><![CDATA[
+        <script>
+        function NFIPages(eventObject)
+        {
+            var nfi_checkbox = $('input[name$="enable"]').is(':checked');
+            var url;
+            if (nfi_checkbox)
+            {
+                url = Splunk.util.make_url('custom', Splunk.util.getCurrentApp(), 'nfi_nav_handler', 'enable');
+            }
+            else
+            {
+                url = Splunk.util.make_url('custom', Splunk.util.getCurrentApp(), 'nfi_nav_handler', 'disable');
+            }
+            $.get(url, false, function(){});
+        }
+
+        $(document).ready(function()
+        {
+	    $('#eaiform').submit(NFIPages);
+        });
+        </script>
+        ]]></text>
+         <input field="enable">
+            <label><![CDATA[NetFlow Views<br></br>NetFlow views enabled by this option are based on NetFlow data produced by Palo Alto Networks Next Generation Firewalls which are processed and converted to syslog (CIM) messages by 3rd party software - NetFlow Integrator.<b><br></br>(Restart Splunk after you Save your changes)</b>]]></label>
+            <type>bool</type>
+        </input>
+    </block>
 </setup>
