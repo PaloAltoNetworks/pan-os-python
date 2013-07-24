@@ -10,8 +10,32 @@
                     <label>Password</label>
                     <type>password</type>
             </input>
-	</block>
-    <block title="" endpoint="configs/conf-nfi_pages" entity="nfi">
+    </block>
+  <block title="WildFire Cloud API Key" endpoint="storage/passwords" entity="_new">
+    <text> Used to retrieve reports from the WildFire Cloud.  An API Key is available from the WildFire Portal (<![CDATA[<a href="https://wildfire.paloaltonetworks.com" target="_blank">https://wildfire.paloaltonetworks.com</a>)]]>.
+    </text>
+          <input field="name">
+                  <label>API Key Username</label>
+                  <type>text</type>
+          </input>
+          <input field="password">
+                  <label>WildFire API Key</label>
+                  <type>text</type>
+          </input>
+          <text><![CDATA[ <script type="text/javascript">
+            $(function(){
+                var username_div = $('#item-\\/storage\\/passwords\\/_new\\/name');
+                username_div.hide();
+                var username_input = $('#\\/storage\\/passwords\\/_new\\/name_id');
+                username_input.val('wildfire_api_key');
+            });
+          </script> ]]></text>
+  </block>
+  <block title="">
+    <text> Note: To change the Credentials or WildFire API Key later, first remove the entry from SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/app.conf and restart Splunk.
+    </text>
+  </block>
+   <block title="" endpoint="configs/conf-nfi_pages" entity="nfi">
         <text><![CDATA[
         <script>
         function NFIPages(eventObject)
@@ -39,5 +63,5 @@
             <label><![CDATA[NetFlow Views<br></br>NetFlow views enabled by this option are based on NetFlow data produced by Palo Alto Networks Next Generation Firewalls which are processed and converted to syslog (CIM) messages by 3rd party software - NetFlow Integrator.<b><br></br>(Restart Splunk after you Save your changes)</b>]]></label>
             <type>bool</type>
         </input>
-    </block>
+	</block>
 </setup>
