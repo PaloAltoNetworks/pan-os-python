@@ -4,8 +4,8 @@ import splunk.appserver.mrsparkle.controllers as controllers
 from splunk.appserver.mrsparkle.lib.decorators import expose_page
 
 APP = 'SplunkforPaloAltoNetworks'
-ENABLED_NAV = os.path.join(os.environ['SPLUNK_HOME'], 'etc', 'apps', APP, 'default', 'data', 'ui', 'nav', 'default.xml.enabled')
-DISABLED_NAV = os.path.join(os.environ['SPLUNK_HOME'], 'etc', 'apps', APP, 'default', 'data', 'ui', 'nav', 'default.xml.disabled')
+ENABLED_NAV = os.path.join(os.environ['SPLUNK_HOME'], 'etc', 'apps', APP, 'default', 'data', 'ui', 'nav', 'default.xml.nfi_enabled')
+DISABLED_NAV = os.path.join(os.environ['SPLUNK_HOME'], 'etc', 'apps', APP, 'default', 'data', 'ui', 'nav', 'default.xml.nfi_disabled')
 NAV = os.path.join(os.environ['SPLUNK_HOME'], 'etc', 'apps', APP, 'default', 'data', 'ui', 'nav', 'default.xml')
 
 class NAVHANDLER(controllers.BaseController):

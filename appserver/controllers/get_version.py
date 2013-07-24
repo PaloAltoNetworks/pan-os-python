@@ -3,7 +3,7 @@ import splunk.appserver.mrsparkle.controllers as controllers
 from splunk.appserver.mrsparkle.lib.decorators import expose_page
 
 APP = 'SplunkforPaloAltoNetworks'
-VERSION_CONF = os.path.join(os.environ['SPLUNK_HOME'], 'etc', 'apps', APP, 'default', 'version.conf')
+VERSION_CONF = os.path.join(os.environ['SPLUNK_HOME'], 'etc', 'apps', APP, 'default', 'nfi_version.conf')
 
 class GetVersion(controllers.BaseController):
     @expose_page(must_login=True, methods=['GET'])
