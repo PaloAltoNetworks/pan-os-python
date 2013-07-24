@@ -1,4 +1,4 @@
-<setup>    
+<setup>
     <block title="Add new credentials for PAN devices" endpoint="admin/passwords" entity="_new">
     	<text> These are the credentials that will be used to communicate with your Palo Alto Networks Firewall or Panorama. 
     	</text>
@@ -22,20 +22,15 @@
                   <label>WildFire API Key</label>
                   <type>text</type>
           </input>
-          <text><![CDATA[ <script type="text/javascript">
-            $(function(){
-                var username_div = $('#item-\\/storage\\/passwords\\/_new\\/name');
-                username_div.hide();
-                var username_input = $('#\\/storage\\/passwords\\/_new\\/name_id');
-                username_input.val('wildfire_api_key');
-            });
-          </script> ]]></text>
   </block>
+   <block title="NetFlow" endpoint="configs/conf-nfi_pages" entity="nfi">
+     <text>NetFlow requires 3rd party software called NetFlow Integrator. <![CDATA[<a href="http://localhost:8000/en-US/app/SplunkforPaloAltoNetworks/nfi_about" target="_blank">More Information</a>]]></text>
+         <input field="enable">
+           <label><![CDATA[NetFlow&nbsp; (requires Splunk restart)]]></label>
+            <type>bool</type>
+        </input>
+	</block>
   <block title="">
-    <text> Note: To change the Credentials or WildFire API Key later, first remove the entry from SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/app.conf and restart Splunk.
-    </text>
-  </block>
-   <block title="" endpoint="configs/conf-nfi_pages" entity="nfi">
         <text><![CDATA[
         <script>
         function NFIPages(eventObject)
@@ -55,13 +50,17 @@
 
         $(document).ready(function()
         {
-	    $('#eaiform').submit(NFIPages);
+          $(function(){
+              var username_div = $('#item-\\/storage\\/passwords\\/_new\\/name');
+              username_div.hide();
+              var username_input = $('#\\/storage\\/passwords\\/_new\\/name_id');
+              username_input.val('wildfire_api_key');
+          });
+          $('#eaiform').submit(NFIPages);
         });
         </script>
         ]]></text>
-         <input field="enable">
-            <label><![CDATA[NetFlow Views<br></br>NetFlow views enabled by this option are based on NetFlow data produced by Palo Alto Networks Next Generation Firewalls which are processed and converted to syslog (CIM) messages by 3rd party software - NetFlow Integrator.<b><br></br>(Restart Splunk after you Save your changes)</b>]]></label>
-            <type>bool</type>
-        </input>
-	</block>
+    <text> Note: To change the Credentials or WildFire API Key later, first remove the entry from SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/app.conf and restart Splunk.
+    </text>
+  </block>
 </setup>

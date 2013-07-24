@@ -1,14 +1,13 @@
-<h1>About these views</h1>
+<h1>About NetFlow</h1>
 <h2 id="NFI_VERSION"></h2>
-<p>These views are based on NetFlow data produced by Palo Alto Network devices and processed and converted to syslog messages by 3rd party software - NetFlow Integrator. Download a 30-day free trial of NetFlow Integrator here <a href="https://www.netflowlogic.com/downloads">https://www.netflowlogic.com/downloads</a></p>
+<p>NetFlow views are based on NetFlow data produced by Palo Alto Networks devices and converted to syslog messages by 3rd party software - NetFlow Integrator. Download a 30-day free trial of NetFlow Integrator here <a href="https://www.netflowlogic.com/downloads">https://www.netflowlogic.com/downloads</a></p>
 
-<p><ul>
+<p>Steps to configure:<ul>
 <li>Install NetFlow Integrator on a separate server or together with Splunk Forwarder</li>
-<li>Point Palo Alto Network NetFlow to NetFlow Integrator server, port 9995</li>
+<li>Point Palo Alto Networks NetFlow to NetFlow Integrator server, port 9995</li>
 <li>Add NetFlow Integrator output pointing to Splunk UDP port 10514</li>
 <li>Create Splunk UDP data input sourcetype=flowintegrator, which receives syslog messages on UDP port 10514, and index=flowintegrator.</li>
-<li>Enable NetFlow Integrator Palo Alto Network Rules (10030 through 10035) and Converter (20093)
+<li>Enable NetFlow Integrator Palo Alto Networks Rules (10030 through 10035) and Converter (20093)
 </ul></p>
 
-<p>If you have any questions, or require any assistance with configuration please contact us at <a href="https://netflowlogic.zendesk.com/home">https://netflowlogic.zendesk.com/home</a></p>
-
+<p>If you have any questions, or require any assistance with configuration please contact NetFlow Logic at <a href="https://netflowlogic.zendesk.com/home">https://netflowlogic.zendesk.com/home</a></p>
