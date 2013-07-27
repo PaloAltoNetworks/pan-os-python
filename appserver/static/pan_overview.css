@@ -205,14 +205,6 @@ ul.appBarNav li.hasMenu a:hover, ul.appBarNav li a.menuOpen {
 /* to change arrows, see Menu section, below */
 
 
-/* auxiliary text and links */
-.AppBar .auxLinks a {
-    color: ;
-}
-.AppBar .auxLinks span {
-    color: ;
-}
-
 /* Menus
 ---------------------------------*/
 

@@ -207,10 +207,10 @@ ul.appBarNav li.hasMenu a:hover, ul.appBarNav li a.menuOpen {
 
 /* auxiliary text and links */
 .AppBar .auxLinks a {
-    color: ;
+    color: #fff;
 }
 .AppBar .auxLinks span {
-    color: ;
+    color: #fff;
 }
 
 /* Menus
