@@ -207,10 +207,10 @@ ul.appBarNav li.hasMenu a:hover, ul.appBarNav li a.menuOpen {
 
 /* auxiliary text and links */
 .AppBar .auxLinks a {
-    color: ;
+    color: #fff;
 }
 .AppBar .auxLinks span {
-    color: ;
+    color: #fff;
 }
 
 /* Menus
@@ -772,11 +772,6 @@ background-image: url(loader.gif);
 /* remove the gradient at top of event and results area */
 .EventsViewer, .SimpleResultsTableResults {
 background-image: none;
-}
-
-/* used on some dashbaords */
-.SingleValueHolder {
-background-color:#FFFFFF;
 }
 
 /* tighten up dashboard title displays */
