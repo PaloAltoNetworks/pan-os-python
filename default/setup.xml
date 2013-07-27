@@ -24,10 +24,21 @@
           </input>
           <text><![CDATA[ <script type="text/javascript">
             $(function(){
+
                 var username_div = $('#item-\\/storage\\/passwords\\/_new\\/name');
                 username_div.hide();
+
                 var username_input = $('#\\/storage\\/passwords\\/_new\\/name_id');
-                username_input.val('wildfire_api_key');
+                var apikey_input = $('#\\/storage\\/passwords\\/_new\\/password_id');
+
+                apikey_input.change(function() {
+                    if(apikey_input.val().length === 0) {
+                        username_input.val('')
+                    } else {
+                        username_input.val('wildfire_api_key');
+                    }
+                });
+
             });
           </script> ]]></text>
   </block>
