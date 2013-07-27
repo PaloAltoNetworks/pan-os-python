@@ -222,7 +222,7 @@
                     </module>
                   </module>
                 </module>
-                <module name="HiddenSearch" layoutPanel="panel_row4_col1" group="">
+                <module name="HiddenSearch" layoutPanel="panel_row4_col1" group="Data Filter Events by Application">
                   <param name="search">| `tstats` count(action) AS ca FROM pan_data WHERE * $src_user$ $dst_location$ $src_ip$ $dst_ip$ $app$ $threat_id$ $action$ $vsys$ groupby threat_id action src_ip app|
                    stats values(ca) AS "Count" by threat_id action src_ip app | 
                    rename threat_id AS "Threat ID" | 
@@ -237,18 +237,13 @@
                     <param name="drilldown">all</param>
                     <module name="SimpleDrilldown">
                       <param name="links">
-                        <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index`
-                          threat_id="$row.Threat ID$"
-                          action="$row.Action$"
-                          src_ip="$row.Source$"
-                          app="$row.Application$"
-                        </param>
+                        <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` threat_id="$row.Threat ID$" action="$row.Action$" src_ip="$row.Source$" app="$row.Application$" </param>
                       </param>
                     </module>
                   </module>
                 </module>
               </module>
-                <module name="HiddenSearch" layoutPanel="panel_row4_col2">
+                <module name="HiddenSearch" layoutPanel="panel_row4_col2" group="Data Filter Events by Destination">
                   <param name="search">| `tstats` count(action) AS ca FROM pan_data WHERE * $src_user$ $dst_location$ $src_ip$ $dst_ip$ $app$ $threat_id$ $action$ $vsys$ groupby action src_ip dst_ip dst_location |
                    stats values(ca) AS "Count" by action src_ip dst_ip dst_location | 
                    rename dst_ip AS "Destination" | 
@@ -263,12 +258,7 @@
                     <param name="drilldown">all</param>
                     <module name="SimpleDrilldown">
                       <param name="links">
-                        <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index`
-                          dst_ip="$row.Destination$"
-                          dst_location="$row.Location$"
-                          src_ip="$row.Source$"
-                          app="$row.Application$"
-                        </param>
+                        <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` dst_ip="$row.Destination$" dst_location="$row.Location$" src_ip="$row.Source$" </param>
                       </param>
                     </module>
                     </module>

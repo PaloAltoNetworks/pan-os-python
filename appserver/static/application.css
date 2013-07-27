@@ -774,11 +774,6 @@ background-image: url(loader.gif);
 background-image: none;
 }
 
-/* used on some dashbaords */
-.SingleValueHolder {
-background-color:#FFFFFF;
-}
-
 /* tighten up dashboard title displays */
 .NullModule { display: none; }
 
