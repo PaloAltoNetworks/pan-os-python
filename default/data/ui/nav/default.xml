@@ -3,8 +3,11 @@
     <view name="pan_overview_switcher_maps" default="true"/>
     <collection label="Search Palo Alto Data">
       <a href="flashtimeline">Search</a>
-      <a href="flashtimeline?q=search%20%60pan_threat%60">Threat Data</a>
       <a href="flashtimeline?q=search%20%60pan_traffic%60">Traffic Logs</a>
+      <a href="flashtimeline?q=search%20%60pan_threat%60">Threat Data</a>
+      <a href="flashtimeline?q=search%20%60pan_url%60">URL Logs</a>
+      <a href="flashtimeline?q=search%20%60pan_data%60">Data Filtering Logs</a>
+      <a href="flashtimeline?q=search%20%60pan_wildfire%60">WildFire Logs</a>
       <a href="flashtimeline?q=search%20%60pan_config%60">Config Messages</a>
       <a href="flashtimeline?q=search%20%60pan_system%60">System Logs</a>
     </collection>
