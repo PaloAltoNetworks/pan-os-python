@@ -11,7 +11,7 @@ Networks Firewall
 #### Version ####
 
 * Splunk Version: 5.x
-* App Version: 3.3
+* App Version: 3.3.1
 * Last Modified: June 2013
 * Authors:
     * Monzy Merza - Splunk, Inc.
@@ -133,6 +133,11 @@ Keep in mind that searches that have longer time ranges may take a little longer
 
 ## What's new in this version ##
 
+Version 3.3.1  
+- Fix: App setup screen allows blank values
+- Fix: Several GUI fixes and enhancements
+
+Version 3.3  
 - Malware analysis reports from the WildFire Cloud are dynamically downloaded and indexed when a WildFire log is received from a firewall.
 - WildFire dashboard
     - Recent WildFire events
