@@ -205,14 +205,6 @@ ul.appBarNav li.hasMenu a:hover, ul.appBarNav li a.menuOpen {
 /* to change arrows, see Menu section, below */
 
 
-/* auxiliary text and links */
-.AppBar .auxLinks a {
-    color: ;
-}
-.AppBar .auxLinks span {
-    color: ;
-}
-
 /* Menus
 ---------------------------------*/
 
@@ -776,6 +768,7 @@ background-image: none;
 /* used on some dashbaords */
 .SingleValueHolder {
 background-color:#194775;
+color: #fff
 }
 
 /* tighten up dashboard title displays */
