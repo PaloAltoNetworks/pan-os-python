@@ -24,7 +24,7 @@
           </input>
   </block>
    <block title="NetFlow" endpoint="configs/conf-nfi_pages" entity="nfi">
-     <text>NetFlow requires 3rd party software called NetFlow Integrator. <![CDATA[<a href="http://localhost:8000/en-US/app/SplunkforPaloAltoNetworks/nfi_about" target="_blank">More Information</a>]]></text>
+       <text>NetFlow requires 3rd party software called NetFlow Integrator. <![CDATA[<a href="/app/SplunkforPaloAltoNetworks/nfi_about" target="_blank">More Information</a>]]></text>
          <input field="enable">
            <label><![CDATA[NetFlow&nbsp; (requires Splunk restart)]]></label>
             <type>bool</type>
