@@ -315,12 +315,11 @@
                                             </module>
                                         </module>
                                         <module name="HiddenSearch" layoutPanel="panel_row3_col1" group="Possible Malware Traffic">
-                                          <param name="search"> |`tstats` count(dst_ip) AS cdip FROM pan_wildfire_report_malware_traffic WHERE * NOT (protocol=udp AND dst_port=53) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol |
-                                            join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE * (NOT (protocol=udp AND dst_port=53)) $src_ip$ $dst_ip$ $src_user$ $vsys$ $app$ groupby _time src_ip dst_ip dst_port protocol app src_user | dedup 1 src_ip dst_ip dst_port protocol app src_user | table _time src_ip src_user dst_port dst_ip protocol app | rename _time AS traffic_time ] |
+                                          <param name="search"> |`tstats` count(dst_ip) AS cdip FROM pan_traffic WHERE (NOT (protocol=udp AND dst_port=53)) $src_ip$ $dst_ip$ $src_user$ $vsys$ $app$ groupby _time src_ip dst_ip dst_port protocol app src_user | dedup 1 src_ip dst_ip dst_port protocol | table _time src_ip src_user dst_port dst_ip protocol app |
+                                            join type=inner protocol dst_ip dst_port [ `tstats` count(dst_ip) AS cdipw FROM pan_wildfire_report_malware_traffic WHERE (NOT (protocol=udp AND dst_port=53)) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol ] |
                                             rename src_user AS "User" | rename src_ip AS "Source IP" |
                                             eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View Wildfire Report" |
-                                            table traffic_time "Source IP" "User" dst_ip dst_port protocol app report_id "Traffic Link" "WildFire Link" |
-                                            rename traffic_time AS _time |
+                                            table _time "Source IP" "User" dst_ip dst_port protocol app report_id "Traffic Link" "WildFire Link" |
                                             rename dst_ip AS "Dst_IP" |
                                             rename dst_port AS "Dst_Port" |
                                             rename protocol AS "Protocol" |
