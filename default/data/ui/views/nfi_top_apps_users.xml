@@ -177,6 +177,11 @@
               </module> <!-- end SimpleResultsTable -->
             </module> <!-- end Paginator -->
           </module> <!-- end HiddenSearch -->
+          <module name="StaticContentSample" layoutPanel="panel_row2_col1">
+            <param name="text">
+              Click an entry to view user statistics
+            </param>
+          </module> <!-- end StaticContentSample -->
         </module> <!-- end ConvertToIntention -->
       </module> <!-- end SubmitButton -->
     </module> <!-- end SearchSelectLister -->
