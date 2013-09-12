@@ -11,8 +11,8 @@ Networks Firewall
 #### Version ####
 
 * Splunk Version: 5.x
-* App Version: 3.3.1
-* Last Modified: June 2013
+* App Version: 3.3.2
+* Last Modified: Sept 2013
 * Authors:
     * Monzy Merza - Splunk, Inc.
     * Brian Torres-Gil - Palo Alto Networks
@@ -132,6 +132,12 @@ All the dashboards work without any filtering values for the form fields. If you
 Keep in mind that searches that have longer time ranges may take a little longer to return the results. 
 
 ## What's new in this version ##
+
+Version 3.3.2  
+- Fix: URL in WildFire dashboard corrected
+- Fix: Overview dashboard colors were gray on some servers, set back to white
+- Fix: Corrected description fields in commands.conf that resulted in log errors
+- Fix: Corrected sourcetype in inputs.conf.sample
 
 Version 3.3.1  
 - Fix: App setup screen allows blank values
