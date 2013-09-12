@@ -3,5 +3,5 @@
 #[udp://5155]
 #index= pan_logs
 #connection_host = ip
-#ourcetype = pan_log
+#sourcetype = pan_log
 #no_appending_timestamp = true

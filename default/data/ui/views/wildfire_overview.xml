@@ -349,7 +349,7 @@
                                                 </module>
                                             </module>
                                           <module name="StaticContentSample" layoutPanel="panel_row3_col1">
-                                            <param name="text">This table shows hosts that may be compromised because they show network behavior consistent with an analyzed malware sample. This data is based on a correlation of traffic logs and malware network behavior from WildFire Cloud analysis reports.  (Note: To download WildFire reports, this correlation requires a <![CDATA[<a href="http://localhost:8000/en-US/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">WildFire API Key</a>]]>)
+                                            <param name="text">This table shows hosts that may be compromised because they show network behavior consistent with an analyzed malware sample. This data is based on a correlation of traffic logs and malware network behavior from WildFire Cloud analysis reports.  (Note: To download WildFire reports, this correlation requires a <![CDATA[<a href="/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">WildFire API Key</a>]]>)
                                             </param>
                                           </module>
                                         </module>
