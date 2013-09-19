@@ -162,7 +162,7 @@ Version 3.4
     - App-ID and User-ID information is available in NetFlow records
 
 Download a 30-day free trial of NetFlow Integrator at https://www.netflowlogic.com/downloads  
-Steps to configure NetFlow are available in the Hints and Tips section above.
+Steps to configure NetFlow are available in the **NetFlow** section above.
 
 ## Installing from Git ##
 
