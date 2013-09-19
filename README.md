@@ -11,7 +11,7 @@ Networks Firewall
 #### Version ####
 
 * Splunk Version: 5.x
-* App Version: 3.3.2
+* App Version: 3.4
 * Last Modified: Sept 2013
 * Authors:
     * Monzy Merza - Splunk, Inc.
@@ -117,6 +117,28 @@ Log can be further filtered by type during search by using predefined macros.  T
 
 Use these macros in the search bar by surrounding them with back-ticks.
 
+### WildFire Cloud Integration ###
+
+WildFire analysis reports can be retrieved dynamically from the WildFire cloud after each analysis.  This retrieval requires a WildFire API Key from https://wildfire.paloaltonetworks.com
+
+Malware analysis reports from the WildFire Cloud are dynamically downloaded and indexed when a WildFire log is received from a firewall.
+
+### NetFlow ###
+
+NetFlow graphs and charts are based on NetFlow data produced by Palo Alto Networks devices and converted to syslog messages by 3rd party software - NetFlow Integrator. Download a 30-day free trial of NetFlow Integrator at https://www.netflowlogic.com/downloads
+
+Steps to configure:
+
+- Install NetFlow Integrator on a separate server or together with Splunk Forwarder
+- Point Palo Alto Networks device NetFlow settings to NetFlow Integrator server, default port 9995 with PAN-OS Field Types enabled (see [Administrator's Guide] (https://live.paloaltonetworks.com/community/documentation/content?filterID=contentstatus[published]~category[administrators-guide]&filterID=contentstatus[published]~objecttype~objecttype[document]&itemView=detail))
+- Enable NetFlow in the Splunk for Palo Alto Networks app setup page
+- Restart Splunk for the previous change to take effect
+- Add NetFlow Integrator output pointing to Splunk UDP port 10514
+- Create Splunk UDP data input `sourcetype=flowintegrator`, which receives syslog messages on UDP port 10514, and `index=flowintegrator`.
+- Enable NetFlow Integrator Palo Alto Networks Rules (10030 through 10035) and Converter (20093)
+
+If you have any questions, or require any assistance with configuration please contact NetFlow Logic at https://netflowlogic.zendesk.com/home
+
 ### High Performance Value Store (HPVS) ###
 
 The app uses the HPVS feature introduced in Splunk 5.0. This feature provides a tremendous performance improvement for dashboards and views. The views and dashboards make use of saved searches that store data on your search head. This means that disk storage on your search head will be consumed as a result of these searches. If you turn off these saved searches, your dashboards will not render. Or dashboard rendering will be really, really slow. Please post a question to answers.splunk.com if you'd like to explore alternatives. 
@@ -133,28 +155,18 @@ Keep in mind that searches that have longer time ranges may take a little longer
 
 ## What's new in this version ##
 
-Version 3.3.2  
-- Fix: URL in WildFire dashboard corrected
-- Fix: Overview dashboard colors were gray on some servers, set back to white
-- Fix: Corrected description fields in commands.conf that resulted in log errors
-- Fix: Corrected sourcetype in inputs.conf.sample
+Version 3.4
 
-Version 3.3.1  
-- Fix: App setup screen allows blank values
-- Fix: Several GUI fixes and enhancements
+- NetFlow support using NetFlow Integrator, a 3rd party program from NetFlow Logic
+    - New set of dashboards, charts and graphs centered around NetFlow records from Palo Alto Networks devices
+    - App-ID and User-ID information is available in NetFlow records
 
-Version 3.3  
-- Malware analysis reports from the WildFire Cloud are dynamically downloaded and indexed when a WildFire log is received from a firewall.
-- WildFire dashboard
-    - Recent WildFire events
-    - Graphs of WildFire statistical data
-    - Detect compromised hosts using malware behavior to traffic log correlation
-
-Note: Malware analysis report retrieval requires a WildFire API Key from https://wildfire.paloaltonetworks.com
+Download a 30-day free trial of NetFlow Integrator at https://www.netflowlogic.com/downloads  
+Steps to configure NetFlow are available in the **NetFlow** section above.
 
 ## Installing from Git ##
 
-This app is available on [Splunkbase](http://splunk-base.splunk.com/apps/22327/splunk-for-palo-alto-networks) and [Github](https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks).  Optionally, you can clone the github repository to install the app.
+This app is available on [Splunk Apps](http://apps.splunk.com/app/491) and [Github](https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks).  Optionally, you can clone the github repository to install the app.
 From the directory `$SPLUNK_HOME/etc/apps/`, type the following command:
 
-    git clone https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks.git
+    git clone https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks.git SplunkforPaloAltoNetworks
