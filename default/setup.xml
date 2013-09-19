@@ -1,4 +1,4 @@
-<setup>    
+<setup>
     <block title="Add new credentials for PAN devices" endpoint="admin/passwords" entity="_new">
     	<text> These are the credentials that will be used to communicate with your Palo Alto Networks Firewall or Panorama. 
     	</text>
@@ -10,7 +10,7 @@
                     <label>Password</label>
                     <type>password</type>
             </input>
-	</block>
+    </block>
   <block title="WildFire Cloud API Key" endpoint="storage/passwords" entity="_new">
     <text> Used to retrieve reports from the WildFire Cloud.  An API Key is available from the WildFire Portal (<![CDATA[<a href="https://wildfire.paloaltonetworks.com" target="_blank">https://wildfire.paloaltonetworks.com</a>)]]>.
     </text>
@@ -22,10 +22,36 @@
                   <label>WildFire API Key</label>
                   <type>text</type>
           </input>
-          <text><![CDATA[ <script type="text/javascript">
-            $(function(){
+  </block>
+   <block title="NetFlow" endpoint="configs/conf-nfi_pages" entity="nfi">
+       <text>NetFlow requires 3rd party software called NetFlow Integrator. <![CDATA[<a href="/app/SplunkforPaloAltoNetworks/nfi_about" target="_blank">More Information</a>]]></text>
+         <input field="enable">
+           <label><![CDATA[NetFlow&nbsp; (requires Splunk restart)]]></label>
+            <type>bool</type>
+        </input>
+	</block>
+  <block title="">
+        <text><![CDATA[
+        <script>
+        function NFIPages(eventObject)
+        {
+            var nfi_checkbox = $('input[name$="enable"]').is(':checked');
+            var url;
+            if (nfi_checkbox)
+            {
+                url = Splunk.util.make_url('custom', Splunk.util.getCurrentApp(), 'nfi_nav_handler', 'enable');
+            }
+            else
+            {
+                url = Splunk.util.make_url('custom', Splunk.util.getCurrentApp(), 'nfi_nav_handler', 'disable');
+            }
+            $.get(url, false, function(){});
+        }
 
-                var username_div = $('#item-\\/storage\\/passwords\\/_new\\/name');
+        $(document).ready(function()
+        {
+          $(function(){
+               var username_div = $('#item-\\/storage\\/passwords\\/_new\\/name');
                 username_div.hide();
 
                 var username_input = $('#\\/storage\\/passwords\\/_new\\/name_id');
@@ -38,11 +64,11 @@
                         username_input.val('wildfire_api_key');
                     }
                 });
-
-            });
-          </script> ]]></text>
-  </block>
-  <block title="">
+          });
+          $('#eaiform').submit(NFIPages);
+        });
+        </script>
+        ]]></text>
     <text> Note: To change the Credentials or WildFire API Key later, first remove the entry from SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/app.conf and restart Splunk.
     </text>
   </block>

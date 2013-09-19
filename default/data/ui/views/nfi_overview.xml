@@ -1,0 +1,169 @@
+<view template="dashboard.html">
+  <label>Overview</label>
+  <module name="AccountBar" layoutPanel="appHeader"/>
+  <module name="AppBar" layoutPanel="navigationHeader"/>
+  <module name="Message" layoutPanel="messaging">
+    <param name="filter">*</param>
+    <param name="clearOnJobDispatch">False</param>
+    <param name="maxSize">1</param>
+  </module>
+  <module name="TitleBar" layoutPanel="navigationHeader">
+    <param name="actionsMenuFilter">dashboard</param>
+  </module>
+
+  <module name="TimeRangePicker" layoutPanel="panel_row1_col1_grp1">
+    <param name="selected">Last 60 minutes</param>
+    <param name="searchWhenChanged">true</param>
+  
+    <module name="HiddenSearch" autoRun="true" layoutPanel="panel_row2_col1">
+      <param name="search">
+        `nfi_pan_20030` | eval bytes=`formatbytestom(bytes)` | timechart sum(bytes) by user | fields - OTHER
+      </param>
+    
+      <module name="SimpleResultsHeader">
+        <param name="entityName">results</param>
+        <param name="headerFormat">Top Bandwidth Consumers (NFI Rule 10030/20093)</param>
+      </module>
+      
+      <module name="HiddenChartFormatter">
+        <param name="chart">area</param>
+        <param name="chart.nullValueMode">zero</param>
+        <param name="primaryAxisTitle.text">Time</param>
+        <param name="secondaryAxisTitle.text">MB</param>
+        <param name="legend.placement">right</param>
+        <module name="JSChart">
+          <param name="width">100%</param>
+          <param name="height">200px</param>
+          <param name="enableResize">False</param>
+          <param name="drilldownPrefix">click</param>
+      
+        </module> <!-- end JSChart -->
+      </module> <!-- end HiddenChartFormatter -->
+    </module> <!-- end HiddenSearch -->
+    <module name="HiddenSearch" autoRun="true" layoutPanel="panel_row2_col2">
+      <param name="search">
+        `nfi_pan_20031` | eval bytes=`formatbytestom(bytes)` | timechart sum(bytes) by dest_ip | fields - OTHER
+      </param>
+    
+      <module name="SimpleResultsHeader">
+        <param name="entityName">results</param>
+        <param name="headerFormat">Top Destinations (NFI Rule 10031/20093)</param>
+      </module>
+      
+      <module name="HiddenChartFormatter">
+        <param name="chart">area</param>
+        <param name="chart.nullValueMode">zero</param>
+        <param name="primaryAxisTitle.text">Time</param>
+        <param name="secondaryAxisTitle.text">MB</param>
+        <param name="legend.placement">right</param>
+        <module name="JSChart">
+          <param name="width">100%</param>
+          <param name="height">200px</param>
+          <param name="enableResize">False</param>
+          <param name="drilldownPrefix">click</param>
+      
+        </module> <!-- end JSChart -->
+      </module> <!-- end HiddenChartFormatter -->
+    </module> <!-- end HiddenSearch -->
+    <module name="HiddenSearch" autoRun="true" layoutPanel="panel_row3_col1">
+      <param name="search">
+        `nfi_pan_20032` | timechart sum(denied_count) by user | fields - OTHER
+      </param>
+    
+      <module name="SimpleResultsHeader">
+        <param name="entityName">results</param>
+        <param name="headerFormat">Top Violators (NFI Rule 10032/20093)</param>
+      </module>
+      
+      <module name="HiddenChartFormatter">
+        <param name="chart">area</param>
+        <param name="chart.nullValueMode">zero</param>
+        <param name="primaryAxisTitle.text">Time</param>
+        <param name="secondaryAxisTitle.text">Count</param>
+        <param name="legend.placement">right</param>
+        <module name="JSChart">
+          <param name="width">100%</param>
+          <param name="height">200px</param>
+          <param name="enableResize">False</param>
+          <param name="drilldownPrefix">click</param>
+      
+        </module> <!-- end JSChart -->
+      </module> <!-- end HiddenChartFormatter -->
+    </module> <!-- end HiddenSearch -->
+    <module name="HiddenSearch" autoRun="true" layoutPanel="panel_row3_col2">
+      <param name="search">
+        `nfi_pan_20033` | timechart sum(created_count) by user | fields - OTHER
+      </param>
+    
+      <module name="SimpleResultsHeader">
+        <param name="entityName">results</param>
+        <param name="headerFormat">Top Connectors (NFI Rule 10033/20093)</param>
+      </module>
+      
+      <module name="HiddenChartFormatter">
+        <param name="chart">area</param>
+        <param name="chart.nullValueMode">zero</param>
+        <param name="primaryAxisTitle.text">Time</param>
+        <param name="secondaryAxisTitle.text">Count</param>
+        <param name="legend.placement">right</param>
+        <module name="JSChart">
+          <param name="width">100%</param>
+          <param name="height">200px</param>
+          <param name="enableResize">False</param>
+          <param name="drilldownPrefix">click</param>
+      
+        </module> <!-- end JSChart -->
+      </module> <!-- end HiddenChartFormatter -->
+    </module> <!-- end HiddenSearch -->
+    <module name="HiddenSearch" autoRun="true" layoutPanel="panel_row4_col1">
+      <param name="search">
+        `nfi_pan_20034` | eval bytes=`formatbytestom(bytes)` | timechart sum(bytes) by app | fields - OTHER
+      </param>
+    
+      <module name="SimpleResultsHeader">
+        <param name="entityName">results</param>
+        <param name="headerFormat">Top Applications (NFI Rule 10034/20093)</param>
+      </module>
+      
+      <module name="HiddenChartFormatter">
+        <param name="chart">area</param>
+        <param name="chart.nullValueMode">zero</param>
+        <param name="primaryAxisTitle.text">Time</param>
+        <param name="secondaryAxisTitle.text">MB</param>
+        <param name="legend.placement">right</param>
+        <module name="JSChart">
+          <param name="width">100%</param>
+          <param name="height">200px</param>
+          <param name="enableResize">False</param>
+          <param name="drilldownPrefix">click</param>
+      
+        </module> <!-- end JSChart -->
+      </module> <!-- end HiddenChartFormatter -->
+    </module> <!-- end HiddenSearch -->
+    <module name="HiddenSearch" autoRun="true" layoutPanel="panel_row4_col2">
+      <param name="search">
+        `nfi_pan_20035` | eval bytes=`formatbytestom(bytes)` | strcat app "/" user appuser | timechart sum(bytes) by appuser | fields - OTHER
+      </param>
+    
+      <module name="SimpleResultsHeader">
+        <param name="entityName">results</param>
+        <param name="headerFormat">Top Applications and Users (NFI Rule 10035/20093)</param>
+      </module>
+      
+      <module name="HiddenChartFormatter">
+        <param name="chart">area</param>
+        <param name="chart.nullValueMode">zero</param>
+        <param name="primaryAxisTitle.text">Time</param>
+        <param name="secondaryAxisTitle.text">MB</param>
+        <param name="legend.placement">right</param>
+        <module name="JSChart">
+          <param name="width">100%</param>
+          <param name="height">200px</param>
+          <param name="enableResize">False</param>
+          <param name="drilldownPrefix">click</param>
+      
+        </module> <!-- end JSChart -->
+      </module> <!-- end HiddenChartFormatter -->
+    </module> <!-- end HiddenSearch -->
+  </module> <!-- end TimeRangePicker -->
+</view>
