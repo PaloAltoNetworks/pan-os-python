@@ -1,305 +1,221 @@
-<view template="dashboard.html" stylesheet="threat_overview.css">
-    <label>Threat Dashboard</label>
-    <module name="AccountBar" layoutPanel="appHeader"/>
-    <module name="AppBar" layoutPanel="navigationHeader"/>
-    <module name="Message" layoutPanel="messaging">
-        <param name="filter">*</param>
-        <param name="clearOnJobDispatch">False</param>
-        <param name="maxSize">1</param>
-    </module>
-    <module name="TitleBar" layoutPanel="viewHeader">
-        <param name="actionsMenuFilter">dashboard</param>
-    </module>
-    <module name="GenericHeader" layoutPanel="panel_row1_col1">
-        <param name="label">Threat Dashboard</param>
-    </module>
-    <module name="StaticContentSample" layoutPanel="panel_row1_col1">
-        <param name="text">This dashboard provides visibility into threat activity in your Palo Alto Networks
-            environment. Threats can be filtered by type using the form fields.
-        </param>
-    </module>
-
-        <module name="TimeRangePicker" layoutPanel="panel_row1_col1" autoRun="True">
-            <param name="selected">Last 60 minutes</param>
-            <param name="searchWhenChanged">True</param>
-            <module name="ViewRedirectorLink">
-                <param name="viewTarget">flashtimeline</param>
-                <param name="label">View Full Report</param>
-            </module>
-            <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-                <param name="label">Source IP:</param>
-                <param name="field">src_ip</param>
-                <param name="replacementMap">
-                    <param name="arg">
-                        <param name="src_ip">
-                            <param name="value"></param>
-                        </param>
-                    </param>
-                </param>
-                <param name="intention">
-                    <param name="name">stringreplace</param>
-                    <param name="arg">
-                        <param name="src_ip">
-                            <param name="prefix">src_ip="</param>
-                            <param name="suffix">"</param>
-                            <param name="fillOnEmpty">False</param>
-                        </param>
-                    </param>
-                </param>
-                <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-                    <param name="label">Destination IP:</param>
-                    <param name="field">dst_ip</param>
-                    <param name="replacementMap">
-                        <param name="arg">
-                            <param name="dst_ip">
-                                <param name="value"></param>
-                            </param>
-                        </param>
-                    </param>
-                    <param name="intention">
-                        <param name="name">stringreplace</param>
-                        <param name="arg">
-                            <param name="dst_ip">
-                                <param name="prefix">dst_ip="</param>
-                                <param name="suffix">"</param>
-                                <param name="fillOnEmpty">false</param>
-                            </param>
-                        </param>
-                    </param>
-                    <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-                        <param name="label">Log SubType:</param>
-                        <param name="field">log_subtype</param>
-                        <param name="replacementMap">
-                            <param name="arg">
-                                <param name="log_subtype">
-                                    <param name="value"></param>
-                                </param>
-                            </param>
-                        </param>
-                        <param name="intention">
-                            <param name="name">stringreplace</param>
-                            <param name="arg">
-                                <param name="log_subtype">
-                                    <param name="prefix">log_subtype="</param>
-                                    <param name="suffix">"</param>
-                                    <param name="fillOnEmpty">false</param>
-                                </param>
-                            </param>
-                        </param>
-                        <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-                            <param name="label">App:</param>
-                            <param name="field">app</param>
-                            <param name="replacementMap">
-                                <param name="arg">
-                                    <param name="app">
-                                        <param name="value"></param>
-                                    </param>
-                                </param>
-                            </param>
-                            <param name="intention">
-                                <param name="name">stringreplace</param>
-                                <param name="arg">
-                                    <param name="app">
-                                        <param name="prefix">app="</param>
-                                        <param name="suffix">"</param>
-                                        <param name="fillOnEmpty">false</param>
-                                    </param>
-                                </param>
-                            </param>
-                            <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-                                <param name="label">Threat ID:</param>
-                                <param name="field">threat_id</param>
-                                <param name="replacementMap">
-                                    <param name="arg">
-                                        <param name="threat_id">
-                                            <param name="value"></param>
-                                        </param>
-                                    </param>
-                                </param>
-                                <param name="intention">
-                                    <param name="name">stringreplace</param>
-                                    <param name="arg">
-                                        <param name="threat_id">
-                                            <param name="default"></param>
-                                            <param name="prefix">threat_id="</param>
-                                            <param name="suffix">"</param>
-                                            <param name="fillOnEmpty">false</param>
-                                        </param>
-                                    </param>
-                                </param>
-                                <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-                                    <param name="label">Virtual System:</param>
-                                    <param name="field">vsys</param>
-                                    <param name="replacementMap">
-                                        <param name="arg">
-                                            <param name="vsys">
-                                                <param name="value"></param>
-                                            </param>
-                                        </param>
-                                    </param>
-                                    <param name="intention">
-                                        <param name="name">stringreplace</param>
-                                        <param name="arg">
-                                            <param name="vsys">
-                                                <param name="prefix">vsys="</param>
-                                                <param name="suffix">"</param>
-                                                <param name="fillOnEmpty">false</param>
-                                            </param>
-                                        </param>
-                                    </param>
-                                        <module name="HiddenSearch" layoutPanel="panel_row2_col1">
-                                            <param name="search">| tstats count(log_subtype) AS cls FROM pan_threat where * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log_subtype span=5m | timechart values(cls) by log_subtype</param>
-                                            <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Threats SubTypes</param>
-                                                <param name="chart">column</param>
-                                                <param name="chart.stackMode">stacked</param>
-                                                <param name="legend.placement">bottom</param>
-                                                <module name="JSChart">
-                                                    <param name="width">100%</param>
-                                                    <module name="SimpleDrilldown">
-                                                        <param name="links">
-                                                            <param name="*">
-                                                                threat_overview?earliest=$earliest$&amp;latest=$latest$&amp;form.log_subtype=$click.name2$
-                                                            </param>
-                                                        </param>
-                                                    </module>
-                                                </module>
-                                            </module>
-                                        </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row2_col2">
-                                            <param name="search">| tstats count(severity) AS cs FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time severity span=5m | timechart values(cs) by severity </param>
-                                            <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">By Risk Value</param>
-                                                <param name="chart">column</param>
-                                                <param name="chart.stackMode">stacked</param>
-                                                <param name="legend.placement">bottom</param>
-                                                <module name="JSChart">
-                                                    <param name="width">100%</param>
-                                                    <module name="SimpleDrilldown">
-                                                        <param name="links">
-                                                            <param name="*">flashtimeline?q=`pan_threat` severity="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]</param>
-                                                        </param>
-                                                    </module>
-                                                </module>
-                                            </module>
-                                        </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row3_col1">
-                                            <param name="search">| tstats count(threat_id) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby threat_id</param>
-                                            <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Top Threat IDs</param>
-                                                <param name="chart">pie</param>
-                                                <param name="legend.placement">bottom</param>
-                                                <module name="JSChart">
-                                                    <param name="width">100%</param>
-                                                    <param name="height">250px</param>
-                                                    <module name="SimpleDrilldown">
-                                                        <param name="links">
-                                                            <param name="*">
-                                                                threat_detail?earliest=$earliest$&amp;latest=$latest$&amp;form.threat=$click.value$
-                                                            </param>
-                                                        </param>
-                                                    </module>
-                                                </module>
-                                            </module>
-                                        </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row3_col2">
-                                            <param name="search">| tstats count(app) AS ca FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby app</param>
-                                            <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Threats by App</param>
-                                                <param name="chart">pie</param>
-                                                <param name="legend.placement">bottom</param>
-                                                <module name="JSChart">
-                                                    <param name="width">100%</param>
-                                                    <param name="height">250px</param>
-                                                    <module name="SimpleDrilldown">
-                                                        <param name="links">
-                                                            <param name="*">
-                                                                threat_detail?earliest=$earliest$&amp;latest=$latest$&amp;form.application=$click.value$
-                                                            </param>
-                                                        </param>
-                                                    </module>
-                                                </module>
-                                            </module>
-                                        </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row3_col3">
-                                            <param name="search">| tstats count(dst_user) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby dst_user </param>
-                                            <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Threats by User</param>
-                                                <param name="chart">pie</param>
-                                                <param name="legend.placement">bottom</param>
-                                                <module name="JSChart">
-                                                    <param name="width">100%</param>
-                                                    <param name="height">250px</param>
-                                                    <module name="SimpleDrilldown">
-                                                        <param name="links">
-                                                            <param name="*">
-                                                                threat_detail?earliest=$earliest$&amp;latest=$latest$&amp;form.user=$click.value$
-                                                            </param>
-                                                        </param>
-                                                    </module>
-                                                </module>
-                                            </module>
-                                        </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row4_col1">
-                                            <param name="search">| tstats count(src_ip) AS csrc FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby src_ip</param>
-                                            <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Top Source IP</param>
-                                                <param name="chart">pie</param>
-                                                <param name="legend.placement">bottom</param>
-                                                <module name="JSChart">
-                                                    <param name="width">100%</param>
-                                                    <param name="height">250px</param>
-                                                    <module name="SimpleDrilldown">
-                                                        <param name="links">
-                                                            <param name="*">
-                                                                threat_overview?earliest=$earliest$&amp;latest=$latest$&amp;form.src_ip=$click.value$
-                                                            </param>
-                                                        </param>
-                                                    </module>
-                                                </module>
-                                            </module>
-                                        </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row4_col2">
-                                            <param name="search">| tstats count(severity) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby severity</param>
-                                            <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Threats by Severity</param>
-                                                <param name="chart">pie</param>
-                                                <param name="legend.placement">bottom</param>
-                                                <module name="JSChart">
-                                                    <param name="width">100%</param>
-                                                    <param name="height">250px</param>
-                                                  <module name="SimpleDrilldown">
-                                                    <param name="links">
-                                                      <param name="*">flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_threat` severity="$click.value$"</param>
-                                                    </param>
-                                                  </module>
-                                                </module>
-                                            </module>
-                                        </module>
-                                        <module name="HiddenSearch" layoutPanel="panel_row4_col3">
-                                            <param name="search">| tstats count(dst_ip) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby dst_ip</param>
-                                            <module name="HiddenChartFormatter">
-                                                <param name="chartTitle">Top Dest IP</param>
-                                                <param name="chart">pie</param>
-                                                <param name="legend.placement">bottom</param>
-                                                <module name="JSChart">
-                                                    <param name="width">100%</param>
-                                                    <param name="height">250px</param>
-                                                    <module name="SimpleDrilldown">
-                                                        <param name="links">
-                                                            <param name="*">
-                                                                threat_overview?earliest=$earliest$&amp;latest=$latest$&amp;form.dst_ip=$click.value$
-                                                            </param>
-                                                        </param>
-                                                    </module>
-                                                </module>
-                                            </module>
-                                        </module>
-                                </module>
-                            </module>
-                        </module>
-                    </module>
-                </module>
-            </module>
-        </module>
-</view>
+<form>
+  <label>Threat Dashboard</label>
+  <fieldset autoRun="true" submitButton="true">
+    <input type="time" searchWhenChanged="true">
+      <default>
+        <earliestTime>-60m</earliestTime>
+        <latestTime>now</latestTime>
+      </default>
+    </input>
+    <input type="text" token="src_ip">
+      <label>Source IP</label>
+      <default>*</default>
+      <prefix>src_ip="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="text" token="dst_ip">
+      <label>Destination IP</label>
+      <default>*</default>
+      <prefix>dst_ip="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="dropdown" token="log_subtype">
+      <label>Log Subtype</label>
+      <default>*</default>
+      <prefix>log_subtype="</prefix>
+      <suffix>"</suffix>
+      <choice value="*">ANY</choice>
+      <populatingSearch fieldForValue="log_subtype" fieldForLabel="log_subtype_with_count">|tstats count(log_subtype) as count
+        FROM pan_threat WHERE * groupby log_subtype
+        | eval log_subtype_with_count = log_subtype . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="threat_id">
+      <label>Threat ID</label>
+      <default>*</default>
+      <prefix>threat_id="</prefix>
+      <suffix>"</suffix>
+      <choice value="*">ANY</choice>
+      <populatingSearch fieldForValue="threat_id" fieldForLabel="threat_id_with_count">|tstats count(threat_id) as count
+        FROM pan_threat WHERE * groupby threat_id
+        | eval threat_id_with_count = threat_id . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="app">
+      <label>Application</label>
+      <default>*</default>
+      <prefix>app="</prefix>
+      <suffix>"</suffix>
+      <choice value="*">ANY</choice>
+      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
+        FROM pan_threat WHERE * groupby app
+        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="vsys">
+      <label>Virtual System</label>
+      <default>*</default>
+      <prefix>vsys="</prefix>
+      <suffix>"</suffix>
+      <choice value="*">ANY</choice>
+      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
+        FROM pan_threat WHERE * groupby vsys
+        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+    </input>
+  </fieldset>
+  <row>
+    <chart>
+      <title>Threat Subtypes</title>
+      <searchString>| tstats count(log_subtype) AS cls FROM pan_threat WHERE $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log_subtype span=5m | timechart values(cls) by log_subtype</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">column</option>
+      <option name="charting.chart.nullValueMode">connect</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">bottom</option>
+    </chart>
+    <chart>
+      <title>By Risk Value</title>
+      <searchString>| tstats count(severity) AS cs FROM pan_threat WHERE $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time severity span=5m | timechart values(cs) by severity</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">column</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">bottom</option>
+    </chart>
+  </row>
+  <row>
+    <chart>
+      <title>Threat IDs</title>
+      <searchString>| tstats count(threat_id) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby threat_id</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+    </chart>
+    <chart>
+      <title>Threats by App</title>
+      <searchString>| tstats count(app) AS ca FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby app</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+    </chart>
+    <chart>
+      <title>Threats by User</title>
+      <searchString>| tstats count(dst_user) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby dst_user</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+    </chart>
+  </row>
+  <row>
+    <chart>
+      <title>Source IP</title>
+      <searchString>| tstats count(src_ip) AS csrc FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby src_ip</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+    </chart>
+    <chart>
+      <title>Threats by Severity</title>
+      <searchString>| tstats count(severity) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby severity</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+    </chart>
+    <chart>
+      <title>Destination IP</title>
+      <searchString>| tstats count(dst_ip) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby dst_ip</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+    </chart>
+  </row>
+</form>

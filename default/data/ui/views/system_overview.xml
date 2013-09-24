@@ -1,211 +1,124 @@
-<view template="dashboard.html" stylesheet="threat_overview.css">
+<form>
   <label>System Dashboard</label>
-  <module name="AccountBar" layoutPanel="appHeader" />
-  <module name="AppBar" layoutPanel="navigationHeader" />
-  <module name="Message" layoutPanel="messaging">
-    <param name="filter">*</param>
-    <param name="clearOnJobDispatch">False</param>
-    <param name="maxSize">1</param>
-  </module>
-  <module name="TitleBar" layoutPanel="viewHeader">
-    <param name="actionsMenuFilter">dashboard</param>
-  </module>
-  <module name="GenericHeader" layoutPanel="panel_row1_col1">
-    <param name="label">System Dashboard</param>
-  </module>
-  <module name="StaticContentSample" layoutPanel="panel_row1_col1">
-    <param name="text">This dashboard provides visibility into System changes and activity in your Palo Alto Networks environment. Threats can be filtered by type using the form fields.</param>
-  </module>
-        <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-        <param name="label">Log Subtype:</param>
-        <param name="field">log_subtype</param>
-        <param name="replacementMap">
-          <param name="arg">
-            <param name="log_subtype">
-              <param name="value"></param>
-            </param>
-          </param>
-        </param>
-        <param name="intention">
-          <param name="name">stringreplace</param>
-          <param name="arg">
-            <param name="log_subtype">
-              <param name="default"></param>
-              <param name="prefix">log_subtype="</param>
-              <param name="suffix">"</param>
-              <param name="fillOnEmpty">false</param>
-            </param>
-          </param>
-        </param>
-        <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-          <param name="label">Event Id:</param>
-          <param name="field">event_id</param>
-          <param name="replacementMap">
-            <param name="arg">
-              <param name="event_id">
-                <param name="value"></param>
-              </param>
-            </param>
-          </param>
-          <param name="intention">
-            <param name="name">stringreplace</param>
-            <param name="arg">
-              <param name="event_id">
-                <param name="default"></param>
-                <param name="prefix">event_id="</param>
-                <param name="suffix">"</param>
-                <param name="fillOnEmpty">false</param>
-              </param>
-            </param>
-          </param>
-  <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-    <param name="label">Serial Number:</param>
-    <param name="field">serial_number</param>
-    <param name="replacementMap">
-      <param name="arg">
-        <param name="serial_number">
-          <param name="value"></param>
-        </param>
-      </param>
-    </param>
-    <param name="intention">
-      <param name="name">stringreplace</param>
-      <param name="arg">
-        <param name="serial_number">
-          <param name="default"></param>
-          <param name="prefix">serial_number="</param>
-          <param name="suffix">"</param>
-          <param name="fillOnEmpty">false</param>
-        </param>
-      </param>
-    </param>
-    <!--<module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-      <param name="label">Virtual System:</param>
-      <param name="field">vsys</param>
-      <param name="replacementMap">
-        <param name="arg">
-          <param name="vsys">
-            <param name="value"></param>
-          </param>
-        </param>
-      </param>
-      <param name="intention">
-        <param name="name">stringreplace</param>
-        <param name="arg">
-          <param name="vsys">
-            <param name="default"></param>
-            <param name="prefix">vsys="</param>
-            <param name="suffix">"</param>
-            <param name="fillOnEmpty">false</param>
-          </param>
-        </param>
-      </param>
-        -->
-          <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-            <param name="label">Severity:</param>
-            <param name="field">severity</param>
-            <param name="replacementMap">
-              <param name="arg">
-                <param name="severity">
-                  <param name="value"></param>
-                </param>
-              </param>
-            </param>
-            <param name="intention">
-              <param name="name">stringreplace</param>
-              <param name="arg">
-                <param name="severity">
-                  <param name="default"></param>
-                  <param name="prefix">severity="</param>
-                  <param name="suffix">"</param>
-                  <param name="fillOnEmpty">false</param>
-                </param>
-              </param>
-            </param><module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-            <param name="label">Description:</param>
-            <param name="field">description</param>
-            <param name="replacementMap">
-              <param name="arg">
-                <param name="description">
-                  <param name="value"></param>
-                </param>
-              </param>
-            </param>
-            <param name="intention">
-              <param name="name">stringreplace</param>
-              <param name="arg">
-                <param name="description">
-                  <param name="default"></param>
-                  <param name="prefix">description="</param>
-                  <param name="suffix">"</param>
-                  <param name="fillOnEmpty">false</param>
-                </param>
-              </param>
-            </param>
-            <module name="TimeRangePicker" layoutPanel="panel_row1_col1" autoRun="True">
-              <param name="selected">Last 60 minutes</param>
-              <param name="searchWhenChanged">True</param>
-              
-                <module name="HiddenSearch" layoutPanel="panel_row2_col1" group="Latest Events">
-                <param name="search">| `tstats` count(description) AS cls FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time serial_number description log_subtype severity event_id span=5m |
-                  table _time serial_number description log_subtype severity event_id</param>
-                <module name="Paginator">
-                  <param name="count">10</param>
-                  <param name="entityName">results</param>
-                  <module name="SimpleResultsTable">
-                    <param name="drilldown">all</param>
-                    <module name="SimpleDrilldown">
-                      <param name="links">
-                        <param name="_time">./flashtimeline?q=`pan_index` _time="$row._time$"</param>
-                        <param name="serial_number">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` serial_number="$row.serial_number$"</param>
-                        <param name="description">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` description="$row.description$"</param>
-                        <param name="log_subtype">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` log_subtype="$row.log_subtype$"</param>
-                        <param name="severity">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` severity="$row.severity$"</param>
-                        <param name="event_id">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` event_id="$row.event_id$"</param>
-                      </param>
-                    </module>
-                  </module>
-                </module>
-              </module>
-                <module name="HiddenSearch" layoutPanel="panel_row3_col1">
-                  <param name="search">|`tstats` count(log_subtype) AS ce FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log_subtype span=5m | timechart values(ce) by log_subtype</param>
-                  <module name="HiddenChartFormatter">
-                    <param name="chartTitle">System Events Over Time</param>
-                    <param name="chart">column</param>
-                    <param name="chart.stackMode">stacked</param>
-                    <param name="legend.placement">bottom</param>
-                    <module name="JSChart">
-                      <param name="width">100%</param>
-                      <module name="SimpleDrilldown">
-                        <param name="links">
-                          <param name="*">./flashtimeline?q=`pan_index` log_subtype="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$</param>
-                        </param>
-                      </module>
-                    </module>
-                  </module>
-                </module>
-                <module name="HiddenSearch" layoutPanel="panel_row3_col2">
-                  <param name="search">| `tstats` count(severity) AS cs FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$  groupby _time severity span=5m | timechart values(cs) by severity </param>
-                  <module name="HiddenChartFormatter">
-                    <param name="chartTitle">Severity over Time</param>
-                    <param name="chart">column</param>
-                    <param name="chart.stackMode">stacked</param>
-                    <param name="legend.placement">bottom</param>
-                    <module name="JSChart">
-                      <param name="width">100%</param>
-                      <module name="SimpleDrilldown">
-                        <param name="links">
-                          <param name="*">./flashtimeline?q=`pan_index` severity="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$</param>
-                        </param>
-                      </module>
-                    </module>
-                  </module>
-                </module>
-
-              </module>
-            </module>
-          </module>
-        </module>
-      </module>
-    </module>
-</view>
+  <fieldset autoRun="true" submitButton="true">
+    <input type="time" searchWhenChanged="true">
+      <default>
+        <earliestTime>-60m</earliestTime>
+        <latestTime>now</latestTime>
+      </default>
+    </input>
+    <input type="dropdown" token="log_subtype">
+      <label>Log Subtype</label>
+      <default>*</default>
+      <prefix>log_subtype="</prefix>
+      <suffix>"</suffix>
+      <choice value="*">ANY</choice>
+      <populatingSearch fieldForValue="log_subtype" fieldForLabel="log_subtype_with_count">|tstats count(log_subtype) as count
+        FROM pan_system WHERE * groupby log_subtype
+        | eval log_subtype_with_count = log_subtype . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="event_id">
+      <label>Event ID</label>
+      <default>*</default>
+      <prefix>event_id="</prefix>
+      <suffix>"</suffix>
+      <choice value="*">ANY</choice>
+      <populatingSearch fieldForValue="event_id" fieldForLabel="event_id_with_count">|tstats count(event_id) as count
+        FROM pan_system WHERE * groupby event_id
+        | eval event_id_with_count = event_id . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="serial_number">
+      <label>Serial Number</label>
+      <default>*</default>
+      <prefix>serial_number="</prefix>
+      <suffix>"</suffix>
+      <choice value="*">ANY</choice>
+      <populatingSearch fieldForValue="serial_number" fieldForLabel="serial_number_with_count">|tstats count(serial_number) as count
+        FROM pan_system WHERE * groupby serial_number
+        | eval serial_number_with_count = serial_number . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="severity">
+      <label>Severity</label>
+      <default>*</default>
+      <prefix>severity="</prefix>
+      <suffix>"</suffix>
+      <choice value="*">ANY</choice>
+      <populatingSearch fieldForValue="severity" fieldForLabel="severity_with_count">|tstats count(severity) as count
+        FROM pan_system WHERE * groupby severity
+        | eval severity_with_count = severity . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="text" token="description">
+      <label>Description</label>
+      <default>*</default>
+      <prefix>description="</prefix>
+      <suffix>"</suffix>
+    </input>
+  </fieldset>
+  <row>
+    <table>
+      <title>Latest Events</title>
+      <searchString>| `tstats` count(description) AS cls FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time serial_number description log_subtype severity event_id span=5m |
+                  table _time serial_number description log_subtype severity event_id</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">area</option>
+      <option name="charting.chart.nullValueMode">connect</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">bottom</option>
+      <option name="wrap">false</option>
+      <option name="displayRowNumbers">true</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
+    </table>
+  </row>
+  <row>
+    <chart>
+      <title>System Events Over Time</title>
+      <searchString>|`tstats` count(log_subtype) AS ce FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log_subtype span=5m | timechart values(ce) by log_subtype</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">column</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">bottom</option>
+    </chart>
+    <chart>
+      <title>Severity</title>
+      <searchString>| `tstats` count(severity) AS cs FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$  groupby _time severity span=5m | timechart values(cs) by severity</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">column</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">bottom</option>
+    </chart>
+  </row>
+</form>

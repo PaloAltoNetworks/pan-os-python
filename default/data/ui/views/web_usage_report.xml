@@ -1,186 +1,133 @@
-<view template="dashboard.html" stylesheet="web_activity.css" isSticky="False">
+<form>
   <label>Web Activity Report</label>
-  <module name="AccountBar" layoutPanel="appHeader" />
-  <module name="AppBar" layoutPanel="navigationHeader" />
-  <module name="Message" layoutPanel="messaging">
-    <param name="filter">*</param>
-    <param name="clearOnJobDispatch">False</param>
-    <param name="maxSize">2</param>
-  </module>
-  <module name="TitleBar" layoutPanel="viewHeader">
-    <param name="actionsMenuFilter">dashboard</param>
-  </module>
-  <module name="GenericHeader" layoutPanel="panel_row1_col1">
-    <param name="label">Web Activity Report</param>
-  </module>
-  <module name="StaticContentSample" layoutPanel="panel_row1_col1">
-    <param name="text">Detailed web acitivity report by user.</param>
-  </module>
-  <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-    <param name="label">Source IP:</param>
-    <param name="field">src_ip</param>
-    <param name="replacementMap">
-      <param name="arg">
-        <param name="src_ip">
-          <param name="value"></param>
-        </param>
-      </param>
-    </param>
-    <param name="intention">
-      <param name="name">stringreplace</param>
-      <param name="arg">
-        <param name="src_ip">
-          <param name="default"></param>
-          <param name="prefix">src_ip="</param>
-          <param name="suffix">"</param>
-          <param name="fillOnEmpty">false</param>
-        </param>
-      </param>
-    </param>
-    <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-      <param name="label">Source User:</param>
-      <param name="field">src_user</param>
-      <param name="replacementMap">
-        <param name="arg">
-          <param name="src_user">
-            <param name="value"></param>
-          </param>
-        </param>
-      </param>
-      <param name="intention">
-        <param name="name">stringreplace</param>
-        <param name="arg">
-          <param name="src_user">
-            <param name="default"></param>
-            <param name="prefix">src_user="</param>
-            <param name="suffix">"</param>
-            <param name="fillOnEmpty">false</param>
-          </param>
-        </param>
-      </param>
-      <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-        <param name="label">Destination Hostname:</param>
-        <param name="field">dst_hostname</param>
-        <param name="replacementMap">
-          <param name="arg">
-            <param name="dst_hostname">
-              <param name="value"></param>
-            </param>
-          </param>
-        </param>
-        <param name="intention">
-          <param name="name">stringreplace</param>
-          <param name="arg">
-            <param name="dst_hostname">
-              <param name="default"></param>
-              <param name="prefix">dst_hostname="</param>
-              <param name="suffix">"</param>
-              <param name="fillOnEmpty">false</param>
-            </param>
-          </param>
-        </param>
-        <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-        <param name="label">Virtual System:</param>
-        <param name="field">vsys</param>
-        <param name="replacementMap">
-          <param name="arg">
-            <param name="vsys">
-              <param name="value"></param>
-            </param>
-          </param>
-        </param>
-        <param name="intention">
-          <param name="name">stringreplace</param>
-          <param name="arg">
-            <param name="vsys">
-              <param name="default"></param>
-              <param name="prefix">vsys="</param>
-              <param name="suffix">"</param>
-              <param name="fillOnEmpty">false</param>
-            </param>
-          </param>
-        </param>
-        <module name="TimeRangePicker" layoutPanel="panel_row1_col1" autoRun="True">
-          <param name="selected">Last 60 minutes</param>
-          <param name="searchWhenChanged">True</param>
-  
-              <module name="HiddenSearch" layoutPanel="panel_row2_col1" group="Web Hits">
-                <param name="search">|tstats count(dst_hostname) AS cdh FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$  groupby dst_hostname | stats values(cdh) AS Count by dst_hostname | rename dst_hostname AS Hostname</param>
-                <module name="Paginator">
-                  <param name="count">10</param>
-                  <param name="entityName">results</param>
-                  <module name="SimpleResultsTable">
-                    <param name="drilldown">row</param>
-                    <module name="SimpleDrilldown">
-                      <param name="links">
-                        <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` dst_hostname="$click.value$"</param>
-                      </param>
-                    </module>
-                  </module>
-                </module>
-              </module>
-              <module name="HiddenSearch" layoutPanel="panel_row2_col2">
-                <param name="search">|tstats count(category) AS cc FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby category </param>
-                <module name="HiddenChartFormatter">
-                  <param name="chartTitle">Top Category</param>
-                  <param name="legend.placement">bottom</param>
-                  <param name="chart">pie</param>
-                  <module name="JSChart">
-                    <param name="width">100%</param>
-                    <param name="height">250px</param>
-                    <module name="SimpleDrilldown">
-                      <param name="links">
-                        <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $click.name$="$click.value$"</param>
-                      </param>
-                    </module>
-                  </module>
-                </module>
-              </module>
-              <module name="HiddenSearch" layoutPanel="panel_row2_col3">
-                <param name="search">|tstats count(app) FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby app </param>
-                <module name="HiddenChartFormatter">
-                  <param name="chartTitle">Top App</param>
-                  <param name="legend.placement">bottom</param>
-                  <param name="chart">pie</param>
-                  <module name="JSChart">
-                    <param name="width">100%</param>
-                    <param name="height">250px</param>
-                    <module name="SimpleDrilldown">
-                      <param name="links">
-                        <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $click.name$="$click.value$"</param>
-                      </param>
-                    </module>
-                  </module>
-                </module>
-              </module>
-              <module name="HiddenSearch" layoutPanel="panel_row3_col1" group="Web Activity Summary">
-                <param name="search">|tstats count(action) AS Count FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby action category dst_hostname | rename action AS Action | rename category AS Category | rename dst_hostname AS Hostname</param>
-                <param name="groupLabel">Web Activity Summary</param>
-                <module name="ViewRedirectorLink">
-                  <param name="label">Print Report</param>
-                  <param name="popup">True</param>
-                  <param name="dispatchBeforeRedirect">True</param>
-                  <param name="viewTarget">web_usage_report_print</param>
-                </module>
-                <module name="Paginator">
-                  <param name="count">20</param>
-                  <param name="entityName">results</param>
-                  <module name="SimpleResultsTable">
-                    <param name="allowTransformedFieldSelect">True</param>
-                    <param name="drilldown">all</param>
-                    <module name="SimpleDrilldown">
-                      <param name="links">
-                        <param name="Action">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_web_activity` action="$row.Action$" category="$row.Category$" dst_hostname="$row.Hostname$"</param>
-                        <param name="Category">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_web_activity` category="$row.Category$"</param>
-                        <param name="Hostname">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_web_activity` dst_hostname="$row.Hostname$"</param>
-                      </param>
-                    </module>
-                  </module>
-                </module>
-              </module>
-            </module>
-          </module>
-        </module>
-      </module>
-    </module>
-</view>
+  <fieldset autoRun="true" submitButton="true">
+    <input type="time" searchWhenChanged="true">
+      <default>
+        <earliestTime>-60m</earliestTime>
+        <latestTime>now</latestTime>
+      </default>
+    </input>
+    <input type="text" token="src_ip">
+      <label>Source IP</label>
+      <default>*</default>
+      <prefix>src_ip="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="text" token="dst_hostname">
+      <label>Destination Hostname</label>
+      <default>*</default>
+      <prefix>dst_hostname="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="dropdown" token="src_user">
+      <label>Source User</label>
+      <default>*</default>
+      <prefix>src_user="</prefix>
+      <suffix>"</suffix>
+      <choice value="*">ANY</choice>
+      <populatingSearch fieldForValue="src_user" fieldForLabel="src_user_with_count">|tstats count(src_user) as count
+        FROM pan_web WHERE * groupby src_user
+        | eval src_user_with_count = src_user . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="vsys">
+      <label>Virtual System</label>
+      <default>*</default>
+      <prefix>vsys="</prefix>
+      <suffix>"</suffix>
+      <choice value="*">ANY</choice>
+      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
+        FROM pan_web WHERE * groupby vsys
+        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+    </input>
+  </fieldset>
+  <row>
+    <table>
+      <title>Web Hits</title>
+      <searchString>|tstats count(dst_hostname) AS cdh FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$  groupby dst_hostname | stats values(cdh) AS Count by dst_hostname | rename dst_hostname AS Hostname</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <option name="wrap">false</option>
+      <option name="displayRowNumbers">true</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
+    </table>
+    <chart>
+      <title>Categories</title>
+      <searchString>|tstats count(category) AS cc FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby category</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+    </chart>
+    <chart>
+      <title>Applications</title>
+      <searchString>|tstats count(app) FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby app</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+    </chart>
+  </row>
+  <row>
+    <table>
+      <title>Web Activity Summary</title>
+      <searchString>|tstats count(action) AS Count FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby action category dst_hostname | rename action AS Action | rename category AS Category | rename dst_hostname AS Hostname</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <option name="wrap">false</option>
+      <option name="displayRowNumbers">true</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
+    </table>
+  </row>
+</form>
