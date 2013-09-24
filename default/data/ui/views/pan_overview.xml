@@ -33,7 +33,7 @@
   <row>
     <chart>
       <title>Event Types</title>
-      <searchString>`pan_index` sourcetype=pan_* log_subtype=* | timechart span=10s count by log_subtype</searchString>
+      <searchString>`pan_index` sourcetype="pan_*" log_subtype="*" | timechart span=10s count by log_subtype</searchString>
       <earliestTime>rt-5m</earliestTime>
       <latestTime>rt</latestTime>
       <option name="charting.axisX.scale">linear</option>
@@ -67,6 +67,13 @@
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.axisTitleY.text">Events</option>
+      <drilldown>
+          <link>
+              <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_index` sourcetype="pan_*" log_subtype="$click.name2$"&earliest=-5m&latest=now
+              ]]>
+          </link>
+      </drilldown>
     </chart>
     <table>
       <title>Top Applications</title>
@@ -78,6 +85,13 @@
       <option name="drilldown">cell</option>
       <option name="wrap">false</option>
       <option name="count">10</option>
+      <drilldown>
+          <link>
+              <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_index` sourcetype="pan_traffic" app="$click.value$"&earliest=-5m&latest=now
+              ]]>
+          </link>
+      </drilldown>
     </table>
   </row>
   <row>
