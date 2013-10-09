@@ -19,15 +19,11 @@
       <prefix>dst_hostname="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="dropdown" token="src_user">
+    <input type="text" token="src_user">
       <label>Source User</label>
       <default>*</default>
       <prefix>src_user="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
-      <populatingSearch fieldForValue="src_user" fieldForLabel="src_user_with_count">|tstats count(src_user) as count
-        FROM pan_web WHERE * groupby src_user
-        | eval src_user_with_count = src_user . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
@@ -64,6 +60,13 @@
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
       <option name="count">10</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` dst_hostname="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </table>
     <chart>
       <title>Categories</title>
@@ -83,6 +86,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Applications</title>
@@ -102,6 +112,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
   <row>
@@ -128,6 +145,23 @@
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
       <option name="count">10</option>
+      <drilldown>
+        <link field="Action">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` action="$row.Action$" category="$row.Category$" dst_hostname="$row.Hostname$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+        <link field="Category">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` category="$row.Category$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+        <link field="Hostname">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` dst_hostname="$row.Hostname$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </table>
   </row>
 </form>

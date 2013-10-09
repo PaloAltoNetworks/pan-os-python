@@ -92,6 +92,43 @@
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
       <option name="count">10</option>
+      <drilldown>
+        <link field="_time">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` _time="$row._time$"
+        ]]>
+        </link>
+        <link field="result">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` result="$row.result$"&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="serial_number">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` serial_number="$row.serial_number$"&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="host">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` host="$row.host$"&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="admin">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin="$row.admin$"&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="client">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` client="$row.client$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+        <link field="configuration_path">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` configuration_path="$row.configuration_path$"
+	  ]]>
+        </link>
+      </drilldown>
     </table>
   </row>
   <row>
@@ -114,6 +151,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` protocol="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Configuration Administrators</title>
@@ -133,6 +177,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` protocol="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
   <row>
@@ -154,6 +205,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Results</title>
@@ -173,6 +231,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
 </form>

@@ -78,6 +78,38 @@
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">cell</option>
       <option name="count">10</option>
+      <drilldown>
+        <link field="_time">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` _time="$row._time$"
+        ]]>
+        </link>
+        <link field="serial_number">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` serial_number="$row.serial_number$"&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="description">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` description="$row.description$"&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="log_subtype">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` log_subtype="$row.log_subtype$"&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="severity">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` severity="$row.severity$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+        <link field="event_id">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` event_id="$row.event_id$"
+	  ]]>
+        </link>
+      </drilldown>
     </table>
   </row>
   <row>
@@ -99,6 +131,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` log_subtype="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Severity</title>
@@ -118,6 +157,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` severity="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
 </form>
