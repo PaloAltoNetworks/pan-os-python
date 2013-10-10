@@ -96,7 +96,8 @@
   </row>
   <row>
     <map>
-      <searchString>`pan_index` sourcetype="pan_traffic"  | rename dst_ip AS clientip | localop | lookup geoip clientip  | rename client_lat AS latitude | rename client_lon AS longitude| geostats count by category</searchString>
+      <title>Applications by Destination IP Location</title>
+      <searchString>`pan_traffic` | iplocation "dst_ip" | geostats count by app</searchString>
       <earliestTime>rt-5m</earliestTime>
       <latestTime>rt</latestTime>
     </map>
