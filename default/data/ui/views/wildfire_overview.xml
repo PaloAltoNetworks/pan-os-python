@@ -25,15 +25,11 @@
       <prefix>misc="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="dropdown" token="user">
+    <input type="text" token="user">
       <label>User</label>
       <default>*</default>
       <prefix>"</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
-      <populatingSearch fieldForValue="dst_user" fieldForLabel="dst_user_with_count">|tstats count(dst_user) as count
-        FROM pan_wildfire WHERE * groupby dst_user
-        | eval dst_user_with_count = dst_user . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
