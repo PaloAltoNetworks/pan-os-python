@@ -35,7 +35,7 @@
   <row>
     <chart>
       <title>Locations by Kilobytes</title>
-      <searchString>| tstats count(Location) from pan_threatDetail where $threat$ $user$ $application$ $location$ groupby Location Bytes| eval KB=Bytes/1024 |
+      <searchString>| tstats count(Location) FROM pan_threatDetail WHERE * $threat$ $user$ $application$ $location$ groupby Location Bytes| eval KB=Bytes/1024 |
                                     stats sum(KB) as "Total Bytes (KB)" by Location |
                                     sort -"Total Bytes (KB)"</searchString>
       <earliestTime>$earliest$</earliestTime>
@@ -68,7 +68,7 @@
     </chart>
     <chart>
       <title>Users by Kilobytes</title>
-      <searchString>| tstats count(User) from pan_threatDetail where $threat$ $user$ $application$ $location$ groupby User Bytes|
+      <searchString>| tstats count(User) FROM pan_threatDetail WHERE * $threat$ $user$ $application$ $location$ groupby User Bytes|
                                     eval KB=Bytes/1024 |
                                     stats sum(KB) as "Transferred (KB)" by User |
                                     sort -"Transferred (KB)"</searchString>
@@ -99,7 +99,7 @@
   <row>
     <table>
       <title>Bytes Transferred Duration by Users</title>
-      <searchString>| tstats count(User) from pan_threatDetail where $threat$ $user$ $application$ $location$ groupby User Bytes Duration Application Location|
+      <searchString>| tstats count(User) FROM pan_threatDetail WHERE * $threat$ $user$ $application$ $location$ groupby User Bytes Duration Application Location|
                                     eval KB=Bytes/1024 |
                                     stats sum(KB) as "Transfer (KB)"
                                           sum(Duration) as "Total Duration"
@@ -129,7 +129,7 @@
   <row>
     <table>
       <title>Threats by Bytes Transferred and Sessions</title>
-      <searchString>| tstats count(Session) from pan_threatDetail where $threat$ $user$ $application$ $location$ groupby Session Bytes Threat|
+      <searchString>| tstats count(Session) FROM pan_threatDetail WHERE * $threat$ $user$ $application$ $location$ groupby Session Bytes Threat|
                                     eval KB=Bytes/1024 |
                                     stats sum(KB) as "Transfer (KB)"
                                     count(Session) as "Total Sessions"

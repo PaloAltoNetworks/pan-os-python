@@ -71,7 +71,7 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| `tstats` count(admin) FROM pan_config WHERE * $host$ $admin$ $client$ $result$                     $cmd$ groupby _time result serial_number host admin client cmd configuration_path span=5m | table                     _time result serial_number host admin client cmd configuration_path result</searchString>
+      <searchString>| tstats count(admin) FROM pan_config WHERE * $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby _time result serial_number host admin client cmd configuration_path span=5m | table                     _time result serial_number host admin client cmd configuration_path result</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -134,8 +134,8 @@
   <row>
     <chart>
       <title>Config Events</title>
-      <searchString>| `tstats` count(cmd) AS cr FROM pan_config WHERE * $host$ $admin$ $client$
-                    $result$ $cmd$ groupby _time cmd span=5m| timechart values(cr) by cmd</searchString>
+      <searchString>| tstats count(cmd) AS cr FROM pan_config WHERE * $host$ $admin$ $client$
+                    $result$ $cmd$ $vsys$ groupby _time cmd span=5m| timechart values(cr) by cmd</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -161,7 +161,7 @@
     </chart>
     <chart>
       <title>Configuration Administrators</title>
-      <searchString>| `tstats` count(admin) AS ca FROM pan_config WHERE * $host$ $admin$ $client$                     $result$ $cmd$ groupby _time admin span=5m | timechart values(admin) by admin</searchString>
+      <searchString>| tstats count(admin) AS ca FROM pan_config WHERE * $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby _time admin span=5m | timechart values(admin) by admin</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -189,7 +189,7 @@
   <row>
     <chart>
       <title>Clients Used</title>
-      <searchString>| `tstats` count(client) AS cc FROM pan_config WHERE $host$ $admin$ $client$                     $result$ $cmd$ groupby client</searchString>
+      <searchString>| tstats count(client) AS cc FROM pan_config WHERE * $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby client</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -215,7 +215,7 @@
     </chart>
     <chart>
       <title>Results</title>
-      <searchString>| `tstats` count(result) AS cr FROM pan_config WHERE $host$ $admin$ $client$ $result$ $cmd$ groupby result</searchString>
+      <searchString>| tstats count(result) AS cr FROM pan_config WHERE * $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby result</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

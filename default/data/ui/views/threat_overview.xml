@@ -59,7 +59,7 @@
   <row>
     <chart>
       <title>Threat Subtypes</title>
-      <searchString>| tstats count(log_subtype) AS cls FROM pan_threat WHERE $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log_subtype span=5m | timechart values(cls) by log_subtype</searchString>
+      <searchString>| tstats count(log_subtype) AS cls FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log_subtype span=5m | timechart values(cls) by log_subtype</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -85,7 +85,7 @@
     </chart>
     <chart>
       <title>By Risk Value</title>
-      <searchString>| tstats count(severity) AS cs FROM pan_threat WHERE $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time severity span=5m | timechart values(cs) by severity</searchString>
+      <searchString>| tstats count(severity) AS cs FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time severity span=5m | timechart values(cs) by severity</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
