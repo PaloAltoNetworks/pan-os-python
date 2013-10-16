@@ -10,44 +10,44 @@
     </input>
     <input type="text" token="src_ip">
       <label>Source IP</label>
-      <default>*</default>
+      <default></default>
       <prefix>src_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
-      <default>*</default>
+      <default></default>
       <prefix>dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="src_user">
       <label>Source User</label>
-      <default>*</default>
+      <default></default>
       <prefix>src_user="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_hostname">
       <label>Destination Hostname</label>
-      <default>*</default>
+      <default></default>
       <prefix>dst_hostname="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
-      <default>*</default>
+      <default></default>
       <prefix>app="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
         FROM pan_web WHERE * groupby app
         | eval app_with_count = app . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
-      <default>*</default>
+      <default></default>
       <prefix>vsys="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
         FROM pan_web WHERE * groupby vsys
         | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>

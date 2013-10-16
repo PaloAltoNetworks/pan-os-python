@@ -9,60 +9,60 @@
     </input>
     <input type="dropdown" token="admin">
       <label>Admin</label>
-      <default>*</default>
+      <default></default>
       <prefix>admin="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="admin" fieldForLabel="admin_with_count">|tstats count(admin) as count
         FROM pan_config WHERE * groupby admin
         | eval admin_with_count = admin . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="host">
       <label>Host</label>
-      <default>*</default>
+      <default></default>
       <prefix>host="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="host" fieldForLabel="host_with_count">|tstats count(host) as count
         FROM pan_config WHERE * groupby host
         | eval host_with_count = host . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="client">
       <label>Client</label>
-      <default>*</default>
+      <default></default>
       <prefix>client="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="client" fieldForLabel="client_with_count">|tstats count(client) as count
         FROM pan_config WHERE * groupby client
         | eval client_with_count = client . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="cmd">
       <label>Command</label>
-      <default>*</default>
+      <default></default>
       <prefix>cmd="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="cmd" fieldForLabel="cmd_with_count">|tstats count(cmd) as count
         FROM pan_config WHERE * groupby cmd
         | eval cmd_with_count = cmd . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="result">
       <label>Result</label>
-      <default>*</default>
+      <default></default>
       <prefix>result="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="result" fieldForLabel="result_with_count">|tstats count(result) as count
         FROM pan_config WHERE * groupby result
         | eval result_with_count = result . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
-      <default>*</default>
+      <default></default>
       <prefix>vsys="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
         FROM pan_config WHERE * groupby vsys
         | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>

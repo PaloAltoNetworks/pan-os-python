@@ -9,28 +9,28 @@
     </input>
     <input type="text" token="src_ip">
       <label>Source IP</label>
-      <default>*</default>
+      <default></default>
       <prefix>src_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_hostname">
       <label>Destination Hostname</label>
-      <default>*</default>
+      <default></default>
       <prefix>dst_hostname="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="src_user">
       <label>Source User</label>
-      <default>*</default>
+      <default></default>
       <prefix>src_user="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
-      <default>*</default>
+      <default></default>
       <prefix>vsys="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
         FROM pan_web WHERE * groupby vsys
         | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>

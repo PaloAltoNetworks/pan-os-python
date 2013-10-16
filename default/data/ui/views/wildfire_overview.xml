@@ -9,44 +9,44 @@
     </input>
     <input type="text" token="src_ip">
       <label>Source IP</label>
-      <default>*</default>
+      <default></default>
       <prefix>src_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
-      <default>*</default>
+      <default></default>
       <prefix>dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="misc">
       <label>Filename</label>
-      <default>*</default>
+      <default></default>
       <prefix>misc="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="user">
       <label>User</label>
-      <default>*</default>
+      <default></default>
       <prefix>"</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
-      <default>*</default>
+      <default></default>
       <prefix>app="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
         FROM pan_wildfire WHERE * groupby app
         | eval app_with_count = app . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
-      <default>*</default>
+      <default></default>
       <prefix>vsys="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
         FROM pan_wildfire WHERE * groupby vsys
         | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>

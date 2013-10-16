@@ -9,48 +9,48 @@
     </input>
     <input type="text" token="src_ip">
       <label>Source IP</label>
-      <default>*</default>
+      <default></default>
       <prefix>src_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
-      <default>*</default>
+      <default></default>
       <prefix>dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="threat_id">
       <label>Threat ID</label>
-      <default>*</default>
+      <default></default>
       <prefix>threat_id="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="log_subtype">
       <label>Log Subtype</label>
-      <default>*</default>
+      <default></default>
       <prefix>log_subtype="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
         pan_logs threat count(threat) AS count SPLITROW log_subtype AS field
         | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
-      <default>*</default>
+      <default></default>
       <prefix>app="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
         pan_logs threat count(threat) AS count SPLITROW app AS field
         | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
-      <default>*</default>
+      <default></default>
       <prefix>vsys="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
         pan_logs threat count(threat) AS count SPLITROW vsys AS field
         | eval field_with_count = field . " (" . count . ")"</populatingSearch>

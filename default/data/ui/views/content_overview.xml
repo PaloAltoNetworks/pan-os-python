@@ -9,52 +9,52 @@
     </input>
     <input type="text" token="src_ip">
       <label>Source IP</label>
-      <default>*</default>
+      <default></default>
       <prefix>src_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
-      <default>*</default>
+      <default></default>
       <prefix>dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="content_type">
       <label>Content Type</label>
-      <default>*</default>
+      <default></default>
       <prefix>content_type="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="content_type" fieldForLabel="content_type_with_count">| tstats count(content_type) as count
         FROM pan_content WHERE groupby content_type
         | eval content_type_with_count = content_type . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="category">
       <label>Category</label>
-      <default>*</default>
+      <default></default>
       <prefix>category="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="category" fieldForLabel="category_with_count">| tstats count(category) as count
         FROM pan_content WHERE groupby category
         | eval category_with_count = category . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
-      <default>*</default>
+      <default></default>
       <prefix>app="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">| tstats count(app) as count
         FROM pan_content WHERE groupby app
         | eval app_with_count = app . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
-      <default>*</default>
+      <default></default>
       <prefix>vsys="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">| tstats count(vsys) as count
         FROM pan_content WHERE groupby vsys
         | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>

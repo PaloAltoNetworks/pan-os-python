@@ -9,25 +9,25 @@
     </input>
     <input type="text" token="threat">
       <label>Threat</label>
-      <default>*</default>
+      <default></default>
       <prefix>Threat="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="user">
       <label>User</label>
-      <default>*</default>
+      <default></default>
       <prefix>User="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="application">
       <label>Application</label>
-      <default>*</default>
+      <default></default>
       <prefix>Application="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="location">
       <label>Location</label>
-      <default>*</default>
+      <default></default>
       <prefix>Location="</prefix>
       <suffix>"</suffix>
     </input>

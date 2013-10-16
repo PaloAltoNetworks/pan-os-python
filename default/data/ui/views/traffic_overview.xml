@@ -10,36 +10,36 @@
     </input>
     <input type="text" token="src_ip">
       <label>Source IP</label>
-      <default>*</default>
+      <default></default>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
-      <default>*</default>
+      <default></default>
     </input>
     <input type="text" token="dst_port">
       <label>Destination Port</label>
-      <default>*</default>
+      <default></default>
     </input>
     <input type="text" token="src_user">
       <label>Source User</label>
-      <default>*</default>
+      <default></default>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
-      <default>*</default>
+      <default></default>
       <prefix>app="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
         FROM pan_traffic WHERE * groupby app
         | eval app_with_count = app . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="action">
       <label>Action</label>
-      <default>*</default>
+      <default></default>
       <prefix>action="</prefix>
       <suffix>"</suffix>
-      <choice value="*">ANY</choice>
+      <choice value="">ANY</choice>
       <populatingSearch fieldForValue="action" fieldForLabel="action_with_count">|tstats count(action) as count
         FROM pan_traffic WHERE * groupby action
         | eval action_with_count = action . " (" . count . ")"</populatingSearch>
