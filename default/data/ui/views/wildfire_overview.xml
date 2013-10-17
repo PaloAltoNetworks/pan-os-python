@@ -105,7 +105,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` dst_user="$row.Destination User$" dst_ip="$row.Destination IP$" misc="$row.Filename$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` dst_ip="$row.Destination IP$" misc="$row.Filename$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
