@@ -55,7 +55,7 @@
   <row>
     <chart>
       <title>All WildFire Events by Category</title>
-      <searchString>| tstats count(category) AS ccat FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time category span=5m | timechart values(ccat) by category</searchString>
+      <searchString>| tstats count(category) AS ccat FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time category | timechart values(ccat) by category</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

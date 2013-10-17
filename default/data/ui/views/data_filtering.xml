@@ -59,7 +59,7 @@
   <row>
     <chart>
       <title>Data Events</title>
-      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time action span=5m| timechart values(ca) by action</searchString>
+      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time action| timechart values(ca) by action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -85,7 +85,7 @@
     </chart>
     <chart>
       <title>Application</title>
-      <searchString>| tstats count(app) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time app span=5m| timechart values(ca) by app</searchString>
+      <searchString>| tstats count(app) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time app| timechart values(ca) by app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

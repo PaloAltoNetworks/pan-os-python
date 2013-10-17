@@ -63,7 +63,7 @@
   <row>
     <chart>
       <title>Major Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time Major_Type span=5m| timechart values(cc) by Major_Type</searchString>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time Major_Type| timechart values(cc) by Major_Type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -89,7 +89,7 @@
     </chart>
     <chart>
       <title>Full Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time content_type span=5m| timechart values(cc) by content_type</searchString>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time content_type| timechart values(cc) by content_type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

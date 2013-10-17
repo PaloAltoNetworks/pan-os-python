@@ -71,7 +71,7 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| tstats count(admin) FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby _time result serial_number host admin client cmd configuration_path span=5m | table _time result serial_number host admin client cmd configuration_path result | sort -_time</searchString>
+      <searchString>| tstats count(admin) FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby _time result serial_number host admin client cmd configuration_path | table _time result serial_number host admin client cmd configuration_path result | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -135,7 +135,7 @@
     <chart>
       <title>Config Events</title>
       <searchString>| tstats count(cmd) AS cr FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client$
-                    $result$ $cmd$ $vsys$ groupby _time cmd span=5m| timechart values(cr) by cmd</searchString>
+                    $result$ $cmd$ $vsys$ groupby _time cmd| timechart values(cr) by cmd</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -161,7 +161,7 @@
     </chart>
     <chart>
       <title>Configuration Administrators</title>
-      <searchString>| tstats count(admin) AS ca FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby _time admin span=5m | timechart values(admin) by admin</searchString>
+      <searchString>| tstats count(admin) AS ca FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby _time admin | timechart values(admin) by admin</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
