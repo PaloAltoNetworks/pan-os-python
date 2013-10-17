@@ -1,33 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?><dashboard>
-  <label>PAN Overview</label>
+  <label>Overview</label>
+  <description/>
   <row>
     <single>
       <searchString>`pan_index` | stats dc(host)</searchString>
       <earliestTime>rt-30s</earliestTime>
       <latestTime>rt</latestTime>
-      <option name="afterLabel">PAN Reporting</option>
       <option name="classField">None</option>
+      <option name="underLabel">PAN Reporting</option>
+      <option name="linkView">search</option>
     </single>
     <single>
       <searchString>`pan_index` | stats count</searchString>
       <earliestTime>rt-30s</earliestTime>
       <latestTime>rt</latestTime>
-      <option name="afterLabel">Total Events</option>
       <option name="classField">None</option>
+      <option name="underLabel">Total Events</option>
+      <option name="linkView">search</option>
     </single>
     <single>
       <searchString>`pan_index` action=block* OR action=deny | stats count</searchString>
       <earliestTime>rt-30s</earliestTime>
       <latestTime>rt</latestTime>
-      <option name="afterLabel">Total Blocks</option>
       <option name="classField">None</option>
+      <option name="underLabel">Total Blocks</option>
+      <option name="linkView">search</option>
     </single>
     <single>
       <searchString>`pan_index` sourcetype=pan_traffic NOT any| top limit=1 category</searchString>
       <earliestTime>rt-30s</earliestTime>
       <latestTime>rt</latestTime>
       <option name="classField">None</option>
-      <option name="afterLabel">Top Category</option>
+      <option name="underLabel">Top Category</option>
+      <option name="linkView">search</option>
     </single>
   </row>
   <row>
@@ -68,11 +73,11 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.axisTitleY.text">Events</option>
       <drilldown>
-          <link>
-              <![CDATA[
+        <link>
+          <![CDATA[
               /app/SplunkforPaloAltoNetworks/search?q=`pan_index` sourcetype="pan_*" log_subtype="$click.name2$"&earliest=-5m&latest=now
               ]]>
-          </link>
+        </link>
       </drilldown>
     </chart>
     <table>
@@ -86,11 +91,11 @@
       <option name="wrap">false</option>
       <option name="count">10</option>
       <drilldown>
-          <link>
-              <![CDATA[
+        <link>
+          <![CDATA[
               /app/SplunkforPaloAltoNetworks/search?q=`pan_index` sourcetype="pan_traffic" app="$click.value$"&earliest=-5m&latest=now
               ]]>
-          </link>
+        </link>
       </drilldown>
     </table>
   </row>
