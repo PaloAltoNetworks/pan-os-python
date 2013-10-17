@@ -14,7 +14,7 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="log_subtype" fieldForLabel="log_subtype_with_count">|tstats count(log_subtype) as count
-        FROM pan_system WHERE * groupby log_subtype
+        FROM pan_system WHERE earliest=$earliest$ latest=$latest$ groupby log_subtype
         | eval log_subtype_with_count = log_subtype . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="event_id">
@@ -24,7 +24,7 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="event_id" fieldForLabel="event_id_with_count">|tstats count(event_id) as count
-        FROM pan_system WHERE * groupby event_id
+        FROM pan_system WHERE earliest=$earliest$ latest=$latest$ groupby event_id
         | eval event_id_with_count = event_id . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="serial_number">
@@ -34,7 +34,7 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="serial_number" fieldForLabel="serial_number_with_count">|tstats count(serial_number) as count
-        FROM pan_system WHERE * groupby serial_number
+        FROM pan_system WHERE earliest=$earliest$ latest=$latest$ groupby serial_number
         | eval serial_number_with_count = serial_number . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="severity">
@@ -44,7 +44,7 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="severity" fieldForLabel="severity_with_count">|tstats count(severity) as count
-        FROM pan_system WHERE * groupby severity
+        FROM pan_system WHERE earliest=$earliest$ latest=$latest$ groupby severity
         | eval severity_with_count = severity . " (" . count . ")"</populatingSearch>
     </input>
     <input type="text" token="description">
@@ -57,7 +57,7 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| tstats count(description) AS cls FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time serial_number description log_subtype severity event_id span=5m |                   table _time serial_number description log_subtype severity event_id</searchString>
+      <searchString>| tstats count(description) AS cls FROM pan_system WHERE earliest=$earliest$ latest=$latest$ $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time serial_number description log_subtype severity event_id span=5m |                   table _time serial_number description log_subtype severity event_id</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -115,7 +115,7 @@
   <row>
     <chart>
       <title>System Events Over Time</title>
-      <searchString>| tstats count(log_subtype) AS ce FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log_subtype span=5m | timechart values(ce) by log_subtype</searchString>
+      <searchString>| tstats count(log_subtype) AS ce FROM pan_system WHERE earliest=$earliest$ latest=$latest$ $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log_subtype span=5m | timechart values(ce) by log_subtype</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -141,7 +141,7 @@
     </chart>
     <chart>
       <title>Severity</title>
-      <searchString>| tstats count(severity) AS cs FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$  groupby _time severity span=5m | timechart values(cs) by severity</searchString>
+      <searchString>| tstats count(severity) AS cs FROM pan_system WHERE earliest=$earliest$ latest=$latest$ $serial_number$ $description$ $log_subtype$ $severity$ $event_id$  groupby _time severity span=5m | timechart values(cs) by severity</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

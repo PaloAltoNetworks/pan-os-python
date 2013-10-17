@@ -26,7 +26,7 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="content_type" fieldForLabel="content_type_with_count">| tstats count(content_type) as count
-        FROM pan_content WHERE groupby content_type
+        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby content_type
         | eval content_type_with_count = content_type . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="category">
@@ -36,7 +36,7 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="category" fieldForLabel="category_with_count">| tstats count(category) as count
-        FROM pan_content WHERE groupby category
+        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby category
         | eval category_with_count = category . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="app">
@@ -46,7 +46,7 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">| tstats count(app) as count
-        FROM pan_content WHERE groupby app
+        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby app
         | eval app_with_count = app . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
@@ -56,14 +56,14 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">| tstats count(vsys) as count
-        FROM pan_content WHERE groupby vsys
+        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby vsys
         | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>Major Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE * $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time Major_Type span=5m| timechart values(cc) by Major_Type</searchString>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time Major_Type span=5m| timechart values(cc) by Major_Type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -89,7 +89,7 @@
     </chart>
     <chart>
       <title>Full Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE * $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time content_type span=5m| timechart values(cc) by content_type</searchString>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time content_type span=5m| timechart values(cc) by content_type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -117,7 +117,7 @@
   <row>
     <table>
       <title>Content Types and Apps</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE * $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | stats values(cc) AS Count by content_type app | rename app AS Application | rename content_type AS "Content Type"</searchString>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | stats values(cc) AS Count by content_type app | rename app AS Application | rename content_type AS "Content Type"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -157,7 +157,7 @@
     </table>
     <table>
       <title>Non-Web Browsing Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE * $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | where app != "web-browsing" | stats values(cc) AS Count by content_type app| rename app AS Application | rename content_type AS "Content Type"</searchString>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | where app != "web-browsing" | stats values(cc) AS Count by content_type app| rename app AS Application | rename content_type AS "Content Type"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -188,7 +188,7 @@
     </table>
     <table>
       <title>Content Types and Web Categories</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE * $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby category content_type | stats values(cc) AS Count by content_type category | rename category AS Category | rename content_type AS "Content Type"</searchString>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby category content_type | stats values(cc) AS Count by content_type category | rename category AS Category | rename content_type AS "Content Type"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

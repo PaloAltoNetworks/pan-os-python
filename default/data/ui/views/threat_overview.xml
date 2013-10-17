@@ -59,7 +59,7 @@
   <row>
     <chart>
       <title>Threat Subtypes</title>
-      <searchString>| tstats count(log_subtype) AS cls FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log_subtype span=5m | timechart values(cls) by log_subtype</searchString>
+      <searchString>| tstats count(log_subtype) AS cls FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log_subtype span=5m | timechart values(cls) by log_subtype</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -85,7 +85,7 @@
     </chart>
     <chart>
       <title>By Risk Value</title>
-      <searchString>| tstats count(severity) AS cs FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time severity span=5m | timechart values(cs) by severity</searchString>
+      <searchString>| tstats count(severity) AS cs FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time severity span=5m | timechart values(cs) by severity</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -113,7 +113,7 @@
   <row>
     <chart>
       <title>Threat IDs</title>
-      <searchString>| tstats count(threat_id) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby threat_id</searchString>
+      <searchString>| tstats count(threat_id) AS cti FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby threat_id</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -139,7 +139,7 @@
     </chart>
     <chart>
       <title>Threats by App</title>
-      <searchString>| tstats count(app) AS ca FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby app</searchString>
+      <searchString>| tstats count(app) AS ca FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -165,7 +165,7 @@
     </chart>
     <chart>
       <title>Threats by User</title>
-      <searchString>| tstats count(dst_user) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby dst_user</searchString>
+      <searchString>| tstats count(dst_user) AS cti FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby dst_user</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -193,7 +193,7 @@
   <row>
     <chart>
       <title>Source IP</title>
-      <searchString>| tstats count(src_ip) AS csrc FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby src_ip</searchString>
+      <searchString>| tstats count(src_ip) AS csrc FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby src_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -219,7 +219,7 @@
     </chart>
     <chart>
       <title>Threats by Severity</title>
-      <searchString>| tstats count(severity) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby severity</searchString>
+      <searchString>| tstats count(severity) AS cti FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby severity</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -245,7 +245,7 @@
     </chart>
     <chart>
       <title>Destination IP</title>
-      <searchString>| tstats count(dst_ip) AS cti FROM pan_threat WHERE * $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby dst_ip</searchString>
+      <searchString>| tstats count(dst_ip) AS cti FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby dst_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

@@ -32,14 +32,14 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
-        FROM pan_web WHERE * groupby vsys
+        FROM pan_web WHERE earliest=$earliest$ latest=$latest$ groupby vsys
         | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
     <table>
       <title>Web Hits</title>
-      <searchString>| tstats count(dst_hostname) AS cdh FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$  groupby dst_hostname | stats values(cdh) AS Count by dst_hostname | rename dst_hostname AS Hostname</searchString>
+      <searchString>| tstats count(dst_hostname) AS cdh FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$  groupby dst_hostname | stats values(cdh) AS Count by dst_hostname | rename dst_hostname AS Hostname</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -70,7 +70,7 @@
     </table>
     <chart>
       <title>Categories</title>
-      <searchString>| tstats count(category) AS cc FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby category</searchString>
+      <searchString>| tstats count(category) AS cc FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby category</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -96,7 +96,7 @@
     </chart>
     <chart>
       <title>Applications</title>
-      <searchString>| tstats count(app) FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby app</searchString>
+      <searchString>| tstats count(app) FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -124,7 +124,7 @@
   <row>
     <table>
       <title>Web Activity Summary</title>
-      <searchString>| tstats count(action) AS Count FROM pan_web WHERE * $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby action category dst_hostname | rename action AS Action | rename category AS Category | rename dst_hostname AS Hostname</searchString>
+      <searchString>| tstats count(action) AS Count FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby action category dst_hostname | rename action AS Action | rename category AS Category | rename dst_hostname AS Hostname</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

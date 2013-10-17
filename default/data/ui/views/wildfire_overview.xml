@@ -38,7 +38,7 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
-        FROM pan_wildfire WHERE * groupby app
+        FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ groupby app
         | eval app_with_count = app . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
@@ -48,14 +48,14 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
-        FROM pan_wildfire WHERE * groupby vsys
+        FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ groupby vsys
         | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>All WildFire Events by Category</title>
-      <searchString>| tstats count(category) AS ccat FROM pan_wildfire WHERE * $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time category span=5m | timechart values(ccat) by category</searchString>
+      <searchString>| tstats count(category) AS ccat FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time category span=5m | timechart values(ccat) by category</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -81,7 +81,7 @@
     </chart>
     <table>
       <title>Recent Malware Download Attempts</title>
-      <searchString>| tstats count(dst_user) AS ca FROM pan_wildfire WHERE category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time dst_ip misc dst_user | table _time dst_ip dst_user misc | rename dst_user AS "Destination User" | rename dst_ip AS "Destination IP" | rename action AS Action | rename misc AS Filename</searchString>
+      <searchString>| tstats count(dst_user) AS ca FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby _time dst_ip misc dst_user | table _time dst_ip dst_user misc | rename dst_user AS "Destination User" | rename dst_ip AS "Destination IP" | rename action AS Action | rename misc AS Filename</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -114,7 +114,7 @@
   <row>
     <table>
       <title>Possible Malware Traffic</title>
-      <searchString>| tstats count(dst_ip) AS cdip FROM pan_wildfire_report_malware_traffic WHERE NOT (protocol=udp AND dst_port=53) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol | join protocol dst_ip dst_port [ | tstats count(src_ip) FROM pan_traffic WHERE (NOT (protocol=udp AND dst_port=53)) $src_ip$ $dst_ip$ $vsys$ $app$ groupby _time src_ip dst_ip dst_port protocol app src_user | dedup 1 src_ip dst_ip dst_port protocol app src_user | table _time src_ip src_user dst_port dst_ip protocol app | rename _time AS traffic_time ] | rename src_user AS "User" | rename src_ip AS "Source IP" | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View Wildfire Report" | table traffic_time "Source IP" "User" dst_ip dst_port protocol app report_id "Traffic Link" "WildFire Link" | rename traffic_time AS _time | rename dst_ip AS "Dst_IP" | rename dst_port AS "Dst_Port" | rename protocol AS "Protocol" | rename app AS "Application" | rename report_id AS "WildFire Report ID"</searchString>
+      <searchString>| tstats count(dst_ip) AS cdip FROM pan_wildfire_report_malware_traffic WHERE earliest=$earliest$ latest=$latest$ NOT (protocol=udp AND dst_port=53) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol | join protocol dst_ip dst_port [ | tstats count(src_ip) FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ (NOT (protocol=udp AND dst_port=53)) $src_ip$ $dst_ip$ $vsys$ $app$ groupby _time src_ip dst_ip dst_port protocol app src_user | dedup 1 src_ip dst_ip dst_port protocol app src_user | table _time src_ip src_user dst_port dst_ip protocol app | rename _time AS traffic_time ] | rename src_user AS "User" | rename src_ip AS "Source IP" | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View Wildfire Report" | table traffic_time "Source IP" "User" dst_ip dst_port protocol app report_id "Traffic Link" "WildFire Link" | rename traffic_time AS _time | rename dst_ip AS "Dst_IP" | rename dst_port AS "Dst_Port" | rename protocol AS "Protocol" | rename app AS "Application" | rename report_id AS "WildFire Report ID"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -187,7 +187,7 @@
   <row>
     <chart>
       <title>Top Malware</title>
-      <searchString>| tstats count(misc) AS cti FROM pan_wildfire WHERE category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby misc</searchString>
+      <searchString>| tstats count(misc) AS cti FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby misc</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -213,7 +213,7 @@
     </chart>
     <chart>
       <title>Malware Downloads by Application</title>
-      <searchString>| tstats count(app) AS ca FROM pan_wildfire WHERE category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby app</searchString>
+      <searchString>| tstats count(app) AS ca FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -239,7 +239,7 @@
     </chart>
     <chart>
       <title>Malware Downloaders by User</title>
-      <searchString>| tstats count(dst_user) AS cti FROM pan_wildfire WHERE category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ $dst_user$ groupby dst_user</searchString>
+      <searchString>| tstats count(dst_user) AS cti FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ $dst_user$ groupby dst_user</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -267,7 +267,7 @@
   <row>
     <chart>
       <title>Malware Sources</title>
-      <searchString>| tstats count(src_ip) AS csrc FROM pan_wildfire WHERE category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby src_ip</searchString>
+      <searchString>| tstats count(src_ip) AS csrc FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby src_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -293,7 +293,7 @@
     </chart>
     <chart>
       <title>Previously Analyzed Malware</title>
-      <searchString>| tstats count(action) AS cact FROM pan_wildfire WHERE category="malicious" (action=wildfire-upload-success OR action=wildfire-upload-skip) $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby action |
+      <searchString>| tstats count(action) AS cact FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ category="malicious" (action=wildfire-upload-success OR action=wildfire-upload-skip) $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby action |
                                             replace wildfire-upload-success with "New Malware" in action |
                                             replace alert with "Known Malware" in action |
                                             replace wildfire-upload-skip with "Known Malware" in action |
@@ -323,7 +323,7 @@
     </chart>
     <chart>
       <title>Malware Downloaders by IP</title>
-      <searchString>| tstats count(dst_ip) AS cti FROM pan_wildfire WHERE category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby dst_ip</searchString>
+      <searchString>| tstats count(dst_ip) AS cti FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ category="malicious" $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby dst_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
