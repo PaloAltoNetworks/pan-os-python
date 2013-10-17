@@ -31,9 +31,9 @@
       <prefix>log_subtype="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs threat count(threat) AS count SPLITROW log_subtype AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="log_subtype" fieldForLabel="log_subtype_with_count">|tstats count(log_subtype) as count
+        FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ groupby log_subtype
+        | eval log_subtype_with_count = log_subtype . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
@@ -41,9 +41,9 @@
       <prefix>app="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs threat count(threat) AS count SPLITROW app AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
+        FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ groupby app
+        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
@@ -51,9 +51,9 @@
       <prefix>vsys="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs threat count(threat) AS count SPLITROW vsys AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
+        FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ groupby vsys
+        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
