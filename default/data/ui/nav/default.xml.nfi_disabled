@@ -7,6 +7,7 @@
       <a href="search?q=%60pan_threat%60">Threat Data</a>
       <a href="search?q=%60pan_url%60">URL Logs</a>
       <a href="search?q=%60pan_data%60">Data Filtering Logs</a>
+      <a href="search?q=%60pan_file%60">File Blocking Logs</a>
       <a href="search?q=%60pan_wildfire%60">WildFire Logs</a>
       <a href="search?q=%60pan_config%60">Config Messages</a>
       <a href="search?q=%60pan_system%60">System Logs</a>
