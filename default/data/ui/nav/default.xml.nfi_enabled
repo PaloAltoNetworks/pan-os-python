@@ -42,8 +42,8 @@
   
     <collection label="Content">
     <view name="content_overview" />
-    <view name="url_filtering" />
-    <view name="data_filtering" />
+    <view name="url_filtering_overview" />
+    <view name="data_filtering_overview" />
     <divider />
     <collection label="Searches &amp; Reports">
       <a href="search?q=search%20%60pan_web_activity%60">Search URL Data</a>
