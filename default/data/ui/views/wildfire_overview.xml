@@ -293,11 +293,7 @@
     </chart>
     <chart>
       <title>Previously Analyzed Malware</title>
-      <searchString>| tstats count(action) AS cact FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ category="malicious" (action=wildfire-upload-success OR action=wildfire-upload-skip) $src_ip$ $dst_ip$ $dst_user$ $misc$ $vsys$ $app$ groupby action |
-                                            replace wildfire-upload-success with "New Malware" in action |
-                                            replace alert with "Known Malware" in action |
-                                            replace wildfire-upload-skip with "Known Malware" in action |
-                                            stats sum(cact) by action</searchString>
+      <searchString>| tstats count(action) AS cact FROM pan_wildfire WHERE earliest=$earliest$ latest=$latest$ category="malicious" groupby action | replace alert with wildfire-upload-skip in action | replace wildfire-upload-success with "New Malware" in action | replace alert with "Known Malware" in action | replace wildfire-upload-skip with "Known Malware" in action | stats sum(cact) by action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
