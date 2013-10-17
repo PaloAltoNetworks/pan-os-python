@@ -1,241 +1,221 @@
-<view template="dashboard.html" stylesheet="threat_overview.css">
+<form>
   <label>Content Dashboard</label>
-  <module name="AccountBar" layoutPanel="appHeader"/>
-  <module name="AppBar" layoutPanel="navigationHeader"/>
-  <module name="Message" layoutPanel="messaging">
-    <param name="filter">*</param>
-    <param name="clearOnJobDispatch">False</param>
-    <param name="maxSize">1</param>
-  </module>
-  <module name="TitleBar" layoutPanel="viewHeader">
-    <param name="actionsMenuFilter">dashboard</param>
-  </module>
-  <module name="GenericHeader" layoutPanel="panel_row1_col1">
-    <param name="label">Content Dashboard</param>
-  </module>
-  <module name="StaticContentSample" layoutPanel="panel_row1_col1">
-    <param name="text">This dashboard provides visibility into various content activity in your Palo Alto Networks environment. Content can be filtered by type using the form fields.</param>
-  </module>
-  <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-    <param name="label">Source IP:</param>
-    <param name="field">src_ip</param>
-    <param name="replacementMap">
-      <param name="arg">
-        <param name="src_ip">
-          <param name="value"></param>
-        </param>
-      </param>
-    </param>
-    <param name="intention">
-      <param name="name">stringreplace</param>
-      <param name="arg">
-        <param name="src_ip">
-          <param name="default"></param>
-          <param name="prefix">src_ip="</param>
-          <param name="suffix">"</param>
-          <param name="fillOnEmpty">false</param>
-        </param>
-      </param>
-    </param>
-    <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-      <param name="label">Destination IP:</param>
-      <param name="field">dst_ip</param>
-      <param name="replacementMap">
-        <param name="arg">
-          <param name="dst_ip">
-            <param name="value"></param>
-          </param>
-        </param>
-      </param>
-      <param name="intention">
-        <param name="name">stringreplace</param>
-        <param name="arg">
-          <param name="dst_ip">
-            <param name="default"></param>
-            <param name="prefix">dst_ip="</param>
-            <param name="suffix">"</param>
-            <param name="fillOnEmpty">false</param>
-          </param>
-        </param>
-      </param>
-      <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-        <param name="label">Content Type:</param>
-        <param name="field">content_type</param>
-        <param name="replacementMap">
-          <param name="arg">
-            <param name="content_type">
-              <param name="value"></param>
-            </param>
-          </param>
-        </param>
-        <param name="intention">
-          <param name="name">stringreplace</param>
-          <param name="arg">
-            <param name="content_type">
-              <param name="default"></param>
-              <param name="prefix">content_type="</param>
-              <param name="suffix">"</param>
-              <param name="fillOnEmpty">false</param>
-            </param>
-          </param>
-        </param>
-        <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-          <param name="label">App:</param>
-          <param name="field">app</param>
-          <param name="replacementMap">
-            <param name="arg">
-              <param name="app">
-                <param name="value"></param>
-              </param>
-            </param>
-          </param>
-          <param name="intention">
-            <param name="name">stringreplace</param>
-            <param name="arg">
-              <param name="app">
-                <param name="default"></param>
-                <param name="prefix">app="</param>
-                <param name="suffix">"</param>
-                <param name="fillOnEmpty">false</param>
-              </param>
-            </param>
-          </param>
-          <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-            <param name="label">Category:</param>
-            <param name="field">category</param>
-            <param name="replacementMap">
-              <param name="arg">
-                <param name="category">
-                  <param name="value"></param>
-                </param>
-              </param>
-            </param>
-            <param name="intention">
-              <param name="name">stringreplace</param>
-              <param name="arg">
-                <param name="category">
-                  <param name="default"></param>
-                  <param name="prefix">category="</param>
-                  <param name="suffix">"</param>
-                  <param name="fillOnEmpty">false</param>
-                </param>
-              </param>
-            </param>
-            <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-              <param name="label">Virtual System:</param>
-              <param name="field">vsys</param>
-              <param name="replacementMap">
-                <param name="arg">
-                  <param name="vsys">
-                    <param name="value"></param>
-                  </param>
-                </param>
-              </param>
-              <param name="intention">
-                <param name="name">stringreplace</param>
-                <param name="arg">
-                  <param name="vsys">
-                    <param name="default"></param>
-                    <param name="prefix">vsys="</param>
-                    <param name="suffix">"</param>
-                    <param name="fillOnEmpty">false</param>
-                  </param>
-                </param>
-              </param>
-              <module name="TimeRangePicker" layoutPanel="panel_row1_col1" autoRun="True">
-                <param name="selected">Last 60 minutes</param>
-                <param name="searchWhenChanged">True</param>
-                <module name="ViewRedirectorLink">
-                  <param name="viewTarget">flashtimeline</param>
-                  <param name="label">View Full Report</param>
-                </module>
-                <module name="HiddenSearch" layoutPanel="panel_row2_col1">
-                  <param name="search">| `tstats` count(content_type) AS cc FROM pan_content WHERE * $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time Major_Type span=5m| timechart values(cc) by Major_Type</param>
-                  <module name="HiddenChartFormatter">
-                    <param name="chartTitle">Major Content Types</param>
-                    <param name="chart">column</param>
-                    <param name="chart.stackMode">stacked</param>
-                    <param name="legend.placement">bottom</param>
-                    <module name="JSChart">
-                      <param name="width">100%</param>
-                      <module name="SimpleDrilldown">
-                        <param name="links">
-                          <param name="*">./flashtimeline?q=`pan_index` content_type="$click.name2$*" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]</param>
-                        </param>
-                      </module>
-                    </module>
-                  </module>
-                </module>
-                <module name="HiddenSearch" layoutPanel="panel_row2_col2">
-                  <param name="search">| `tstats` count(content_type) AS cc FROM pan_content WHERE * $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time content_type span=5m| timechart values(cc) by content_type</param>
-                  <module name="HiddenChartFormatter">
-                    <param name="chartTitle">Full Content Types</param>
-                    <param name="chart">column</param>
-                    <param name="chart.stackMode">stacked</param>
-                    <param name="legend.placement">bottom</param>
-                    <module name="JSChart">
-                      <param name="width">100%</param>
-                      <module name="SimpleDrilldown">
-                        <param name="links">
-                          <param name="*">./flashtimeline?q=`pan_index` content_type="$click.name2$"  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]</param>
-                        </param>
-                      </module>
-                    </module>
-                  </module>
-                </module>
-                <module name="HiddenSearch" layoutPanel="panel_row3_col1" group="Content Types and Apps">
-                  <param name="search">|`tstats` count(content_type) AS cc FROM pan_content WHERE * $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | stats values(cc) AS Count by content_type app | rename app AS Application | rename content_type AS "Content Type"</param>
-                  <module name="Paginator">
-                    <param name="count">10</param>
-                    <param name="entityName">results</param>
-                    <module name="SimpleResultsTable">
-                      <param name="allowTransformedFieldSelect">True</param>
-                      <param name="drilldown">all</param>
-                      <module name="SimpleDrilldown">
-                        <param name="links">
-                          <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` content_type="$row.Content Type$" app="$row.Application$"</param>
-                        </param>
-                      </module>
-                    </module>
-                  </module>
-                </module>
-                <module name="HiddenSearch" layoutPanel="panel_row3_col2" group="Non-Web Browsing Content Type">
-                  <param name="search">|`tstats` count(content_type) AS cc FROM pan_content WHERE * $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | where app != "web-browsing" | stats values(cc) AS Count by content_type app| rename app AS Application | rename content_type AS "Content Type"</param>
-                  <module name="Paginator">
-                    <param name="count">10</param>
-                    <param name="entityName">results</param>
-                    <module name="SimpleResultsTable">
-                      <param name="allowTransformedFieldSelect">True</param>
-                      <param name="drilldown">all</param>
-                      <module name="SimpleDrilldown">
-                        <param name="links">
-                          <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` content_type="$row.Content Type$" app="$row.Application$"</param>
-                        </param>
-                      </module>
-                    </module>
-                  </module>
-                </module>
-                <module name="HiddenSearch" layoutPanel="panel_row3_col3" group="Content Types and Web Categories">
-                  <param name="search">|`tstats` count(content_type) AS cc FROM pan_content WHERE * $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby category content_type | stats values(cc) AS Count by content_type category | rename category AS Category | rename content_type AS "Content Type"</param>
-                  <module name="Paginator">
-                    <param name="count">10</param>
-                    <param name="entityName">results</param>
-                    <module name="SimpleResultsTable">
-                      <param name="allowTransformedFieldSelect">True</param>
-                      <param name="drilldown">all</param>
-                      <module name="SimpleDrilldown">
-                        <param name="links">
-                          <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` content_type="$row.Content Type$" category="$row.Category$"</param>
-                        </param>
-                      </module>
-                    </module>
-                  </module>
-                </module>
-              </module>
-            </module>
-          </module>
-        </module>
-      </module>
-    </module>
-  </module>
-</view>
+  <fieldset autoRun="true" submitButton="true">
+    <input type="time" searchWhenChanged="true">
+      <default>
+        <earliestTime>-60m</earliestTime>
+        <latestTime>now</latestTime>
+      </default>
+    </input>
+    <input type="text" token="src_ip">
+      <label>Source IP</label>
+      <default></default>
+      <prefix>src_ip="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="text" token="dst_ip">
+      <label>Destination IP</label>
+      <default></default>
+      <prefix>dst_ip="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="dropdown" token="content_type">
+      <label>Content Type</label>
+      <default></default>
+      <prefix>content_type="</prefix>
+      <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="content_type" fieldForLabel="content_type_with_count">| tstats count(content_type) as count
+        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby content_type
+        | eval content_type_with_count = content_type . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="category">
+      <label>Category</label>
+      <default></default>
+      <prefix>category="</prefix>
+      <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="category" fieldForLabel="category_with_count">| tstats count(category) as count
+        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby category
+        | eval category_with_count = category . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="app">
+      <label>Application</label>
+      <default></default>
+      <prefix>app="</prefix>
+      <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">| tstats count(app) as count
+        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby app
+        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="vsys">
+      <label>Virtual System</label>
+      <default></default>
+      <prefix>vsys="</prefix>
+      <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">| tstats count(vsys) as count
+        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby vsys
+        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+    </input>
+  </fieldset>
+  <row>
+    <chart>
+      <title>Major Content Types</title>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time Major_Type| timechart values(cc) by Major_Type</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">column</option>
+      <option name="charting.chart.nullValueMode">connect</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$click.name2$*" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+    <chart>
+      <title>Full Content Types</title>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time content_type| timechart values(cc) by content_type</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">column</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+  </row>
+  <row>
+    <table>
+      <title>Content Types and Apps</title>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | stats values(cc) AS Count by content_type app | sort -Count | rename app AS Application | rename content_type AS "Content Type"</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <option name="list.drilldown">full</option>
+      <option name="list.wrap">1</option>
+      <option name="maxLines">5</option>
+      <option name="raw.drilldown">full</option>
+      <option name="rowNumbers">0</option>
+      <option name="table.drilldown">1</option>
+      <option name="table.sortDirection">asc</option>
+      <option name="table.wrap">1</option>
+      <option name="type">list</option>
+      <option name="wrap">true</option>
+      <option name="displayRowNumbers">true</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.Content Type$" app="$row.Application$"&earliest=$earliest$&latest=$latest$
+      ]]>
+        </link>
+      </drilldown>
+    </table>
+    <table>
+      <title>Non-Web Browsing Content Types</title>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | where app != "web-browsing" | stats values(cc) AS Count by content_type app | sort -Count | rename app AS Application | rename content_type AS "Content Type"</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <option name="wrap">true</option>
+      <option name="displayRowNumbers">true</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.Content Type$" app="$row.Application$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </table>
+    <table>
+      <title>Content Types and Web Categories</title>
+      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby category content_type | stats values(cc) AS Count by content_type category | sort -Count | rename category AS Category | rename content_type AS "Content Type"</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <option name="wrap">true</option>
+      <option name="displayRowNumbers">true</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.Content Type$" category="$row.Category$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </table>
+  </row>
+</form>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?><dashboard>
+  <label>Overview</label>
+  <description/>
+  <row>
+    <single>
+      <searchString>`pan_index` | stats dc(host)</searchString>
+      <earliestTime>rt-30s</earliestTime>
+      <latestTime>rt</latestTime>
+      <option name="classField">None</option>
+      <option name="underLabel">PAN Reporting</option>
+      <option name="linkView">search</option>
+    </single>
+    <single>
+      <searchString>`pan_index` | stats count</searchString>
+      <earliestTime>rt-30s</earliestTime>
+      <latestTime>rt</latestTime>
+      <option name="classField">None</option>
+      <option name="underLabel">Total Events</option>
+      <option name="linkView">search</option>
+    </single>
+    <single>
+      <searchString>`pan_index` action=block* OR action=deny | stats count</searchString>
+      <earliestTime>rt-30s</earliestTime>
+      <latestTime>rt</latestTime>
+      <option name="classField">None</option>
+      <option name="underLabel">Total Blocks</option>
+      <option name="linkView">search</option>
+    </single>
+    <single>
+      <searchString>`pan_index` sourcetype=pan_traffic NOT any| top limit=1 category</searchString>
+      <earliestTime>rt-30s</earliestTime>
+      <latestTime>rt</latestTime>
+      <option name="classField">None</option>
+      <option name="underLabel">Top Category</option>
+      <option name="linkView">search</option>
+    </single>
+  </row>
+  <row>
+    <chart>
+      <title>Event Types</title>
+      <searchString>`pan_index` sourcetype="pan_*" log_subtype="*" | timechart span=10s count by log_subtype</searchString>
+      <earliestTime>rt-5m</earliestTime>
+      <latestTime>rt</latestTime>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">area</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.gaugeAutoRanges">1</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <option name="classField">None</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="displayRowNumbers">false</option>
+      <option name="drilldown">cell</option>
+      <option name="histogram">0</option>
+      <option name="list.drilldown">full</option>
+      <option name="list.wrap">1</option>
+      <option name="maxLines">5</option>
+      <option name="raw.drilldown">full</option>
+      <option name="rowNumbers">0</option>
+      <option name="table.drilldown">0</option>
+      <option name="table.sortDirection">asc</option>
+      <option name="table.wrap">1</option>
+      <option name="type">list</option>
+      <option name="wrap">true</option>
+      <option name="count">10</option>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.axisTitleY.text">Events</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_index` sourcetype="pan_*" log_subtype="$click.name2$"&earliest=-5m&latest=now
+              ]]>
+        </link>
+      </drilldown>
+    </chart>
+    <table>
+      <title>Top Applications</title>
+      <searchName>PAN - Traffic - Applications</searchName>
+      <option name="afterLabel">Total Events</option>
+      <option name="classField">None</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="displayRowNumbers">true</option>
+      <option name="drilldown">cell</option>
+      <option name="wrap">false</option>
+      <option name="count">10</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_index` sourcetype="pan_traffic" app="$click.value$"&earliest=-5m&latest=now
+              ]]>
+        </link>
+      </drilldown>
+    </table>
+  </row>
+  <row>
+    <map>
+      <title>Applications by Destination IP Location</title>
+      <searchString>`pan_traffic` | iplocation "dst_ip" | geostats count by app</searchString>
+      <earliestTime>rt-5m</earliestTime>
+      <latestTime>rt</latestTime>
+    </map>
+  </row>
+</dashboard>
