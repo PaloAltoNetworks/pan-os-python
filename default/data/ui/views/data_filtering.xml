@@ -113,7 +113,7 @@
   <row>
     <table>
       <title>Data Filter Events by Application</title>
-      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby threat_id action src_ip app|                    stats values(ca) AS "Count" by threat_id action src_ip app |                     rename threat_id AS "Threat ID" |                     rename action AS Action |                     rename src_ip AS "Source" |                    rename app AS Application</searchString>
+      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby threat_id action src_ip app | stats values(ca) AS "Count" by threat_id action src_ip app | sort -Count | rename threat_id AS "Threat ID" | rename action AS Action | rename src_ip AS "Source" | rename app AS Application</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -153,7 +153,7 @@
     </table>
     <table>
       <title>Data Filter Events by Destination</title>
-      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby action src_ip dst_ip dst_location |                    stats values(ca) AS "Count" by action src_ip dst_ip dst_location |                     rename dst_ip AS "Destination" |                     rename dst_location AS "Location" |                     rename src_ip AS "Source" |                    rename app AS Application</searchString>
+      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby action src_ip dst_ip dst_location | stats values(ca) AS "Count" by action src_ip dst_ip dst_location | sort -Count | rename dst_ip AS "Destination" | rename dst_location AS "Location" | rename src_ip AS "Source" | rename app AS Application</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

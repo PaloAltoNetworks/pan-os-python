@@ -39,7 +39,7 @@
   <row>
     <table>
       <title>Web Hits</title>
-      <searchString>| tstats count(dst_hostname) AS cdh FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$  groupby dst_hostname | stats values(cdh) AS Count by dst_hostname | rename dst_hostname AS Hostname</searchString>
+      <searchString>| tstats count(dst_hostname) AS cdh FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$  groupby dst_hostname | stats values(cdh) AS Count by dst_hostname | sort -Count | rename dst_hostname AS Hostname</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -124,7 +124,7 @@
   <row>
     <table>
       <title>Web Activity Summary</title>
-      <searchString>| tstats count(action) AS Count FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby action category dst_hostname | rename action AS Action | rename category AS Category | rename dst_hostname AS Hostname</searchString>
+      <searchString>| tstats count(action) AS Count FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby action category dst_hostname | sort -Count | rename action AS Action | rename category AS Category | rename dst_hostname AS Hostname</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

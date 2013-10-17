@@ -57,7 +57,7 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| tstats count(description) AS cls FROM pan_system WHERE earliest=$earliest$ latest=$latest$ $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time serial_number description log_subtype severity event_id span=5m |                   table _time serial_number description log_subtype severity event_id</searchString>
+      <searchString>| tstats count(description) AS cls FROM pan_system WHERE earliest=$earliest$ latest=$latest$ $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time serial_number description log_subtype severity event_id span=5m | table _time serial_number description log_subtype severity event_id | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
