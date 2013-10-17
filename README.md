@@ -10,9 +10,9 @@ Networks Firewall
 
 #### Version ####
 
-* Splunk Version: 5.x
-* App Version: 3.4
-* Last Modified: Sept 2013
+* Splunk Version: 6.x
+* App Version: 4.0
+* Last Modified: Oct 2013
 * Authors:
     * Monzy Merza - Splunk, Inc.
     * Brian Torres-Gil - Palo Alto Networks
@@ -25,33 +25,28 @@ Many Thanks to Contributors, Advisors, Testers:
 * David Hazekamp, Mike Munn, Adam Sealey
 * David Markquardt, Gerald Kannapathy
 * Will Hayes, Marc Benoit, Jeff Hillon
-* Genti Zaimi
+* Genti Zaimi, Scott Brenner, Steve Brown
 
 #### Support ####
 
-For fastest response to support, setup, help or feedback, please post to
-http://answers.splunk.com and tag your questions with `paloalto`.
+For fastest response to support, setup, help or feedback,
+please click the __Ask a Question__ button at http://apps.splunk.com/app/491
 
 For bugs or feature requests, you can also open an issue on github at 
 https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks/issues
 
 ## IMPORTANT ##
 
-This app ONLY works on Splunk 5.x
+This app ONLY works on Splunk 6.x
+
+For Splunk 5.x, use version 3.x of this app.
 
 ## Dependencies ##
 
-This app depends on the following Splunk Apps available from Splunk Base http://splunk-base.splunk.com/apps/ :
-
-- [Splunk for use with AMMAP Flash maps] (http://splunk-base.splunk.com/apps/22372/splunk-for-use-with-ammap-flash-maps)
-- [Google Maps] (http://splunk-base.splunk.com/apps/22365/google-maps)
-- [Geo Location Lookup Script] (http://splunk-base.splunk.com/apps/22282/geo-location-lookup-script-powered-by-maxmind)
-
-You do not need to install these apps if you do not wish to use the mapping and geo location features. The main dashboard will not render properly without the above apps.
+No dependencies
 
 ## Installing ##
 
-- Ensure that the apps listed in the Dependencies section are installed.
 - Unpack the tar ball into `$SPLUNK_HOME/etc/apps`
 - Restart Splunk
 
@@ -109,6 +104,7 @@ Log can be further filtered by type during search by using predefined macros.  T
 - pan_traffic
 - pan_threat
 - pan_url
+- pan_file
 - pan_data
 - pan_wildfire
 - pan_wildfire_report
@@ -141,7 +137,7 @@ If you have any questions, or require any assistance with configuration please c
 
 ### High Performance Value Store (HPVS) ###
 
-The app uses the HPVS feature introduced in Splunk 5.0. This feature provides a tremendous performance improvement for dashboards and views. The views and dashboards make use of saved searches that store data on your search head. This means that disk storage on your search head will be consumed as a result of these searches. If you turn off these saved searches, your dashboards will not render. Or dashboard rendering will be really, really slow. Please post a question to answers.splunk.com if you'd like to explore alternatives. 
+The app uses the HPVS feature introduced in Splunk 5.0 and 6.0. This feature provides a tremendous performance improvement for dashboards and views. The views and dashboards make use of saved searches that store data on your search head. This means that disk storage on your search head will be consumed as a result of these searches. If you turn off these saved searches, your dashboards will not render. Or dashboard rendering will be really, really slow. Please post a question to answers.splunk.com if you'd like to explore alternatives. 
 
 ### Lookups ###
 
@@ -153,16 +149,23 @@ All the dashboards work without any filtering values for the form fields. If you
 
 Keep in mind that searches that have longer time ranges may take a little longer to return the results. 
 
+### Modifying dashboards ###
+
+Dashboards are built with SimpleXML, so they can be modified using the Splunk GUI.  To do this, click the __Edit__ menu in the top right of the dashboard and select __Edit Panels__.  You can drag panels to new positions, change the visualization (pie, column, area, etc), and modify the searches.  If you modify a dashboard and want to recover the original dashboard, delete the modified dashboard file in `$SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/data/ui/views` and restart Splunk.
+
 ## What's new in this version ##
 
-Version 3.4
+Version 4.0
 
-- NetFlow support using NetFlow Integrator, a 3rd party program from NetFlow Logic
-    - New set of dashboards, charts and graphs centered around NetFlow records from Palo Alto Networks devices
-    - App-ID and User-ID information is available in NetFlow records
-
-Download a 30-day free trial of NetFlow Integrator at https://www.netflowlogic.com/downloads  
-Steps to configure NetFlow are available in the **NetFlow** section above.
+- Splunk 6 support
+- Dashboards converted to Splunk 6 SimpleXML, meaning dashboards can now:
+    - Print
+    - Export as pdf
+    - Produce schedule reports
+    - Use pre-populated dropdowns in filters
+    - Change using SplunkWeb by editing the panels
+- Maps converted to Splunk 6 built-in maps (removes dependencies on other apps)
+- Updated navbar
 
 ## Installing from Git ##
 
