@@ -19,25 +19,21 @@
       <prefix>dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
+    <input type="text" token="threat_id">
+      <label>Threat ID</label>
+      <default>*</default>
+      <prefix>threat_id="</prefix>
+      <suffix>"</suffix>
+    </input>
     <input type="dropdown" token="log_subtype">
       <label>Log Subtype</label>
       <default>*</default>
       <prefix>log_subtype="</prefix>
       <suffix>"</suffix>
       <choice value="*">ANY</choice>
-      <populatingSearch fieldForValue="log_subtype" fieldForLabel="log_subtype_with_count">|tstats count(log_subtype) as count
-        FROM pan_threat WHERE * groupby log_subtype
-        | eval log_subtype_with_count = log_subtype . " (" . count . ")"</populatingSearch>
-    </input>
-    <input type="dropdown" token="threat_id">
-      <label>Threat ID</label>
-      <default>*</default>
-      <prefix>threat_id="</prefix>
-      <suffix>"</suffix>
-      <choice value="*">ANY</choice>
-      <populatingSearch fieldForValue="threat_id" fieldForLabel="threat_id_with_count">|tstats count(threat_id) as count
-        FROM pan_threat WHERE * groupby threat_id
-        | eval threat_id_with_count = threat_id . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs threat count(threat) AS count SPLITROW log_subtype AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
@@ -45,9 +41,9 @@
       <prefix>app="</prefix>
       <suffix>"</suffix>
       <choice value="*">ANY</choice>
-      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
-        FROM pan_threat WHERE * groupby app
-        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs threat count(threat) AS count SPLITROW app AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
@@ -55,9 +51,9 @@
       <prefix>vsys="</prefix>
       <suffix>"</suffix>
       <choice value="*">ANY</choice>
-      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
-        FROM pan_threat WHERE * groupby vsys
-        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs threat count(threat) AS count SPLITROW vsys AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
@@ -79,6 +75,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/threat_overview?form.log_subtype=$click.name2$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>By Risk Value</title>
@@ -98,6 +101,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_threat` severity="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
   <row>
@@ -119,6 +129,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/threat_detail?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Threats by App</title>
@@ -138,6 +155,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/threat_detail?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Threats by User</title>
@@ -157,6 +181,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/threat_detail?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
   <row>
@@ -178,6 +209,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_threat` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Threats by Severity</title>
@@ -197,6 +235,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_threat` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Destination IP</title>
@@ -216,6 +261,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_threat` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
 </form>

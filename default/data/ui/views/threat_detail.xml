@@ -1,10 +1,9 @@
 <form>
   <label>Threat Details</label>
-  <description/>
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m@m</earliestTime>
+        <earliestTime>-60m</earliestTime>
         <latestTime>now</latestTime>
       </default>
     </input>
@@ -36,7 +35,7 @@
   <row>
     <chart>
       <title>Locations by Kilobytes</title>
-      <searchString>| `tstats` count(Location) from pan_threatDetail where * $threat$ $user$ $application$ $location$ groupby Location Bytes| eval KB=Bytes/1024 |
+      <searchString>| tstats count(Location) from pan_threatDetail where $threat$ $user$ $application$ $location$ groupby Location Bytes| eval KB=Bytes/1024 |
                                     stats sum(KB) as "Total Bytes (KB)" by Location |
                                     sort -"Total Bytes (KB)"</searchString>
       <earliestTime>$earliest$</earliestTime>
@@ -59,10 +58,17 @@
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">cell</option>
       <option name="count">10</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/threat_detail?form.location=$click.value$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Users by Kilobytes</title>
-      <searchString>| `tstats` count(User) from pan_threatDetail where * $threat$ $user$ $application$ $location$ groupby User Bytes|
+      <searchString>| tstats count(User) from pan_threatDetail where $threat$ $user$ $application$ $location$ groupby User Bytes|
                                     eval KB=Bytes/1024 |
                                     stats sum(KB) as "Transferred (KB)" by User |
                                     sort -"Transferred (KB)"</searchString>
@@ -81,12 +87,19 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
       <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/threat_detail?form.user=$click.value$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
   <row>
     <table>
       <title>Bytes Transferred Duration by Users</title>
-      <searchString>| `tstats` count(User) from pan_threatDetail where * $threat$ $user$ $application$ $location$ groupby User Bytes Duration Application Location|
+      <searchString>| tstats count(User) from pan_threatDetail where $threat$ $user$ $application$ $location$ groupby User Bytes Duration Application Location|
                                     eval KB=Bytes/1024 |
                                     stats sum(KB) as "Transfer (KB)"
                                           sum(Duration) as "Total Duration"
@@ -116,7 +129,7 @@
   <row>
     <table>
       <title>Threats by Bytes Transferred and Sessions</title>
-      <searchString>| `tstats` count(Session) from pan_threatDetail where * $threat$ $user$ $application$ $location$ groupby Session Bytes Threat|
+      <searchString>| tstats count(Session) from pan_threatDetail where $threat$ $user$ $application$ $location$ groupby Session Bytes Threat|
                                     eval KB=Bytes/1024 |
                                     stats sum(KB) as "Transfer (KB)"
                                     count(Session) as "Total Sessions"
@@ -141,6 +154,13 @@
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
       <option name="count">10</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/threat_detail?form.threat=$click.value$
+	  ]]>
+        </link>
+      </drilldown>
     </table>
   </row>
 </form>

@@ -11,66 +11,48 @@
     <input type="text" token="src_ip">
       <label>Source IP</label>
       <default>*</default>
-      <prefix>src_ip="</prefix>
-      <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
       <default>*</default>
-      <prefix>dst_ip="</prefix>
-      <suffix>"</suffix>
     </input>
     <input type="text" token="dst_port">
       <label>Destination Port</label>
       <default>*</default>
-      <prefix>dst_port="</prefix>
-      <suffix>"</suffix>
+    </input>
+    <input type="text" token="src_user">
+      <label>Source User</label>
+      <default>*</default>
     </input>
     <input type="dropdown" token="protocol">
       <label>Protocol</label>
       <default>*</default>
-      <prefix>protocol="</prefix>
-      <suffix>"</suffix>
       <choice value="*">ANY</choice>
-      <populatingSearch fieldForValue="protocol" fieldForLabel="protocol_with_count">|tstats count(protocol) as count
-        FROM pan_traffic WHERE * groupby protocol
-        | eval protocol_with_count = protocol . " (" . count . ")"</populatingSearch>
-    </input>
-    <input type="dropdown" token="src_user">
-      <label>Source User</label>
-      <default>*</default>
-      <prefix>src_user="</prefix>
-      <suffix>"</suffix>
-      <choice value="*">ANY</choice>
-      <populatingSearch fieldForValue="src_user" fieldForLabel="src_user_with_count">|tstats count(src_user) as count
-        FROM pan_traffic WHERE * groupby src_user
-        | eval src_user_with_count = src_user . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs traffic count(traffic) AS count SPLITROW protocol AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
       <default>*</default>
-      <prefix>app="</prefix>
-      <suffix>"</suffix>
       <choice value="*">ANY</choice>
-      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
-        FROM pan_traffic WHERE * groupby app
-        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs traffic count(traffic) AS count SPLITROW app AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="action">
       <label>Action</label>
       <default>*</default>
-      <prefix>action="</prefix>
-      <suffix>"</suffix>
       <choice value="*">ANY</choice>
-      <populatingSearch fieldForValue="action" fieldForLabel="action_with_count">|tstats count(action) as count
-        FROM pan_traffic WHERE * groupby action
-        | eval action_with_count = action . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs traffic count(traffic) AS count SPLITROW action AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>Bytes Transfered Over Time</title>
-      <searchString>|`tstats` sum(bytes_sent) AS sumSent sum(bytes_received) AS sumReceived FROM pan_traffic where log_subtype=end $action$ $src_ip$ $dst_ip$ $dst_port$ $protocol$ $src_user$ $app$ groupby _time span=5m | timechart span=5m values("sumReceived") AS "Bytes Received" values("sumSent") AS "Bytes Sent"</searchString>
+      <searchString>| tstats sum(traffic.bytes_sent) AS bs sum(traffic.bytes_received) AS br from datamodel="pan_logs" where nodename="traffic" traffic.log_subtype="end" traffic.src_ip="$src_ip$" traffic.dst_ip="$dst_ip$" traffic.dst_port="$dst_port$" traffic.src_user="$src_user$" traffic.protocol="$protocol$" traffic.app="$app$" traffic.action="$action$" groupby _time | timechart values(bs) AS "Bytes Sent" values(br) AS "Bytes Received"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -86,10 +68,17 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Protocols Over Time</title>
-      <searchString>|`tstats` count(protocol) AS countProtocol FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $protocol$ $src_user$ $app$ groupby _time protocol span=5m | timechart span=5m values(countProtocol) AS "Count" by protocol</searchString>
+      <searchString>| tstats count from datamodel="pan_logs" where nodename="traffic" traffic.src_ip="$src_ip$" traffic.dst_ip="$dst_ip$" traffic.dst_port="$dst_port$" traffic.src_user="$src_user$" traffic.protocol="$protocol$" traffic.app="$app$" traffic.action="$action$" groupby _time traffic.protocol | timechart values(count) by traffic.protocol</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -106,18 +95,18 @@
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
       <drilldown>
-          <link>
-              <![CDATA[
-              /app/SplunkforPaloAltoNetworks/traffic_overview?form.protocol=$click.name2$
-              ]]>
-          </link>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` protocol="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	  ]]>
+        </link>
       </drilldown>
     </chart>
   </row>
   <row>
     <chart>
       <title>Applications by Bytes Transfered</title>
-      <searchString>|`tstats` sum(bytes_received) AS sbr sum(bytes_sent) AS sbs FROM pan_traffic WHERE $action$ $src_ip$ $dst_ip$ $dst_port$ $protocol$ $src_user$ $app$ groupby app | eval sumBytes = sbr + sbs | stats values(sumBytes) AS Bytes by app</searchString>
+      <searchString>| tstats sum(traffic.bytes_received) AS sbr sum(traffic.bytes_sent) AS sbs from datamodel="pan_logs" where nodename="traffic" traffic.src_ip="$src_ip$" traffic.dst_ip="$dst_ip$" traffic.dst_port="$dst_port$" traffic.src_user="$src_user$" traffic.protocol="$protocol$" traffic.app="$app$" traffic.action="$action$" groupby traffic.app | eval sumBytes = sbr + sbs | stats values(sumBytes) AS Bytes by traffic.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -133,10 +122,17 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Applications by Request</title>
-      <searchString>|`tstats` count(app) FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $protocol$ $src_user$ $app$ groupby app | stats values(count(app)) AS Application by app</searchString>
+      <searchString>| tstats count from datamodel="pan_logs" where nodename="traffic" traffic.src_ip="$src_ip$" traffic.dst_ip="$dst_ip$" traffic.dst_port="$dst_port$" traffic.src_user="$src_user$" traffic.protocol="$protocol$" traffic.app="$app$" traffic.action="$action$" groupby traffic.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -152,10 +148,17 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Source IP</title>
-      <searchString>|`tstats` count(src_ip) FROM pan_traffic WHERE $src_ip$ $protocol$ $src_user$ $dst_ip$ $dst_port$ $app$ $action$ groupby src_ip</searchString>
+      <searchString>| tstats count from datamodel="pan_logs" where nodename="traffic" traffic.src_ip="$src_ip$" traffic.dst_ip="$dst_ip$" traffic.dst_port="$dst_port$" traffic.src_user="$src_user$" traffic.protocol="$protocol$" traffic.app="$app$" traffic.action="$action$" groupby traffic.src_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -171,12 +174,19 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
   <row>
     <chart>
       <title>Destination Port</title>
-      <searchString>|tstats count(dst_port) FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $protocol$ $src_user$ $app$ groupby dst_port</searchString>
+      <searchString>| tstats count from datamodel="pan_logs" where nodename="traffic" traffic.src_ip="$src_ip$" traffic.dst_ip="$dst_ip$" traffic.dst_port="$dst_port$" traffic.src_user="$src_user$" traffic.protocol="$protocol$" traffic.app="$app$" traffic.action="$action$" groupby traffic.dst_port</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -192,10 +202,17 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Destination IP</title>
-      <searchString>|`tstats` count(dst_ip) FROM pan_traffic WHERE $src_ip$ $protocol$ $src_user$ $dst_ip$ $dst_port$ $app$ $action$ groupby dst_ip | sort -count(dst_ip) | head 999</searchString>
+      <searchString>| tstats count from datamodel="pan_logs" where nodename="traffic" traffic.src_ip="$src_ip$" traffic.dst_ip="$dst_ip$" traffic.dst_port="$dst_port$" traffic.src_user="$src_user$" traffic.protocol="$protocol$" traffic.app="$app$" traffic.action="$action$" groupby traffic.dst_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -211,10 +228,17 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Source User</title>
-      <searchString>|tstats count(src_user) FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $protocol$ $src_user$ $app$ groupby src_user</searchString>
+      <searchString>| tstats count from datamodel="pan_logs" where nodename="traffic" traffic.src_ip="$src_ip$" traffic.dst_ip="$dst_ip$" traffic.dst_port="$dst_port$" traffic.src_user="$src_user$" traffic.protocol="$protocol$" traffic.app="$app$" traffic.action="$action$" groupby traffic.src_user</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -230,12 +254,19 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
   <row>
     <chart>
-      <title>Outbound Interface by Bytes Transfered</title>
-      <searchString>|`tstats` sum(bytes) As sb FROM pan_traffic where log_subtype=end $action$ $src_ip$ $dst_ip$ $dst_port$ $protocol$ $src_user$ $app$ groupby egress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by egress_interface</searchString>
+      <title>Traffic Transmitted by Interface</title>
+      <searchString>| tstats sum(traffic.bytes) AS sb from datamodel="pan_logs" where nodename="traffic" traffic.log_subtype=end traffic.src_ip="$src_ip$" traffic.dst_ip="$dst_ip$" traffic.dst_port="$dst_port$" traffic.src_user="$src_user$" traffic.protocol="$protocol$" traffic.app="$app$" traffic.action="$action$" groupby traffic.egress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by traffic.egress_interface</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -250,18 +281,25 @@
       <option name="charting.drilldown">all</option>
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
-      <option name="charting.legend.placement">bottom</option>
+      <option name="charting.legend.placement">none</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Traffic Received by Interface</title>
-      <searchString>|tstats sum(bytes) As sb FROM pan_traffic where log_subtype=end $action$ $src_ip$ $dst_ip$ $dst_port$ $protocol$ $src_user$ $app$ groupby ingress_interface log_subtype| eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by ingress_interface</searchString>
+      <searchString>| tstats sum(traffic.bytes) As sb from datamodel="pan_logs" where nodename="traffic" traffic.log_subtype=end traffic.src_ip="$src_ip$" traffic.dst_ip="$dst_ip$" traffic.dst_port="$dst_port$" traffic.src_user="$src_user$" traffic.protocol="$protocol$" traffic.app="$app$" traffic.action="$action$" groupby traffic.ingress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by traffic.ingress_interface</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
-      <option name="charting.chart">column</option>
+      <option name="charting.chart">bar</option>
       <option name="charting.chart.nullValueMode">gaps</option>
       <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
       <option name="charting.chart.stackMode">default</option>
@@ -269,7 +307,14 @@
       <option name="charting.drilldown">all</option>
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
-      <option name="charting.legend.placement">bottom</option>
+      <option name="charting.legend.placement">none</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
 </form>

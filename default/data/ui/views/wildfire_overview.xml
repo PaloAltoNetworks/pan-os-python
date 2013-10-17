@@ -75,10 +75,17 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` category="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <table>
       <title>Recent Malware Download Attempts</title>
-      <searchString>|`tstats` count(dst_user) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ dst_user=$user$ $misc$ $vsys$ $app$ groupby _time dst_ip misc dst_user | table _time dst_ip dst_user misc |                                             rename dst_user AS "Destination User" |                                             rename dst_ip AS "Destination IP" |                                             rename action AS Action |                                             rename misc AS Filename</searchString>
+      <searchString>|`tstats` count(dst_user) AS ca FROM pan_wildfire WHERE * category="malicious" $src_ip$ $dst_ip$ dst_user=$user$ $misc$ $vsys$ $app$ groupby _time dst_ip misc dst_user | table _time dst_ip dst_user misc | rename dst_user AS "Destination User" | rename dst_ip AS "Destination IP" | rename action AS Action | rename misc AS Filename</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -98,13 +105,20 @@
       <option name="displayRowNumbers">true</option>
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
-      <option name="count">10</option>
+      <option name="count">7</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` dst_user="$row.Destination User$" dst_ip="$row.Destination IP$" misc="$row.Filename$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </table>
   </row>
   <row>
     <table>
       <title>Possible Malware Traffic</title>
-      <searchString>|`tstats` count(dst_ip) AS cdip FROM pan_wildfire_report_malware_traffic WHERE NOT (protocol=udp AND dst_port=53) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol |                                             join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE (NOT (protocol=udp AND dst_port=53)) $src_ip$ $dst_ip$ src_user=$user$ $vsys$ $app$ groupby _time src_ip dst_ip dst_port protocol app src_user | dedup 1 src_ip dst_ip dst_port protocol app src_user | table _time src_ip src_user dst_port dst_ip protocol app | rename _time AS traffic_time ] |                                             rename src_user AS "User" | rename src_ip AS "Source IP" |                                             eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View Wildfire Report" |                                             table traffic_time "Source IP" "User" dst_ip dst_port protocol app report_id "Traffic Link" "WildFire Link" |                                             rename traffic_time AS _time |                                             rename dst_ip AS "Dst_IP" |                                             rename dst_port AS "Dst_Port" |                                             rename protocol AS "Protocol" |                                             rename app AS "Application" |                                             rename report_id AS "WildFire Report ID"</searchString>
+      <searchString>|`tstats` count(dst_ip) AS cdip FROM pan_wildfire_report_malware_traffic WHERE NOT (protocol=udp AND dst_port=53) groupby dst_ip dst_port report_id protocol | table report_id dst_ip dst_port protocol | join protocol dst_ip dst_port [ |`tstats` count(src_ip) FROM pan_traffic WHERE (NOT (protocol=udp AND dst_port=53)) $src_ip$ $dst_ip$ src_user=$user$ $vsys$ $app$ groupby _time src_ip dst_ip dst_port protocol app src_user | dedup 1 src_ip dst_ip dst_port protocol app src_user | table _time src_ip src_user dst_port dst_ip protocol app | rename _time AS traffic_time ] | rename src_user AS "User" | rename src_ip AS "Source IP" | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View Wildfire Report" | table traffic_time "Source IP" "User" dst_ip dst_port protocol app report_id "Traffic Link" "WildFire Link" | rename traffic_time AS _time | rename dst_ip AS "Dst_IP" | rename dst_port AS "Dst_Port" | rename protocol AS "Protocol" | rename app AS "Application" | rename report_id AS "WildFire Report ID"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -125,6 +139,53 @@
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">cell</option>
       <option name="count">10</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` src_ip="$row.Source IP$" dst_ip="$row.Dst_IP$" dst_port="$row.Dst_Port$" protocol="$row.Protocol$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+        <link field="Source IP">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Source IP$&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="User">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.User$&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="Dst_IP">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Dst_IP$&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="Dst_Port">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Dst_Port$&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="Protocol">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Protocol$&earliest=$earliest$&latest=$latest$
+          ]]>
+        </link>
+        <link field="Application">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Application$&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+        <link field="WildFire Report ID">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.WildFire Report ID$
+	  ]]>
+        </link>
+        <link field="WildFire Link">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` (sourcetype="pan_wildfire_report" wildfire.report.id="$row.WildFire Report ID$") OR (sourcetype="pan_threat" log_subtype="wildfire" threat_id="$row.WildFire Report ID$($row.WildFire Report ID$)")&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </table>
   </row>
   <row>
@@ -146,6 +207,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/wildfire_overview?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Malware Downloads by Application</title>
@@ -165,6 +233,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/wildfire_overview?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Malware Downloaders by User</title>
@@ -184,6 +259,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/wildfire_overview?form.user=$click.value$&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
   <row>
@@ -205,6 +287,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/wildfire_overview?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Previously Analyzed Malware</title>
@@ -228,6 +317,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` action="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
     <chart>
       <title>Malware Downloaders by IP</title>
@@ -247,6 +343,13 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/wildfire_overview?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
     </chart>
   </row>
 </form>

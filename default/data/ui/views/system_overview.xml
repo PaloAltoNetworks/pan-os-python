@@ -57,8 +57,7 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| `tstats` count(description) AS cls FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time serial_number description log_subtype severity event_id span=5m |
-                  table _time serial_number description log_subtype severity event_id</searchString>
+      <searchString>| `tstats` count(description) AS cls FROM pan_system WHERE * $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time serial_number description log_subtype severity event_id span=5m |                   table _time serial_number description log_subtype severity event_id</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -77,7 +76,7 @@
       <option name="wrap">false</option>
       <option name="displayRowNumbers">true</option>
       <option name="dataOverlayMode">none</option>
-      <option name="drilldown">row</option>
+      <option name="drilldown">cell</option>
       <option name="count">10</option>
     </table>
   </row>
