@@ -9,61 +9,61 @@
     </input>
     <input type="text" token="src_ip">
       <label>Source IP</label>
-      <default></default>
-      <prefix>src_ip="</prefix>
+      <default/>
+      <prefix>FILTER src_ip is "</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
-      <default></default>
-      <prefix>dst_ip="</prefix>
+      <default/>
+      <prefix>FILTER dst_ip is "</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="content_type">
       <label>Content Type</label>
-      <default></default>
-      <prefix>content_type="</prefix>
+      <default/>
+      <prefix>FILTER content_type is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="content_type" fieldForLabel="content_type_with_count">| tstats count(content_type) as count
-        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby content_type
-        | eval content_type_with_count = content_type . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs url count(url) AS count SPLITROW content_type AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="category">
       <label>Category</label>
-      <default></default>
-      <prefix>category="</prefix>
+      <default/>
+      <prefix>FILTER category is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="category" fieldForLabel="category_with_count">| tstats count(category) as count
-        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby category
-        | eval category_with_count = category . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs url count(url) AS count SPLITROW category AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
-      <default></default>
-      <prefix>app="</prefix>
+      <default/>
+      <prefix>FILTER app is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">| tstats count(app) as count
-        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby app
-        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs url count(url) AS count SPLITROW app AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
-      <default></default>
-      <prefix>vsys="</prefix>
+      <default/>
+      <prefix>FILTER vsys is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">| tstats count(vsys) as count
-        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby vsys
-        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs url count(url) AS count SPLITROW vsys AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>Major Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time Major_Type| timechart values(cc) by Major_Type</searchString>
+      <searchString>| pivot pan_logs url count(url) SPLITROW _time SPLITCOL major_content_type FILTER major_content_type isNotNull $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -89,7 +89,7 @@
     </chart>
     <chart>
       <title>Full Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time content_type| timechart values(cc) by content_type</searchString>
+      <searchString>| pivot pan_logs url count(url) SPLITROW _time SPLITCOL content_type FILTER content_type isNotNull $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -117,7 +117,7 @@
   <row>
     <table>
       <title>Content Types and Apps</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | stats values(cc) AS Count by content_type app | sort -Count | rename app AS Application | rename content_type AS "Content Type"</searchString>
+      <searchString>| pivot pan_logs url count(url) AS Count SPLITROW content_type AS "Content Type" SPLITROW app AS "Application" $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$ | sort -Count</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -137,7 +137,7 @@
       <option name="list.wrap">1</option>
       <option name="maxLines">5</option>
       <option name="raw.drilldown">full</option>
-      <option name="rowNumbers">0</option>
+      <option name="rowNumbers">false</option>
       <option name="table.drilldown">1</option>
       <option name="table.sortDirection">asc</option>
       <option name="table.wrap">1</option>
@@ -157,7 +157,7 @@
     </table>
     <table>
       <title>Non-Web Browsing Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | where app != "web-browsing" | stats values(cc) AS Count by content_type app | sort -Count | rename app AS Application | rename content_type AS "Content Type"</searchString>
+      <searchString>| pivot pan_logs url count(url) AS Count SPLITROW content_type AS "Content Type" SPLITROW app AS "Application" FILTER app isNot "web-browsing" $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$ | sort -Count</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -185,10 +185,11 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="rowNumbers">true</option>
     </table>
     <table>
       <title>Content Types and Web Categories</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby category content_type | stats values(cc) AS Count by content_type category | sort -Count | rename category AS Category | rename content_type AS "Content Type"</searchString>
+      <searchString>| pivot pan_logs url count(url) AS Count SPLITROW content_type AS "Content Type" SPLITROW category AS "Category" $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$ | sort -Count</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -216,6 +217,7 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="rowNumbers">true</option>
     </table>
   </row>
 </form>

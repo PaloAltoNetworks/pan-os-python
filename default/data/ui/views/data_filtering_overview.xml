@@ -9,61 +9,61 @@
     </input>
     <input type="text" token="src_ip">
       <label>Source IP</label>
-      <default></default>
-      <prefix>src_ip="</prefix>
+      <default/>
+      <prefix>FILTER src_ip is "</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
-      <default></default>
-      <prefix>dst_ip="</prefix>
+      <default/>
+      <prefix>FILTER dst_ip is "</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="src_user">
       <label>Source User</label>
-      <default></default>
-      <prefix>src_user="</prefix>
+      <default/>
+      <prefix>FILTER src_user is "</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
-      <default></default>
-      <prefix>app="</prefix>
+      <default/>
+      <prefix>FILTER app is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
-        FROM pan_data WHERE earliest=$earliest$ latest=$latest$ groupby app
-        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs data count(data) AS count SPLITROW app AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="action">
       <label>Action</label>
-      <default></default>
-      <prefix>action="</prefix>
+      <default/>
+      <prefix>FILTER action is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="action" fieldForLabel="action_with_count">|tstats count(action) as count
-        FROM pan_data WHERE earliest=$earliest$ latest=$latest$ groupby action
-        | eval action_with_count = action . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs data count(data) AS count SPLITROW action AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
-      <default></default>
-      <prefix>vsys="</prefix>
+      <default/>
+      <prefix>FILTER vsys is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
-        FROM pan_data WHERE earliest=$earliest$ latest=$latest$ groupby vsys
-        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs data count(data) AS count SPLITROW vsys AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>Data Events</title>
-      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time action| timechart values(ca) by action</searchString>
+      <searchString>| pivot pan_logs data count(data) SPLITROW _time SPLITCOL action $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -85,11 +85,11 @@
     </chart>
     <chart>
       <title>Application</title>
-      <searchString>| tstats count(app) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time app| timechart values(ca) by app</searchString>
+      <searchString>| pivot pan_logs data count(data) SPLITROW _time SPLITCOL app $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -113,7 +113,7 @@
   <row>
     <table>
       <title>Data Filter Events by Application</title>
-      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby threat_id action src_ip app | stats values(ca) AS "Count" by threat_id action src_ip app | sort -Count | rename threat_id AS "Threat ID" | rename action AS Action | rename src_ip AS "Source" | rename app AS Application</searchString>
+      <searchString>| pivot pan_logs data count(data) AS Count SPLITROW action AS "Action" SPLITROW src_ip AS "Source" SPLITROW application AS "Application" $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ | sort -Count</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -133,7 +133,7 @@
       <option name="list.wrap">1</option>
       <option name="maxLines">5</option>
       <option name="raw.drilldown">full</option>
-      <option name="rowNumbers">0</option>
+      <option name="rowNumbers">false</option>
       <option name="table.drilldown">1</option>
       <option name="table.sortDirection">asc</option>
       <option name="table.wrap">1</option>
@@ -153,7 +153,7 @@
     </table>
     <table>
       <title>Data Filter Events by Destination</title>
-      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby action src_ip dst_ip dst_location | stats values(ca) AS "Count" by action src_ip dst_ip dst_location | sort -Count | rename dst_ip AS "Destination" | rename dst_location AS "Location" | rename src_ip AS "Source" | rename app AS Application</searchString>
+      <searchString>| pivot pan_logs data count(data) AS Count SPLITROW action AS "Action" SPLITROW src_ip AS "Source" SPLITROW dst_ip AS "Destination" SPLITROW dst_location AS "Location" $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ | sort -Count</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -170,7 +170,7 @@
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
       <option name="wrap">false</option>
-      <option name="displayRowNumbers">true</option>
+      <option name="displayRowNumbers">false</option>
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
       <option name="count">10</option>
@@ -181,6 +181,7 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="rowNumbers">false</option>
     </table>
   </row>
 </form>

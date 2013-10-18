@@ -9,55 +9,55 @@
     </input>
     <input type="dropdown" token="log_subtype">
       <label>Log Subtype</label>
-      <default></default>
-      <prefix>log_subtype="</prefix>
+      <default/>
+      <prefix>FILTER log_subtype is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="log_subtype" fieldForLabel="log_subtype_with_count">|tstats count(log_subtype) as count
-        FROM pan_system WHERE earliest=$earliest$ latest=$latest$ groupby log_subtype
-        | eval log_subtype_with_count = log_subtype . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs system count(system) AS count SPLITROW log_subtype AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="event_id">
       <label>Event ID</label>
-      <default></default>
-      <prefix>event_id="</prefix>
+      <default/>
+      <prefix>FILTER event_id is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="event_id" fieldForLabel="event_id_with_count">|tstats count(event_id) as count
-        FROM pan_system WHERE earliest=$earliest$ latest=$latest$ groupby event_id
-        | eval event_id_with_count = event_id . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs system count(system) AS count SPLITROW event_id AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="serial_number">
       <label>Serial Number</label>
-      <default></default>
-      <prefix>serial_number="</prefix>
+      <default/>
+      <prefix>FILTER serial_number is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="serial_number" fieldForLabel="serial_number_with_count">|tstats count(serial_number) as count
-        FROM pan_system WHERE earliest=$earliest$ latest=$latest$ groupby serial_number
-        | eval serial_number_with_count = serial_number . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs system count(system) AS count SPLITROW serial_number AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="severity">
       <label>Severity</label>
-      <default></default>
-      <prefix>severity="</prefix>
+      <default/>
+      <prefix>FILTER severity is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="severity" fieldForLabel="severity_with_count">|tstats count(severity) as count
-        FROM pan_system WHERE earliest=$earliest$ latest=$latest$ groupby severity
-        | eval severity_with_count = severity . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs system count(system) AS count SPLITROW severity AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="text" token="description">
       <label>Description</label>
-      <default></default>
-      <prefix>description="</prefix>
+      <default/>
+      <prefix>FILTER description is "</prefix>
       <suffix>"</suffix>
     </input>
   </fieldset>
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| tstats count(description) AS cls FROM pan_system WHERE earliest=$earliest$ latest=$latest$ $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time serial_number description log_subtype severity event_id | table _time serial_number description log_subtype severity event_id | sort -_time</searchString>
+      <searchString>| pivot pan_logs system count(system) SPLITROW _time PERIOD second SPLITROW serial_number SPLITROW description SPLITROW log_subtype SPLITROW severity SPLITROW event_id $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ | table _time serial_number description log_subtype severity event_id | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -110,16 +110,17 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="rowNumbers">false</option>
     </table>
   </row>
   <row>
     <chart>
       <title>System Events Over Time</title>
-      <searchString>| tstats count(log_subtype) AS ce FROM pan_system WHERE earliest=$earliest$ latest=$latest$ $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log_subtype | timechart values(ce) by log_subtype</searchString>
+      <searchString>| pivot pan_logs system count(system) SPLITROW _time SPLITCOL log_subtype $serial_number$ $description$ $log_subtype$ $severity$ $event_id$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -141,11 +142,11 @@
     </chart>
     <chart>
       <title>Severity</title>
-      <searchString>| tstats count(severity) AS cs FROM pan_system WHERE earliest=$earliest$ latest=$latest$ $serial_number$ $description$ $log_subtype$ $severity$ $event_id$  groupby _time severity | timechart values(cs) by severity</searchString>
+      <searchString>| pivot pan_logs system count(system) SPLITROW _time SPLITCOL severity $serial_number$ $description$ $log_subtype$ $severity$ $event_id$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
