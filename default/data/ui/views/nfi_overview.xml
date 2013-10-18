@@ -1,5 +1,5 @@
 <view template="dashboard.html">
-  <label>Overview</label>
+  <label>NetFlow Overview</label>
   <module name="AccountBar" layoutPanel="appHeader"/>
   <module name="AppBar" layoutPanel="navigationHeader"/>
   <module name="Message" layoutPanel="messaging">
