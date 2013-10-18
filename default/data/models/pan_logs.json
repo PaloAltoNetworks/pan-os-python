@@ -1,0 +1,4635 @@
+{
+    "description": "This datamodel represents all the syslogs produced by Palo Alto Networks devices.  The datamodel is structured such that all logs are part of the first root event object so the entire datamodel is accelerated.", 
+    "displayName": "Palo Alto Networks Logs", 
+    "objects": [
+        {
+            "calculations": [
+                {
+                    "expression": "coalesce(src_user,dst_user)", 
+                    "calculationID": "z8kl7y9xuvw2vs4i", 
+                    "calculationType": "Eval", 
+                    "comment": "", 
+                    "outputFields": [
+                        {
+                            "required": false, 
+                            "displayName": "user", 
+                            "type": "string", 
+                            "comment": "", 
+                            "multivalue": false, 
+                            "fieldName": "user", 
+                            "hidden": false
+                        }
+                    ]
+                }, 
+                {
+                    "expression": "if(isnull(direction) OR direction=\"client-to-server\", dst_ip, src_ip)", 
+                    "calculationID": "bniotxu1p95jc3di", 
+                    "calculationType": "Eval", 
+                    "comment": "", 
+                    "outputFields": [
+                        {
+                            "required": false, 
+                            "displayName": "server_ip", 
+                            "type": "string", 
+                            "comment": "", 
+                            "multivalue": false, 
+                            "fieldName": "server_ip", 
+                            "hidden": false
+                        }
+                    ]
+                }, 
+                {
+                    "expression": "if(isnull(direction) OR direction=\"client-to-server\", dst_location, src_location)", 
+                    "calculationID": "s6tlf0b96uoez5mi", 
+                    "calculationType": "Eval", 
+                    "comment": "", 
+                    "outputFields": [
+                        {
+                            "required": false, 
+                            "displayName": "server_location", 
+                            "type": "string", 
+                            "comment": "", 
+                            "multivalue": false, 
+                            "fieldName": "server_location", 
+                            "hidden": false
+                        }
+                    ]
+                }
+            ], 
+            "comment": "", 
+            "displayName": "All Logs", 
+            "parentName": "BaseEvent", 
+            "objectName": "log", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "action", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "action", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "action_flags", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "action_flags", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "admin", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "admin", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "app", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "app", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "application", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes_received", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "bytes_received", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes_sent", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "bytes_sent", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "category", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "category", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "client_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "client_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "client_type", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "client_type", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "cmd", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "cmd", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "command", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "command", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "configuration_path", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "configuration_path", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "content_type", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "content_type", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "date_hour", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "date_hour", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "date_mday", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "date_mday", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "date_minute", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "date_minute", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "date_month", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "date_month", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "date_second", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "date_second", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "date_wday", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "date_wday", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "date_year", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "date_year", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "date_zone", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "date_zone", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "description", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "description", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "dest", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "dest_ip", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "dest_port", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "direction", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "direction", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_hostname", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "dst_hostname", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "dst_ip", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_location", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "dst_location", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "dst_port", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_user", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "dst_user", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_zone", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "dst_zone", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dvc", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "dvc", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "egress_interface", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "egress_interface", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "event_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "event_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "eventtype", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "eventtype", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "flags", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "flags", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "generated_time", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "generated_time", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "index", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "index", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "ingress_interface", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "ingress_interface", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "linecount", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "linecount", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "log_forwarding_profile", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "log_forwarding_profile", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "log_subtype", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "log_subtype", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "log_type", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "log_type", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "misc", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "misc", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "module", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "module", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_dst_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "nat_dst_ip", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_dst_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "nat_dst_port", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_src_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "nat_src_ip", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_src_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "nat_src_port", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "o", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "o", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "packets", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets_received", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "packets_received", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets_sent", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "packets_sent", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "path", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "path", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "product", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "product", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "protocol", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "protocol", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "punct", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "punct", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "receive_time", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "receive_time", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "repeat_count", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "repeat_count", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "result", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "result", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "rule", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "rule", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "rule_name", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "rule_name", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "sequence_number", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "sequence_number", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "serial", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "serial", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "serial_number", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "serial_number", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "session_id", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "session_id", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "severity", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "severity", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "splunk_server", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "splunk_server", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "src", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "src_ip", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_location", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "src_location", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "src_port", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_user", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "src_user", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_zone", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "src_zone", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "start_time", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "start_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "tag", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "tag", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "tag::eventtype", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "tag::eventtype", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "report_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "report_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "timeendpos", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "timeendpos", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "timestartpos", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "timestartpos", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "transport", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "transport", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "type", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "type", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "vendor", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "vendor", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "virtual_system", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "virtual_system", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "vsys", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "vsys", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: capable of file transfer", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "ABLE_TO_TRANSFER_FILE", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: standard ports", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "DEFAULT_PORTS", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: risk", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "RISK", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: excessive bandwidth", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "EXCESSIVE_BANDWIDTH", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: category", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "CATEGORY", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: prone to misuse", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "PRONE_TO_MISUSE", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: widely use", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "PERVASIVE_USE", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: evasive", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "EVASIVE", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: technology", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "TECHNOLOGY", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: subcategory", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "SUBCATEGORY", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: has known vulnerabilities", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "HAS_KNOWN_VULNERABILITY", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: tunnels other applications", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "TUNNEL_OTHER_APPLICATION", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: used by malware", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "USED_BY_MALWARE", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_deleted{@deleted_file}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_deleted{@deleted_file}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_deleted{@pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_deleted{@pid}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_deleted{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_deleted{@process_image}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_written{@pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_written{@pid}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_written{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_written{@process_image}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_written{@written_file}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_written{@written_file}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.id", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.malware", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.malware", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.md5", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.md5", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.dns{@query}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.dns{@query}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.dns{@type}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.dns{@type}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.tcp-connection{@ip}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.tcp-connection{@ip}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.tcp-connection{@pid}", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.tcp-connection{@pid}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.tcp-connection{@port}", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.tcp-connection{@port}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.tcp-connection{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.tcp-connection{@process_image}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.TCP{@country}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.TCP{@country}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.TCP{@ip}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.TCP{@ip}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.TCP{@port}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.TCP{@port}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.UDP{@country}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.UDP{@country}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.UDP{@ip}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.UDP{@ip}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.UDP{@port}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.UDP{@port}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.url{@host}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.url{@host}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.url{@method}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.url{@method}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.url{@uri}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.url{@uri}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.url{@user_agent}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.url{@user_agent}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_created{@child_pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_created{@child_pid}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_created{@child_process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_created{@child_process_image}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_created{@parent_pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_created{@parent_pid}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_created{@parent_process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_created{@parent_process_image}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_terminated{@child_pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_terminated{@child_pid}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_terminated{@child_process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_terminated{@child_process_image}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_terminated{@parent_pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_terminated{@parent_pid}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_terminated{@parent_process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_terminated{@parent_process_image}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteKey{@pid}", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteKey{@pid}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteKey{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteKey{@process_image}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteKey{@reg_key}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteKey{@reg_key}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteValueKey{@pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteValueKey{@pid}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteValueKey{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteValueKey{@process_image}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteValueKey{@reg_key}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteValueKey{@reg_key}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.SetValueKey{@pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.SetValueKey{@pid}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.SetValueKey{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.SetValueKey{@process_image}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.SetValueKey{@reg_key}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.SetValueKey{@reg_key}", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.sha256", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.sha256", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.size", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.size", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.summary.entry", 
+                    "type": "string", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.summary.entry", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.task", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.task", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.version", 
+                    "type": "number", 
+                    "comment": "", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.version", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "index=\"pan_logs\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [
+                {
+                    "expression": "dst_ip.\",\".dst_port", 
+                    "calculationID": "399y2eyb79j2a9k9", 
+                    "calculationType": "Eval", 
+                    "comment": "", 
+                    "outputFields": [
+                        {
+                            "required": false, 
+                            "displayName": "dst_ip_port", 
+                            "type": "string", 
+                            "comment": "", 
+                            "multivalue": false, 
+                            "fieldName": "dst_ip_port", 
+                            "hidden": false
+                        }
+                    ]
+                }
+            ], 
+            "comment": "", 
+            "displayName": "Traffic", 
+            "parentName": "log", 
+            "objectName": "traffic", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "start_time", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "start_time", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes_received", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes_received", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes_sent", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes_sent", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "egress_interface", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "egress_interface", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "ingress_interface", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "ingress_interface", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "packets", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets_received", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "packets_received", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets_sent", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "packets_sent", 
+                    "hidden": false
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "type=\"TRAFFIC\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "Flow Start", 
+            "parentName": "traffic", 
+            "objectName": "start", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "start_time", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "start_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets_sent", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "packets_sent", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets_received", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "packets_received", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "packets", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "ingress_interface", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "ingress_interface", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "egress_interface", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "egress_interface", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes_sent", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes_sent", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes_received", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes_received", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "log_subtype=\"start\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "Flow End", 
+            "parentName": "traffic", 
+            "objectName": "end", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "start_time", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "start_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets_sent", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "packets_sent", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets_received", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "packets_received", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "packets", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "packets", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "ingress_interface", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "ingress_interface", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "egress_interface", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "egress_interface", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes_sent", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes_sent", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes_received", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes_received", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "log_subtype=\"end\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "Threat", 
+            "parentName": "log", 
+            "objectName": "threat", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "severity", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "severity", 
+                    "hidden": false
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "type=\"THREAT\" (log_subtype=\"vulnerability\" OR log_subtype=\"virus\" OR log_subtype=\"spyware\")"
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "Vulnerability", 
+            "parentName": "threat", 
+            "objectName": "vulnerability", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "severity", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "severity", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "log_subtype=\"vulnerability\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "Virus", 
+            "parentName": "threat", 
+            "objectName": "virus", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "severity", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "severity", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "log_subtype=\"virus\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "Spyware", 
+            "parentName": "threat", 
+            "objectName": "spyware", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "severity", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "severity", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "log_subtype=\"spyware\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [
+                {
+                    "inputField": "content_type", 
+                    "expression": "(?<major_content_type>.*)/", 
+                    "calculationType": "Rex", 
+                    "outputFields": [
+                        {
+                            "required": false, 
+                            "displayName": "major_content_type", 
+                            "type": "string", 
+                            "comment": "", 
+                            "multivalue": false, 
+                            "fieldName": "major_content_type", 
+                            "hidden": false
+                        }
+                    ], 
+                    "calculationID": "09k28rp5v6j38fr", 
+                    "comment": ""
+                }
+            ], 
+            "comment": "", 
+            "displayName": "URL Filtering", 
+            "parentName": "log", 
+            "objectName": "url", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_hostname", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_hostname", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "egress_interface", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "egress_interface", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "ingress_interface", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "ingress_interface", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "timeendpos", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "timeendpos", 
+                    "hidden": false
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "log_subtype=\"url\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "File Blocking", 
+            "parentName": "log", 
+            "objectName": "file", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "log_subtype=\"file\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "Data Filtering", 
+            "parentName": "log", 
+            "objectName": "data", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "log_subtype=\"data\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "WildFire", 
+            "parentName": "log", 
+            "objectName": "wildfire", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "report_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "report_id", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "log_subtype=\"wildfire\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [
+                {
+                    "expression": "tcp_ip_port", 
+                    "calculationID": "2rucodj8x0uul3di", 
+                    "calculationType": "Eval", 
+                    "comment": "", 
+                    "outputFields": [
+                        {
+                            "required": false, 
+                            "displayName": "tcp_ip_port", 
+                            "type": "string", 
+                            "comment": "", 
+                            "multivalue": false, 
+                            "fieldName": "tcp_ip_port", 
+                            "hidden": false
+                        }
+                    ]
+                }, 
+                {
+                    "expression": "mvzip(udp_ip,udp_port)", 
+                    "calculationID": "4kmhncs3aj198uxr", 
+                    "calculationType": "Eval", 
+                    "comment": "", 
+                    "outputFields": [
+                        {
+                            "required": false, 
+                            "displayName": "udp_ip_port", 
+                            "type": "string", 
+                            "comment": "", 
+                            "multivalue": false, 
+                            "fieldName": "udp_ip_port", 
+                            "hidden": false
+                        }
+                    ]
+                }
+            ], 
+            "comment": "", 
+            "displayName": "WildFire Report", 
+            "parentName": "log", 
+            "objectName": "wildfire_report", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_deleted{@deleted_file}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_deleted{@deleted_file}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_deleted{@pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_deleted{@pid}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_deleted{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_deleted{@process_image}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_written{@pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_written{@pid}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_written{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_written{@process_image}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.file.file_written{@written_file}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.file.file_written{@written_file}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.id", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.id", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.malware", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.malware", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.md5", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.md5", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.dns{@query}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.dns{@query}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.dns{@type}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.dns{@type}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.tcp-connection{@ip}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.tcp-connection{@ip}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.tcp-connection{@pid}", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.tcp-connection{@pid}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.tcp-connection{@port}", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.tcp-connection{@port}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.tcp-connection{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.tcp-connection{@process_image}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.TCP{@country}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.TCP{@country}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.TCP{@ip}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.TCP{@ip}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.TCP{@port}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.TCP{@port}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.UDP{@country}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.UDP{@country}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.UDP{@ip}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.UDP{@ip}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.UDP{@port}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.UDP{@port}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.url{@host}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.url{@host}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.url{@method}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.url{@method}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.url{@uri}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.url{@uri}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.network.url{@user_agent}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.network.url{@user_agent}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_created{@child_pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_created{@child_pid}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_created{@child_process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_created{@child_process_image}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_created{@parent_pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_created{@parent_pid}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_created{@parent_process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_created{@parent_process_image}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_terminated{@child_pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_terminated{@child_pid}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_terminated{@child_process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_terminated{@child_process_image}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_terminated{@parent_pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_terminated{@parent_pid}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.process.process_terminated{@parent_process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.process.process_terminated{@parent_process_image}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteKey{@pid}", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteKey{@pid}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteKey{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteKey{@process_image}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteKey{@reg_key}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteKey{@reg_key}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteValueKey{@pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteValueKey{@pid}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteValueKey{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteValueKey{@process_image}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.DeleteValueKey{@reg_key}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.DeleteValueKey{@reg_key}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.SetValueKey{@pid}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.SetValueKey{@pid}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.SetValueKey{@process_image}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.SetValueKey{@process_image}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.registry.SetValueKey{@reg_key}", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.registry.SetValueKey{@reg_key}", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.sha256", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.sha256", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.size", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.size", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.summary.entry", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.summary.entry", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.task", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.task", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "wildfire.report.version", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "wildfire.report.version", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "action", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "action", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "action_flags", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "action_flags", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "app", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "app", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "application", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "category", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "category", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "content_type", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "content_type", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dest", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dest_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dest_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "direction", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "direction", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_location", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_location", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_user", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_user", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_zone", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_zone", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dvc", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dvc", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "flags", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "flags", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "generated_time", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "generated_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "log_forwarding_profile", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "log_forwarding_profile", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "log_subtype", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "log_subtype", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "misc", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "misc", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_dst_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_dst_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_dst_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_dst_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_src_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_src_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_src_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_src_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "protocol", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "protocol", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "receive_time", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "receive_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "repeat_count", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "repeat_count", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "rule", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "rule", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "rule_name", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "rule_name", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "sequence_number", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "sequence_number", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "serial", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "serial", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "serial_number", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "serial_number", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "session_id", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "session_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_location", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_location", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_user", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_user", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_zone", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_zone", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "transport", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "transport", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "type", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "type", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "virtual_system", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "virtual_system", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "vsys", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "vsys", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: capable of file transfer", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "ABLE_TO_TRANSFER_FILE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: standard ports", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "DEFAULT_PORTS", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: risk", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "RISK", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: excessive bandwidth", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "EXCESSIVE_BANDWIDTH", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: category", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "CATEGORY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "applicaiton: prone to misuse", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "PRONE_TO_MISUSE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: widely use", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "PERVASIVE_USE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: evasive", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "EVASIVE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: technology", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "TECHNOLOGY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: subcategory", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "SUBCATEGORY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: has known vulnerabilities", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "HAS_KNOWN_VULNERABILITY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: tunnels other applications", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "TUNNEL_OTHER_APPLICATION", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: used by malware", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "USED_BY_MALWARE", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "sourcetype=\"pan_wildfire_report\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "Benign File", 
+            "parentName": "wildfire", 
+            "objectName": "benign", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "category=\"benign\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "Malicious File", 
+            "parentName": "wildfire", 
+            "objectName": "malicious", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "category=\"malicious\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "Config", 
+            "parentName": "log", 
+            "objectName": "config", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "result", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "result", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "configuration_path", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "configuration_path", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "cmd", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "cmd", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "client_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "client_ip", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "client_type", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "client_type", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "admin", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "admin", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "command", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "command", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "action", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "action", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "app", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "app", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "application", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "category", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "category", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "content_type", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "content_type", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dest", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dest_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dest_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "direction", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "direction", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_location", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_location", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_user", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_user", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_zone", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_zone", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "flags", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "flags", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "generated_time", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "generated_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "log_forwarding_profile", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "log_forwarding_profile", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "misc", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "misc", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_dst_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_dst_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_dst_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_dst_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_src_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_src_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_src_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_src_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "product", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "product", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "protocol", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "protocol", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "repeat_count", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "repeat_count", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "rule", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "rule", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "rule_name", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "rule_name", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "session_id", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "session_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_location", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_location", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_user", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_user", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_zone", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_zone", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "transport", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "transport", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: capable of file transfer", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "ABLE_TO_TRANSFER_FILE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: standard ports", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "DEFAULT_PORTS", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: risk", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "RISK", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: excessive bandwidth", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "EXCESSIVE_BANDWIDTH", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: category", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "CATEGORY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: prone to misuse", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "PRONE_TO_MISUSE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: widely use", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "PERVASIVE_USE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: evasive", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "EVASIVE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: technology", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "TECHNOLOGY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: subcategory", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "SUBCATEGORY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: has known vulnerabilities", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "HAS_KNOWN_VULNERABILITY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: tunnels other applications", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "TUNNEL_OTHER_APPLICATION", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: used by malware", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "USED_BY_MALWARE", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "type=\"CONFIG\""
+                }
+            ]
+        }, 
+        {
+            "calculations": [], 
+            "comment": "", 
+            "displayName": "System", 
+            "parentName": "log", 
+            "objectName": "system", 
+            "fields": [
+                {
+                    "required": false, 
+                    "displayName": "bytes", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "bytes", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "description", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "description", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "module", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "module", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "event_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "event_id", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "severity", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "severity", 
+                    "hidden": false
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "action", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "action", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "app", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "app", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "application", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "category", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "category", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "content_type", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "content_type", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dest", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dest_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dest_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dest_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "direction", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "direction", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_location", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_location", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_user", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_user", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "dst_zone", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "dst_zone", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "elapsed_time", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "elapsed_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "flags", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "flags", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "generated_time", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "generated_time", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "log_forwarding_profile", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "log_forwarding_profile", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "misc", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "misc", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_dst_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_dst_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_dst_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_dst_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_src_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_src_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "nat_src_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "nat_src_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "product", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "product", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "protocol", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "protocol", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "repeat_count", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "repeat_count", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "rule", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "rule", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "rule_name", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "rule_name", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "session_id", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "session_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_ip", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_ip", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_location", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_location", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_port", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_port", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_user", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_user", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "src_zone", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "src_zone", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "threat_id", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "threat_id", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "transport", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "transport", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: capable of file transfer", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "ABLE_TO_TRANSFER_FILE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: standard ports", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "DEFAULT_PORTS", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: risk", 
+                    "type": "number", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "RISK", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: excessive bandwidth", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "EXCESSIVE_BANDWIDTH", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: category", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "CATEGORY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: prone to misuse", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "PRONE_TO_MISUSE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: widely use", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "PERVASIVE_USE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: evasive", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "EVASIVE", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: technology", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "TECHNOLOGY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: subcategory", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "SUBCATEGORY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: has known vulnerabilities", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "HAS_KNOWN_VULNERABILITY", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: tunnels other applications", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "TUNNEL_OTHER_APPLICATION", 
+                    "hidden": true
+                }, 
+                {
+                    "required": false, 
+                    "displayName": "application: used by malware", 
+                    "type": "string", 
+                    "comment": "", 
+                    "owner": "log", 
+                    "multivalue": false, 
+                    "fieldName": "USED_BY_MALWARE", 
+                    "hidden": true
+                }
+            ], 
+            "constraints": [
+                {
+                    "search": "type=\"SYSTEM\""
+                }
+            ]
+        }
+    ], 
+    "objectSummary": {
+        "Interface Implementations": 0, 
+        "Search-Based": 0, 
+        "Transaction-Based": 0, 
+        "Event-Based": 17, 
+        "Interfaces": 0
+    }, 
+    "objectNameList": [
+        "log", 
+        "traffic", 
+        "start", 
+        "end", 
+        "threat", 
+        "vulnerability", 
+        "virus", 
+        "spyware", 
+        "url", 
+        "file", 
+        "data", 
+        "wildfire", 
+        "wildfire_report", 
+        "benign", 
+        "malicious", 
+        "config", 
+        "system"
+    ], 
+    "modelName": "pan_logs"
+}
