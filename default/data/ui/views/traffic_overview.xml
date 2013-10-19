@@ -270,7 +270,7 @@
   <row>
     <chart>
       <title>Traffic Transmitted by Interface</title>
-      <searchString>| tstats sum(log.bytes) As sb FROM datamodel="pan_logs" WHERE nodename="log.traffic.end" $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.egress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.egress_interface</searchString>
+      <searchString>| tstats sum(log.bytes) As sb FROM datamodel="pan_logs" WHERE nodename="log.traffic.end" $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.egress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.egress_interface | rename log.egress_interface AS "Egress Interface"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -296,7 +296,7 @@
     </chart>
     <chart>
       <title>Traffic Received by Interface</title>
-      <searchString>| tstats sum(log.bytes) As sb FROM datamodel="pan_logs" WHERE nodename="log.traffic.end" $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.ingress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.ingress_interface</searchString>
+      <searchString>| tstats sum(log.bytes) As sb FROM datamodel="pan_logs" WHERE nodename="log.traffic.end" $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.ingress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.ingress_interface | rename log.ingress_interface AS "Ingress Interface"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

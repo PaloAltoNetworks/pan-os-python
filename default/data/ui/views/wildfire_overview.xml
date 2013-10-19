@@ -58,8 +58,8 @@
       <searchString>| tstats count FROM datamodel="pan_logs" WHERE nodename="log.wildfire" $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.category | timechart values(count) by log.category</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>

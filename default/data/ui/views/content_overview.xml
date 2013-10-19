@@ -66,8 +66,8 @@
       <searchString>| pivot pan_logs url count(url) SPLITROW _time SPLITCOL major_content_type FILTER major_content_type isNotNull $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -92,8 +92,8 @@
       <searchString>| pivot pan_logs url count(url) SPLITROW _time SPLITCOL content_type FILTER content_type isNotNull $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
