@@ -39,7 +39,7 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs data count(data) AS count SPLITROW app AS field
+        pan_logs traffic count(traffic) AS count SPLITROW app AS field
         | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="action">
@@ -49,7 +49,7 @@
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs data count(data) AS count SPLITROW action AS field
+        pan_logs traffic count(traffic) AS count SPLITROW action AS field
         | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
