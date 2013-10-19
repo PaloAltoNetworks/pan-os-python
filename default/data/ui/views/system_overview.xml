@@ -57,7 +57,7 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| pivot pan_logs system count(system) SPLITROW _time PERIOD second SPLITROW serial_number SPLITROW description SPLITROW log_subtype SPLITROW severity SPLITROW event_id $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ | table _time serial_number description log_subtype severity event_id | sort -_time</searchString>
+      <searchString>| pivot pan_logs system count(system) SPLITROW _time PERIOD second SPLITROW serial_number SPLITROW description SPLITROW log_subtype SPLITROW severity SPLITROW event_id $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ | table _time serial_number log_subtype severity event_id description | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
