@@ -1,0 +1,77 @@
+
+/* Set background */
+.main-section-body {
+    background-color:#dbe6e9;
+    background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#e2e9eb), color-stop(400px, #dbe6e9), to(#dbe6e9));
+    background-image:-webkit-linear-gradient(#e2e9eb, #dbe6e9 400px, #dbe6e9);
+    background-image:-moz-linear-gradient(top, #e2e9eb, #dbe6e9 400px, #dbe6e9);
+    background-image:-o-linear-gradient(#e2e9eb, #dbe6e9 400px, #dbe6e9);
+    background-image:linear-gradient(#e2e9eb, #dbe6e9 400px, #dbe6e9);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffe2e9eb', endColorstr='#ffdbe6e9', GradientType=0);
+}
+
+/* Make the forms look like they are in a panel */
+/*.fieldset {
+    border-radius: 4px;
+    border: 1px solid #cccccc;
+    background: white;
+    margin: 0 0px 10px 0;
+    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.08);
+    position: relative;
+    padding: 12px 15px 0px 15px;
+}
+
+.fieldset .hide-label {
+}
+*/
+
+/* Shrink the form text inputs*/
+input, textarea, .uneditable-input {
+    width: 120px;
+}
+
+/* Make the Search button on each dashboard blue instead of green */
+
+.btn-primary {
+    background-color: #5c9732;
+    background-image: -moz-linear-gradient(top, #0087df, #004f82);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#0087df), to(#004f82));
+    background-image: -webkit-linear-gradient(top, #0087df, #004f82);
+    background-image: -o-linear-gradient(top, #0087df, #004f82);
+    background-image: linear-gradient(to bottom, #0087df, #004f82);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0087df', endColorstr='#ff004f82', GradientType=0);
+    background-color: #0087df;
+    border: 1px solid #143ab1;
+    border-bottom-color: #0048c9;
+    border-top-color: #004f82;
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(51, 51, 51, 0.7);
+    -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.08);
+    -moz-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.08);
+    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary:hover {
+    background-color: #7db44d;
+    background-image: -moz-linear-gradient(top, #6ac1fa, #007fd1);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#6ac1fa), to(#007fd1));
+    background-image: -webkit-linear-gradient(top, #6ac1fa, #007fd1);
+    background-image: -o-linear-gradient(top, #6ac1fa, #007fd1);
+    background-image: linear-gradient(to bottom, #6ac1fa, #007fd1);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff6ac1fa', endColorstr='#ff007fd1', GradientType=0);
+    background-color: #389ddf;
+    border-color: #0c89db;
+    border-bottom-color: #006eb4;
+    border-top-color: #3f99d3;
+    background-position: 0 0;
+}
+
+.btn-primary:active, .btn-primary.active {
+    background-color: #016baf 9;
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .btn-primary.disabled, .btn-primary[disabled] {
+    color: #ffffff;
+    background-color: #016baf;
+}

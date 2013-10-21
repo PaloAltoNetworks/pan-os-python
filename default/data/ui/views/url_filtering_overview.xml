@@ -1,96 +1,107 @@
 <form>
-  <label>Threat Details</label>
+  <label>URL Filtering Dashboard</label>
+  <description/>
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m</earliestTime>
+        <earliestTime>-60m@m</earliestTime>
         <latestTime>now</latestTime>
       </default>
     </input>
-    <input type="text" token="threat">
-      <label>Threat</label>
+    <input type="text" token="src_ip">
+      <label>Source IP</label>
       <default></default>
-      <prefix>Threat="</prefix>
+      <prefix>src_ip="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="user">
-      <label>User</label>
+    <input type="text" token="dst_ip">
+      <label>Destination IP</label>
       <default></default>
-      <prefix>User="</prefix>
+      <prefix>dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="application">
+    <input type="text" token="src_user">
+      <label>Source User</label>
+      <default></default>
+      <prefix>src_user="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="text" token="dst_hostname">
+      <label>Destination Hostname</label>
+      <default></default>
+      <prefix>dst_hostname="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="dropdown" token="app">
       <label>Application</label>
       <default></default>
-      <prefix>Application="</prefix>
+      <prefix>app="</prefix>
       <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
+        FROM pan_web WHERE earliest=$earliest$ latest=$latest$ groupby app
+        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
     </input>
-    <input type="text" token="location">
-      <label>Location</label>
+    <input type="dropdown" token="vsys">
+      <label>Virtual System</label>
       <default></default>
-      <prefix>Location="</prefix>
+      <prefix>vsys="</prefix>
       <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
+        FROM pan_web WHERE earliest=$earliest$ latest=$latest$ groupby vsys
+        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
-      <title>Locations by Kilobytes</title>
-      <searchString>| tstats count(Location) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby Location Bytes| eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Total Bytes (KB)" by Location |
-                                    sort -"Total Bytes (KB)"</searchString>
+      <title>URL Filtering Actions</title>
+      <searchString>| tstats count(action) AS ca FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $dst_hostname$ groupby _time action | timechart values(ca) by action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
-      <option name="charting.chart">pie</option>
+      <option name="charting.chart">column</option>
       <option name="charting.chart.nullValueMode">connect</option>
       <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
       <option name="charting.chart.stackMode">stacked</option>
       <option name="charting.chart.style">shiny</option>
       <option name="charting.drilldown">all</option>
       <option name="charting.layout.splitSeries">0</option>
-      <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
-      <option name="wrap">true</option>
-      <option name="displayRowNumbers">false</option>
-      <option name="dataOverlayMode">none</option>
-      <option name="drilldown">cell</option>
-      <option name="count">10</option>
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/threat_detail?form.location=$click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
-      <title>Users by Kilobytes</title>
-      <searchString>| tstats count(User) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby User Bytes|
-                                    eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Transferred (KB)" by User |
-                                    sort -"Transferred (KB)"</searchString>
+      <title>Applications</title>
+      <searchString>| tstats count(app) AS ca FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $dst_hostname$ groupby _time app | timechart values(ca) as count by app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
-      <option name="charting.chart">pie</option>
-      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart">column</option>
+      <option name="charting.chart.nullValueMode">connect</option>
       <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
       <option name="charting.chart.stackMode">stacked</option>
       <option name="charting.chart.style">shiny</option>
       <option name="charting.drilldown">all</option>
       <option name="charting.layout.splitSeries">0</option>
-      <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">bottom</option>
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/threat_detail?form.user=$click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` app="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
@@ -98,12 +109,8 @@
   </row>
   <row>
     <table>
-      <title>Bytes Transferred Duration by Users</title>
-      <searchString>| tstats count(User) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby User Bytes Duration Application Location|
-                                    eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Transfer (KB)"
-                                          sum(Duration) as "Total Duration"
-                                       by User Application Location</searchString>
+      <title>Application Users</title>
+      <searchString>| tstats count(src_user) AS ca FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $dst_hostname$ groupby src_user app | stats values(ca) as count by src_user app | sort -count</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -119,37 +126,16 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
-      <option name="wrap">true</option>
-      <option name="displayRowNumbers">true</option>
-      <option name="dataOverlayMode">none</option>
-      <option name="drilldown">row</option>
-      <option name="count">10</option>
-    </table>
-  </row>
-  <row>
-    <table>
-      <title>Threats by Bytes Transferred and Sessions</title>
-      <searchString>| tstats count(Session) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby Session Bytes Threat|
-                                    eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Transfer (KB)"
-                                    count(Session) as "Total Sessions"
-                                    by Threat</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
-      <option name="charting.axisX.scale">linear</option>
-      <option name="charting.axisY.scale">linear</option>
-      <option name="charting.chart">pie</option>
-      <option name="charting.chart.nullValueMode">gaps</option>
-      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-      <option name="charting.chart.stackMode">default</option>
-      <option name="charting.chart.style">shiny</option>
-      <option name="charting.drilldown">all</option>
-      <option name="charting.layout.splitSeries">0</option>
-      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
-      <option name="charting.legend.placement">right</option>
-      <option name="wrap">true</option>
+      <option name="list.drilldown">full</option>
+      <option name="list.wrap">1</option>
+      <option name="maxLines">5</option>
+      <option name="raw.drilldown">full</option>
+      <option name="rowNumbers">0</option>
+      <option name="table.drilldown">1</option>
+      <option name="table.sortDirection">asc</option>
+      <option name="table.wrap">1</option>
+      <option name="type">list</option>
+      <option name="wrap">false</option>
       <option name="displayRowNumbers">true</option>
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
@@ -157,7 +143,43 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/threat_detail?form.threat=$click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` src_user="$row.src_user$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </table>
+    <table>
+      <title>Host Categories</title>
+      <searchString>| tstats count(dst_hostname) AS cc FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $dst_hostname$ groupby dst_hostname category | stats values(cc) as count by dst_hostname category | sort -count</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <option name="wrap">false</option>
+      <option name="displayRowNumbers">true</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
+      <drilldown>
+        <link field="dst_hostname">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` dst_hostname="$row.dst_hostname$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+        <link field="category">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` category="$row.category$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>

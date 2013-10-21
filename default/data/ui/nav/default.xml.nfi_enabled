@@ -1,20 +1,21 @@
-<nav>
-  <collection label="Splunk for Palo Alto Networks">
-    <view name="pan_overview_switcher_maps" default="true"/>
-    <collection label="Search Palo Alto Data">
-      <a href="flashtimeline">Search</a>
-      <a href="flashtimeline?q=search%20%60pan_traffic%60">Traffic Logs</a>
-      <a href="flashtimeline?q=search%20%60pan_threat%60">Threat Data</a>
-      <a href="flashtimeline?q=search%20%60pan_url%60">URL Logs</a>
-      <a href="flashtimeline?q=search%20%60pan_data%60">Data Filtering Logs</a>
-      <a href="flashtimeline?q=search%20%60pan_wildfire%60">WildFire Logs</a>
-      <a href="flashtimeline?q=search%20%60pan_config%60">Config Messages</a>
-      <a href="flashtimeline?q=search%20%60pan_system%60">System Logs</a>
+<nav search_view="search" color="#004f82">
+  <collection label="Palo Alto Networks">
+    <view name="overview" default="true"/>
+    <collection label="Search Palo Alto Networks Logs">
+      <a href="search">Search</a>
+      <a href="search?q=%60pan_traffic%60">Traffic Logs</a>
+      <a href="search?q=%60pan_threat%60">Threat Data</a>
+      <a href="search?q=%60pan_url%60">URL Logs</a>
+      <a href="search?q=%60pan_data%60">Data Filtering Logs</a>
+      <a href="search?q=%60pan_file%60">File Blocking Logs</a>
+      <a href="search?q=%60pan_wildfire%60">WildFire Logs</a>
+      <a href="search?q=%60pan_config%60">Config Messages</a>
+      <a href="search?q=%60pan_system%60">System Logs</a>
     </collection>
     <divider />
     <a href="/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">Configuration</a>
     <divider />
-    <a href="mailto:bd-labs@splunk.com">Send Feedback</a>
+    <a href="http://answers.splunk.com/ask/?appid=491" target="_blank">Send Feedback</a>
   </collection>
   
   <collection label="Traffic">
@@ -23,9 +24,9 @@
     <view name="web_usage_report" />
     <divider />
     <collection label="Searches &amp; Reports">
-      <a href="flashtimeline?q=search%20%60pan_traffic%60">Search Traffic Data</a>
+      <a href="search?q=search%20%60pan_traffic%60">Search Traffic Data</a>
       <divider />
-      <saved source="all" match="PAN - Traffic" view="flashtimeline" />
+      <saved source="all" match="PAN - Traffic" view="search" />
     </collection>
   </collection>
   
@@ -34,22 +35,22 @@
     <view name="threat_detail" />
     <divider />
     <collection label="Searches &amp; Reports">
-      <a href="flashtimeline?q=search%20%60pan_threat%60">Search Threat Data</a>
+      <a href="search?q=search%20%60pan_threat%60">Search Threat Data</a>
       <divider />
-      <saved source="all" match="PAN - Threat" view="flashtimeline" />
+      <saved source="all" match="PAN - Threat" view="search" />
     </collection>
   </collection>
   
     <collection label="Content">
     <view name="content_overview" />
-    <view name="url_filtering" />
-    <view name="data_filtering" />
+    <view name="url_filtering_overview" />
+    <view name="data_filtering_overview" />
     <divider />
     <collection label="Searches &amp; Reports">
-      <a href="flashtimeline?q=search%20%60pan_web_activity%60">Search URL Data</a>
-      <a href="flashtimeline?q=search%20%60pan_data_filtering%60">Search Data Filtering Data</a>
+      <a href="search?q=search%20%60pan_web_activity%60">Search URL Data</a>
+      <a href="search?q=search%20%60pan_data_filtering%60">Search Data Filtering Data</a>
       <divider />
-      <saved source="all" match="PAN - Threat" view="flashtimeline" />
+      <saved source="all" match="PAN - Threat" view="search" />
     </collection>
   </collection>
 
@@ -58,10 +59,10 @@
     <view name="wildfire_detail" />
     <divider />
     <collection label="Searches &amp; Reports">
-      <a href="flashtimeline?q=search%20%60pan_wildfire%60">Search WildFire Log Data</a>
-      <a href="flashtimeline?q=search%20%60pan_wildfire_report%60">Search WildFire Report Data</a>
+      <a href="search?q=search%20%60pan_wildfire%60">Search WildFire Log Data</a>
+      <a href="search?q=search%20%60pan_wildfire_report%60">Search WildFire Report Data</a>
       <divider />
-      <saved source="all" match="PAN - WildFire" view="flashtimeline" />
+      <saved source="all" match="PAN - WildFire" view="search" />
     </collection>
   </collection>
   
@@ -70,14 +71,14 @@
     <view name="config_overview" />
     <divider />
     <collection label="System Message Reports">
-      <a href="flashtimeline?q=search%20%60pan_system%60">Search System Messages</a>
+      <a href="search?q=search%20%60pan_system%60">Search System Messages</a>
       <divider />
-      <saved source="all" match="PAN - System" view="flashtimeline" />
+      <saved source="all" match="PAN - System" view="search" />
     </collection>
     <collection label="Configuration Reports">
-      <a href="flashtimeline?q=search%20%60pan_config%60">Search Config Changes</a>
+      <a href="search?q=search%20%60pan_config%60">Search Config Changes</a>
       <divider />
-      <saved source="all" match="PAN - Config" view="flashtimeline" />
+      <saved source="all" match="PAN - Config" view="search" />
     </collection>
   </collection>
 
@@ -103,9 +104,9 @@
     </collection>
     <a href="flashtimeline?q=search%20`nfi_pan_unified`">Timeline</a>
   </collection>
-  
+
   <!-- Search -->
-  <view name="flashtimeline" />
+  <view name="search" stylesheet="application.css"/>
   <!--<collection label="Help">
     <view name="readme"/>
     <view name="faq" />

@@ -1,5 +1,5 @@
 <form>
-  <label>Content Dashboard</label>
+  <label>Data Filtering Dashboard</label>
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
@@ -19,25 +19,11 @@
       <prefix>dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="dropdown" token="content_type">
-      <label>Content Type</label>
+    <input type="text" token="src_user">
+      <label>Source User</label>
       <default></default>
-      <prefix>content_type="</prefix>
+      <prefix>src_user="</prefix>
       <suffix>"</suffix>
-      <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="content_type" fieldForLabel="content_type_with_count">| tstats count(content_type) as count
-        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby content_type
-        | eval content_type_with_count = content_type . " (" . count . ")"</populatingSearch>
-    </input>
-    <input type="dropdown" token="category">
-      <label>Category</label>
-      <default></default>
-      <prefix>category="</prefix>
-      <suffix>"</suffix>
-      <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="category" fieldForLabel="category_with_count">| tstats count(category) as count
-        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby category
-        | eval category_with_count = category . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
@@ -45,9 +31,19 @@
       <prefix>app="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">| tstats count(app) as count
-        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby app
+      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
+        FROM pan_data WHERE earliest=$earliest$ latest=$latest$ groupby app
         | eval app_with_count = app . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="action">
+      <label>Action</label>
+      <default></default>
+      <prefix>action="</prefix>
+      <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="action" fieldForLabel="action_with_count">|tstats count(action) as count
+        FROM pan_data WHERE earliest=$earliest$ latest=$latest$ groupby action
+        | eval action_with_count = action . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
@@ -55,15 +51,15 @@
       <prefix>vsys="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">| tstats count(vsys) as count
-        FROM pan_content WHERE earliest=$earliest$ latest=$latest$ groupby vsys
+      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
+        FROM pan_data WHERE earliest=$earliest$ latest=$latest$ groupby vsys
         | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
-      <title>Major Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time Major_Type| timechart values(cc) by Major_Type</searchString>
+      <title>Data Events</title>
+      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time action| timechart values(ca) by action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -82,14 +78,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$click.name2$*" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
-	  ]]>
+          /app/SplunkforPaloAltoNetworks/search?q=`pan_index` action="$click.name2$"  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+      ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
-      <title>Full Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time content_type| timechart values(cc) by content_type</searchString>
+      <title>Application</title>
+      <searchString>| tstats count(app) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time app| timechart values(ca) by app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -108,7 +104,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` app="$click.name2$"  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
 	  ]]>
         </link>
       </drilldown>
@@ -116,8 +112,8 @@
   </row>
   <row>
     <table>
-      <title>Content Types and Apps</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | stats values(cc) AS Count by content_type app | sort -Count | rename app AS Application | rename content_type AS "Content Type"</searchString>
+      <title>Data Filter Events by Application</title>
+      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby threat_id action src_ip app | stats values(ca) AS "Count" by threat_id action src_ip app | sort -Count | rename threat_id AS "Threat ID" | rename action AS Action | rename src_ip AS "Source" | rename app AS Application</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -142,7 +138,7 @@
       <option name="table.sortDirection">asc</option>
       <option name="table.wrap">1</option>
       <option name="type">list</option>
-      <option name="wrap">true</option>
+      <option name="wrap">false</option>
       <option name="displayRowNumbers">true</option>
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
@@ -150,45 +146,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.Content Type$" app="$row.Application$"&earliest=$earliest$&latest=$latest$
-      ]]>
-        </link>
-      </drilldown>
-    </table>
-    <table>
-      <title>Non-Web Browsing Content Types</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | where app != "web-browsing" | stats values(cc) AS Count by content_type app | sort -Count | rename app AS Application | rename content_type AS "Content Type"</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
-      <option name="charting.axisX.scale">linear</option>
-      <option name="charting.axisY.scale">linear</option>
-      <option name="charting.chart">pie</option>
-      <option name="charting.chart.nullValueMode">gaps</option>
-      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-      <option name="charting.chart.stackMode">default</option>
-      <option name="charting.chart.style">shiny</option>
-      <option name="charting.drilldown">all</option>
-      <option name="charting.layout.splitSeries">0</option>
-      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
-      <option name="charting.legend.placement">right</option>
-      <option name="wrap">true</option>
-      <option name="displayRowNumbers">true</option>
-      <option name="dataOverlayMode">none</option>
-      <option name="drilldown">row</option>
-      <option name="count">10</option>
-      <drilldown>
-        <link>
-          <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.Content Type$" app="$row.Application$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` threat_id="$row.Threat ID$" action="$row.Action$" src_ip="$row.Source$" app="$row.Application$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
     </table>
     <table>
-      <title>Content Types and Web Categories</title>
-      <searchString>| tstats count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby category content_type | stats values(cc) AS Count by content_type category | sort -Count | rename category AS Category | rename content_type AS "Content Type"</searchString>
+      <title>Data Filter Events by Destination</title>
+      <searchString>| tstats count(action) AS ca FROM pan_data WHERE earliest=$earliest$ latest=$latest$ $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby action src_ip dst_ip dst_location | stats values(ca) AS "Count" by action src_ip dst_ip dst_location | sort -Count | rename dst_ip AS "Destination" | rename dst_location AS "Location" | rename src_ip AS "Source" | rename app AS Application</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -204,7 +169,7 @@
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
-      <option name="wrap">true</option>
+      <option name="wrap">false</option>
       <option name="displayRowNumbers">true</option>
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
@@ -212,7 +177,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.Content Type$" category="$row.Category$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` dst_ip="$row.Destination$" dst_location="$row.Location$" src_ip="$row.Source$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>

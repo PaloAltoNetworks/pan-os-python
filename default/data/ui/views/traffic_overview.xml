@@ -1,330 +1,316 @@
-<view template="dashboard.html" stylesheet="traffic_overview.css">
+<form>
   <label>Traffic Dashboard</label>
-  <module name="AccountBar" layoutPanel="appHeader" />
-  <module name="AppBar" layoutPanel="navigationHeader" />
-  <module name="Message" layoutPanel="messaging">
-    <param name="filter">*</param>
-    <param name="clearOnJobDispatch">False</param>
-    <param name="maxSize">1</param>
-  </module>
-  <module name="TitleBar" layoutPanel="viewHeader">
-    <param name="actionsMenuFilter">dashboard</param>
-  </module>
-  <module name="GenericHeader" layoutPanel="panel_row1_col1">
-    <param name="label">Traffic Dashboard</param>
-  </module>
-  <module name="StaticContentSample" layoutPanel="panel_row1_col1">
-    <param name="text">This dashboard provides visibility into the traffic data in your Palo Alto Networks environment.</param>
-  </module>
-
-  <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-    <param name="label">Source IP:</param>
-    <param name="field">src_ip</param>
-    <param name="replacementMap">
-      <param name="arg">
-        <param name="src_ip">
-          <param name="value"></param>
-        </param>
-      </param>
-    </param>
-    <param name="intention">
-      <param name="name">stringreplace</param>
-      <param name="arg">
-        <param name="src_ip">
-          <param name="default"></param>
-          <param name="prefix">src_ip="</param>
-          <param name="suffix">"</param>
-          <param name="fillOnEmpty">false</param>
-        </param>
-      </param>
-    </param>
-    <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-      <param name="label">Destination IP:</param>
-      <param name="field">dst_ip</param>
-      <param name="replacementMap">
-        <param name="arg">
-          <param name="dst_ip">
-            <param name="value"></param>
-          </param>
-        </param>
-      </param>
-      <param name="intention">
-        <param name="name">stringreplace</param>
-        <param name="arg">
-          <param name="dst_ip">
-            <param name="default"></param>
-            <param name="prefix">dst_ip="</param>
-            <param name="suffix">"</param>
-            <param name="fillOnEmpty">false</param>
-          </param>
-        </param>
-      </param>
-      <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp1">
-        <param name="label">Destination Port:</param>
-        <param name="field">dst_port</param>
-        <param name="replacementMap">
-          <param name="arg">
-            <param name="dst_port">
-              <param name="value"></param>
-            </param>
-          </param>
-        </param>
-        <param name="intention">
-          <param name="name">stringreplace</param>
-          <param name="arg">
-            <param name="dst_port">
-              <param name="default"></param>
-              <param name="prefix">dst_port="</param>
-              <param name="suffix">"</param>
-              <param name="fillOnEmpty">false</param>
-            </param>
-          </param>
-        </param>
-        <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-          <param name="label">Action:</param>
-          <param name="field">action</param>
-          <param name="replacementMap">
-            <param name="arg">
-              <param name="action">
-                <param name="value"></param>
-              </param>
-            </param>
-          </param>
-          <param name="intention">
-            <param name="name">stringreplace</param>
-            <param name="arg">
-              <param name="action">
-                <param name="default"></param>
-                <param name="prefix">action="</param>
-                <param name="suffix">"</param>
-                <param name="fillOnEmpty">false</param>
-              </param>
-            </param>
-          </param>
-          <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-            <param name="label">Source User:</param>
-            <param name="field">src_user</param>
-            <param name="replacementMap">
-              <param name="arg">
-                <param name="src_user">
-                  <param name="value"></param>
-                </param>
-              </param>
-            </param>
-            <param name="intention">
-              <param name="name">stringreplace</param>
-              <param name="arg">
-                <param name="src_user">
-                  <param name="default"></param>
-                  <param name="prefix">src_user="</param>
-                  <param name="suffix">"</param>
-                  <param name="fillOnEmpty">false</param>
-                </param>
-              </param>
-            </param>
-            <module name="ExtendedFieldSearch" layoutPanel="panel_row1_col2_grp2">
-              <param name="label">App:</param>
-              <param name="field">app</param>
-              <param name="replacementMap">
-                <param name="arg">
-                  <param name="app">
-                    <param name="value"></param>
-                  </param>
-                </param>
-              </param>
-              <param name="intention">
-                <param name="name">stringreplace</param>
-                <param name="arg">
-                  <param name="app">
-                    <param name="default"></param>
-                    <param name="prefix">app="</param>
-                    <param name="suffix">"</param>
-                    <param name="fillOnEmpty">false</param>
-                  </param>
-                </param>
-              </param>
-              <module name="TimeRangePicker" layoutPanel="panel_row1_col1" autoRun="True">
-                <param name="selected">Last 60 minutes</param>
-                <param name="searchWhenChanged">True</param>
-                  <module name="HiddenSearch" layoutPanel="panel_row2_col1">
-                    <param name="search">| tstats sum(bytes_sent) AS sumSent sum(bytes_received) AS sumReceived FROM pan_traffic where log_subtype=end $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby _time span=5m | timechart span=5m values("sumReceived") AS "Bytes Received" values("sumSent") AS "Bytes Sent"</param>
-                    <module name="HiddenChartFormatter">
-                      <param name="chartTitle">Bytes Transfered Over Time</param>
-                      <param name="chart">area</param>
-                      <param name="chart.stackMode">stacked</param>
-                      <param name="chart.nullValueMode">connect</param>
-                      <param name="legend.placement">bottom</param>
-                      <module name="JSChart">
-                        <param name="width">100%</param>
-                        <param name="height">250px</param>
-                          <module name="SimpleDrilldown">
-                              <param name="links">
-                                  <param name="*">./flashtimeline?q=`pan_index` [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$</param>
-                              </param>
-                          </module>
-                      </module>
-                    </module>
-                  </module>
-                  <module name="HiddenSearch" layoutPanel="panel_row2_col2">
-                    <param name="search">|tstats count(protocol) AS countProtocol FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby _time protocol span=5m | timechart span=5m values(countProtocol) AS "Count" by protocol </param>
-                    <module name="HiddenChartFormatter">
-                      <param name="chartTitle">Protocols Over Time</param>
-                      <param name="chart">area</param>
-                      <param name="chart.stackMode">stacked</param>
-                      <param name="chart.nullValueMode">gaps</param>
-                      <param name="legend.placement">bottom</param>
-                      <module name="JSChart">
-                        <param name="width">100%</param>
-                        <param name="height">250px</param>
-                        <module name="SimpleDrilldown">
-                            <param name="links">
-                                <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` protocol="$click.name2$"</param>
-                            </param>
-                        </module>
-                      </module>
-                    </module>
-                  </module>
-                  <module name="HiddenSearch" layoutPanel="panel_row3_col1">
-                    <param name="search">|tstats sum(bytes_received) AS sbr sum(bytes_sent) AS sbs FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby app | eval sumBytes = sbr + sbs | stats values(sumBytes) AS Bytes by app</param>
-                    <module name="HiddenChartFormatter">
-                      <param name="chartTitle">Top App by Bytes Transfered</param>
-                      <param name="chart">pie</param>
-                      <param name="legend.placement">bottom</param>
-                      <module name="JSChart">
-                        <param name="width">100%</param>
-                        <param name="height">250px</param>
-                        <module name="SimpleDrilldown">
-                            <param name="links">
-                                <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $click.name$="$click.value$"</param>
-                            </param>
-                        </module>
-                      </module>
-                    </module>
-                  </module>
-                  <module name="HiddenSearch" layoutPanel="panel_row3_col2">
-                    <param name="search">|tstats count(app) FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby app | stats values(count(app)) AS Application by app</param>
-                    <module name="HiddenChartFormatter">
-                      <param name="chartTitle">Top App by Request</param>
-                      <param name="chart">pie</param>
-                      <param name="legend.placement">bottom</param>
-                      <module name="JSChart">
-                        <param name="width">100%</param>
-                        <param name="height">250px</param>
-                        <module name="SimpleDrilldown">
-                            <param name="links">
-                                <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $click.name$="$click.value$"</param>
-                            </param>
-                        </module>
-                      </module>
-                    </module>
-                  </module>
-                  <module name="HiddenSearch" layoutPanel="panel_row3_col3">
-                    <param name="search">|tstats count(src_ip) FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby src_ip</param>
-                    <module name="HiddenChartFormatter">
-                      <param name="chartTitle">Top 20 Source IP's</param>
-                      <param name="chart">pie</param>
-                      <param name="legend.placement">bottom</param>
-                      <module name="JSChart">
-                        <param name="width">100%</param>
-                        <param name="height">250px</param>
-                        <module name="SimpleDrilldown">
-                            <param name="links">
-                                <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $click.name$="$click.value$"</param>
-                            </param>
-                        </module>
-                      </module>
-                    </module>
-                  </module>
-                  <module name="HiddenSearch" layoutPanel="panel_row4_col1">
-                    <param name="search">|tstats count(dst_port) FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby dst_port </param>
-                    <module name="HiddenChartFormatter">
-                      <param name="chartTitle">Top Destination Port</param>
-                      <param name="chart">pie</param>
-                      <param name="legend.placement">bottom</param>
-                      <module name="JSChart">
-                        <param name="width">100%</param>
-                        <param name="height">250px</param>
-                        <module name="SimpleDrilldown">
-                            <param name="links">
-                                <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $click.name$="$click.value$"</param>
-                            </param>
-                        </module>
-                      </module>
-                    </module>
-                  </module>
-                  <module name="HiddenSearch" layoutPanel="panel_row4_col2">
-                    <param name="search">|tstats count(dst_ip) FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby dst_ip</param>
-                    <module name="HiddenChartFormatter">
-                      <param name="chartTitle">Top Destnation IP</param>
-                      <param name="chart">pie</param>
-                      <param name="legend.placement">bottom</param>
-                      <module name="JSChart">
-                        <param name="width">100%</param>
-                        <param name="height">250px</param>
-                          <module name="SimpleDrilldown">
-                              <param name="links">
-                                  <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $click.name$="$click.value$"</param>
-                              </param>
-                          </module>
-                      </module>
-                    </module>
-                  </module>
-                  <module name="HiddenSearch" layoutPanel="panel_row4_col3">
-                    <param name="search">|tstats count(src_user) FROM pan_traffic where * $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby src_user</param>
-                    <module name="HiddenChartFormatter">
-                      <param name="chartTitle">Top Source User</param>
-                      <param name="chart">pie</param>
-                      <param name="legend.placement">bottom</param>
-                      <module name="JSChart">
-                        <param name="width">100%</param>
-                        <param name="height">250px</param>
-                        <module name="SimpleDrilldown">
-                          <param name="links">
-                            <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $click.name$="$click.value$"</param>
-                          </param>
-                        </module>
-                      </module>
-                    </module>
-                  </module>
-                  <module name="HiddenSearch" layoutPanel="panel_row5_col1">
-                    <param name="search">|tstats sum(bytes) As sb FROM pan_traffic where log_subtype=end $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby egress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by egress_interface</param>
-                    <module name="HiddenChartFormatter">
-                      <param name="chartTitle">Top Outbound Interface by Bytes Transfered</param>
-                      <param name="chart">bar</param>
-                      <param name="legend.placement">bottom</param>
-                      <module name="JSChart">
-                        <param name="width">100%</param>
-                        <param name="height">250px</param>
-                          <module name="SimpleDrilldown">
-                              <param name="links">
-                                  <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $click.name$="$click.value$"</param>
-                              </param>
-                          </module>
-                      </module>
-                    </module>
-                  </module>
-                  <module name="HiddenSearch" layoutPanel="panel_row5_col2">
-                    <param name="search">|tstats sum(bytes) As sb FROM pan_traffic where log_subtype=end $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby ingress_interface log_subtype| eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by ingress_interface</param>
-                    <module name="HiddenChartFormatter">
-                      <param name="chartTitle">Traffic Received by Interface</param>
-                      <param name="chart">bar</param>
-                      <param name="legend.placement">bottom</param>
-                      <module name="JSChart">
-                        <param name="width">100%</param>
-                        <param name="height">250px</param>
-                          <module name="SimpleDrilldown">
-                              <param name="links">
-                                  <param name="*">./flashtimeline?earliest=$earliest$&amp;latest=$latest$&amp;q=`pan_index` $click.name$="$click.value$"</param>
-                              </param>
-                          </module>
-                      </module>
-                    </module>
-                  </module>
-                </module>
-              </module>
-            </module>
-          </module>
-        </module>
-      </module>
-    </module>
-</view>
+  <description/>
+  <fieldset autoRun="true" submitButton="true">
+    <input type="time" searchWhenChanged="true">
+      <default>
+        <earliestTime>-60m</earliestTime>
+        <latestTime>now</latestTime>
+      </default>
+    </input>
+    <input type="text" token="src_ip">
+      <label>Source IP</label>
+      <default></default>
+    </input>
+    <input type="text" token="dst_ip">
+      <label>Destination IP</label>
+      <default></default>
+    </input>
+    <input type="text" token="dst_port">
+      <label>Destination Port</label>
+      <default></default>
+    </input>
+    <input type="text" token="src_user">
+      <label>Source User</label>
+      <default></default>
+    </input>
+    <input type="dropdown" token="app">
+      <label>Application</label>
+      <default></default>
+      <prefix>app="</prefix>
+      <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
+        FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ groupby app
+        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="action">
+      <label>Action</label>
+      <default></default>
+      <prefix>action="</prefix>
+      <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="action" fieldForLabel="action_with_count">|tstats count(action) as count
+        FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ groupby action
+        | eval action_with_count = action . " (" . count . ")"</populatingSearch>
+    </input>
+  </fieldset>
+  <row>
+    <chart>
+      <title>Bytes Transfered Over Time</title>
+      <searchString>| tstats sum(bytes_sent) AS sumSent sum(bytes_received) AS sumReceived FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ log_subtype=end $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby _time span=5m | timechart span=5m values("sumReceived") AS "Bytes Received" values("sumSent") AS "Bytes Sent"</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">area</option>
+      <option name="charting.chart.nullValueMode">connect</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+    <chart>
+      <title>Protocols Over Time</title>
+      <searchString>| tstats count(protocol) AS countProtocol FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby _time protocol span=5m | timechart span=5m values(countProtocol) AS "Count" by protocol</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">area</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">bottom</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` protocol="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+  </row>
+  <row>
+    <chart>
+      <title>Applications by Bytes Transfered</title>
+      <searchString>| tstats sum(bytes_received) AS sbr sum(bytes_sent) AS sbs FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby app | eval sumBytes = sbr + sbs | stats values(sumBytes) AS Bytes by app</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+    <chart>
+      <title>Applications by Request</title>
+      <searchString>| tstats count(app) FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby app | stats values(count(app)) AS Application by app</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+    <chart>
+      <title>Source IP</title>
+      <searchString>| tstats count(src_ip) FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $src_user$ $dst_ip$ $dst_port$ $app$ $action$ groupby src_ip</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+  </row>
+  <row>
+    <chart>
+      <title>Destination Port</title>
+      <searchString>| tstats count(dst_port) FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby dst_port</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+    <chart>
+      <title>Destination IP</title>
+      <searchString>| tstats count(dst_ip) FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $src_user$ $dst_ip$ $dst_port$ $app$ $action$ groupby dst_ip | sort -count(dst_ip) | head 999</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+    <chart>
+      <title>Source User</title>
+      <searchString>| tstats count(src_user) FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby src_user</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">pie</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+  </row>
+  <row>
+    <chart>
+      <title>Traffic Transmitted by Interface</title>
+      <searchString>| tstats sum(bytes) As sb FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ log_subtype=end $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby egress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by egress_interface</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">bar</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">none</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+    <chart>
+      <title>Traffic Received by Interface</title>
+      <searchString>| tstats sum(bytes) As sb FROM pan_traffic WHERE earliest=$earliest$ latest=$latest$ log_subtype=end $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby ingress_interface log_subtype| eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by ingress_interface</searchString>
+      <earliestTime>$earliest$</earliestTime>
+      <latestTime>$latest$</latestTime>
+      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisX.scale">linear</option>
+      <option name="charting.axisY.scale">linear</option>
+      <option name="charting.chart">bar</option>
+      <option name="charting.chart.nullValueMode">gaps</option>
+      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+      <option name="charting.chart.stackMode">default</option>
+      <option name="charting.chart.style">shiny</option>
+      <option name="charting.drilldown">all</option>
+      <option name="charting.layout.splitSeries">0</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">none</option>
+      <drilldown>
+        <link>
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+      </drilldown>
+    </chart>
+  </row>
+</form>
