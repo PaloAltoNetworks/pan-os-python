@@ -161,11 +161,11 @@ Version 4.0
 - Dashboards converted to Splunk 6 SimpleXML, meaning dashboards can now:
     - Print
     - Export as pdf
-    - Produce schedule reports
+    - Produce scheduled reports
     - Use pre-populated dropdowns in filters
     - Change using SplunkWeb by editing the panels
 - Maps converted to Splunk 6 built-in maps (removes dependencies on other apps)
-- Updated navbar
+- Updated navbar including icons and colors
 
 ## Installing from Git ##
 
