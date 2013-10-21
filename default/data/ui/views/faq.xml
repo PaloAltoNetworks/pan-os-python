@@ -1,7 +1,0 @@
-<view template="dashboard.html"> <label>FAQ</label> 
-    <module name="AccountBar" layoutPanel="appHeader"/> 
-    <module name="AppBar" layoutPanel="navigationHeader"/> 
-    <module name="ServerSideInclude" layoutPanel="panel_row1_col1"> 
-        <param name="src">faq.html</param> 
-    </module> 
-</view>
