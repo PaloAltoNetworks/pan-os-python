@@ -11,7 +11,7 @@ Networks Firewall
 #### Version ####
 
 * Splunk Version: 6.x
-* App Version: 4.0
+* App Version: 4.0.1
 * Last Modified: Oct 2013
 * Authors:
     * Monzy Merza - Splunk, Inc.
