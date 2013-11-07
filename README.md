@@ -126,7 +126,7 @@ NetFlow graphs and charts are based on NetFlow data produced by Palo Alto Networ
 Steps to configure:
 
 - Install NetFlow Integrator on a separate server or together with Splunk Forwarder
-- Point Palo Alto Networks device NetFlow settings to NetFlow Integrator server, default port 9995 with PAN-OS Field Types enabled (see [Administrator's Guide] (https://live.paloaltonetworks.com/community/documentation/content?filterID=contentstatus[published]~category[administrators-guide]&filterID=contentstatus[published]~objecttype~objecttype[document]&itemView=detail))
+- Point Palo Alto Networks device NetFlow settings to NetFlow Integrator server, default port 9995 with PAN-OS Field Types enabled (see [Administrator's Guide](https://live.paloaltonetworks.com/community/documentation/content?filterID=contentstatus[published]~category[administrators-guide]&filterID=contentstatus[published]~objecttype~objecttype[document]&itemView=detail))
 - Enable NetFlow in the Splunk for Palo Alto Networks app setup page
 - Restart Splunk for the previous change to take effect
 - Add NetFlow Integrator output pointing to Splunk UDP port 10514
