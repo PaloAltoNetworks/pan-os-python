@@ -155,6 +155,11 @@ Dashboards are built with SimpleXML, so they can be modified using the Splunk GU
 
 ## What's new in this version ##
 
+Version 4.0.1
+
+- Fix: Config dashboard shows all events
+- Fix: Better handling of navbar changes
+
 Version 4.0
 
 - Splunk 6 support
