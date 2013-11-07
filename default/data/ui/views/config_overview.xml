@@ -27,15 +27,15 @@
         FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby host
         | eval host_with_count = host . " (" . count . ")"</populatingSearch>
     </input>
-    <input type="dropdown" token="client">
-      <label>Client</label>
+    <input type="dropdown" token="client_type">
+      <label>Client Type</label>
       <default></default>
-      <prefix>client="</prefix>
+      <prefix>client_type="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="client" fieldForLabel="client_with_count">|tstats count(client) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby client
-        | eval client_with_count = client . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="client_type" fieldForLabel="client_type_with_count">|tstats count(client_type) as count
+        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby client_type
+        | eval client_type_with_count = client_type . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="cmd">
       <label>Command</label>
@@ -71,7 +71,7 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| tstats count(admin) FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby _time result serial_number host admin client cmd configuration_path | table _time result serial_number host admin client cmd configuration_path result | sort -_time</searchString>
+      <searchString>| tstats count(admin) FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby _time result serial_number host admin client_type cmd configuration_path | table _time result serial_number host admin client_type cmd configuration_path result | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -118,9 +118,9 @@
             /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin="$row.admin$"&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
-        <link field="client">
+        <link field="client_type">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` client="$row.client$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` client_type="$row.client_type$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="configuration_path">
@@ -134,7 +134,7 @@
   <row>
     <chart>
       <title>Config Events</title>
-      <searchString>| tstats count(cmd) AS cr FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client$
+      <searchString>| tstats count(cmd) AS cr FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$
                     $result$ $cmd$ $vsys$ groupby _time cmd| timechart values(cr) by cmd</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
@@ -161,7 +161,7 @@
     </chart>
     <chart>
       <title>Configuration Administrators</title>
-      <searchString>| tstats count(admin) AS ca FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby _time admin | timechart values(admin) by admin</searchString>
+      <searchString>| tstats count(admin) AS ca FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby _time admin | timechart values(admin) by admin</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -189,7 +189,7 @@
   <row>
     <chart>
       <title>Clients Used</title>
-      <searchString>| tstats count(client) AS cc FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby client</searchString>
+      <searchString>| tstats count(client_type) AS cc FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby client_type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -215,7 +215,7 @@
     </chart>
     <chart>
       <title>Results</title>
-      <searchString>| tstats count(result) AS cr FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client$ $result$ $cmd$ $vsys$ groupby result</searchString>
+      <searchString>| tstats count(result) AS cr FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby result</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

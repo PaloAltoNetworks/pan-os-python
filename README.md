@@ -11,7 +11,7 @@ Networks Firewall
 #### Version ####
 
 * Splunk Version: 6.x
-* App Version: 4.0
+* App Version: 4.0.1
 * Last Modified: Oct 2013
 * Authors:
     * Monzy Merza - Splunk, Inc.
@@ -126,7 +126,7 @@ NetFlow graphs and charts are based on NetFlow data produced by Palo Alto Networ
 Steps to configure:
 
 - Install NetFlow Integrator on a separate server or together with Splunk Forwarder
-- Point Palo Alto Networks device NetFlow settings to NetFlow Integrator server, default port 9995 with PAN-OS Field Types enabled (see [Administrator's Guide] (https://live.paloaltonetworks.com/community/documentation/content?filterID=contentstatus[published]~category[administrators-guide]&filterID=contentstatus[published]~objecttype~objecttype[document]&itemView=detail))
+- Point Palo Alto Networks device NetFlow settings to NetFlow Integrator server, default port 9995 with PAN-OS Field Types enabled (see [Administrator's Guide](https://live.paloaltonetworks.com/community/documentation/content?filterID=contentstatus[published]~category[administrators-guide]&filterID=contentstatus[published]~objecttype~objecttype[document]&itemView=detail))
 - Enable NetFlow in the Splunk for Palo Alto Networks app setup page
 - Restart Splunk for the previous change to take effect
 - Add NetFlow Integrator output pointing to Splunk UDP port 10514
@@ -154,6 +154,11 @@ Keep in mind that searches that have longer time ranges may take a little longer
 Dashboards are built with SimpleXML, so they can be modified using the Splunk GUI.  To do this, click the __Edit__ menu in the top right of the dashboard and select __Edit Panels__.  You can drag panels to new positions, change the visualization (pie, column, area, etc), and modify the searches.  If you modify a dashboard and want to recover the original dashboard, delete the modified dashboard file in `$SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/data/ui/views` and restart Splunk.
 
 ## What's new in this version ##
+
+Version 4.0.1
+
+- Fix: Config dashboard shows all events
+- Fix: Better handling of navbar changes
 
 Version 4.0
 
