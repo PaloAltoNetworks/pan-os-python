@@ -11,18 +11,26 @@
     <input type="text" token="src_ip">
       <label>Source IP</label>
       <default></default>
+      <prefix>src_ip="</prefix>
+      <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
       <default></default>
+      <prefix>dst_ip="</prefix>
+      <suffix>"</suffix>
     </input>
     <input type="text" token="dst_port">
       <label>Destination Port</label>
       <default></default>
+      <prefix>dst_port="</prefix>
+      <suffix>"</suffix>
     </input>
     <input type="text" token="src_user">
       <label>Source User</label>
       <default></default>
+      <prefix>src_user="</prefix>
+      <suffix>"</suffix>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
