@@ -105,6 +105,26 @@
     </table>
   </row>
   <row>
+    <table>
+      <title>New Applications</title>
+      <searchString>index=pan_logs sourcetype="pan_newapps" | convert timeformat="%m/%d/%y" ctime(_time) AS "Date added" | table "Date added" app{@name} app.technology app.category app.subcategory app.risk | rename app{@name} AS Name | rename app.technology AS Technology | rename app.category AS Category | rename app.subcategory AS Subcategory | rename app.risk AS Risk</searchString>
+      <earliestTime>-2w@w</earliestTime>
+      <latestTime>now</latestTime>
+      <option name="list.drilldown">full</option>
+      <option name="list.wrap">1</option>
+      <option name="maxLines">5</option>
+      <option name="raw.drilldown">full</option>
+      <option name="rowNumbers">false</option>
+      <option name="table.drilldown">1</option>
+      <option name="table.wrap">1</option>
+      <option name="type">list</option>
+      <option name="wrap">false</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
+    </table>
+  </row>
+  <row>
     <map>
       <title>Applications by Destination IP Location</title>
       <searchString>`pan_traffic` | iplocation "dst_ip" | geostats count by app</searchString>
