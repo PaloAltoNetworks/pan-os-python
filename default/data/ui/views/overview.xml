@@ -30,7 +30,7 @@
       <option name="linkView">search</option>
     </single>
     <single>
-      <searchPostProcess>search sourcetype="pan_traffic" NOT category="any" | sort -count | head 1 | stats values(category) as category count(category) | eval category=if(isnull(category),"none",category)</searchPostProcess>
+      <searchPostProcess>search sourcetype="pan_traffic" NOT category="any" | sort -count | head 1 | stats values(category) as category count(category) | eval category=if(isnull(category),"---",category)</searchPostProcess>
       <earliestTime>rt-30s</earliestTime>
       <latestTime>rt</latestTime>
       <option name="classField">None</option>
@@ -71,7 +71,7 @@
       <option name="type">list</option>
       <option name="wrap">true</option>
       <option name="count">10</option>
-      <option name="charting.axisTitleX.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.layout.splitSeries">0</option>
       <option name="charting.axisTitleY.text">Events</option>
