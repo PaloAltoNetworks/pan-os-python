@@ -9,61 +9,61 @@
     </input>
     <input type="text" token="src_ip">
       <label>Source IP</label>
-      <default></default>
-      <prefix>src_ip="</prefix>
+      <default/>
+      <prefix>FILTER src_ip is "</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
-      <default></default>
-      <prefix>dst_ip="</prefix>
+      <default/>
+      <prefix>FILTER dst_ip is "</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="threat_id">
       <label>Threat ID</label>
-      <default></default>
-      <prefix>threat_id="</prefix>
+      <default/>
+      <prefix>FILTER threat_id is "</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="log_subtype">
       <label>Log Subtype</label>
-      <default></default>
-      <prefix>log_subtype="</prefix>
+      <default/>
+      <prefix>FILTER log_subtype is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="log_subtype" fieldForLabel="log_subtype_with_count">|tstats count(log_subtype) as count
-        FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ groupby log_subtype
-        | eval log_subtype_with_count = log_subtype . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs threat count(threat) AS count SPLITROW log_subtype AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
-      <default></default>
-      <prefix>app="</prefix>
+      <default/>
+      <prefix>FILTER app is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
-        FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ groupby app
-        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs threat count(threat) AS count SPLITROW app AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
-      <default></default>
-      <prefix>vsys="</prefix>
+      <default/>
+      <prefix>FILTER vsys is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
-        FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ groupby vsys
-        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs threat count(threat) AS count SPLITROW vsys AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>Threat Subtypes</title>
-      <searchString>| tstats count(log_subtype) AS cls FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log_subtype | timechart values(cls) by log_subtype</searchString>
+      <searchString>| pivot pan_logs threat count(threat) SPLITROW _time SPLITCOL log_subtype $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -84,12 +84,12 @@
       </drilldown>
     </chart>
     <chart>
-      <title>By Risk Value</title>
-      <searchString>| tstats count(severity) AS cs FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time severity | timechart values(cs) by severity</searchString>
+      <title>Severity</title>
+      <searchString>| pivot pan_logs threat count(threat) SPLITROW _time SPLITCOL severity $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -113,7 +113,7 @@
   <row>
     <chart>
       <title>Threat IDs</title>
-      <searchString>| tstats count(threat_id) AS cti FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby threat_id</searchString>
+      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW threat_id $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -132,14 +132,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/threat_detail?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/threat_detail?form.threat=$click.value$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Threats by App</title>
-      <searchString>| tstats count(app) AS ca FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby app</searchString>
+      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW app $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -165,7 +165,7 @@
     </chart>
     <chart>
       <title>Threats by User</title>
-      <searchString>| tstats count(dst_user) AS cti FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby dst_user</searchString>
+      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW dst_user $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -184,7 +184,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/threat_detail?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/threat_detail?form.user=$click.value$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -193,7 +193,7 @@
   <row>
     <chart>
       <title>Source IP</title>
-      <searchString>| tstats count(src_ip) AS csrc FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby src_ip</searchString>
+      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW src_ip $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -219,7 +219,7 @@
     </chart>
     <chart>
       <title>Threats by Severity</title>
-      <searchString>| tstats count(severity) AS cti FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby severity</searchString>
+      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW severity $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -245,7 +245,7 @@
     </chart>
     <chart>
       <title>Destination IP</title>
-      <searchString>| tstats count(dst_ip) AS cti FROM pan_threat WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby dst_ip</searchString>
+      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW dst_ip $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

@@ -9,69 +9,69 @@
     </input>
     <input type="dropdown" token="admin">
       <label>Admin</label>
-      <default></default>
-      <prefix>admin="</prefix>
+      <default/>
+      <prefix>FILTER admin is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="admin" fieldForLabel="admin_with_count">|tstats count(admin) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby admin
-        | eval admin_with_count = admin . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs config count(config) AS count SPLITROW admin AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="host">
       <label>Host</label>
-      <default></default>
-      <prefix>host="</prefix>
+      <default/>
+      <prefix>FILTER host is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="host" fieldForLabel="host_with_count">|tstats count(host) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby host
-        | eval host_with_count = host . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs config count(config) AS count SPLITROW host AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+    </input>
+    <input type="dropdown" token="client_ip">
+      <label>Client IP</label>
+      <default/>
+      <prefix>FILTER client_ip is "</prefix>
+      <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs config count(config) AS count SPLITROW client_ip AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="client_type">
       <label>Client Type</label>
-      <default></default>
-      <prefix>client_type="</prefix>
+      <default/>
+      <prefix>FILTER client_type is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="client_type" fieldForLabel="client_type_with_count">|tstats count(client_type) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby client_type
-        | eval client_type_with_count = client_type . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs config count(config) AS count SPLITROW client_type AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="cmd">
       <label>Command</label>
-      <default></default>
-      <prefix>cmd="</prefix>
+      <default/>
+      <prefix>FILTER cmd is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="cmd" fieldForLabel="cmd_with_count">|tstats count(cmd) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby cmd
-        | eval cmd_with_count = cmd . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs config count(config) AS count SPLITROW cmd AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="result">
       <label>Result</label>
-      <default></default>
-      <prefix>result="</prefix>
+      <default/>
+      <prefix>FILTER result is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="result" fieldForLabel="result_with_count">|tstats count(result) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby result
-        | eval result_with_count = result . " (" . count . ")"</populatingSearch>
-    </input>
-    <input type="dropdown" token="vsys">
-      <label>Virtual System</label>
-      <default></default>
-      <prefix>vsys="</prefix>
-      <suffix>"</suffix>
-      <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby vsys
-        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
+        pan_logs config count(config) AS count SPLITROW result AS field
+        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
   </fieldset>
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| tstats count(admin) FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby _time result serial_number host admin client_type cmd configuration_path | table _time result serial_number host admin client_type cmd configuration_path result | sort -_time</searchString>
+      <searchString>| pivot pan_logs config count(config) SPLITROW _time PERIOD second SPLITROW result SPLITROW serial_number SPLITROW host SPLITROW admin SPLITROW client_type SPLITROW client_ip SPLITROW cmd SPLITROW configuration_path $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$ | table _time result serial_number host admin client_type client_ip cmd configuration_path | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -90,7 +90,7 @@
       <option name="wrap">false</option>
       <option name="displayRowNumbers">true</option>
       <option name="dataOverlayMode">none</option>
-      <option name="drilldown">row</option>
+      <option name="drilldown">cell</option>
       <option name="count">10</option>
       <drilldown>
         <link field="_time">
@@ -118,6 +118,11 @@
             /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin="$row.admin$"&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
+        <link field="client_ip">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` client_ip="$row.client_ip$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
         <link field="client_type">
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/search?q=`pan_config` client_type="$row.client_type$"&earliest=$earliest$&latest=$latest$
@@ -129,17 +134,18 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="rowNumbers">false</option>
     </table>
   </row>
   <row>
     <chart>
       <title>Config Events</title>
-      <searchString>| tstats count(cmd) AS cr FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$
-                    $result$ $cmd$ $vsys$ groupby _time cmd| timechart values(cr) by cmd</searchString>
+      <searchString>| pivot pan_logs config count(config) SPLITROW _time SPLITCOL cmd
+$host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -154,18 +160,18 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` protocol="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` cmd="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Configuration Administrators</title>
-      <searchString>| tstats count(admin) AS ca FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby _time admin | timechart values(admin) by admin</searchString>
+      <searchString>| pivot pan_logs config count(config) SPLITROW _time SPLITCOL admin $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -180,7 +186,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` protocol="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` admin="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
@@ -189,7 +195,7 @@
   <row>
     <chart>
       <title>Clients Used</title>
-      <searchString>| tstats count(client_type) AS cc FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby client_type</searchString>
+      <searchString>| pivot pan_logs config count(config) AS Count SPLITROW client_type $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -215,7 +221,7 @@
     </chart>
     <chart>
       <title>Results</title>
-      <searchString>| tstats count(result) AS cr FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby result</searchString>
+      <searchString>| pivot pan_logs config count(config) AS Count SPLITROW result $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

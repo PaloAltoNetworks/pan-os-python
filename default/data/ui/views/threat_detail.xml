@@ -3,41 +3,39 @@
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m</earliestTime>
+        <earliestTime>-60m@m</earliestTime>
         <latestTime>now</latestTime>
       </default>
     </input>
     <input type="text" token="threat">
       <label>Threat</label>
-      <default></default>
-      <prefix>Threat="</prefix>
+      <default/>
+      <prefix>FILTER threat_id is "</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="user">
       <label>User</label>
-      <default></default>
-      <prefix>User="</prefix>
+      <default/>
+      <prefix>FILTER user is "</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="application">
+    <input type="text" token="app">
       <label>Application</label>
-      <default></default>
-      <prefix>Application="</prefix>
+      <default/>
+      <prefix>FILTER app is "</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="location">
       <label>Location</label>
-      <default></default>
-      <prefix>Location="</prefix>
+      <default/>
+      <prefix>FILTER server_location is "</prefix>
       <suffix>"</suffix>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>Locations by Kilobytes</title>
-      <searchString>| tstats count(Location) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby Location Bytes| eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Total Bytes (KB)" by Location |
-                                    sort -"Total Bytes (KB)"</searchString>
+      <searchString>| pivot pan_logs log values(sourcetype) AS "SourceType" values(threat_id) AS "Threat" sum(bytes) AS "Bytes" sum(elapsed_time) AS "Duration" SPLITROW session_id AS "Session" SPLITROW user AS "User" SPLITROW server_ip AS "server_ip" SPLITROW server_location AS "Location" SPLITROW app AS "Application" FILTER log_subtype isNot url FILTER log_subtype isNot file FILTER log_subtype isNot wildfire FILTER log_subtype isNot data $threat$ $user$ $app$ $location$ | where SourceType="pan_threat" AND Bytes != "" AND Location != "" | eval KB=Bytes/1024 | stats sum(KB) as "Total Bytes (KB)" by Location |                                     sort -"Total Bytes (KB)"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -68,10 +66,7 @@
     </chart>
     <chart>
       <title>Users by Kilobytes</title>
-      <searchString>| tstats count(User) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby User Bytes|
-                                    eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Transferred (KB)" by User |
-                                    sort -"Transferred (KB)"</searchString>
+      <searchString>| pivot pan_logs log values(sourcetype) AS "SourceType" values(threat_id) AS "Threat" sum(bytes) AS "Bytes" sum(elapsed_time) AS "Duration" SPLITROW session_id AS "Session" SPLITROW user AS "User" SPLITROW server_ip AS "server_ip" SPLITROW server_location AS "Location" SPLITROW app AS "Application" FILTER log_subtype isNot url FILTER log_subtype isNot file FILTER log_subtype isNot wildfire FILTER log_subtype isNot data $threat$ $user$ $app$ $location$ | where SourceType="pan_threat" AND Bytes != "" AND Location != "" |                                     eval KB=Bytes/1024 | stats sum(KB) as "Transferred (KB)" by User |                                     sort -"Transferred (KB)"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -81,12 +76,12 @@
       <option name="charting.chart">pie</option>
       <option name="charting.chart.nullValueMode">gaps</option>
       <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.stackMode">default</option>
       <option name="charting.chart.style">shiny</option>
       <option name="charting.drilldown">all</option>
       <option name="charting.layout.splitSeries">0</option>
-      <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
-      <option name="charting.legend.placement">bottom</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
       <drilldown>
         <link>
           <![CDATA[
@@ -94,16 +89,17 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="wrap">true</option>
+      <option name="rowNumbers">false</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
     </chart>
   </row>
   <row>
     <table>
       <title>Bytes Transferred Duration by Users</title>
-      <searchString>| tstats count(User) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby User Bytes Duration Application Location|
-                                    eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Transfer (KB)"
-                                          sum(Duration) as "Total Duration"
-                                       by User Application Location</searchString>
+      <searchString>| pivot pan_logs log values(sourcetype) AS "SourceType" values(threat_id) AS "Threat" sum(bytes) AS "Bytes" sum(elapsed_time) AS "Duration" SPLITROW session_id AS "Session" SPLITROW user AS "User" SPLITROW server_ip AS "server_ip" SPLITROW server_location AS "Location" SPLITROW app AS "Application" FILTER log_subtype isNot url FILTER log_subtype isNot file FILTER log_subtype isNot wildfire FILTER log_subtype isNot data $threat$ $user$ $app$ $location$ | where SourceType="pan_threat" AND Bytes != "" AND Location != "" | eval KB=Bytes/1024 |                                     stats sum(KB) as "Transfer (KB)"                                           sum(Duration) as "Total Duration"                                        by User Application Location</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -124,16 +120,13 @@
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
       <option name="count">10</option>
+      <option name="rowNumbers">true</option>
     </table>
   </row>
   <row>
     <table>
       <title>Threats by Bytes Transferred and Sessions</title>
-      <searchString>| tstats count(Session) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby Session Bytes Threat|
-                                    eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Transfer (KB)"
-                                    count(Session) as "Total Sessions"
-                                    by Threat</searchString>
+      <searchString>| pivot pan_logs log values(sourcetype) AS "SourceType" values(threat_id) AS "Threat" sum(bytes) AS "Bytes" sum(elapsed_time) AS "Duration" SPLITROW session_id AS "Session" SPLITROW user AS "User" SPLITROW server_ip AS "server_ip" SPLITROW server_location AS "Location" SPLITROW app AS "Application" FILTER log_subtype isNot url FILTER log_subtype isNot file FILTER log_subtype isNot wildfire FILTER log_subtype isNot data $threat$ $user$ $app$ $location$ | where SourceType="pan_threat" AND Bytes != "" AND Location != "" | eval KB=Bytes/1024 |                                     stats sum(KB) as "Transfer (KB)"                                     count(Session) as "Total Sessions"                                     by Threat</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -161,6 +154,7 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="rowNumbers">true</option>
     </table>
   </row>
 </form>
