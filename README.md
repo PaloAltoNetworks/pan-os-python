@@ -11,8 +11,8 @@ Networks Firewall
 #### Version ####
 
 * Splunk Version: 6.x
-* App Version: 4.0.1
-* Last Modified: Oct 2013
+* App Version: 4.0.2
+* Last Modified: Mar 2013
 * Authors:
     * Monzy Merza - Splunk, Inc.
     * Brian Torres-Gil - Palo Alto Networks
@@ -154,6 +154,12 @@ Keep in mind that searches that have longer time ranges may take a little longer
 Dashboards are built with SimpleXML, so they can be modified using the Splunk GUI.  To do this, click the __Edit__ menu in the top right of the dashboard and select __Edit Panels__.  You can drag panels to new positions, change the visualization (pie, column, area, etc), and modify the searches.  If you modify a dashboard and want to recover the original dashboard, delete the modified dashboard file in `$SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/data/ui/views` and restart Splunk.
 
 ## What's new in this version ##
+
+Version 4.0.2
+
+- Fix: Overview dashboard optimizations
+- Fix: Top Applications panel would sometimes show error 
+- Fix: Traffic dashboard form filter works
 
 Version 4.0.1
 
