@@ -11,8 +11,8 @@ Networks Firewall
 #### Version ####
 
 * Splunk Version: 6.x
-* App Version: 4.0.2
-* Last Modified: Mar 2013
+* App Version: 4.1
+* Last Modified: Apr 2013
 * Authors:
     * Monzy Merza - Splunk, Inc.
     * Brian Torres-Gil - Palo Alto Networks
@@ -155,28 +155,14 @@ Dashboards are built with SimpleXML, so they can be modified using the Splunk GU
 
 ## What's new in this version ##
 
-Version 4.0.2
+Version 4.1
 
-- Fix: Overview dashboard optimizations
-- Fix: Top Applications panel would sometimes show error 
-- Fix: Traffic dashboard form filter works
 
-Version 4.0.1
-
-- Fix: Config dashboard shows all events
-- Fix: Better handling of navbar changes
-
-Version 4.0
-
-- Splunk 6 support
-- Dashboards converted to Splunk 6 SimpleXML, meaning dashboards can now:
-    - Print
-    - Export as pdf
-    - Produce scheduled reports
-    - Use pre-populated dropdowns in filters
-    - Change using SplunkWeb by editing the panels
-- Maps converted to Splunk 6 built-in maps (removes dependencies on other apps)
-- Updated navbar including icons and colors
+- PAN-OS Data model including acceleration
+- Data model accelerated dashboards (replaces TSIDX-based dashboards)
+- New command: `pantag` - tag IP addresses on the firewall into Dynamic Address Groups
+- IP Classification - add metadata to your CIDR blocks, classifying them as internet/external/dmz/datacenter/etc.
+- New App notifications and highlighting - know when Palo Alto Networks releases new Application signatures and if those applications are on your network
 
 ## Installing from Git ##
 
