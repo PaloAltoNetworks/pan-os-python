@@ -11,6 +11,7 @@
 ###########################################
 # if you DO want to go through a proxy, e.g., HTTP_PROXY={squid:'2.2.2.2'}
 HTTP_PROXY = {}
+DEBUG = False
 #########################################################
 # Do NOT modify anything below this line unless you are
 # certain of the ramifications of the changes
@@ -44,42 +45,57 @@ def retrieveNewApps():
   result = opener.open(newAppReq)
   return result
 
-# setup the logger. $SPLUNK_HOME/var/log/splunk/python.log
-logger = dcu.getLogger()
 
 # an empty dictionary will be used to hold system values
 settings = dict()
 # results contains the data from the search results and settings contains the sessionKey that we can use to talk to splunk
 results,unused1,settings = splunk.Intersplunk.getOrganizedResults()
-#logger.info(settings) #For debugging
+args, kwargs = splunk.Intersplunk.getKeywordsAndOptions()
+#logger.debug(settings) #For debugging
 # get the sessionKey
 sessionKey = settings['sessionKey']
 
-existing_apps = []
-for app in results:
-  existing_apps.append(str(app['app{@name}']))
+try:
+  DEBUG = True if 'debug' in kwargs else False
+  # setup the logger. $SPLUNK_HOME/var/log/splunk/python.log
+  logger = dcu.getLogger().getChild('retrieveNewApps')
 
-results = []
-#logger.info("Existing apps considered: %s" % (len(existing_apps),))
-#logger.info(existing_apps)
+  if DEBUG:
+    logger.setLevel(DEBUG)
 
-#logger.info("Getting new Apps")
-resp = retrieveNewApps()
-#logger.info("Apps retrieved")
-xml = resp.read()
+  existing_apps = []
+  for app in results:
+    existing_apps.append(str(app['app{@name}']))
 
-#logger.info("Apps read")
-xmlroot = ET.fromstring(xml)
-#logger.info("Apps parsed")
+  results = []
+  logger.debug("Existing apps already known and considered: %s" % (len(existing_apps),))
+  logger.debug(existing_apps)
 
-newapps = xmlroot.findall("./entry")
-#logger.info("Found %s apps" % (len(newapps),))
+  logger.debug("Getting new Apps from Palo Alto Networks")
+  resp = retrieveNewApps()
+  logger.debug("Apps retrieved")
+  xml = resp.read()
 
-for app in newapps:
-  app.tag = 'app'
-  if app.get('name') not in existing_apps:
-    results.append( { "_raw" : ET.tostring(app) } )
+  logger.debug("Apps read")
+  xmlroot = ET.fromstring(xml)
+  logger.debug("Apps parsed")
 
-#logger.info(results)
-# output the complete results sent back to splunk
-splunk.Intersplunk.outputResults(results)
+  newapps = xmlroot.findall("./entry")
+  logger.debug("Found %s new apps at Palo Alto Networks" % (len(newapps),))
+
+  for app in newapps:
+    app.tag = 'app'
+    if app.get('name') not in existing_apps:
+      results.append( { "_raw" : ET.tostring(app) } )
+
+  logger.debug("Found %s new apps that weren't already known" % (len(results),))
+
+  # output the complete results sent back to splunk
+  splunk.Intersplunk.outputResults(results)
+
+except Exception, e:
+  stack = traceback.format_exc()
+  logger.warn("Exception:")
+  logger.warn(stack)
+  raise Exception("Exception while getting new apps. Error: %s" % (str(e),))
+
