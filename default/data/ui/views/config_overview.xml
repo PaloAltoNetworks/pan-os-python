@@ -27,24 +27,24 @@
         pan_logs config count(config) AS count SPLITROW host AS field
         | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
-    <input type="dropdown" token="client_ip">
-      <label>Client IP</label>
+    <input type="dropdown" token="admin_ip">
+      <label>Admin IP</label>
       <default/>
-      <prefix>FILTER client_ip is "</prefix>
+      <prefix>FILTER admin_ip is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs config count(config) AS count SPLITROW client_ip AS field
+        pan_logs config count(config) AS count SPLITROW admin_ip AS field
         | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
-    <input type="dropdown" token="client_type">
-      <label>Client Type</label>
+    <input type="dropdown" token="admin_type">
+      <label>Admin Type</label>
       <default/>
-      <prefix>FILTER client_type is "</prefix>
+      <prefix>FILTER admin_type is "</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs config count(config) AS count SPLITROW client_type AS field
+        pan_logs config count(config) AS count SPLITROW admin_type AS field
         | eval field_with_count = field . " (" . count . ")"</populatingSearch>
     </input>
     <input type="dropdown" token="cmd">
@@ -71,7 +71,7 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| pivot pan_logs config count(config) SPLITROW _time PERIOD second SPLITROW result SPLITROW serial_number SPLITROW host SPLITROW admin SPLITROW client_type SPLITROW client_ip SPLITROW cmd SPLITROW configuration_path $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$ | table _time result serial_number host admin client_type client_ip cmd configuration_path | sort -_time</searchString>
+      <searchString>| pivot pan_logs config count(config) SPLITROW _time PERIOD second SPLITROW result SPLITROW serial_number SPLITROW host SPLITROW admin SPLITROW admin_type SPLITROW admin_ip SPLITROW cmd SPLITROW configuration_path $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$ | table _time result serial_number host admin admin_type admin_ip cmd configuration_path | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -118,14 +118,14 @@
             /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin="$row.admin$"&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
-        <link field="client_ip">
+        <link field="admin_ip">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` client_ip="$row.client_ip$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin_ip="$row.admin_ip$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
-        <link field="client_type">
+        <link field="admin_type">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` client_type="$row.client_type$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin_type="$row.admin_type$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="configuration_path">
@@ -141,7 +141,7 @@
     <chart>
       <title>Config Events</title>
       <searchString>| pivot pan_logs config count(config) SPLITROW _time SPLITCOL cmd
-$host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
+$host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -167,7 +167,7 @@ $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
     </chart>
     <chart>
       <title>Configuration Administrators</title>
-      <searchString>| pivot pan_logs config count(config) SPLITROW _time SPLITCOL admin $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
+      <searchString>| pivot pan_logs config count(config) SPLITROW _time SPLITCOL admin $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -195,7 +195,7 @@ $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
   <row>
     <chart>
       <title>Clients Used</title>
-      <searchString>| pivot pan_logs config count(config) AS Count SPLITROW client_type $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
+      <searchString>| pivot pan_logs config count(config) AS Count SPLITROW admin_type $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -221,7 +221,7 @@ $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
     </chart>
     <chart>
       <title>Results</title>
-      <searchString>| pivot pan_logs config count(config) AS Count SPLITROW result $host$ $admin$ $client_ip$ $client_type$ $result$ $cmd$</searchString>
+      <searchString>| pivot pan_logs config count(config) AS Count SPLITROW result $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
