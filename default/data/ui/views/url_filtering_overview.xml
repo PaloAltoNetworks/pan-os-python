@@ -10,57 +10,53 @@
     </input>
     <input type="text" token="src_ip">
       <label>Source IP</label>
-      <default></default>
-      <prefix>src_ip="</prefix>
+      <default/>
+      <prefix>log.src_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
-      <default></default>
-      <prefix>dst_ip="</prefix>
+      <default/>
+      <prefix>log.dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="src_user">
+    <input type="text" token="user">
       <label>Source User</label>
-      <default></default>
-      <prefix>src_user="</prefix>
+      <default/>
+      <prefix>log.user="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_hostname">
       <label>Destination Hostname</label>
-      <default></default>
-      <prefix>dst_hostname="</prefix>
+      <default/>
+      <prefix>log.dst_hostname="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
-      <default></default>
-      <prefix>app="</prefix>
+      <default/>
+      <prefix>log.app="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="app" fieldForLabel="app_with_count">|tstats count(app) as count
-        FROM pan_web WHERE earliest=$earliest$ latest=$latest$ groupby app
-        | eval app_with_count = app . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.url, log.app)`</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
-      <default></default>
-      <prefix>vsys="</prefix>
+      <default/>
+      <prefix>log.vsys="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
-        FROM pan_web WHERE earliest=$earliest$ latest=$latest$ groupby vsys
-        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.url, log.vsys)`</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>URL Filtering Actions</title>
-      <searchString>| tstats count(action) AS ca FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $dst_hostname$ groupby _time action | timechart values(ca) by action</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ groupby _time log.action | timechart values(count) by log.action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -82,11 +78,11 @@
     </chart>
     <chart>
       <title>Applications</title>
-      <searchString>| tstats count(app) AS ca FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $dst_hostname$ groupby _time app | timechart values(ca) as count by app</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ groupby _time log.app | timechart values(count) by log.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -110,7 +106,7 @@
   <row>
     <table>
       <title>Application Users</title>
-      <searchString>| tstats count(src_user) AS ca FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $dst_hostname$ groupby src_user app | stats values(ca) as count by src_user app | sort -count</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ `table(log.user log.app, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -130,7 +126,7 @@
       <option name="list.wrap">1</option>
       <option name="maxLines">5</option>
       <option name="raw.drilldown">full</option>
-      <option name="rowNumbers">0</option>
+      <option name="rowNumbers">true</option>
       <option name="table.drilldown">1</option>
       <option name="table.sortDirection">asc</option>
       <option name="table.wrap">1</option>
@@ -143,14 +139,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` src_user="$row.src_user$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` user="$row.user$" app="$row.app$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
     </table>
     <table>
       <title>Host Categories</title>
-      <searchString>| tstats count(dst_hostname) AS cc FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $src_ip$ $dst_ip$ $app$ $src_user$ $vsys$ $dst_hostname$ groupby dst_hostname category | stats values(cc) as count by dst_hostname category | sort -count</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ `table(log.dst_hostname log.category, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -183,6 +179,7 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="rowNumbers">true</option>
     </table>
   </row>
 </form>

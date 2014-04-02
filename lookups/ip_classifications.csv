@@ -1,0 +1,4 @@
+cidr,classification
+10.0.0.0/8,private
+172.16.0.0/12,private
+192.168.0.0/16,private

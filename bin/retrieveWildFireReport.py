@@ -1,5 +1,5 @@
 ###########################################
-# Version 0.1
+# Version 0.2
 # author: Brian Torres-Gil, based on monzy merza's PAN app scripts
 # About this script:
 # Triggered when a WildFire syslog indicates a file has been analyzed by WildFire.
@@ -64,7 +64,7 @@ def getWildFireAPIKey(sessionKey):
   for i, c in entities.items():
     if c['username'] == 'wildfire_api_key':
       return c['clear_password']
-  logger.warn("No WildFire API Key found, please set the API key in the SplunkforPaloAltoNetworks set up page")
+  logger.warn("There are Palo Alto Networks WildFire malware events, but no WildFire API Key found, please set the API key in the SplunkforPaloAltoNetworks App set up page")
   raise Exception("No credentials have been found")
 
 def retrieveWildFireData(apikey, serial, reportid):
@@ -95,7 +95,8 @@ results,unused1,settings = splunk.Intersplunk.getOrganizedResults()
 # get the sessionKey
 sessionKey = settings['sessionKey']
 # get the Panorama user and password from Splunk using the sessionKey
-PAN_WF_APIKEY = getWildFireAPIKey(sessionKey)
+if len(results) > 0:
+  PAN_WF_APIKEY = getWildFireAPIKey(sessionKey)
 
 # get each row of result
 for result in results:

@@ -10,36 +10,34 @@
     <input type="text" token="src_ip">
       <label>Source IP</label>
       <default></default>
-      <prefix>src_ip="</prefix>
+      <prefix>log.src_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_hostname">
       <label>Destination Hostname</label>
       <default></default>
-      <prefix>dst_hostname="</prefix>
+      <prefix>log.dst_hostname="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="src_user">
+    <input type="text" token="user">
       <label>Source User</label>
       <default></default>
-      <prefix>src_user="</prefix>
+      <prefix>log.user="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
       <default></default>
-      <prefix>vsys="</prefix>
+      <prefix>log.vsys="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
-        FROM pan_web WHERE earliest=$earliest$ latest=$latest$ groupby vsys
-        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.url, log.vsys)`</populatingSearch>
     </input>
   </fieldset>
   <row>
     <table>
       <title>Web Hits</title>
-      <searchString>| tstats count(dst_hostname) AS cdh FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$  groupby dst_hostname | stats values(cdh) AS Count by dst_hostname | sort -Count | rename dst_hostname AS Hostname</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.dst_hostname, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -70,7 +68,7 @@
     </table>
     <chart>
       <title>Categories</title>
-      <searchString>| tstats count(category) AS cc FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby category</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.category, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -96,7 +94,7 @@
     </chart>
     <chart>
       <title>Applications</title>
-      <searchString>| tstats count(app) FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby app</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.app, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -124,7 +122,7 @@
   <row>
     <table>
       <title>Web Activity Summary</title>
-      <searchString>| tstats count(action) AS Count FROM pan_web WHERE earliest=$earliest$ latest=$latest$ $vsys$ $src_ip$ $dst_hostname$ $src_user$ groupby action category dst_hostname | sort -Count | rename action AS Action | rename category AS Category | rename dst_hostname AS Hostname</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.action log.category log.dst_hostname, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -148,17 +146,17 @@
       <drilldown>
         <link field="Action">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` action="$row.Action$" category="$row.Category$" dst_hostname="$row.Hostname$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` action="$row.action$" category="$row.category$" dst_hostname="$row.dst_hostname$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="Category">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` category="$row.Category$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` category="$row.category$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="Hostname">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` dst_hostname="$row.Hostname$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` dst_hostname="$row.dst_hostname$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>

@@ -3,41 +3,46 @@
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m</earliestTime>
+        <earliestTime>-60m@m</earliestTime>
         <latestTime>now</latestTime>
       </default>
     </input>
     <input type="text" token="threat">
       <label>Threat</label>
-      <default></default>
-      <prefix>Threat="</prefix>
+      <default/>
+      <prefix>log.threat_id="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="user">
       <label>User</label>
-      <default></default>
-      <prefix>User="</prefix>
+      <default/>
+      <prefix>log.user="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="application">
       <label>Application</label>
-      <default></default>
-      <prefix>Application="</prefix>
+      <default/>
+      <prefix>log.app="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="location">
       <label>Location</label>
-      <default></default>
-      <prefix>Location="</prefix>
+      <default/>
+      <prefix>log.server_location="</prefix>
       <suffix>"</suffix>
     </input>
   </fieldset>
+  <searchTemplate>| `tstats` values(sourcetype) as sourcetype values(log.threat_id) as threat_id sum(log.bytes) as bytes sum(log.elapsed_time) as duration
+        FROM datamodel="pan_logs" WHERE (nodename="log.traffic" OR nodename="log.threat") $threat$ $user$ $application$ $location$
+        `groupby(log.session_id log.user log.server_ip log.application log.server_location)`
+        | search sourcetype="pan_threat" bytes!="" server_location!="" user!="" | eval KB=bytes/1024</searchTemplate>
+  <earliestTime>$earliest$</earliestTime>
+  <latestTime>$latest$</latestTime>
   <row>
     <chart>
       <title>Locations by Kilobytes</title>
-      <searchString>| tstats count(Location) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby Location Bytes| eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Total Bytes (KB)" by Location |
-                                    sort -"Total Bytes (KB)"</searchString>
+      <searchPostProcess>stats sum(KB) as "Total Bytes (KB)" by server_location
+        | rename server_location AS "Server Location" | sort -"Total Bytes (KB)"</searchPostProcess>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -68,10 +73,8 @@
     </chart>
     <chart>
       <title>Users by Kilobytes</title>
-      <searchString>| tstats count(User) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby User Bytes|
-                                    eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Transferred (KB)" by User |
-                                    sort -"Transferred (KB)"</searchString>
+      <searchPostProcess>| stats sum(KB) as "Transferred (KB)" by user
+        | rename user AS User | sort -"Transferred (KB)"</searchPostProcess>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -81,12 +84,12 @@
       <option name="charting.chart">pie</option>
       <option name="charting.chart.nullValueMode">gaps</option>
       <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-      <option name="charting.chart.stackMode">stacked</option>
+      <option name="charting.chart.stackMode">default</option>
       <option name="charting.chart.style">shiny</option>
       <option name="charting.drilldown">all</option>
       <option name="charting.layout.splitSeries">0</option>
-      <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
-      <option name="charting.legend.placement">bottom</option>
+      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+      <option name="charting.legend.placement">right</option>
       <drilldown>
         <link>
           <![CDATA[
@@ -94,16 +97,17 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="wrap">true</option>
+      <option name="rowNumbers">false</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
     </chart>
   </row>
   <row>
     <table>
       <title>Bytes Transferred Duration by Users</title>
-      <searchString>| tstats count(User) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby User Bytes Duration Application Location|
-                                    eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Transfer (KB)"
-                                          sum(Duration) as "Total Duration"
-                                       by User Application Location</searchString>
+      <searchPostProcess>stats sum(KB) as "Transfer (KB)" sum(duration) as "Total Duration" by user application server_location</searchPostProcess>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -124,16 +128,13 @@
       <option name="dataOverlayMode">none</option>
       <option name="drilldown">row</option>
       <option name="count">10</option>
+      <option name="rowNumbers">true</option>
     </table>
   </row>
   <row>
     <table>
       <title>Threats by Bytes Transferred and Sessions</title>
-      <searchString>| tstats count(Session) FROM pan_threatDetail WHERE earliest=$earliest$ latest=$latest$ $threat$ $user$ $application$ $location$ groupby Session Bytes Threat|
-                                    eval KB=Bytes/1024 |
-                                    stats sum(KB) as "Transfer (KB)"
-                                    count(Session) as "Total Sessions"
-                                    by Threat</searchString>
+      <searchPostProcess>stats sum(KB) as "Transfer (KB)" count(session_id) as "Total Sessions" by threat_id</searchPostProcess>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -161,6 +162,7 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="rowNumbers">true</option>
     </table>
   </row>
 </form>

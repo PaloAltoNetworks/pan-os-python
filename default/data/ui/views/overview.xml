@@ -30,7 +30,7 @@
       <option name="linkView">search</option>
     </single>
     <single>
-      <searchPostProcess>search sourcetype="pan_traffic" NOT category="any" | sort -count | head 1 | stats values(category) as category count(category) | eval category=if(isnull(category),"---",category)</searchPostProcess>
+      <searchPostProcess>search sourcetype="pan_traffic" category!="any" category!="private-ip-addresses" category!="not-resolved"  | sort -count | head 1 | stats values(category) as category count(category) | eval category=if(isnull(category),"---",category)</searchPostProcess>
       <earliestTime>rt-30s</earliestTime>
       <latestTime>rt</latestTime>
       <option name="classField">None</option>
@@ -102,6 +102,26 @@
               ]]>
         </link>
       </drilldown>
+    </table>
+  </row>
+  <row>
+    <table>
+      <title>Recently Added to Applipedia</title>
+      <searchString>index=pan_logs sourcetype="pan_newapps" | dedup app{@name} sortby +_time | sort -_time | table _time app{@name} app.technology app.category app.subcategory app.risk | convert timeformat="%m/%d/%y" ctime(_time) | rename _time AS "Date added" | rename app{@name} AS Name | rename app.technology AS Technology | rename app.category AS Category | rename app.subcategory AS Subcategory | rename app.risk AS Risk</searchString>
+      <earliestTime>-2w@w</earliestTime>
+      <latestTime>now</latestTime>
+      <option name="list.drilldown">full</option>
+      <option name="list.wrap">1</option>
+      <option name="maxLines">5</option>
+      <option name="raw.drilldown">full</option>
+      <option name="rowNumbers">false</option>
+      <option name="table.drilldown">1</option>
+      <option name="table.wrap">1</option>
+      <option name="type">list</option>
+      <option name="wrap">false</option>
+      <option name="dataOverlayMode">none</option>
+      <option name="drilldown">row</option>
+      <option name="count">10</option>
     </table>
   </row>
   <row>
