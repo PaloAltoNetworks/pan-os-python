@@ -10,56 +10,50 @@
     <input type="text" token="src_ip">
       <label>Source IP</label>
       <default/>
-      <prefix>FILTER src_ip is "</prefix>
+      <prefix>log.src_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
       <default/>
-      <prefix>FILTER dst_ip is "</prefix>
+      <prefix>log.dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="threat_id">
       <label>Threat ID</label>
       <default/>
-      <prefix>FILTER threat_id is "</prefix>
+      <prefix>log.threat_id="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="log_subtype">
       <label>Log Subtype</label>
       <default/>
-      <prefix>FILTER log_subtype is "</prefix>
+      <prefix>log.log_subtype="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs threat count(threat) AS count SPLITROW log_subtype AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.threat, log.log_subtype)`</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
       <default/>
-      <prefix>FILTER app is "</prefix>
+      <prefix>log.app="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs threat count(threat) AS count SPLITROW app AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.threat, log.app)`</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
       <default/>
-      <prefix>FILTER vsys is "</prefix>
+      <prefix>log.vsys="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs threat count(threat) AS count SPLITROW vsys AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.threat, log.vsys)`</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>Threat Subtypes</title>
-      <searchString>| pivot pan_logs threat count(threat) SPLITROW _time SPLITCOL log_subtype $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log.log_subtype | timechart values(count) by log.log_subtype</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -85,7 +79,7 @@
     </chart>
     <chart>
       <title>Severity</title>
-      <searchString>| pivot pan_logs threat count(threat) SPLITROW _time SPLITCOL severity $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log.severity | timechart values(count) by log.severity</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -113,7 +107,7 @@
   <row>
     <chart>
       <title>Threat IDs</title>
-      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW threat_id $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.threat_id</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -139,7 +133,7 @@
     </chart>
     <chart>
       <title>Threats by App</title>
-      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW app $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -165,7 +159,7 @@
     </chart>
     <chart>
       <title>Threats by User</title>
-      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW dst_user $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.dst_user</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -193,7 +187,7 @@
   <row>
     <chart>
       <title>Source IP</title>
-      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW src_ip $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.src_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -219,7 +213,7 @@
     </chart>
     <chart>
       <title>Threats by Severity</title>
-      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW severity $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.severity</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -245,7 +239,7 @@
     </chart>
     <chart>
       <title>Destination IP</title>
-      <searchString>| pivot pan_logs threat count(threat) AS Count SPLITROW dst_ip $src_ip$ $dst_ip$ $threat_id$ $log_subtype$ $app$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.dst_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

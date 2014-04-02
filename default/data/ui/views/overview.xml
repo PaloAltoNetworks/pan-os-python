@@ -107,7 +107,7 @@
   <row>
     <table>
       <title>New Applications</title>
-      <searchString>index=pan_logs sourcetype="pan_newapps" | convert timeformat="%m/%d/%y" ctime(_time) AS "Date added" | table "Date added" app{@name} app.technology app.category app.subcategory app.risk | rename app{@name} AS Name | rename app.technology AS Technology | rename app.category AS Category | rename app.subcategory AS Subcategory | rename app.risk AS Risk</searchString>
+      <searchString>index=pan_logs sourcetype="pan_newapps" | dedup app{@name} sortby +_time | sort -_time | table _time app{@name} app.technology app.category app.subcategory app.risk | convert timeformat="%m/%d/%y" ctime(_time) | rename _time AS "Date added" | rename app{@name} AS Name | rename app.technology AS Technology | rename app.category AS Category | rename app.subcategory AS Subcategory | rename app.risk AS Risk</searchString>
       <earliestTime>-2w@w</earliestTime>
       <latestTime>now</latestTime>
       <option name="list.drilldown">full</option>

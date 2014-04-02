@@ -10,60 +10,52 @@
     <input type="text" token="src_ip">
       <label>Source IP</label>
       <default/>
-      <prefix>FILTER src_ip is "</prefix>
+      <prefix>log.src_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
       <default/>
-      <prefix>FILTER dst_ip is "</prefix>
+      <prefix>log.dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="content_type">
       <label>Content Type</label>
       <default/>
-      <prefix>FILTER content_type is "</prefix>
+      <prefix>log.content_type="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs url count(url) AS count SPLITROW content_type AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.url, log.content_type)`</populatingSearch>
     </input>
     <input type="dropdown" token="category">
       <label>Category</label>
       <default/>
-      <prefix>FILTER category is "</prefix>
+      <prefix>log.category="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs url count(url) AS count SPLITROW category AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.url, log.category)`</populatingSearch>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
       <default/>
-      <prefix>FILTER app is "</prefix>
+      <prefix>log.app="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs url count(url) AS count SPLITROW app AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.url, log.app)`</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
       <default/>
-      <prefix>FILTER vsys is "</prefix>
+      <prefix>log.vsys="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs url count(url) AS count SPLITROW vsys AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.url, log.vsys)`</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>Major Content Types</title>
-      <searchString>| pivot pan_logs url count(url) SPLITROW _time SPLITCOL major_content_type FILTER major_content_type isNotNull $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time log.major_content_type | timechart values(count) by log.major_content_type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -89,7 +81,7 @@
     </chart>
     <chart>
       <title>Full Content Types</title>
-      <searchString>| pivot pan_logs url count(url) SPLITROW _time SPLITCOL content_type FILTER content_type isNotNull $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$</searchString>
+      <searchString>| `tstats` count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time content_type| timechart values(cc) by content_type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -117,7 +109,7 @@
   <row>
     <table>
       <title>Content Types and Apps</title>
-      <searchString>| pivot pan_logs url count(url) AS Count SPLITROW content_type AS "Content Type" SPLITROW app AS "Application" $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$ | sort -Count</searchString>
+      <searchString>| `tstats` count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | stats values(cc) AS Count by content_type app | sort -Count | rename app AS Application | rename content_type AS "Content Type"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -157,7 +149,7 @@
     </table>
     <table>
       <title>Non-Web Browsing Content Types</title>
-      <searchString>| pivot pan_logs url count(url) AS Count SPLITROW content_type AS "Content Type" SPLITROW app AS "Application" FILTER app isNot "web-browsing" $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$ | sort -Count</searchString>
+      <searchString>| `tstats` count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | where app != "web-browsing" | stats values(cc) AS Count by content_type app | sort -Count | rename app AS Application | rename content_type AS "Content Type"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -189,7 +181,7 @@
     </table>
     <table>
       <title>Content Types and Web Categories</title>
-      <searchString>| pivot pan_logs url count(url) AS Count SPLITROW content_type AS "Content Type" SPLITROW category AS "Category" $src_ip$ $dst_ip$ $content_type$ $category$ $app$ $vsys$ | sort -Count</searchString>
+      <searchString>| `tstats` count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby category content_type | stats values(cc) AS Count by content_type category | sort -Count | rename category AS Category | rename content_type AS "Content Type"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

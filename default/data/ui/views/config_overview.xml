@@ -10,68 +10,56 @@
     <input type="dropdown" token="admin">
       <label>Admin</label>
       <default/>
-      <prefix>FILTER admin is "</prefix>
+      <prefix>log.admin="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs config count(config) AS count SPLITROW admin AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, log.admin)`</populatingSearch>
     </input>
     <input type="dropdown" token="host">
       <label>Host</label>
       <default/>
-      <prefix>FILTER host is "</prefix>
+      <prefix>host="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs config count(config) AS count SPLITROW host AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, host)`</populatingSearch>
     </input>
     <input type="dropdown" token="admin_ip">
       <label>Admin IP</label>
       <default/>
-      <prefix>FILTER admin_ip is "</prefix>
+      <prefix>log.admin_ip="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs config count(config) AS count SPLITROW admin_ip AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, log.admin_ip)`</populatingSearch>
     </input>
     <input type="dropdown" token="admin_type">
       <label>Admin Type</label>
       <default/>
-      <prefix>FILTER admin_type is "</prefix>
+      <prefix>log.admin_type="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs config count(config) AS count SPLITROW admin_type AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, log.admin_type)`</populatingSearch>
     </input>
     <input type="dropdown" token="cmd">
       <label>Command</label>
       <default/>
-      <prefix>FILTER cmd is "</prefix>
+      <prefix>log.cmd="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs config count(config) AS count SPLITROW cmd AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, log.cmd)`</populatingSearch>
     </input>
     <input type="dropdown" token="result">
       <label>Result</label>
       <default/>
-      <prefix>FILTER result is "</prefix>
+      <prefix>log.result="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs config count(config) AS count SPLITROW result AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, log.result)`</populatingSearch>
     </input>
   </fieldset>
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| pivot pan_logs config count(config) SPLITROW _time PERIOD second SPLITROW result SPLITROW serial_number SPLITROW host SPLITROW admin SPLITROW admin_type SPLITROW admin_ip SPLITROW cmd SPLITROW configuration_path $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$ | table _time result serial_number host admin admin_type admin_ip cmd configuration_path | sort -_time</searchString>
+      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ `table(_time host log.serial_number log.admin log.admin_ip log.admin_type log.result log.cmd log.configuration_path)` | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -140,8 +128,7 @@
   <row>
     <chart>
       <title>Config Events</title>
-      <searchString>| pivot pan_logs config count(config) SPLITROW _time SPLITCOL cmd
-$host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
+      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby _time log.cmd | timechart values(count) by log.cmd</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -167,7 +154,7 @@ $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
     </chart>
     <chart>
       <title>Configuration Administrators</title>
-      <searchString>| pivot pan_logs config count(config) SPLITROW _time SPLITCOL admin $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
+      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby _time log.admin | timechart values(count) by log.admin</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -195,7 +182,7 @@ $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
   <row>
     <chart>
       <title>Clients Used</title>
-      <searchString>| pivot pan_logs config count(config) AS Count SPLITROW admin_type $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
+      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby log.admin_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -221,7 +208,7 @@ $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
     </chart>
     <chart>
       <title>Results</title>
-      <searchString>| pivot pan_logs config count(config) AS Count SPLITROW result $host$ $admin$ $admin_ip$ $admin_type$ $result$ $cmd$</searchString>
+      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby log.result</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

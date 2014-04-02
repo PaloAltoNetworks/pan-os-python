@@ -10,54 +10,46 @@
     <input type="dropdown" token="log_subtype">
       <label>Log Subtype</label>
       <default/>
-      <prefix>FILTER log_subtype is "</prefix>
+      <prefix>log.log_subtype="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs system count(system) AS count SPLITROW log_subtype AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.system, log.log_subtype)`</populatingSearch>
     </input>
     <input type="dropdown" token="event_id">
       <label>Event ID</label>
       <default/>
-      <prefix>FILTER event_id is "</prefix>
+      <prefix>log.event_id="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs system count(system) AS count SPLITROW event_id AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.system, log.event_id)`</populatingSearch>
     </input>
     <input type="dropdown" token="serial_number">
       <label>Serial Number</label>
       <default/>
-      <prefix>FILTER serial_number is "</prefix>
+      <prefix>log.serial_number="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs system count(system) AS count SPLITROW serial_number AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.system, log.serial_number)`</populatingSearch>
     </input>
     <input type="dropdown" token="severity">
       <label>Severity</label>
       <default/>
-      <prefix>FILTER severity is "</prefix>
+      <prefix>log.severity="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs system count(system) AS count SPLITROW severity AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.system, log.severity)`</populatingSearch>
     </input>
     <input type="text" token="description">
       <label>Description</label>
       <default/>
-      <prefix>FILTER description is "</prefix>
+      <prefix>log.description="</prefix>
       <suffix>"</suffix>
     </input>
   </fieldset>
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| pivot pan_logs system count(system) SPLITROW _time PERIOD second SPLITROW serial_number SPLITROW description SPLITROW log_subtype SPLITROW severity SPLITROW event_id $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ | table _time serial_number log_subtype severity event_id description | sort -_time</searchString>
+      <searchString>| `tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ `table(_time log.serial_number log.description log.log_subtype log.severity log.event_id)` | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -116,7 +108,7 @@
   <row>
     <chart>
       <title>System Events Over Time</title>
-      <searchString>| pivot pan_logs system count(system) SPLITROW _time SPLITCOL log_subtype $serial_number$ $description$ $log_subtype$ $severity$ $event_id$</searchString>
+      <searchString>| `tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log.log_subtype | timechart values(count) by log.log_subtype</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -142,7 +134,7 @@
     </chart>
     <chart>
       <title>Severity</title>
-      <searchString>| pivot pan_logs system count(system) SPLITROW _time SPLITCOL severity $serial_number$ $description$ $log_subtype$ $severity$ $event_id$</searchString>
+      <searchString>| `tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log.severity | timechart values(count) by log.severity</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>

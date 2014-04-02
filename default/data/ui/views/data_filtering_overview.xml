@@ -10,56 +10,50 @@
     <input type="text" token="src_ip">
       <label>Source IP</label>
       <default/>
-      <prefix>FILTER src_ip is "</prefix>
+      <prefix>log.src_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="dst_ip">
       <label>Destination IP</label>
       <default/>
-      <prefix>FILTER dst_ip is "</prefix>
+      <prefix>log.dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="src_user">
       <label>Source User</label>
       <default/>
-      <prefix>FILTER src_user is "</prefix>
+      <prefix>log.src_user="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
       <default/>
-      <prefix>FILTER app is "</prefix>
+      <prefix>log.app="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs data count(data) AS count SPLITROW app AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.data, log.app)`</populatingSearch>
     </input>
     <input type="dropdown" token="action">
       <label>Action</label>
       <default/>
-      <prefix>FILTER action is "</prefix>
+      <prefix>log.action="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs data count(data) AS count SPLITROW action AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.data, log.action)`</populatingSearch>
     </input>
     <input type="dropdown" token="vsys">
       <label>Virtual System</label>
       <default/>
-      <prefix>FILTER vsys is "</prefix>
+      <prefix>log.vsys="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| pivot
-        pan_logs data count(data) AS count SPLITROW vsys AS field
-        | eval field_with_count = field . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.data, log.vsys)`</populatingSearch>
     </input>
   </fieldset>
   <row>
     <chart>
       <title>Data Events</title>
-      <searchString>| pivot pan_logs data count(data) SPLITROW _time SPLITCOL action $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.data)` $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -85,7 +79,7 @@
     </chart>
     <chart>
       <title>Application</title>
-      <searchString>| pivot pan_logs data count(data) SPLITROW _time SPLITCOL app $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$</searchString>
+      <searchString>| `tstats` count FROM `node(log.data)` $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -113,7 +107,7 @@
   <row>
     <table>
       <title>Data Filter Events by Application</title>
-      <searchString>| pivot pan_logs data count(data) AS Count SPLITROW action AS "Action" SPLITROW src_ip AS "Source" SPLITROW application AS "Application" $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ | sort -Count</searchString>
+      <searchString>| `tstats` count FROM `node(log.data)` $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ `table(log.threat_id log.action log.src_ip log.app, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -153,7 +147,7 @@
     </table>
     <table>
       <title>Data Filter Events by Destination</title>
-      <searchString>| pivot pan_logs data count(data) AS Count SPLITROW action AS "Action" SPLITROW src_ip AS "Source" SPLITROW dst_ip AS "Destination" SPLITROW dst_location AS "Location" $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ | sort -Count</searchString>
+      <searchString>| `tstats` count FROM `node(log.data)` $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dst_ip log.dst_location, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
