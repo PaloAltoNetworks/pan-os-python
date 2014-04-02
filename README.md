@@ -89,6 +89,8 @@ If you are upgrading the app from a pre-4.1 version to 4.1 or higher, then you m
 
 After upgrade to 4.1 or higher, Splunk will backfill the datamodel with historic data up to 1 year old.  It may take some time for historic data to show up in the dashboards, but it will be available in the pivot interface and search immediately.  The time range for historic data to be available in the dashboards can be adjusted in the datamodel accelerations settings.
 
+If you have customized the built-in dashboards of a previous app version, then they will no longer work because the customized dashboards will still use TSIDX.  Remove your custom dashboards from the `local` directory of the app to use the new datamodel-based dashboards.  You can add your customizations to the new dashboards.
+
 ## What's new in this version ##
 
 Version 4.1
