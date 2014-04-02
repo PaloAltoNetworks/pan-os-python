@@ -26,10 +26,10 @@
       <prefix>log.dst_port="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="src_user">
+    <input type="text" token="user">
       <label>Source User</label>
       <default/>
-      <prefix>log.src_user="</prefix>
+      <prefix>log.user="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="app">
@@ -52,7 +52,7 @@
   <row>
     <chart>
       <title>Bytes Transfered Over Time</title>
-      <searchString>| `tstats` sum(log.bytes_sent) AS sumSent sum(log.bytes_received) AS sumReceived FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby _time span=5m | timechart span=5m values("sumReceived") AS "Bytes Received" values("sumSent") AS "Bytes Sent"</searchString>
+      <searchString>| `tstats` sum(log.bytes_sent) AS sumSent sum(log.bytes_received) AS sumReceived FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby _time span=5m | timechart span=5m values("sumReceived") AS "Bytes Received" values("sumSent") AS "Bytes Sent"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -78,7 +78,7 @@
     </chart>
     <chart>
       <title>Protocols Over Time</title>
-      <searchString>| `tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby _time log.protocol span=5m | timechart span=5m values(count) by log.protocol</searchString>
+      <searchString>| `tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby _time log.protocol span=5m | timechart span=5m values(count) by log.protocol</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -106,7 +106,7 @@
   <row>
     <chart>
       <title>Applications by Bytes Transfered</title>
-      <searchString>| `tstats` sum(log.bytes_received) AS sbr sum(log.bytes_sent) AS sbs FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.app | eval sumBytes = sbr + sbs | stats values(sumBytes) AS Bytes by log.app | `top(50)`</searchString>
+      <searchString>| `tstats` sum(log.bytes_received) AS sbr sum(log.bytes_sent) AS sbs FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby log.app | eval sumBytes = sbr + sbs | stats values(sumBytes) AS Bytes by log.app | `top(50)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -132,7 +132,7 @@
     </chart>
     <chart>
       <title>Applications by Request</title>
-      <searchString>| `tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.app | stats values(count) AS Application by log.app | `top(50)`</searchString>
+      <searchString>| `tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby log.app | stats values(count) AS Application by log.app | `top(50)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -158,7 +158,7 @@
     </chart>
     <chart>
       <title>Source IP</title>
-      <searchString>| `tstats` count FROM `node(log.traffic.end)` $src_ip$ $src_user$ $dst_ip$ $dst_port$ $app$ $action$ groupby log.src_ip | `top(50)`</searchString>
+      <searchString>| `tstats` count FROM `node(log.traffic.end)` $src_ip$ $user$ $dst_ip$ $dst_port$ $app$ $action$ groupby log.src_ip | `top(50)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -186,7 +186,7 @@
   <row>
     <chart>
       <title>Destination Port</title>
-      <searchString>| `tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.dst_port | `top(50)`</searchString>
+      <searchString>| `tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby log.dst_port | `top(50)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -212,7 +212,7 @@
     </chart>
     <chart>
       <title>Destination IP</title>
-      <searchString>| `tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.dst_ip | `top(50)`</searchString>
+      <searchString>| `tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby log.dst_ip | `top(50)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -238,7 +238,7 @@
     </chart>
     <chart>
       <title>Source User</title>
-      <searchString>| `tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.src_user | `top(50)`</searchString>
+      <searchString>| `tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby log.user | `top(50)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -266,7 +266,7 @@
   <row>
     <chart>
       <title>Traffic Transmitted by Interface</title>
-      <searchString>| `tstats` sum(log.bytes) As sb FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.egress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.egress_interface | rename log.egress_interface AS "Egress Interface"</searchString>
+      <searchString>| `tstats` sum(log.bytes) As sb FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby log.egress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.egress_interface | rename log.egress_interface AS "Egress Interface"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -292,7 +292,7 @@
     </chart>
     <chart>
       <title>Traffic Received by Interface</title>
-      <searchString>| `tstats` sum(log.bytes) As sb FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $src_user$ $app$ groupby log.ingress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.ingress_interface | rename log.ingress_interface AS "Ingress Interface"</searchString>
+      <searchString>| `tstats` sum(log.bytes) As sb FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby log.ingress_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.ingress_interface | rename log.ingress_interface AS "Ingress Interface"</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

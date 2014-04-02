@@ -19,10 +19,10 @@
       <prefix>log.dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="src_user">
+    <input type="text" token="user">
       <label>Source User</label>
       <default/>
-      <prefix>log.src_user="</prefix>
+      <prefix>log.user="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="app">
@@ -53,7 +53,7 @@
   <row>
     <chart>
       <title>Data Events</title>
-      <searchString>| `tstats` count FROM `node(log.data)` $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action</searchString>
+      <searchString>| `tstats` count FROM `node(log.data)` $user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -79,7 +79,7 @@
     </chart>
     <chart>
       <title>Application</title>
-      <searchString>| `tstats` count FROM `node(log.data)` $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app</searchString>
+      <searchString>| `tstats` count FROM `node(log.data)` $user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -107,7 +107,7 @@
   <row>
     <table>
       <title>Data Filter Events by Application</title>
-      <searchString>| `tstats` count FROM `node(log.data)` $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ `table(log.threat_id log.action log.src_ip log.app, count)`</searchString>
+      <searchString>| `tstats` count FROM `node(log.data)` $user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ `table(log.threat_id log.action log.src_ip log.app, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -147,7 +147,7 @@
     </table>
     <table>
       <title>Data Filter Events by Destination</title>
-      <searchString>| `tstats` count FROM `node(log.data)` $src_user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dst_ip log.dst_location, count)`</searchString>
+      <searchString>| `tstats` count FROM `node(log.data)` $user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dst_ip log.dst_location, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

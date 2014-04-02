@@ -159,7 +159,7 @@
     </chart>
     <chart>
       <title>Threats by User</title>
-      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.dst_user</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.user</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
