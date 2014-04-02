@@ -125,7 +125,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` app="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -151,7 +151,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` app="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -177,7 +177,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` src_ip="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -205,7 +205,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` dst_port="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -231,7 +231,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` dst_ip="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -257,7 +257,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` user="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -285,7 +285,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` egress_interface="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -311,7 +311,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` ingress_interface="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
