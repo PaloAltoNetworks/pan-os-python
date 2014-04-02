@@ -9,69 +9,57 @@
     </input>
     <input type="dropdown" token="admin">
       <label>Admin</label>
-      <default></default>
-      <prefix>admin="</prefix>
+      <default/>
+      <prefix>log.admin="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="admin" fieldForLabel="admin_with_count">|tstats count(admin) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby admin
-        | eval admin_with_count = admin . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, log.admin)`</populatingSearch>
     </input>
     <input type="dropdown" token="host">
       <label>Host</label>
-      <default></default>
+      <default/>
       <prefix>host="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="host" fieldForLabel="host_with_count">|tstats count(host) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby host
-        | eval host_with_count = host . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, host)`</populatingSearch>
     </input>
-    <input type="dropdown" token="client_type">
-      <label>Client Type</label>
-      <default></default>
-      <prefix>client_type="</prefix>
+    <input type="dropdown" token="admin_ip">
+      <label>Admin IP</label>
+      <default/>
+      <prefix>log.admin_ip="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="client_type" fieldForLabel="client_type_with_count">|tstats count(client_type) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby client_type
-        | eval client_type_with_count = client_type . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, log.admin_ip)`</populatingSearch>
+    </input>
+    <input type="dropdown" token="admin_type">
+      <label>Admin Type</label>
+      <default/>
+      <prefix>log.admin_type="</prefix>
+      <suffix>"</suffix>
+      <choice value="">ANY</choice>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, log.admin_type)`</populatingSearch>
     </input>
     <input type="dropdown" token="cmd">
       <label>Command</label>
-      <default></default>
-      <prefix>cmd="</prefix>
+      <default/>
+      <prefix>log.cmd="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="cmd" fieldForLabel="cmd_with_count">|tstats count(cmd) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby cmd
-        | eval cmd_with_count = cmd . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, log.cmd)`</populatingSearch>
     </input>
     <input type="dropdown" token="result">
       <label>Result</label>
-      <default></default>
-      <prefix>result="</prefix>
+      <default/>
+      <prefix>log.result="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="result" fieldForLabel="result_with_count">|tstats count(result) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby result
-        | eval result_with_count = result . " (" . count . ")"</populatingSearch>
-    </input>
-    <input type="dropdown" token="vsys">
-      <label>Virtual System</label>
-      <default></default>
-      <prefix>vsys="</prefix>
-      <suffix>"</suffix>
-      <choice value="">ANY</choice>
-      <populatingSearch fieldForValue="vsys" fieldForLabel="vsys_with_count">|tstats count(vsys) as count
-        FROM pan_config WHERE earliest=$earliest$ latest=$latest$ groupby vsys
-        | eval vsys_with_count = vsys . " (" . count . ")"</populatingSearch>
+      <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.config, log.result)`</populatingSearch>
     </input>
   </fieldset>
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| tstats count(admin) FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby _time result serial_number host admin client_type cmd configuration_path | table _time result serial_number host admin client_type cmd configuration_path result | sort -_time</searchString>
+      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ `table(_time host log.serial_number log.admin log.admin_ip log.admin_type log.result log.cmd log.configuration_path)` | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -90,7 +78,7 @@
       <option name="wrap">false</option>
       <option name="displayRowNumbers">true</option>
       <option name="dataOverlayMode">none</option>
-      <option name="drilldown">row</option>
+      <option name="drilldown">cell</option>
       <option name="count">10</option>
       <drilldown>
         <link field="_time">
@@ -118,9 +106,14 @@
             /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin="$row.admin$"&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
-        <link field="client_type">
+        <link field="admin_ip">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` client_type="$row.client_type$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin_ip="$row.admin_ip$"&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+        <link field="admin_type">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin_type="$row.admin_type$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="configuration_path">
@@ -129,17 +122,17 @@
 	  ]]>
         </link>
       </drilldown>
+      <option name="rowNumbers">false</option>
     </table>
   </row>
   <row>
     <chart>
       <title>Config Events</title>
-      <searchString>| tstats count(cmd) AS cr FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$
-                    $result$ $cmd$ $vsys$ groupby _time cmd| timechart values(cr) by cmd</searchString>
+      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby _time log.cmd | timechart values(count) by log.cmd</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -154,18 +147,18 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` protocol="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` cmd="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Configuration Administrators</title>
-      <searchString>| tstats count(admin) AS ca FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby _time admin | timechart values(admin) by admin</searchString>
+      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby _time log.admin | timechart values(count) by log.admin</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
+      <option name="charting.axisTitleX.visibility">collapsed</option>
+      <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">column</option>
@@ -180,7 +173,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` protocol="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` admin="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
@@ -189,7 +182,7 @@
   <row>
     <chart>
       <title>Clients Used</title>
-      <searchString>| tstats count(client_type) AS cc FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby client_type</searchString>
+      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby log.admin_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -215,7 +208,7 @@
     </chart>
     <chart>
       <title>Results</title>
-      <searchString>| tstats count(result) AS cr FROM pan_config WHERE earliest=$earliest$ latest=$latest$ $host$ $admin$ $client_type$ $result$ $cmd$ $vsys$ groupby result</searchString>
+      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby log.result</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
