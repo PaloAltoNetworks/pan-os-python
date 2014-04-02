@@ -44,7 +44,7 @@ from . import __version__
 import pan.rc
 
 _encoding = 'utf-8'
-_job_sleep = 0.5
+_job_query_interval = 0.5
 
 
 class PanXapiError(Exception):
@@ -365,6 +365,7 @@ class PanXapi:
                 lines.append(elem.text)
             return lines[0] if lines else None
 
+        # 'show jobs id nn' and 'show jobs all' responses
         path = './result/job/details/line'
         elem = self.element_root.findall(path)
         if len(elem) > 0:
@@ -373,6 +374,11 @@ class PanXapi:
             for line in elem:
                 if line.text is not None:
                     lines.append(line.text)
+                else:
+                    path = './newjob/newmsg'
+                    elem2 = line.find(path)
+                    if elem2 is not None and elem2.text is not None:
+                        lines.append(elem2.text)
             return '\n'.join(lines) if lines else None
 
         return None
@@ -694,9 +700,28 @@ class PanXapi:
         if not self.__set_response(response):
             raise PanXapiError(self.status_detail)
 
-    def commit(self, cmd=None, action=None):
+    def commit(self, cmd=None, action=None, sync=False,
+               interval=None, timeout=None):
         self.__set_api_key()
         self.__clear_response()
+
+        if interval is not None:
+            try:
+                interval = float(interval)
+                if interval < 0:
+                    raise ValueError
+            except ValueError:
+                raise PanXapiError('Invalid interval: %s' % interval)
+        else:
+            interval = _job_query_interval
+
+        if timeout is not None:
+            try:
+                timeout = int(timeout)
+                if timeout < 0:
+                    raise ValueError
+            except ValueError:
+                raise PanXapiError('Invalid timeout: %s' % timeout)
 
         query = {}
         query['type'] = 'commit'
@@ -712,6 +737,47 @@ class PanXapi:
 
         if not self.__set_response(response):
             raise PanXapiError(self.status_detail)
+
+        if sync is not True:
+            return
+
+        job = self.element_root.find('./result/job')
+        if job is None:
+            return
+
+        if self.debug2:
+            print('commit job:', job.text, file=sys.stderr)
+
+        cmd = 'show jobs id "%s"' % job.text
+        start_time = time.time()
+
+        while True:
+            try:
+                self.op(cmd=cmd, cmd_xml=True)
+            except PanXapiError as msg:
+                raise PanXapiError('commit %s: %s' % (cmd, msg))
+
+            path = './result/job/status'
+            status = self.element_root.find(path)
+            if status is None:
+                raise PanXapiError('no status element in ' +
+                                   "'%s' response" % cmd)
+            if status.text == 'FIN':
+                # XXX commit vs. commit-all job status
+                return
+
+            if self.debug2:
+                print('job %s status %s' % (job.text, status.text),
+                      file=sys.stderr)
+
+            if (timeout is not None and timeout != 0 and
+                    time.time() > start_time + timeout):
+                raise PanXapiError('timeout waiting for ' +
+                                   'job %s completion' % job.text)
+
+            if self.debug2:
+                print('sleep %.2f seconds' % interval, file=sys.stderr)
+            time.sleep(interval)
 
     def op(self, cmd=None, vsys=None, cmd_xml=False):
         if cmd is not None and cmd_xml:
@@ -764,17 +830,19 @@ class PanXapi:
             self.export_result['category'] = category
 
     def log(self, log_type=None, nlogs=None, skip=None, filter=None,
-            sleep=_job_sleep, timeout=None):
+            interval=None, timeout=None):
         self.__set_api_key()
         self.__clear_response()
 
-        if sleep is not None:
-            try:
-                sleep = float(sleep)
-                if sleep < 0:
-                    raise ValueError
-            except ValueError:
-                raise PanXapiError('Invalid sleep: %s' % sleep)
+        if interval is None:
+            interval = _job_query_interval
+
+        try:
+            interval = float(interval)
+            if interval < 0:
+                raise ValueError
+        except ValueError:
+            raise PanXapiError('Invalid interval: %s' % interval)
 
         if timeout is not None:
             try:
@@ -805,7 +873,7 @@ class PanXapi:
 
         job = self.element_root.find('./result/job')
         if job is None:
-            raise PanXapiError('no job element in type=log request')
+            raise PanXapiError('no job element in type=log response')
 
         query = {}
         query['type'] = 'log'
@@ -828,7 +896,7 @@ class PanXapi:
             status = self.element_root.find('./result/job/status')
             if status is None:
                 raise PanXapiError('no status element in ' +
-                                   'type=log&action=get request')
+                                   'type=log&action=get response')
             if status.text == 'FIN':
                 return
 
@@ -841,10 +909,9 @@ class PanXapi:
                 raise PanXapiError('timeout waiting for ' +
                                    'job %s completion' % job.text)
 
-            if sleep is not None:
-                if self.debug2:
-                    print('sleep %.2f seconds' % sleep, file=sys.stderr)
-                time.sleep(sleep)
+            if self.debug2:
+                print('sleep %.2f seconds' % interval, file=sys.stderr)
+            time.sleep(interval)
 
 if __name__ == '__main__':
     # python -m pan.xapi [tag] [xpath] [0-3]
