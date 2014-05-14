@@ -81,7 +81,7 @@
     </chart>
     <chart>
       <title>Full Content Types</title>
-      <searchString>| `tstats` count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time content_type| timechart values(cc) by content_type</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time log.content_type | timechart values(count) by log.content_type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -109,7 +109,7 @@
   <row>
     <table>
       <title>Content Types and Apps</title>
-      <searchString>| `tstats` count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | stats values(cc) AS Count by content_type app | sort -Count | rename app AS Application | rename content_type AS "Content Type"</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ `table(log.app log.content_type, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -149,7 +149,7 @@
     </table>
     <table>
       <title>Non-Web Browsing Content Types</title>
-      <searchString>| `tstats` count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby app content_type | where app != "web-browsing" | stats values(cc) AS Count by content_type app | sort -Count | rename app AS Application | rename content_type AS "Content Type"</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ app!="web-browsing" `table(log.app log.content_type, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -181,7 +181,7 @@
     </table>
     <table>
       <title>Content Types and Web Categories</title>
-      <searchString>| `tstats` count(content_type) AS cc FROM pan_content WHERE earliest=$earliest$ latest=$latest$ $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby category content_type | stats values(cc) AS Count by content_type category | sort -Count | rename category AS Category | rename content_type AS "Content Type"</searchString>
+      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ `table(log.category log.content_type, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
