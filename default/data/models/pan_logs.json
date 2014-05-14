@@ -1922,6 +1922,18 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -3889,6 +3901,18 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "url",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "threat_name",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -5887,6 +5911,18 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -7854,6 +7890,18 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "url",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -9829,6 +9877,18 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -11796,6 +11856,18 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "url",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -13771,6 +13843,18 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -15742,6 +15826,18 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -17697,6 +17793,18 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "major_content_type",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -19672,6 +19780,18 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -21639,6 +21759,18 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "url",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -23614,6 +23746,18 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -25581,6 +25725,18 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "url",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "threat_name",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -27601,6 +27757,18 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -29568,6 +29736,18 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "url",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_name",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -31543,6 +31723,18 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "threat_name",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -33510,6 +33702,18 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "url",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "threat_name",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "threat_name",
                     "comment": "",
                     "fieldSearch": ""
                 },
