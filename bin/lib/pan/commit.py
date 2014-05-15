@@ -17,7 +17,7 @@
 from __future__ import print_function
 import sys
 
-valid_part = set([
+_valid_part = set([
     'device-and-network-excluded',
     'policy-and-objects-excluded',
     'shared-object-excluded',
