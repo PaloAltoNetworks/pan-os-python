@@ -106,7 +106,7 @@
   <row>
     <chart>
       <title>Applications by Bytes Transfered</title>
-      <searchString>| `tstats` sum(log.bytes_received) AS sbr sum(log.bytes_sent) AS sbs FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby log.app | eval sumBytes = sbr + sbs | stats values(sumBytes) AS Bytes by log.app | `top(50)`</searchString>
+      <searchString>| `tstats` sum(log.bytes_received) AS sbr sum(log.bytes_sent) AS sbs FROM `node(log.traffic.end)` $action$ $src_ip$ $dst_ip$ $dst_port$ $user$ $app$ groupby log.app | eval sumBytes = sbr + sbs | stats values(sumBytes) AS Bytes by log.app | sort -Bytes | head 50</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
