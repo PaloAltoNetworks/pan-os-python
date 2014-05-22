@@ -133,11 +133,6 @@
       <option name="drilldown">cell</option>
       <option name="count">10</option>
       <drilldown>
-        <link>
-          <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` src_ip="$row.Source$" dst_ip="$row.Dest IP$" dst_port="$row.Dest Port$"&earliest=$earliest$&latest=$latest$
-	  ]]>
-        </link>
         <link field="Source">
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Source$&earliest=$earliest$&latest=$latest$
@@ -176,6 +171,11 @@
         <link field="WildFire Link">
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/search?q=`pan_index` (sourcetype="pan_wildfire_report" wildfire.id="$row.WildFire Report ID$") OR (sourcetype="pan_threat" log_subtype="wildfire" threat_id="$row.WildFire Report ID$")&earliest=$earliest$&latest=$latest$
+	  ]]>
+        </link>
+        <link field="*">
+          <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` src_ip="$row.Source$" dst_ip="$row.Dest IP$" dst_port="$row.Dest Port$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
