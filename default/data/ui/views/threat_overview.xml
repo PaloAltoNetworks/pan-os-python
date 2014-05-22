@@ -19,10 +19,10 @@
       <prefix>log.dst_ip="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="threat_id">
-      <label>Threat ID</label>
+    <input type="text" token="threat_name">
+      <label>Threat</label>
       <default/>
-      <prefix>log.threat_id="</prefix>
+      <prefix>log.threat_name="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="log_subtype">
@@ -53,7 +53,7 @@
   <row>
     <chart>
       <title>Threat Subtypes</title>
-      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log.log_subtype | timechart values(count) by log.log_subtype</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ groupby _time log.log_subtype | timechart values(count) by log.log_subtype</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -79,7 +79,7 @@
     </chart>
     <chart>
       <title>Severity</title>
-      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby _time log.severity | timechart values(count) by log.severity</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ groupby _time log.severity | timechart values(count) by log.severity</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -106,8 +106,8 @@
   </row>
   <row>
     <chart>
-      <title>Threat IDs</title>
-      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.threat_id</searchString>
+      <title>Threats</title>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ groupby log.threat_name</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -133,7 +133,7 @@
     </chart>
     <chart>
       <title>Threats by App</title>
-      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.app</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ groupby log.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -159,7 +159,7 @@
     </chart>
     <chart>
       <title>Threats by User</title>
-      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.user</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ groupby log.user</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -187,7 +187,7 @@
   <row>
     <chart>
       <title>Source IP</title>
-      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.src_ip</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ groupby log.src_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -213,7 +213,7 @@
     </chart>
     <chart>
       <title>Threats by Severity</title>
-      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.severity</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ groupby log.severity</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -239,7 +239,7 @@
     </chart>
     <chart>
       <title>Destination IP</title>
-      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_id$ $vsys$ $app$ groupby log.dst_ip</searchString>
+      <searchString>| `tstats` count FROM `node(log.threat)` $src_ip$ $dst_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ groupby log.dst_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

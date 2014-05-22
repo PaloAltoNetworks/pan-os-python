@@ -25,10 +25,11 @@
 }
 */
 
-/* Shrink the form text inputs*/
-input, textarea, .uneditable-input {
+/* Shrink the form text inputs */
+/* Removed because Splunk 6.1 spaces the fields differently */
+/*input, textarea, .uneditable-input {
     width: 120px;
-}
+}*/
 
 /* Make the Search button on each dashboard blue instead of green */
 

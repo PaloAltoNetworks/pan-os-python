@@ -26,9 +26,9 @@
 ############################################
 # How to Use this script
 # in the example below, we are blocking all ip's returned by the search
-# example1: index=pan_logs 1.1.1.1 | stats dc(dst_ip) by dst_ip | panblock action="add" tag="malware-infected" device="1.0.0.1"
+# example1: index=pan_logs 1.1.1.1 | stats dc(dst_ip) by dst_ip | pantag action="add" tag="malware-infected" device="1.0.0.1"
 # Adds a 'malware-infected' tag to the IP 1.1.1.1 on the firewall with ip 1.0.0.1
-# example2: index=pan_logs wine | stats dc(dst_ip) by dst_ip | panblock action="rem" group="shairpoint" device="sales-fw"
+# example2: index=pan_logs wine | stats dc(dst_ip) by dst_ip | pantag action="rem" group="shairpoint" device="sales-fw"
 # Removes the 'shairpoint' tag from all dst_ip returned by the search on the firewall with hostname sales-fw
 ###########################################
 
@@ -40,34 +40,54 @@
 ###########################################
 
 #############################
-# Change the values below to suit your PAN configuration
+# Change the values below to suit your PAN configuration, or
+# supply these values in the Splunk search bar.
+#
 # WARNING!!!! Password is stored in clear text.
+# It is recommended to leave PANUSER and PANPASS commented out,
+# and user the app configuration screen to provide these instead.
 #############################
+
 # firewall IP. you can provide this via the device parameter
 PAN = '192.168.4.100'
-# admin account for the PAN device
+
+# Admin account for the PAN device
 #PANUSER = 'admin'
-# password for the admin user.
-# any special characters in the password must be URL/percent-encoded.
+
+# Password for the admin user.
+# Any special characters in the password must be URL/percent-encoded.
 #PANPASS = 'admin'
+
 # Defaults to vsys1. vsys substition is not supported at this time
 VSYS = 'vsys1'
+
 # Name of the address group for bad actors
 TAG = 'bad-actor'
+
+# Add or Remove the tag (add or rem)
 ACTION = 'add'
+
 # This is a default actor.
 ACTOR = '1.1.1.1'
-# The field to grab the IP from
-FIELD = None
+
 # if you DO want to go through a proxy, e.g., HTTP_PROXY={squid:'2.2.2.2'}
 HTTP_PROXY = {}
-# Fields that contain IP addresses and should be tagged if they exist
+
+# Default fields that contain IP addresses and should be tagged if they exist
 IP_FIELDS = ['src_ip', 'dst_ip', 'ip']
+
+# Enable debugging (script is otherwise silent unless there is an error)
+DEBUG = False
 
 #########################################################
 # Do NOT modify anything below this line unless you are
 # certain of the ramifications of the changes
 #########################################################
+
+import splunk.mining.dcutils as dcu
+
+logger = dcu.getLogger().getChild('panTag')
+logger.setLevel(20)
 
 try:
   import splunk.Intersplunk # so you can interact with Splunk
@@ -76,23 +96,21 @@ try:
   import sys # for system params and sys.exit()
   import os
   import re # regular expressions checks in PAN messages
-  import splunk.mining.dcutils as dcu
   import traceback
 
   libpath = os.path.dirname(os.path.abspath(__file__))
   sys.path[:0] = [os.path.join(libpath, 'lib')]
   import pandevice
+  import pan.xapi
 
 except Exception, e:
-  stack =  traceback.format_exc()
+  stack = traceback.format_exc()
+  logger.warn(stack)
   if isgetinfo:
     splunk.Intersplunk.parseError(str(e))
-
   results = splunk.Intersplunk.generateErrorResults(str(e))
-  logger.warn(stack)
 
 
-logger = dcu.getLogger()
 
 
 ## Major props to Ledion. copying his function, verbatim and then adding comments and traceback and logging
@@ -106,7 +124,7 @@ def getCredentials(sessionKey):
      # list all credentials
     entities = entity.getEntities(['admin', 'passwords'], namespace=myapp, owner='nobody', sessionKey=sessionKey)
   except Exception, e:
-    stack =  traceback.format_exc()
+    stack = traceback.format_exc()
     logger.warn(stack)
     logger.warn("entity exception")
     raise Exception("Could not get %s credentials from splunk. Error: %s" % (myapp, str(e)))
@@ -131,6 +149,14 @@ def tag(device, add_remove, ip_addresses, tag):
 
 
 args, kwargs = splunk.Intersplunk.getKeywordsAndOptions()
+
+if 'debug' in kwargs:
+  logger.info("Debugging enabled")
+  DEBUG = kwargs['debug']
+
+if DEBUG:
+    logger.setLevel(10)
+
 #parse the kwargs for ACTION, VSYS, PAN
 if kwargs.has_key('action'):
   ACTION = kwargs['action']
@@ -145,7 +171,9 @@ if kwargs.has_key('identifier'):
 if kwargs.has_key('tag'):
   TAG = kwargs['tag']
 if kwargs.has_key('field'):
-  FIELD = kwargs['field']
+  field = kwargs['field']
+else:
+  field = None
 
 # an empty dictionary. it will be used to hold system values
 settings = dict()
@@ -167,8 +195,8 @@ ADDRESSES = []
 
 try:
   for result in results:
-    if FIELD and FIELD in result:
-      ADDRESSES.append(result[FIELD])
+    if field and field in result:
+      ADDRESSES.append(result[field])
     else:
       for field in IP_FIELDS:
         if field in result:
@@ -180,13 +208,20 @@ try:
 
   tag(device, ACTION, ADDRESSES, TAG)
 
-except Exception, e:
-  stack =  traceback.format_exc()
-  if isgetinfo:
+except pan.xapi.PanXapiError, e:
+  if re.search(r"tag [^ ]* already exists, ignore", str(e)):
+    pass
+  else:
+    stack = traceback.format_exc()
+    logger.warn(stack)
     splunk.Intersplunk.parseError(str(e))
+    results = splunk.Intersplunk.generateErrorResults(str(e))
 
-  results = splunk.Intersplunk.generateErrorResults(str(e))
+except Exception, e:
+  stack = traceback.format_exc()
   logger.warn(stack)
+  splunk.Intersplunk.parseError(str(e))
+  results = splunk.Intersplunk.generateErrorResults(str(e))
 
 # output results
 splunk.Intersplunk.outputResults(results)
