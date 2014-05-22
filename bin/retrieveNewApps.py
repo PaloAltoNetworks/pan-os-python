@@ -56,7 +56,8 @@ args, kwargs = splunk.Intersplunk.getKeywordsAndOptions()
 sessionKey = settings['sessionKey']
 
 try:
-  DEBUG = True if 'debug' in kwargs else False
+  if 'debug' in kwargs:
+    DEBUG = kwargs['debug']
   # setup the logger. $SPLUNK_HOME/var/log/splunk/python.log
   logger = dcu.getLogger().getChild('retrieveNewApps')
 

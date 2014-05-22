@@ -11,8 +11,8 @@ Networks Firewall
 #### Latest Version ####
 
 * Splunk Version: 6.x
-* App Version: 4.1
-* Last Modified: Apr 2013
+* App Version: 4.1.1
+* Last Modified: May 2014
 * Authors:
     * Monzy Merza - Splunk, Inc.
     * Brian Torres-Gil - Palo Alto Networks
@@ -93,9 +93,18 @@ If you have customized the built-in dashboards of a previous app version, then t
 
 ## What's new in this version ##
 
-Version 4.1
+If upgrading from 3.x, please read the __Upgrade Notes__ above.
 
-If upgrading from a previous version, please read the __Upgrade Notes__ above.
+Version 4.1.1
+
+- Handle new fields in latest PAN-OS syslogs and WildFire reports
+- Significant improvements to indexing efficiency
+- Improved handling of Dynamic Address Group tagging
+- Improvements and minor updates for Splunk 6.1.x
+- Fix minor dashboard issues
+- Fix minor field parsing issue
+
+Version 4.1
 
 - PAN-OS Data model including acceleration
 - Data model accelerated dashboards (replaces TSIDX-based dashboards)

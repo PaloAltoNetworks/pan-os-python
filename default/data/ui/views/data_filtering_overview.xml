@@ -107,7 +107,7 @@
   <row>
     <table>
       <title>Data Filter Events by Application</title>
-      <searchString>| `tstats` count FROM `node(log.data)` $user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ `table(log.threat_id log.action log.src_ip log.app, count)`</searchString>
+      <searchString>| `tstats` count FROM `node(log.data)` $user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ `table(log.threat_name log.action log.src_ip log.app, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -140,7 +140,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` threat_id="$row.Threat ID$" action="$row.Action$" src_ip="$row.Source$" app="$row.Application$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` threat_name="$row.threat_name$" action="$row.action$" src_ip="$row.src_ip$" app="$row.app$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
