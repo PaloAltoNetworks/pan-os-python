@@ -7,7 +7,7 @@
         <latestTime>now</latestTime>
       </default>
     </input>
-    <input type="text" token="threat">
+    <input type="text" token="threat_name">
       <label>Threat</label>
       <default/>
       <prefix>log.threat_name="</prefix>
@@ -19,7 +19,7 @@
       <prefix>log.user="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="application">
+    <input type="text" token="app">
       <label>Application</label>
       <default/>
       <prefix>log.app="</prefix>
@@ -33,7 +33,7 @@
     </input>
   </fieldset>
   <searchTemplate>| `tstats` values(sourcetype) as sourcetype values(log.threat_name) as threat_name sum(log.bytes) as bytes sum(log.elapsed_time) as duration
-        FROM datamodel="pan_logs" WHERE (nodename="log.traffic" OR nodename="log.threat") $threat$ $user$ $application$ $location$
+        FROM datamodel="pan_logs" WHERE (nodename="log.traffic" OR (nodename="log.threat" $threat_name$)) $user$ $app$ $location$
         `groupby(log.session_id log.user log.server_ip log.application log.server_location)`
         | search sourcetype="pan_threat" bytes!="" server_location!="" user!="" | eval KB=bytes/1024</searchTemplate>
   <earliestTime>$earliest$</earliestTime>
@@ -73,8 +73,7 @@
     </chart>
     <chart>
       <title>Users by Kilobytes</title>
-      <searchPostProcess>| stats sum(KB) as "Transferred (KB)" by user
-        | rename user AS User | sort -"Transferred (KB)"</searchPostProcess>
+      <searchPostProcess>| stats sum(KB) as "Transferred (KB)" by user | sort -"Transferred (KB)"</searchPostProcess>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -93,7 +92,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/threat_detail?form.user=$click.value$
+            /app/SplunkforPaloAltoNetworks/threat_detail?form.$click.name$=$click.value$
 	  ]]>
         </link>
       </drilldown>
