@@ -5,3 +5,4 @@ pan_threat,PaloAlto,Firewall,network
 pan_traffic,PaloAlto,Firewall,
 pan_wildfire_report,PaloAlto,Firewall,
 pan_newapps,PaloAlto,Firewall
+pan_endpoint,PaloAlto,Endpoint,
