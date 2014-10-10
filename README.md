@@ -11,8 +11,8 @@ Networks Firewall
 #### Latest Version ####
 
 * Splunk Version: 6.x
-* App Version: 4.1.1
-* Last Modified: May 2014
+* App Version: 4.1.2
+* Last Modified: Sep 2014
 * Authors:
     * Monzy Merza - Splunk, Inc.
     * Brian Torres-Gil - Palo Alto Networks
@@ -94,6 +94,12 @@ If you have customized the built-in dashboards of a previous app version, then t
 ## What's new in this version ##
 
 If upgrading from 3.x, please read the __Upgrade Notes__ above.
+
+Version 4.1.2
+
+- Fix some Threat dashboard drilldowns 
+- Fix scope of CIM fields to remove conflict with some apps
+- Remove macros from datamodel that were causing slower acceleration
 
 Version 4.1.1
 
