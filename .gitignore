@@ -17,3 +17,6 @@ local/*
 
 # Git repositories folder
 git-repositories/
+
+# PyCharm/IntelliJ meta-directory
+.idea

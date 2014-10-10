@@ -2177,7 +2177,7 @@
             "calculations": [],
             "constraints": [
                 {
-                    "search": "`pan_index`",
+                    "search": "index=\"pan_logs\"",
                     "owner": "log"
                 }
             ],
