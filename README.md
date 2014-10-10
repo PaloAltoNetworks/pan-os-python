@@ -101,6 +101,8 @@ Version 4.1.2
 - Fix scope of CIM fields to remove conflict with some apps
 - Remove macros from datamodel that were causing slower acceleration
 
+Note: changes to datamodel may require the acceleration to be rebuilt before data will show up in the dashboards
+
 Version 4.1.1
 
 - Handle new fields in latest PAN-OS syslogs and WildFire reports
