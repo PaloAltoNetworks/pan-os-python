@@ -26,4 +26,4 @@ export = system
 export = none
 
 [lookups]
-export = system
+export = none
