@@ -1,5 +1,3 @@
-# TODO: should these only exported to app instead of system?
-
 # Application-level permissions
 
 []
@@ -10,12 +8,10 @@ access = read : [ * ], write : [ admin, power ]
 [eventtypes]
 export = system
 
-
 ### PROPS
 
 [props]
-export = system
-
+export = none
 
 ### TRANSFORMS
 
