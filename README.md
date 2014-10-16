@@ -11,8 +11,8 @@ Networks Firewall
 #### Latest Version ####
 
 * Splunk Version: 6.x
-* App Version: 4.1.2
-* Last Modified: Sep 2014
+* App Version: 4.1.3
+* Last Modified: Oct 2014
 * Authors:
     * Monzy Merza - Splunk, Inc.
     * Brian Torres-Gil - Palo Alto Networks
@@ -94,6 +94,12 @@ If you have customized the built-in dashboards of a previous app version, then t
 ## What's new in this version ##
 
 If upgrading from 3.x, please read the __Upgrade Notes__ above.
+
+Version 4.1.3
+
+- Special commands (panblock, panupdate, pantag) now available from other apps
+- Fix issue with unknown lookup errors during search
+- Fix issue with meta scope and global namespace
 
 Version 4.1.2
 
