@@ -20,10 +20,15 @@ export = system
 ### TRANSFORMS
 
 [transforms]
-export = system
-
-[savedsearches]
 export = none
 
 [lookups]
 export = none
+
+## OTHER
+
+[savedsearches]
+export = none
+
+[commands]
+export = system
