@@ -66,7 +66,7 @@ logger = dcu.getLogger()
 ## http://blogs.splunk.com/2011/03/15/storing-encrypted-credentials/
 ## access the credentials in /servicesNS/nobody/<YourApp>/admin/passwords
 def getCredentials(sessionKey):
-    '''Given a splunk sesionKey returns a clear text user name and password from a splunk password container'''
+    """Given a splunk sesionKey returns a clear text user name and password from a splunk password container"""
     # this is the folder name for the app and not the app's common name
     myapp = 'SplunkforPaloAltoNetworks'
     try:
@@ -86,7 +86,7 @@ def getCredentials(sessionKey):
 
 
 def createOpener():
-    '''Create a generic opener for http. This is particularly helpful when there is a proxy server in line'''
+    """Create a generic opener for http. This is particularly helpful when there is a proxy server in line"""
     # Thanks to: http://www.decalage.info/en/python/urllib2noproxy
     proxy_handler = urllib2.ProxyHandler(HTTP_PROXY)
     opener = urllib2.build_opener(proxy_handler)
@@ -95,7 +95,7 @@ def createOpener():
 
 
 def getKey(PAN, PANUSER, PANPASS):
-    ''' Logs into the PAN firewall and obtains a PAN session key'''
+    """ Logs into the PAN firewall and obtains a PAN session key"""
     # create an opener object
     opener = createOpener()
     try:
@@ -120,7 +120,7 @@ def getKey(PAN, PANUSER, PANPASS):
 
 
 def checkAddr(address):
-    '''Check if an address is a FQDN or IP with some netmask. Return the appropriate uri for PAN api'''
+    """Check if an address is a FQDN or IP with some netmask. Return the appropriate uri for PAN api"""
     # element is everything after the element= field in the PAN api
     # re pattern for IP address
     ippat = '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
@@ -136,7 +136,7 @@ def checkAddr(address):
 
 
 def panorama():
-    ''' Interact with PANorama'''
+    """ Interact with PANorama"""
     #Set dynamic address object (with LinkID) at Panorama level, commit
     #https://pm-panorama/api/?type=config&action=set&xpath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='splunktastic']/address/entry[@name='test-add']&element=<dynamic>test1</dynamic>&key=LUFRPT14MW5xOEo1R09KVlBZNnpnemh0VHRBOWl6TGM9bXcwM3JHUGVhRlNiY0dCR0srNERUQT09
     #https://pm-panorama/api/?type=commit&action=all&cmd=<commit-all><shared-policy><device-group>splunktastic</device-group></shared-policy></commit-all>&key=LUFRPT14MW5xOEo1R09KVlBZNnpnemh0VHRBOWl6TGM9bXcwM3JHUGVhRlNiY0dCR0srNERUQT09
@@ -146,7 +146,7 @@ def panorama():
 
 
 def addActor(PAN, key, VSYS, ACTOR, BADACTORS):
-    '''Creates an address object then add the object to an Address group'''
+    """Creates an address object then add the object to an Address group"""
     # create an opener object
     opener = createOpener()
     # create the address object
@@ -162,7 +162,7 @@ def addActor(PAN, key, VSYS, ACTOR, BADACTORS):
 
 
 def remActor(PAN, key, VSYS, ACTOR, BADACTORS):
-    '''Remove an address object from the address-group then remove the addres object '''
+    """Remove an address object from the address-group then remove the addres object"""
     # create an opener object
     opener = createOpener()
     # first we remove him from the badactors group
@@ -181,7 +181,7 @@ def remActor(PAN, key, VSYS, ACTOR, BADACTORS):
 
 
 def commitConfig(PAN, key):
-    '''Save the changes made to the address objects'''
+    """Save the changes made to the address objects"""
     # create an opener object
     opener = createOpener()
     panReq = urllib2.Request('https://' + PAN + '//api/?type=commit&cmd=<commit></commit>&key=' + key)

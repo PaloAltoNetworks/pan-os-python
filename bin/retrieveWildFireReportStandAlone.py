@@ -43,8 +43,8 @@ import optparse  # for option parsing TODO: may not be needed in final script?
 
 
 def createOpener():
-    '''Create a generic opener for http
-    This is particularly helpful when there is a proxy server in line'''
+    """Create a generic opener for http
+    This is particularly helpful when there is a proxy server in line"""
     # Thanks to: http://www.decalage.info/en/python/urllib2noproxy
     proxy_handler = urllib2.ProxyHandler(HTTP_PROXY)
     opener = urllib2.build_opener(proxy_handler)
@@ -77,7 +77,7 @@ def retrieveWildFireData(apikey, serial, reportid):
 
 
 def main(argv=sys.argv):
-    '''Received parameters from the command line'''
+    """Received parameters from the command line"""
     # setup the option parser
     parser = optparse.OptionParser()
     parser.add_option('-K', '--apikey', dest="APIKEY", default=APIKEY,

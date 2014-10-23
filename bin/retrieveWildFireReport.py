@@ -42,8 +42,8 @@ import traceback
 
 
 def createOpener():
-    '''Create a generic opener for http
-    This is particularly helpful when there is a proxy server in line'''
+    """Create a generic opener for http
+    This is particularly helpful when there is a proxy server in line"""
     # Thanks to: http://www.decalage.info/en/python/urllib2noproxy
     proxy_handler = urllib2.ProxyHandler(HTTP_PROXY)
     opener = urllib2.build_opener(proxy_handler)
@@ -52,7 +52,7 @@ def createOpener():
 
 
 def getWildFireAPIKey(sessionKey):
-    '''Given a splunk sesionKey returns a clear text API Key from a splunk password container'''
+    """Given a splunk sesionKey returns a clear text API Key from a splunk password container"""
     # this is the folder name for the app and not the app's common name
     myapp = 'SplunkforPaloAltoNetworks'
     try:

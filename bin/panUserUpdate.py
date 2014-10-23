@@ -57,8 +57,8 @@ import traceback
 
 
 def createOpener():
-    '''Create a generic opener for http
-    This is particularly helpful when there is a proxy server in line'''
+    """Create a generic opener for http
+    This is particularly helpful when there is a proxy server in line"""
     # Thanks to: http://www.decalage.info/en/python/urllib2noproxy
     proxy_handler = urllib2.ProxyHandler(HTTP_PROXY)
     opener = urllib2.build_opener(proxy_handler)
@@ -67,7 +67,7 @@ def createOpener():
 
 
 def getCredentials(sessionKey):
-    '''Given a splunk sesionKey returns a clear text user name and password from a splunk password container'''
+    """Given a splunk sesionKey returns a clear text user name and password from a splunk password container"""
     # this is the folder name for the app and not the app's common name
     myapp = 'SplunkforPaloAltoNetworks'
     try:
@@ -87,7 +87,7 @@ def getCredentials(sessionKey):
 
 
 def getPanSerial(key, PAN):
-    '''Get the Serial Numbers from the Panorama'''
+    """Get the Serial Numbers from the Panorama"""
     #List device groups: List devices by named Device Group, obtain Serial Numbers (for &target=)
     panurl = 'https://' + PAN + '/api/?type=config&action=show&xpath=/config/devices/entry[@name=' + "'" + "localhost.localdomain" + "'" + ']/device-group/entry[@name=' + "'" + DEVICEGROUP + "'" + ']/devices&key=' + key
     # create a request object
@@ -115,7 +115,7 @@ def getPanSerial(key, PAN):
 
 
 def getKey(PAN, PANUSER, PANPASS):
-    ''' Logs into the PAN firewall and obtains a PAN session key'''
+    """ Logs into the PAN firewall and obtains a PAN session key"""
     try:
         # the url for the PAN
         panurl = 'https://' + PAN + '/api/?type=keygen&user=' + PANUSER + '&password=' + PANPASS
@@ -143,14 +143,14 @@ def getKey(PAN, PANUSER, PANPASS):
 
 
 def commitConfig(PAN, key):
-    '''Save the changes made to the address objects'''
+    """Save the changes made to the address objects"""
     panReq = urllib2.Request('https://' + PAN + '//api/?type=commit&cmd=<commit></commit>&key=' + key)
     req = opener.open(panReq)
     return 0
 
 
 def panoramaCommit(PAN, key):
-    '''Commit the currently loaded updates'''
+    """Commit the currently loaded updates"""
     panurl = 'https://' + PAN + '/api/?type=commit&action=all&cmd=<commit-all><shared-policy><device-group>' + DEVICEGROUP + '</device-group></shared-policy></commit-all>&key=' + key
     try:
         # the url for the PAN
@@ -166,7 +166,7 @@ def panoramaCommit(PAN, key):
 
 
 def panoramaAddLinkId(key, device, devicegroup, addrip):
-    '''Set dynamic address object (with LinkID) at Panorama level'''
+    """Set dynamic address object (with LinkID) at Panorama level"""
     #we will use the same name for linkid as the addrIp
     #Set dynamic address object (with LinkID) at Panorama level
     panurl = 'https://' + device + '/api/?type=config&action=set&xpath=/config/devices/entry[@name=' + "'" + 'localhost.localdomain' + "'" + ']/device-group/entry[@name=' + "'" + devicegroup + "'" + ']/address/entry[@name=' + "'" + addrip + "'" + ']&element=<dynamic>' + addrip + '</dynamic>&key=' + key
@@ -186,7 +186,7 @@ def panoramaAddLinkId(key, device, devicegroup, addrip):
 
 
 def panoramaMapIpToLinkId(key, device, results, serial):
-    '''Map IPs to correct link ID (No commit required)'''
+    """Map IPs to correct link ID (No commit required)"""
     register = ''
     for result in results:
         register = '<register><entry%20identifier=' + '"' + result['addrip'] + '"' + '%20ip=' + '"' + result[
@@ -209,7 +209,7 @@ def panoramaMapIpToLinkId(key, device, results, serial):
 
 
 def panoramaMapIpToUser(key, device, results, serial):
-    '''Map IPs to UserID'''
+    """Map IPs to UserID"""
     login = ''
     for result in results:
         login = '<login><entry%20name=' + '"' + result['addruser'] + '"' + '%20ip=' + '"' + result[
@@ -233,7 +233,7 @@ def panoramaMapIpToUser(key, device, results, serial):
 
 
 def panoramaUpdate(results, PAN, DEVICEGROUP):
-    '''Given search results, updates the PAN's device group with the addrip and addruser '''
+    """Given search results, updates the PAN's device group with the addrip and addruser """
     #PAN = '192.168.4.211'  Good catch Jeff Hillon PAN
     key = getKey(PAN, PANUSER, PANPASS)
     # create LinkIDs

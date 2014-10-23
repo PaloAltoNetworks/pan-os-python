@@ -63,7 +63,7 @@ logger = dcu.getLogger()
 
 
 def getCredentials(sessionKey):
-    '''Given a splunk sesionKey returns a clear text user name and password from a splunk password container'''
+    """Given a splunk sesionKey returns a clear text user name and password from a splunk password container"""
     # this is the folder name for the app and not the app's common name
     myapp = 'SplunkforPaloAltoNetworks'
     try:
@@ -93,7 +93,7 @@ def createOpener():
 
 
 def getKey(device, panuser, panpass):
-    ''' Logs into the PAN firewall and obtains a session key'''
+    """ Logs into the PAN firewall and obtains a session key"""
     # create an opener object
     opener = createOpener()
     try:
@@ -118,7 +118,7 @@ def getKey(device, panuser, panpass):
 
 
 def panorama():
-    '''Interact with PANorama'''
+    """Interact with PANorama"""
     #Set dynamic address object (with LinkID) at Panorama level, commit
     #https://pm-panorama/api/?type=config&action=set&xpath=/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='splunktastic']/address/entry[@name='test-add']&element=<dynamic>test1</dynamic>&key=LUFRPT14MW5xOEo1R09KVlBZNnpnemh0VHRBOWl6TGM9bXcwM3JHUGVhRlNiY0dCR0srNERUQT09
     #https://pm-panorama/api/?type=commit&action=all&cmd=<commit-all><shared-policy><device-group>splunktastic</device-group></shared-policy></commit-all>&key=LUFRPT14MW5xOEo1R09KVlBZNnpnemh0VHRBOWl6TGM9bXcwM3JHUGVhRlNiY0dCR0srNERUQT09
@@ -128,7 +128,7 @@ def panorama():
 
 
 def commitConfig(PAN, key):
-    '''Save the changes made to the address objects'''
+    """Save the changes made to the address objects"""
     # create an opener object
     opener = createOpener()
     panReq = urllib2.Request('https://' + PAN + '//api/?type=commit&cmd=<commit></commit>&key=' + key)

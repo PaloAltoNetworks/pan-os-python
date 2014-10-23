@@ -106,20 +106,15 @@ try:
     import pan.xapi
 
 except Exception, e:
-    stack = traceback.format_exc()
-    logger.warn(stack)
-    if isgetinfo:
-        splunk.Intersplunk.parseError(str(e))
-    results = splunk.Intersplunk.generateErrorResults(str(e))
-
-
+    logger.error("Error during import")
+    logger.error(traceback.format_exc())
 
 
 ## Major props to Ledion. copying his function, verbatim and then adding comments and traceback and logging
 ## http://blogs.splunk.com/2011/03/15/storing-encrypted-credentials/
 ## access the credentials in /servicesNS/nobody/<YourApp>/admin/passwords
 def getCredentials(sessionKey):
-    '''Given a splunk sesionKey returns a clear text user name and password from a splunk password container'''
+    """Given a splunk sesionKey returns a clear text user name and password from a splunk password container"""
     # this is the folder name for the app and not the app's common name
     myapp = 'SplunkforPaloAltoNetworks'
     try:
@@ -140,7 +135,7 @@ def getCredentials(sessionKey):
 
 
 def tag(device, add_remove, ip_addresses, tag):
-    '''Tag the ip address'''
+    """Tag the ip address"""
     ip_tag_sets = []
     for ip in ip_addresses:
         ip_tag_sets.append((ip, tag))
@@ -192,7 +187,7 @@ device = pandevice.PanDevice(PAN,
                              PANUSER,
                              PANPASS,
                              detect_device=True,
-)
+                             )
 
 ADDRESSES = []
 

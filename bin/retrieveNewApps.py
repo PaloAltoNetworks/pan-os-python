@@ -27,8 +27,8 @@ import xml.etree.ElementTree as ET  # for xml parsing
 
 
 def createOpener():
-    '''Create a generic opener for http
-    This is particularly helpful when there is a proxy server in line'''
+    """Create a generic opener for http
+    This is particularly helpful when there is a proxy server in line"""
     # Thanks to: http://www.decalage.info/en/python/urllib2noproxy
     proxy_handler = urllib2.ProxyHandler(HTTP_PROXY)
     opener = urllib2.build_opener(proxy_handler)

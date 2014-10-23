@@ -55,7 +55,7 @@ def createOpener():
 
 
 def getPanSerial(key, PAN):
-    '''Interact with PANorama'''
+    """Interact with PANorama"""
     #List device groups: List devices by named Device Group, obtain Serial Numbers (for &target=)
     panurl = 'https://' + PAN + '/api/?type=config&action=show&xpath=/config/devices/entry[@name=' + "'" + "localhost.localdomain" + "'" + ']/device-group/entry[@name=' + "'" + DEVICEGROUP + "'" + ']/devices&key=' + key
     #http opener
@@ -85,7 +85,7 @@ def getPanSerial(key, PAN):
 
 
 def getKey(PAN, PANUSER, PANPASS):
-    ''' Logs into the PAN firewall and obtains a PAN session key'''
+    """ Logs into the PAN firewall and obtains a PAN session key"""
     # create an opener object
     opener = createOpener()
     try:
@@ -112,7 +112,7 @@ def getKey(PAN, PANUSER, PANPASS):
 
 
 def commitConfig(PAN, key):
-    '''Save the changes made to the address objects'''
+    """Save the changes made to the address objects"""
     # create an opener object
     opener = createOpener()
     panReq = urllib2.Request('https://' + PAN + '//api/?type=commit&cmd=<commit></commit>&key=' + key)
@@ -135,7 +135,7 @@ def panoramaCommit(PAN, key):
 
 
 def panoramaAddLinkId(key, device, devicegroup, addrip, addr):
-    '''Set dynamic address object (with LinkID) at Panorama level'''
+    """Set dynamic address object (with LinkID) at Panorama level"""
     #we will use the same name for linkid as the addrIp
     #Set dynamic address object (with LinkID) at Panorama level
     panurl = 'https://' + device + '/api/?type=config&action=set&xpath=/config/devices/entry[@name=' + "'" + 'localhost.localdomain' + "'" + ']/device-group/entry[@name=' + "'" + devicegroup + "'" + ']/address/entry[@name=' + "'" + addr + "'" + ']&element=<dynamic>' + addrip + '</dynamic>&key=' + key
@@ -159,7 +159,7 @@ def panoramaAddLinkId(key, device, devicegroup, addrip, addr):
 
 
 def panoramaMapIpToLinkId(key, device, results, serial):
-    '''Map IPs to correct link ID (No commit required)'''
+    """Map IPs to correct link ID (No commit required)"""
     register = ''
     for result in results:
         register = register + '<register><entry%20identifier=' + '"' + result['addrip'] + '"' + '%20ip=' + '"' + result[
@@ -198,7 +198,7 @@ def panoramaMapIpToLinkId(key, device, results, serial):
 
 
 def panoramaMapIpToUser(key, device, results, serial):
-    '''Map IPs to UserID'''
+    """Map IPs to UserID"""
     login = ''
     for result in results:
         login = login + '<login><entry%20name=' + '"' + result['addruser'] + '"' + '%20ip=' + '"' + result[
@@ -226,7 +226,7 @@ def panoramaMapIpToUser(key, device, results, serial):
 
 
 def panorama():
-    '''test function'''
+    """test function"""
     addrip = '1.1.1.1'
     addruser = 'monzy'
     action = 'list'

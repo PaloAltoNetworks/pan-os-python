@@ -58,7 +58,7 @@ def createOpener():
 
 
 def getKey(PAN, PANUSER, PANPASS):
-    ''' Logs into the PAN firewall and obtains a session key'''
+    """ Logs into the PAN firewall and obtains a session key"""
     # create an opener object
     opener = createOpener()
     try:
@@ -83,7 +83,7 @@ def getKey(PAN, PANUSER, PANPASS):
 
 
 def addActor(PAN, key, VSYS, ACTOR, BADACTORS):
-    '''Creates an address object then add the object to an Address group'''
+    """Creates an address object then add the object to an Address group"""
     # create an opener object
     opener = createOpener()
     # create the address object
@@ -98,7 +98,7 @@ def addActor(PAN, key, VSYS, ACTOR, BADACTORS):
 
 
 def remActor(PAN, key, VSYS, ACTOR, BADACTORS):
-    '''Remove an address object from the address-group then remove the addres object '''
+    """Remove an address object from the address-group then remove the addres object """
     # create an opener object
     opener = createOpener()
     # first we remove him from the badactors group
@@ -113,7 +113,7 @@ def remActor(PAN, key, VSYS, ACTOR, BADACTORS):
 
 
 def commitConfig(PAN, key):
-    '''Save the changes made to the address objects'''
+    """Save the changes made to the address objects"""
     # create an opener object
     opener = createOpener()
     panReq = urllib2.Request('https://' + PAN + '//api/?type=commit&cmd=<commit></commit>&key=' + key)
@@ -122,7 +122,7 @@ def commitConfig(PAN, key):
 
 
 def panChange(result):
-    '''Handles the input from Splunk and starts the change process'''
+    """Handles the input from Splunk and starts the change process"""
     # Result may contain other info about configs. e.g. PAN device or Vsys etc.
     PAN = PANUSER = PANPASS = VSYS = 0
     if result.has_key('PAN'):
@@ -147,7 +147,7 @@ def panChange(result):
 
 
 def main(argv=sys.argv):
-    '''Received parameters from the command line'''
+    """Received parameters from the command line"""
     # setup the option parser
     parser = optparse.OptionParser()
     parser.add_option('-a', '--add', dest="ACTION", default="0",
