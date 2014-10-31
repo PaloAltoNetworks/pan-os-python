@@ -108,29 +108,28 @@ try:
 except Exception, e:
     logger.error("Error during import")
     logger.error(traceback.format_exc())
-
+    raise e
 
 ## Major props to Ledion. copying his function, verbatim and then adding comments and traceback and logging
 ## http://blogs.splunk.com/2011/03/15/storing-encrypted-credentials/
 ## access the credentials in /servicesNS/nobody/<YourApp>/admin/passwords
-def getCredentials(sessionKey):
+def get_credentials(session_key):
     """Given a splunk sesionKey returns a clear text user name and password from a splunk password container"""
     # this is the folder name for the app and not the app's common name
     myapp = 'SplunkforPaloAltoNetworks'
     try:
         # list all credentials
-        entities = entity.getEntities(['admin', 'passwords'], namespace=myapp, owner='nobody', sessionKey=sessionKey)
+        entities = entity.getEntities(['admin', 'passwords'], namespace=myapp, owner='nobody', sessionKey=session_key)
     except Exception, e:
-        stack = traceback.format_exc()
-        logger.warn(stack)
-        logger.warn("entity exception")
+        logger.error(traceback.format_exc())
+        logger.error("entity exception")
         raise Exception("Could not get %s credentials from splunk. Error: %s" % (myapp, str(e)))
     # return first set of credentials
     for i, c in entities.items():
         if c['username'] != 'wildfire_api_key':
             return c['username'], c['clear_password']
-    logger.warn(
-        "Attempted to tag ip, however, no credentials for firewall found. Try setting credentials in the SplunkforPaloAltoNetworks app set up screen.")
+    logger.warn("Attempted to tag ip, however, no credentials for firewall found. "
+                "Try setting credentials in the SplunkforPaloAltoNetworks app set up screen.")
     raise Exception("No credentials have been found")
 
 
@@ -156,31 +155,30 @@ if DEBUG:
     logger.setLevel(10)
 
 #parse the kwargs for ACTION, VSYS, PAN
-if kwargs.has_key('action'):
+if 'action' in kwargs:
     ACTION = kwargs['action']
-if kwargs.has_key('device'):
+if 'device' in kwargs:
     PAN = kwargs['device']
-if kwargs.has_key('vsys'):
+if 'vsys' in kwargs:
     VSYS = kwargs['vsys']
-if kwargs.has_key('group'):
+if 'group' in kwargs:
     TAG = kwargs['group']
-if kwargs.has_key('identifier'):
+if 'identifier' in kwargs:
     TAG = kwargs['identifier']
-if kwargs.has_key('tag'):
+if 'tag' in kwargs:
     TAG = kwargs['tag']
-if kwargs.has_key('field'):
+if 'field' in kwargs:
     field = kwargs['field']
 else:
     field = None
 
-# an empty dictionary. it will be used to hold system values
-settings = dict()
-# results contains the data from the search results and settings contains the sessionKey that we can use to talk to splunk
+# results contains the data from the search results and settings
+# contains the sessionKey that we can use to talk to splunk
 results, unused1, settings = splunk.Intersplunk.getOrganizedResults()
 # get the sessionKey
 sessionKey = settings['sessionKey']
 # get the user and password using the sessionKey
-PANUSER, PANPASS = getCredentials(sessionKey)
+PANUSER, PANPASS = get_credentials(sessionKey)
 
 device = pandevice.PanDevice(PAN,
                              443,

@@ -11,6 +11,7 @@
 # So if a rule operates on an Address Group, this scripts add/remove will impact
 # that rule/policy.
 ############################################
+
 ############################################
 # How to Use this script
 # in the example below, we are blocking all ip's returned by the search
@@ -24,7 +25,6 @@
 # Known issues:
 # Very limited error checking
 # Errors may not reported in the Splunk UI
-# Changes do not get implemented on Panorama (i am happy to work with someone to add this feature)
 ###########################################
 
 #############################
@@ -34,10 +34,10 @@
 # firewall IP. you can provide this via the device parameter
 PAN = '192.168.4.100'
 # admin account for the PAN device
-#PANUSER = 'admin'
+PANUSER = 'admin'
 # password for the admin user.
 # any special characters in the password must be URL/percent-encoded.
-#PANPASS = 'admin'
+PANPASS = 'admin'
 # Defaults to vsys1. vsys substition is not supported at this time
 VSYS = 'vsys1'
 # Name of the address group for bad actors
@@ -53,36 +53,33 @@ HTTP_PROXY = {}
 # certain of the ramifications of the changes
 #########################################################
 
-import splunk.Intersplunk  # so you can interact with Splunk
-import splunk.entity as entity  # for splunk config info
 import urllib2  # make http requests to PAN firewall
 import sys  # for system params and sys.exit()
+import os  # os.path
 import re  # regular expressions checks in PAN messages
-import splunk.mining.dcutils as dcu
 
-logger = dcu.getLogger()
+# Set python path to include app libs
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [os.path.join(current_path, 'lib')]
+sys.path[:0] = [os.path.join(current_path, 'lib', 'pan-python', 'lib')]
 
-## Major props to Ledion. copying his function, verbatim and then adding comments and traceback and logging
-## http://blogs.splunk.com/2011/03/15/storing-encrypted-credentials/
-## access the credentials in /servicesNS/nobody/<YourApp>/admin/passwords
-def getCredentials(sessionKey):
-    """Given a splunk sesionKey returns a clear text user name and password from a splunk password container"""
-    # this is the folder name for the app and not the app's common name
-    myapp = 'SplunkforPaloAltoNetworks'
-    try:
-        # list all credentials
-        entities = entity.getEntities(['admin', 'passwords'], namespace=myapp, owner='nobody', sessionKey=sessionKey)
-    except Exception, e:
-        stack = traceback.format_exc()
-        logger.warn(stack)
-        logger.warn("entity exception")
-        raise Exception("Could not get %s credentials from splunk. Error: %s" % (myapp, str(e)))
-    # return first set of credentials
-    for i, c in entities.items():
-        if c['username'] != 'wildfire_api_key':
-            return c['username'], c['clear_password']
-    logger.warn("No credentials")
-    raise Exception("No credentials have been found")
+from environment import run_by_splunk, init_splunk_environment, init_logging
+from environment import SPLUNK_HOME
+
+# Initialize the Splunk environment for connectivity to Splunk, and
+# restart this script.  If the environment is already initialized,
+# then continue by importing the splunk libraries.
+init_splunk_environment(SPLUNK_HOME)
+
+# Import Splunk libraries
+import splunk.Intersplunk  # so you can interact with Splunk
+import splunk.entity as entity  # for splunk config info
+
+import common
+
+
+# Configure root logger
+logger = init_logging()
 
 
 def createOpener():
@@ -191,65 +188,149 @@ def commitConfig(PAN, key):
 
 def block(result):
     key = getKey(PAN, PANUSER, PANPASS)
-    if ACTION == 'add':
+    if ACTION == "add":
         addActor(PAN, key, VSYS, str(result[result.keys()[0]]), BADACTORS)
-    elif ACTION == 'rem':
+    elif ACTION == "rem":
         remActor(PAN, key, VSYS, str(result[result.keys()[0]]), BADACTORS)
     else:
-        return ['bad action', key]
+        return ["bad action", key]
     return ["action submitted", key]
 
+def update_address_group(device, group, action="add", vsys="vsys1"):
+    pass
 
-args, kwargs = splunk.Intersplunk.getKeywordsAndOptions()
-#parse the kwargs for ACTION, VSYS, PAN
-if kwargs.has_key('action'):
-    ACTION = kwargs['action']
-if kwargs.has_key('device'):
-    PAN = kwargs['device']
-if kwargs.has_key('vsys'):
-    VSYS = kwargs['vsys']
-if kwargs.has_key('group'):
-    BADACTORS = kwargs['group']
 
-# an empty dictionary. it will be used to hold system values
-settings = dict()
-# results contains the data from the search results and settings contains the sessionKey that we can use to talk to splunk
-results, unused1, settings = splunk.Intersplunk.getOrganizedResults()
-# get the sessionKey
-sessionKey = settings['sessionKey']
-# get the user and password using the sessionKey
-PANUSER, PANPASS = getCredentials(sessionKey)
 
-try:
-    for result in results:
-        if (result.has_key('src_ip') \
-                    or result.has_key('dst_ip') \
-                    or result.has_key('ip') \
-                    or result.has_key('hostname') \
-                    or result.has_key('dst_hostname') \
-                    or result.has_key('dest_host') \
-                    or result.has_key('domain') \
-                    or result.has_key('clientip') ):
-            blockresult = block(result)
-            result["status"] = blockresult[0]
-            key = blockresult[1]
-        # for test purposes
-        elif (len(result) == 2) and result.has_key('test'):
-            result["status"] = ["this is the sessionKey. not printing the password :p " + sessionKey]
-        else:
-            result["status"] = 'empty or invalid field vlue'
 
-    #after all the addresses have been processed, commit the config
-    commitConfig(PAN, key)
-except Exception, e:
-    import traceback
+def main_from_splunk():
+    logger.warn("Going to parse args")
+    from pprint import pformat
+    logger.warn("args: %s" % pformat(sys.argv))
 
-    stack = traceback.format_exc()
-    if isgetinfo:
-        splunk.Intersplunk.parseError(str(e))
+    args, kwargs = splunk.Intersplunk.getKeywordsAndOptions()
+    if 'action' in kwargs:
+        ACTION = kwargs['action']
+    if 'device' in kwargs:
+        PAN = kwargs['device']
+    if 'vsys' in kwargs:
+        VSYS = kwargs['vsys']
+    if 'group' in kwargs:
+        BADACTORS = kwargs['group']
 
-    results = splunk.Intersplunk.generateErrorResults(str(e))
-    logger.warn(stack)
+    logger.warn("parsed args")
 
-# output results
-splunk.Intersplunk.outputResults(results)
+    # results contains the data from the search results and settings contains the sessionKey that we can use to talk to splunk
+    results, unused1, settings = splunk.Intersplunk.getOrganizedResults()
+    logger.warn("Got organized results")
+    # get the sessionKey
+    sessionKey = settings['sessionKey']
+    logger.warn("sessionKey: %s" % sessionKey)
+    # get the user and password using the sessionKey
+    logger.warn("going to get credentials")
+    PANUSER, PANPASS = getCredentials(sessionKey)
+
+    logger.warn("Got Credentials")
+    try:
+        for result in results:
+            if ('src_ip' in result
+               or 'dst_ip' in result
+               or 'ip' in result
+               or 'hostname' in result
+               or 'dst_hostname' in result
+               or 'dest_host' in result
+               or 'domain' in result
+               or 'clientip' in result):
+                blockresult = block(result)
+                result["status"] = blockresult[0]
+                key = blockresult[1]
+            # for test purposes
+            elif (len(result) == 2) and 'test' in result:
+                result["status"] = ["this is the sessionKey. not printing the password :p " + sessionKey]
+            else:
+                result["status"] = 'empty or invalid field vlue'
+
+        #after all the addresses have been processed, commit the config
+        commitConfig(PAN, key)
+    except Exception, e:
+        import traceback
+
+        stack = traceback.format_exc()
+        if isgetinfo:
+            splunk.Intersplunk.parseError(str(e))
+
+        results = splunk.Intersplunk.generateErrorResults(str(e))
+        logger.warn(stack)
+
+    # output results
+    splunk.Intersplunk.outputResults(results)
+
+# If run from CLI
+def main_from_cli(argv=sys.argv):
+    """Received parameters from the command line"""
+    import argparse
+    import logging
+    from splunk.clilib import cli_common, cli
+
+    global options
+
+    # Setup the argument parser
+    parser = argparse.ArgumentParser(description='Modify static address object on Palo Alto Networks firewall')
+
+    # Firewall related args
+    parser = common.add_firewall_cli_args(parser)
+
+    # Arguments related to this script
+    options_group = parser.add_argument_group('Options')
+    action_group = options_group.add_mutually_exclusive_group(required=True)
+    action_group.add_argument('-a', '--add', action='store_true', help="Add an address to an address object.")
+    action_group.add_argument('-r', '--remove', action='store_true', help="Remove an address to an address object.")
+    options_group.add_argument('-i', '--ip', dest="ip_address", default=ACTOR, help="IP Address to add/remove to group")
+    options_group.add_argument('-g', '--group', dest="group", default=BADACTORS, help="Address group to add/remove address to")
+    options_group.add_argument('-d', '--debug', action='store_true', default=False, help="Debug output")
+
+    options = parser.parse_args()
+
+    if options.debug:
+        logger.setLevel(logging.DEBUG)
+    logger.debug("Detected run from CLI, not Splunk")
+    sessionKey = cli.user_friendly_login(options.username, options.password)
+
+    username, password = common.get_firewall_credentials(sessionKey)
+
+    # get an authentication key
+    #key = getKey(options.PAN, options.PANUSER, options.PANPASS)
+    # add an address object
+    if options.action == 'add':
+        status = addActor(options.PAN,
+                          key,
+                          options.VSYS,
+                          options.ACTOR,
+                          options.BADACTORS)
+    #remove an address object
+    elif options.action == 'rem':
+        status = remActor(options.PAN,
+                          key,
+                          options.VSYS,
+                          options.ACTOR,
+                          options.BADACTORS)
+    elif (options.test == '1'):
+        logger.info("So you just want to see the test mode")
+        from pprint import pformat
+        logger.info("options: %s" % pformat(options))
+        logger.info("Thats all i got. Have a nice day!")
+        sys.exit(-1)
+    else:
+        print "Please specify an action of add or rem. e.g. to add an address"
+        print "panChange.py -a add -b 1.1.1.1"
+        print "Action must be either 'add' or 'rem' "
+        sys.exit(-1)
+    # save the config changes
+    commitConfig(options.PAN, key)
+    return 0
+
+
+if __name__ == "__main__":
+    if run_by_splunk():
+        main_from_splunk()
+    else:
+        main_from_cli()
