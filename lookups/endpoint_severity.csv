@@ -1,0 +1,9 @@
+severity_code,severity
+8,emergency
+9,alert
+10,critical
+11,error
+12,warning
+13,notice
+14,informational
+15,debug
