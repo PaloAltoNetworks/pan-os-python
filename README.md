@@ -11,11 +11,11 @@ Networks Firewall
 #### Latest Version ####
 
 * Splunk Version: 6.x
-* App Version: 4.1.3
-* Last Modified: Oct 2014
+* App Version: 4.2
+* Last Modified: Nov 2014
 * Authors:
-    * Monzy Merza - Splunk, Inc.
     * Brian Torres-Gil - Palo Alto Networks
+    * Monzy Merza - Splunk, Inc.
 
 #### Version Compatibility ####
 
@@ -95,36 +95,10 @@ If you have customized the built-in dashboards of a previous app version, then t
 
 If upgrading from 3.x, please read the __Upgrade Notes__ above.
 
-Version 4.1.3
+Version 4.2
 
-- Special commands (panblock, panupdate, pantag) now available from other apps
-- Fix issue with unknown lookup errors during search
-- Fix issue with meta scope and global namespace
-
-Version 4.1.2
-
-- Fix some Threat dashboard drilldowns 
-- Fix scope of CIM fields to remove conflict with some apps
-- Remove macros from datamodel that were causing slower acceleration
-
-Note: changes to datamodel may require the acceleration to be rebuilt before data will show up in the dashboards
-
-Version 4.1.1
-
-- Handle new fields in latest PAN-OS syslogs and WildFire reports
-- Significant improvements to indexing efficiency
-- Improved handling of Dynamic Address Group tagging
-- Improvements and minor updates for Splunk 6.1.x
-- Fix minor dashboard issues
-- Fix minor field parsing issue
-
-Version 4.1
-
-- PAN-OS Data model including acceleration
-- Data model accelerated dashboards (replaces TSIDX-based dashboards)
-- New command: `pantag` - tag IP addresses on the firewall into Dynamic Address Groups
-- IP Classification - add metadata to your CIDR blocks, classifying them as internet/external/dmz/datacenter/etc.
-- Applipedia change notifications and highlighting - know when Palo Alto Networks releases new application signatures and if those applications are on your network
+- New Palo Alto Networks [Advanced Endpoint Protection](http://media.paloaltonetworks.com/lp/traps/)
+- Support Palo Alto Networks [PAN-OS 6.1](https://www.paloaltonetworks.com/documentation/61/pan-os/newfeaturesguide.html)
 
 ## Installing from Git ##
 
