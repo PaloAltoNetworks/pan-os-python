@@ -65,7 +65,17 @@
       <saved source="all" match="PAN - WildFire" view="search" />
     </collection>
   </collection>
-  
+
+  <collection label="Endpoint">
+    <view name="endpoint_overview" />
+    <divider />
+    <collection label="Searches &amp; Reports">
+      <a href="search?q=search%20%60pan_endpoint%60">Search Endpoint Log Data</a>
+      <divider />
+      <saved source="all" match="PAN - Endpoint" view="search" />
+    </collection>
+  </collection>
+
   <collection label="Console">
     <view name="system_overview" />
     <view name="config_overview" />

@@ -51,7 +51,7 @@
   <row>
     <chart>
       <title>All WildFire Events by Category</title>
-      <searchString>| `tstats` count FROM datamodel="pan_logs" WHERE nodename="log.wildfire" $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.category | timechart values(count) by log.category</searchString>
+      <searchString>| `tstats` count FROM `node(log.wildfire)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.category | timechart values(count) by log.category</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -111,7 +111,7 @@
   <row>
     <table>
       <title>Possible Malware Traffic</title>
-      <searchString>| `tstats` count(traffic) FROM `node(log.traffic)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.traffic.dst_ip_port log.dst_ip log.dst_port log.src_ip log.user log.app | rename log.traffic.dst_ip_port AS ip_port | join type=inner ip_port [ | `tstats` count(log.wildfire_report) FROM datamodel="pan_logs" WHERE earliest=-1y latest=now nodename="log.wildfire_report" groupby log.wildfire.id log.wildfire_report.tcp_ip_port | rename log.wildfire_report.tcp_ip_port AS ip_port ] | dedup 1 log.src_ip log.user ip_port log.app | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View WildFire Report" | table _time log.src_ip log.user log.dst_ip log.dst_port log.app log.wildfire.id "Traffic Link" "WildFire Link" | rex mode=sed field=ip_port "s/,/:/" | rename log.src_ip AS Source | rename log.dst_ip AS "Dest IP" | rename log.dst_port AS "Dest Port" | rename log.user AS User | rename log.app AS Application | rename log.wildfire.id AS "WildFire Report ID" | sort -_time</searchString>
+      <searchString>| `tstats` count(traffic) FROM `node(log.traffic)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.traffic.dst_ip_port log.dst_ip log.dst_port log.src_ip log.user log.app | rename log.traffic.dst_ip_port AS ip_port | join type=inner ip_port [ | `tstats` count(wildfire_report) FROM datamodel="pan_wildfire_report" WHERE earliest=-1y latest=now nodename="wildfire_report" groupby wildfire_report.wildfire.id wildfire_report.tcp_ip_port | rename wildfire_report.tcp_ip_port AS ip_port ] | dedup 1 log.src_ip log.user ip_port log.app | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View WildFire Report" | table _time log.src_ip log.user log.dst_ip log.dst_port log.app wildfire.id "Traffic Link" "WildFire Link" | rex mode=sed field=ip_port "s/,/:/" | rename log.src_ip AS Source | rename log.dst_ip AS "Dest IP" | rename log.dst_port AS "Dest Port" | rename log.user AS User | rename log.app AS Application | rename wildfire.id AS "WildFire Report ID" | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

@@ -1,0 +1,5 @@
+log_subtype_code,log_subtype
+6,status
+7,event
+8,report
+9,heartbeat
