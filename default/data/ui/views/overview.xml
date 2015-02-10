@@ -2,12 +2,12 @@
   <label>Overview</label>
   <description/>
   <searchTemplate>`pan_index` | fillnull value="" | stats count by host sourcetype log_subtype action category</searchTemplate>
-  <earliestTime>rt-30s</earliestTime>
+  <earliestTime>rt-5m</earliestTime>
   <latestTime>rt</latestTime>
   <row>
     <single>
       <searchPostProcess>stats dc(host)</searchPostProcess>
-      <earliestTime>rt-30s</earliestTime>
+      <earliestTime>rt-5m</earliestTime>
       <latestTime>rt</latestTime>
       <option name="classField">None</option>
       <option name="underLabel">PAN Reporting</option>
@@ -15,7 +15,7 @@
     </single>
     <single>
       <searchPostProcess>stats sum(count) as sum count(count) | eval sum=if(isnull(sum),0,sum)</searchPostProcess>
-      <earliestTime>rt-30s</earliestTime>
+      <earliestTime>rt-5m</earliestTime>
       <latestTime>rt</latestTime>
       <option name="classField">None</option>
       <option name="underLabel">Total Events</option>
@@ -23,7 +23,7 @@
     </single>
     <single>
       <searchPostProcess>search action=block* OR action=deny | stats sum(count) as sum count(count) | eval sum=if(isnull(sum),0,sum)</searchPostProcess>
-      <earliestTime>rt-30s</earliestTime>
+      <earliestTime>rt-5m</earliestTime>
       <latestTime>rt</latestTime>
       <option name="classField">None</option>
       <option name="underLabel">Total Blocks</option>
@@ -31,7 +31,7 @@
     </single>
     <single>
       <searchPostProcess>search sourcetype="pan_traffic" category!="any" category!="private-ip-addresses" category!="not-resolved"  | sort -count | head 1 | stats values(category) as category count(category) | eval category=if(isnull(category),"---",category)</searchPostProcess>
-      <earliestTime>rt-30s</earliestTime>
+      <earliestTime>rt-5m</earliestTime>
       <latestTime>rt</latestTime>
       <option name="classField">None</option>
       <option name="underLabel">Top URL Category</option>
