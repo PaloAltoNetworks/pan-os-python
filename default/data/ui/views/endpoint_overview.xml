@@ -52,7 +52,6 @@
     </input>
   </fieldset>
   <row>
-    <panel>
       <chart>
         <title>Logs by Subtype</title>
         <searchString>| `tstats` count FROM `ep_node` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(_time log.log_subtype)` | timechart values(count) by log_subtype</searchString>
@@ -84,8 +83,6 @@
           </link>
         </drilldown>
       </chart>
-    </panel>
-    <panel>
       <chart>
         <title>Logs by Severity</title>
         <searchString>| `tstats` count FROM `ep_node` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(_time log.severity)` | timechart values(count) by severity</searchString>
@@ -117,10 +114,8 @@
           </link>
         </drilldown>
       </chart>
-    </panel>
   </row>
   <row>
-    <panel>
       <chart>
         <title>Targeted Applications</title>
         <searchString>| `tstats` count FROM `ep_node(log.event)` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(log.ProcessName)`</searchString>
@@ -152,8 +147,6 @@
           </link>
         </drilldown>
       </chart>
-    </panel>
-    <panel>
       <chart>
         <title>Targeted Machines</title>
         <searchString>| `tstats` count FROM `ep_node(log.event)` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(log.dhost)`</searchString>
@@ -185,8 +178,6 @@
               </link>
           </drilldown>
       </chart>
-    </panel>
-    <panel>
       <chart>
         <title>Targeted Users</title>
         <searchString>| `tstats` count FROM `ep_node(log.event)` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(log.user)`</searchString>
@@ -218,10 +209,8 @@
               </link>
           </drilldown>
       </chart>
-    </panel>
   </row>
   <row>
-    <panel>
       <chart>
         <title>Endpoint Module</title>
         <searchString>| `tstats` count FROM `ep_node(log.event)` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(log.epm)`</searchString>
@@ -253,8 +242,6 @@
               </link>
           </drilldown>
       </chart>
-    </panel>
-    <panel>
       <chart>
         <title>Action</title>
         <searchString>| `tstats` count FROM `ep_node(log.event)` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(log.PreventionMode)`</searchString>
@@ -286,10 +273,8 @@
               </link>
           </drilldown>
       </chart>
-    </panel>
   </row>
   <row>
-    <panel>
       <chart>
         <title>Heartbeats by Endpoint Server</title>
           <searchString>| `tstats` count FROM `ep_node(log.heartbeat)` $hostname$ `groupby(_time log.dhost)` | timechart values(count) by dhost</searchString>
@@ -303,6 +288,5 @@
               </link>
           </drilldown>
       </chart>
-    </panel>
   </row>
 </form>
