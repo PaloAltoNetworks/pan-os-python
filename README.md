@@ -11,8 +11,8 @@ Networks Firewall
 #### Latest Version ####
 
 * Splunk Version: 6.x
-* App Version: 4.2
-* Last Modified: Nov 2014
+* App Version: 4.2.1
+* Last Modified: Feb 2015
 * Authors:
     * Brian Torres-Gil - Palo Alto Networks
     * Monzy Merza - Splunk, Inc.
@@ -94,6 +94,14 @@ If you have customized the built-in dashboards of a previous app version, then t
 ## What's new in this version ##
 
 If upgrading from 3.x, please read the __Upgrade Notes__ above.
+
+Version 4.2.1
+
+- Fix Wildfire Report downloader and Applipedia New App check
+- Fix Wildfire Dashboard Drilldowns
+- Fix Threat Details Dashboard datamodel reference
+- Fix Endpoint Dashboard would not work on Splunk 6.0.x
+- Fix time range inconsistent on Overview Dashboard
 
 Version 4.2
 

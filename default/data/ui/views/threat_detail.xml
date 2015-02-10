@@ -33,7 +33,7 @@
     </input>
   </fieldset>
   <searchTemplate>| `tstats` values(sourcetype) as sourcetype values(log.threat_name) as threat_name sum(log.bytes) as bytes sum(log.elapsed_time) as duration
-        FROM datamodel="pan_logs" WHERE (nodename="log.traffic" OR (nodename="log.threat" $threat_name$)) $user$ $app$ $location$
+        FROM datamodel="pan_firewall" WHERE (nodename="log.traffic" OR (nodename="log.threat" $threat_name$)) $user$ $app$ $location$
         `groupby(log.session_id log.user log.server_ip log.application log.server_location)`
         | search sourcetype="pan_threat" bytes!="" server_location!="" user!="" | eval KB=bytes/1024</searchTemplate>
   <earliestTime>$earliest$</earliestTime>
