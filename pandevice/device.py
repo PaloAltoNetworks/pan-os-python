@@ -480,7 +480,7 @@ class PanDevice(object):
         Raises:
             PanXapiError:  Raised by pan.xapi module for API errors
         """
-        self._xapi.op(cmd='show object registered-address all', vsys=self.vsys, cmd_xml=True)
+        self._xapi.op(cmd='show object registered-ip all', vsys=self.vsys, cmd_xml=True)
         result = self._xapi.xml_root()
         matches = re.finditer(r"<entry[^>]*\"((?:[0-9]{1,3}\.){3}[0-9]{1,3})\".*?<tag>(.*?)</tag>", result, re.DOTALL)
         addresses = []
