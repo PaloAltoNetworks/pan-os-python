@@ -557,23 +557,42 @@ class PanDevice(object):
 
         pan_interface.pan_device = None
 
-    def refresh_interfaces(self, from_candidate_config=False):
-        if from_candidate_config:
-            retrieve = self._xapi.get
+    def refresh_interfaces(self):
+        self._xapi.op('show interface "all"', cmd_xml=True)
+        result = self._xapi.xml_python()
+        hw = {}
+        interfaces = {}
+        # Check if there is a response and result
+        try:
+            result = result['response']['result']
+        except KeyError as e:
+            raise err.PanDeviceError("Error reading response while refreshing interfaces", pan_device=self)
+        if result:
+            self._logger.debug("Refresh interfaces result: %s" % result)
+            # Create a hw dict with all the 'hw' info
+            hw_result = result.get('hw', {})
+            if hw_result is None:
+                return
+            hw_result = hw_result.get('entry', [])
+            for hw_entry in hw_result:
+                hw[hw_entry['name']] = hw_entry
+
+            if_result = result.get('ifnet', {})
+            if if_result is None:
+                return
+            if_result = if_result.get('entry', [])
+            for entry in if_result:
+                interface = PanInterface(name=entry['name'],
+                                         zone=entry['zone'],
+                                         router=entry['fwd'].split(":", 1)[1],
+                                         subnets=[entry['ip']],
+                                         state=hw.get(entry['name'], {}).get('state')
+                                         )
+                interfaces[entry['name']] = interface
         else:
-            retrieve = self._xapi.show
-        retrieve(pandevice.XPATH_INTERFACES)
-        interface_elements = self._xapi.element_result
-        if interface_elements is None:
             raise err.PanDeviceError("Could not refresh interfaces",
                                      pan_device=self)
-        retrieve(pandevice.XPATH_ZONE)
-        zone_elements = self._xapi.element_result
-        retrieve(pandevice.XPATH_DEFAULT_VROUTER_INTERFACES)
-        router_elements = self._xapi.element_result
-        for interface_element in interface_elements.findall(
-                "/interface/ethernet/entry"):
-            interface = PanInterface()
+        self.interfaces = interfaces
 
     def show_system_resources(self):
         self._xapi.op(cmd="show system resources", cmd_xml=True)
