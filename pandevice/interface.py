@@ -54,7 +54,9 @@ class PanInterface(object):
                  router="default",
                  pan_device=None,
                  apply_changes=False,
-                 parent=None):
+                 parent=None,
+                 state=None,
+                 ):
         """Initialize PanInterface"""
         self.name = name
         self.type = type
@@ -69,6 +71,7 @@ class PanInterface(object):
         self.pan_device = pan_device
         self._subnets = None
         self.subnets = subnets
+        self.state = state
         if tag is not None and not re.search(r"\.\d+$", self.name):
             self.name += "." + str(self.tag)
 
@@ -78,7 +81,15 @@ class PanInterface(object):
         return self.name
 
     def __repr__(self):
-        return "<%s %s>" % (self.__class__, self.name)
+        return "<%s name:%s state:%s type:%s mode:%s>" % ('PanInterface',
+                                                         self.name,
+                                                         self.state,
+                                                         self.type,
+                                                         self.mode,
+                                                         )
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
     # Properties
 
@@ -130,6 +141,12 @@ class PanInterface(object):
                                      % (self._zone,)
                 element = "<member>%s</member>" % (self.name,)
                 self.pan_device._xapi.set(xpath, element)
+
+    def is_up(self):
+        if self.state == "up":
+            return True
+        else:
+            return False
 
     def apply(self):
         if not self.pan_device:
