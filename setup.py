@@ -17,6 +17,7 @@ requirements = [
 
 test_requirements = [
     'pan-python',
+    'mock',
 ]
 
 setup(
@@ -49,6 +50,6 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    test_suite='tests',
+    test_suite='tests.mockfw',
     tests_require=test_requirements
 )
