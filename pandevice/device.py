@@ -639,16 +639,62 @@ class PanDevice(object):
         self._logger.debug("Set ntp-servers: primary:%s secondary:%s" % (primary, secondary))
         self.set_config_changed()
         xpath = pandevice.XPATH_DEVICECONFIG_SYSTEM
-        element = ''
-        if primary:
-            element += "<ntp-server-1>%s</ntp-server-1>" % (primary,)
-        else:
+        xpath61 = pandevice.XPATH_DEVICECONFIG_SYSTEM + "/ntp-servers"
+        # Path is different depending on PAN-OS 6.0 vs 6.1
+        # Try PAN-OS 6.1 first
+        element61 = ""
+
+        # First if primary is None, remove all NTP config
+        if primary is None:
+            # PAN-OS 6.1 and higher
+            self._xapi.delete(xpath61)
+            # PAN-OS 6.0 and lower
             self._xapi.delete(xpath + "/ntp-server-1")
-        if secondary:
-            element += "<ntp-server-2>%s</ntp-server-2>" % (secondary,)
-        else:
             self._xapi.delete(xpath + "/ntp-server-2")
-        self._xapi.set(xpath, element)
+            return
+
+        if primary:
+            element61 += "<ntp-server>" \
+                         "<primary-ntp-server>" \
+                         "<ntp-server-address>%s</ntp-server-address>" \
+                         "</primary-ntp-server>" % (primary,)
+        if secondary:
+            element61 += "<secondary-ntp-server>" \
+                         "<ntp-server-address>%s</ntp-server-address>" \
+                         "</secondary-ntp-server>" % (secondary,)
+        element61 += "</ntp-server>"
+
+        try:
+            # PAN-OS 6.1 and higher
+            self._xapi.edit(xpath61, element61)
+            self._logger.debug("Set ntp server for PAN-OS 6.1 or higher")
+        except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
+            try:
+                message = e.msg
+            except AttributeError:
+                message = e.message
+            if message.startswith("Could not get schema node for xpath"):
+                # PAN-OS 6.0 and lower
+                self._set_ntp_servers_60(primary, secondary=secondary)
+                self._logger.debug("Set ntp server for PAN-OS 6.0 or lower")
+            else:
+                self._logger.debug("Could not set NTP server, unknown PAN-OS version")
+                raise e
+
+    def _set_ntp_servers_60(self, primary, secondary=None):
+        """Set ntp servers on PAN-OS 6.0 and lower"""
+        xpath60 = pandevice.XPATH_DEVICECONFIG_SYSTEM
+        xpath60_pri = xpath60 + "/ntp-server-1"
+        xpath60_sec = xpath60 + "/ntp-server-2"
+        element60_pri = ""
+        element60_sec = ""
+
+        if primary:
+            element60_pri += "<ntp-server-1>%s</ntp-server-1>" % (primary,)
+        if secondary:
+            element60_sec += "<ntp-server-2>%s</ntp-server-2>" % (secondary,)
+        self._xapi.edit(xpath60_pri, element60_pri)
+        self._xapi.edit(xpath60_sec, element60_sec)
 
     def show_interface(self, interface):
         self.set_config_changed()
