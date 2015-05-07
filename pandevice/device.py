@@ -34,6 +34,7 @@ from decimal import Decimal
 # available at https://live.paloaltonetworks.com/docs/DOC-4762
 import pan.xapi
 import pan.commit
+from pan.config import PanConfig
 
 import pandevice
 
@@ -107,6 +108,8 @@ class PanDevice(object):
         self.commit_locked = False
         self.lock_before_change = False
         self.config_changed = False
+        self.connected_to_panorama = None
+        self.dg_in_sync = None
 
         self.xpath = self.__get_xpath_scope()
 
@@ -1013,39 +1016,62 @@ class PanDevice(object):
                       "running-config.xml"
                       "</from></config></load>")
 
-    def refresh_devices_from_panorama(self, devices, overwrite=False):
-        if issubclass(devices.__class__, PanDevice):
-            devices = [devices]
-        serials_by_host = {}
-        devicegroups_by_serial = {}
+    def refresh_devices_from_panorama(self, devices=()):
+        try:
+            # Test if devices is iterable
+            test_iterable = iter(devices)
+        except TypeError:
+            # This probably means a single device was passed in, not an iterable.
+            # Convert to an iterable with a single item.
+            devices = (devices,)
+        stats_by_ip = {}
+        stats_by_host = {}
+        devicegroup_stats_by_serial = {}
+        template_stats_by_serial = {}
         # Get the list of managed devices
         self._xapi.op("show devices all", cmd_xml=True)
-        dev_element = self._xapi.element_result
-        for device in dev_element.findall("./devices/entry"):
-            hostname = device.find('hostname').text
-            ip = device.find('ip-address').text
-            serial = device.find('serial').text
-            serials_by_host[ip] = serial
-            serials_by_host[hostname] = serial
-        for device in devices:
-            if device.serial is None or overwrite:
-                device.serial = serials_by_host.get(device.hostname)
-            if device.serial is None:
-                raise err.PanDeviceError("Can't determine serial for "
-                                         "device", pan_device=device)
-        # Get the list of device groups
-        from pprint import pformat
+        response = self._xapi.xml_python()
+        try:
+            for device in response['response']['result']['devices']['entry']:
+                stats_by_ip[device['ip-address']] = device
+                stats_by_host[device['ip-address']] = device
+                stats_by_host[device['hostname']] = device
+            # Populate the device objects with some of the data
+            for device in devices:
+                try:
+                    device.serial = stats_by_host[device.hostname]['serial']
+                    device.connected_to_panorama = stats_by_host[device.hostname]['connected']
+                except KeyError as e:
+                    raise err.PanDeviceError("Can't determine serial for "
+                                             "device", pan_device=device)
+        # Ignore errors because it means there are no devices
+        except KeyError:
+            return {}
 
+        # Get the list of device groups
         self._xapi.op("show devicegroups", cmd_xml=True)
         dg_element = self._xapi.element_result
         for dg in dg_element.findall("./devicegroups/entry"):
             for device in dg.findall("./devices/entry"):
-                serial = device.find('serial').text
-                name = dg.get('name')
-                devicegroups_by_serial[serial] = name
+                pconf = PanConfig(config=device)
+                stats = pconf.python()
+                stats = stats['entry']
+                serial = stats['serial']
+                dg_name = dg.get('name')
+                stats['devicegroup'] = dg_name
+                devicegroup_stats_by_serial[serial] = stats
+
+        # Set the device-group for each device
         for device in devices:
-            if device.devicegroup is None or overwrite:
-                device.devicegroup = devicegroups_by_serial.get(device.serial)
+            if device.serial is not None:
+                stats = devicegroup_stats_by_serial.get(device.serial)
+                if stats is not None:
+                    device.devicegroup = stats['devicegroup']
+                    sync_status = stats['shared-policy-status']
+                    device.dg_in_sync = True if sync_status == "In Sync" else False
+
+        return stats_by_ip
+
 
     # XXX: I don't think this method is even needed
     def create_device_group(self, devicegroup, devices=None):
@@ -1079,7 +1105,7 @@ class PanDevice(object):
                 device_refresh_needed = True
                 break
         if device_refresh_needed:
-            self.refresh_devices_from_panorama(devices, overwrite=True)
+            self.refresh_devices_from_panorama(devices)
         # All devices have serial numbers now, so start setting devicegroup
         for device in devices:
             # If the device was in a group, and that group changed, pull it out of the current group
