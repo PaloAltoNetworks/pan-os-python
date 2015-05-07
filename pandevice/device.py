@@ -179,6 +179,10 @@ class PanDevice(object):
                         raise err.PanInstallInProgress(e.msg,
                                                        pan_device=self.pan_device)
 
+                    elif e.msg.startswith("Session timed out"):
+                        raise err.PanSessionTimedOut(e.msg,
+                                                     pan_device=self.pan_device)
+
                     else:
                         raise err.PanDeviceXapiError(e.msg,
                                                      pan_device=self.pan_device)
