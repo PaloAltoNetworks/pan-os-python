@@ -38,7 +38,7 @@ except AttributeError as e:
     logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-class PanInterface(object):
+class Interface(object):
     """An interface on a Palo Alto Networks device
 
     This interface can be physical or logical (like a vlan)
@@ -57,7 +57,7 @@ class PanInterface(object):
                  parent=None,
                  state=None,
                  ):
-        """Initialize PanInterface"""
+        """Initialize Interface"""
         self.name = name
         self.type = type
         self.mode = mode
@@ -81,7 +81,7 @@ class PanInterface(object):
         return self.name
 
     def __repr__(self):
-        return "<%s name:%s state:%s type:%s mode:%s>" % ('PanInterface',
+        return "<%s name:%s state:%s type:%s mode:%s>" % ('Interface',
                                                          self.name,
                                                          self.state,
                                                          self.type,

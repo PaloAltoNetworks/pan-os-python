@@ -39,7 +39,7 @@ import pandevice
 
 # import other parts of this pandevice package
 import errors as err
-from interface import PanInterface
+from network import Interface
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -523,12 +523,12 @@ class PanDevice(object):
         self.update_dynamic_addresses([], addresses)
 
     def add_interface(self, pan_interface, apply=True):
-        """Apply a PanInterface object
+        """Apply a Interface object
         """
         self.set_config_changed()
-        if not issubclass(type(pan_interface), PanInterface):
+        if not issubclass(type(pan_interface), Interface):
             raise TypeError(
-                "set_interface argument must be of type PanInterface"
+                "set_interface argument must be of type Interface"
             )
 
         if pan_interface.parent:
@@ -586,7 +586,7 @@ class PanDevice(object):
                 return
             if_result = if_result.get('entry', [])
             for entry in if_result:
-                interface = PanInterface(name=entry['name'],
+                interface = Interface(name=entry['name'],
                                          zone=entry['zone'],
                                          router=entry['fwd'].split(":", 1)[1],
                                          subnets=[entry['ip']],
@@ -694,11 +694,11 @@ class PanDevice(object):
     def _interface_name(self, interface):
         if issubclass(interface.__class__, basestring):
             return interface
-        elif issubclass(interface.__class__, PanInterface):
+        elif issubclass(interface.__class__, Interface):
             return interface.name
         else:
             raise err.PanDeviceError(
-                "interface argument must be of type str or PanInterface",
+                "interface argument must be of type str or Interface",
                 pan_device=self
             )
 
