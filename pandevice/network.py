@@ -21,6 +21,7 @@ import re
 import logging
 import xml.etree.ElementTree as ET
 import pandevice
+from object import PanObject
 
 # import other parts of this pandevice package
 import errors as err
@@ -228,3 +229,46 @@ class Interface(object):
 
         return xpath, root
 
+
+class VirtualRouter(PanObject):
+
+    def __init__(self,
+                 name="default",
+                 interfaces=(),
+                 vsys="vsys1",
+                 ):
+        super(VirtualRouter, self).__init__(name=name)
+        self.interfaces = list(interfaces)
+        self.vsys = vsys
+
+    def xpath(self):
+        return str(self.parent.xpath()) + "/network" + "/virtual-router/entry[@name='%s']" % self.name
+
+
+class StaticRoute(PanObject):
+
+    def __init__(self,
+                 name,
+                 destination,
+                 interface,
+                 nexthop,
+                 ):
+        super(StaticRoute, self).__init__(name=name)
+        self.destination = destination
+        self.interface = interface
+        self.nexthop = nexthop
+
+    def xpath(self):
+        return str(self.parent.xpath()) + "/routing-table/ip/static-route/entry[@name='%s']" % self.name
+
+    def element(self):
+        element = ("<entry name=\"" + self.name + "\">"
+                   "<nexthop>"
+                   "<ip-address>" + self.nexthop + "</ip-address>"
+                   "</nexthop>"
+                   )
+        if self.interface is not None:
+            element += "<interface>%s</interface>" % self.interface.name
+        element += "<metric>10</metric>" \
+                   "<destination>%s</destination></entry>" % self.destination
+        return element

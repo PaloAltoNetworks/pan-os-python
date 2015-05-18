@@ -9,13 +9,13 @@ Tests for `pandevice` module.
 """
 
 from pandevice import device
-from pandevice.network import Interface
-import pan.xapi
+from pandevice import network
 
 import expect
 
 import mock
 import unittest
+import logging
 
 from credentials import TESTRAMA_HOSTNAME, TESTRAMA_USERNAME, TESTRAMA_PASSWORD
 from credentials import TESTFW_HOSTNAME, TESTFW_USERNAME, TESTFW_PASSWORD
@@ -24,6 +24,8 @@ from credentials import TESTFW_HOSTNAME, TESTFW_USERNAME, TESTFW_PASSWORD
 class TestPandevice(unittest.TestCase):
 
     def setUp(self):
+
+        logging.basicConfig(level=7)
 
         # Get current test (in string with format):
         #   tests.test_pandevice.TestPandevice.test_refresh_interfaces_mock
@@ -65,18 +67,18 @@ class TestPandevice(unittest.TestCase):
     def test_refresh_interfaces(self):
         # TODO: Set interfaces before refreshing them
         self.d.refresh_interfaces()
-        expected = {'ethernet1/1': Interface(name="ethernet1/1",
-                                                zone="untrust",
-                                                router="default",
-                                                subnets=["10.5.5.1/24"],
-                                                state="up",
-                                                ),
-                    'ethernet1/2': Interface(name="ethernet1/2",
-                                                zone="trust",
-                                                router="default",
-                                                subnets=["10.6.6.1/24"],
-                                                state="up",
-                                                ),
+        expected = {'ethernet1/1': network.Interface(name="ethernet1/1",
+                                                     zone="untrust",
+                                                     router="default",
+                                                     subnets=["10.5.5.1/24"],
+                                                     state="up",
+                                                     ),
+                    'ethernet1/2': network.Interface(name="ethernet1/2",
+                                                     zone="trust",
+                                                     router="default",
+                                                     subnets=["10.6.6.1/24"],
+                                                     state="up",
+                                                     ),
                     }
         self.assertDictEqual(self.d.interfaces, expected, "Interfaces dictionary is incorrect\nExpected: %s\n     Got: %s" % (expected, self.d.interfaces))
 
@@ -86,20 +88,27 @@ class TestPandevice(unittest.TestCase):
             return_value=expect.op_show_interfaces_all
         )
         self.d.refresh_interfaces()
-        expected = {'ethernet1/1': Interface(name="ethernet1/1",
-                                                zone="untrust",
-                                                router="default",
-                                                subnets=["10.5.5.1/24"],
-                                                state="up",
-                                                ),
-                    'ethernet1/2': Interface(name="ethernet1/2",
-                                                zone="trust",
-                                                router="default",
-                                                subnets=["10.6.6.1/24"],
-                                                state="down",
-                                                ),
+        expected = {'ethernet1/1': network.Interface(name="ethernet1/1",
+                                                     zone="untrust",
+                                                     router="default",
+                                                     subnets=["10.5.5.1/24"],
+                                                     state="up",
+                                                     ),
+                    'ethernet1/2': network.Interface(name="ethernet1/2",
+                                                     zone="trust",
+                                                     router="default",
+                                                     subnets=["10.6.6.1/24"],
+                                                     state="down",
+                                                     ),
                     }
         self.assertDictEqual(self.d.interfaces, expected, "Interfaces dictionary is incorrect\nExpected: %s\n     Got: %s" % (expected, self.d.interfaces))
+
+    def test_static_routes(self):
+        vr = network.VirtualRouter()
+        self.d.add(vr)
+        route = vr.add(network.StaticRoute("Default", "0.0.0.0/0", None, "10.5.5.2"))
+        route.create()
+        route.delete()
 
 
 if __name__ == '__main__':
