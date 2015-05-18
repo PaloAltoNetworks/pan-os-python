@@ -69,3 +69,6 @@ class PanCommitNotNeeded(PanDeviceError):
 
 class PanSessionTimedOut(PanDeviceXapiError):
     pass
+
+class PanDeviceNotSet(PanDeviceError):
+    pass

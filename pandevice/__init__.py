@@ -33,6 +33,10 @@ if not hasattr(logging, 'NullHandler'):
 
 
 # XPaths
+XPATH_SHARED = "/config/shared"
+XPATH_DEVICE = "/config/devices/entry[@name='localhost.localdomain']"
+XPATH_NETWORK = XPATH_DEVICE + "/network"
+
 XPATH_INTERFACES = "/config/devices/entry[@name='localhost.localdomain']/network/interface"
 XPATH_ETHERNET = "/config/devices/entry[@name='localhost.localdomain']/network/interface/ethernet"
 XPATH_VLAN = "/config/devices/entry[@name='localhost.localdomain']/network/vlan"

@@ -41,12 +41,13 @@ import pandevice
 # import other parts of this pandevice package
 import errors as err
 from network import Interface
+from object import PanObject
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-class PanDevice(object):
+class PanDevice(PanObject):
     """A Palo Alto Networks device
 
     The device can be of any type (currently supported devices are firewall
@@ -82,6 +83,7 @@ class PanDevice(object):
                  timeout=120,
                  interval=.5):
         """Initialize PanDevice"""
+        super(PanDevice, self).__init__()
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
@@ -111,7 +113,7 @@ class PanDevice(object):
         self.connected_to_panorama = None
         self.dg_in_sync = None
 
-        self.xpath = self.__get_xpath_scope()
+        self._xpath = self.__get_xpath_scope()
 
         if detect_device:
             self.set_device_by_detection()
@@ -223,6 +225,9 @@ class PanDevice(object):
                 )
         return self._xapi_private
 
+    def xpath(self):
+        return self._xpath
+
     def set_config_changed(self):
         if self.lock_before_change:
             if not self.config_locked:
@@ -236,7 +241,6 @@ class PanDevice(object):
                                             pan_device=self)
                 """
         self.config_changed = True
-
 
     def set_device_by_detection(self):
         """Set instance variables to detected values
@@ -254,7 +258,7 @@ class PanDevice(object):
             self.is_panorama = True
         else:
             self.is_panorama = False
-        self.xpath = self.__get_xpath_scope()
+        self._xpath = self.__get_xpath_scope()
 
     def __get_xpath_scope(self):
         """Return the XPath root for the current device
@@ -267,19 +271,17 @@ class PanDevice(object):
             A string containing an XPath to be used as the root for
             other API calls
         """
-        xpath_vsys = "/config/devices/entry/vsys/entry[@name='%s']"
-        xpath_devicegroup = "/config/devices/entry/" \
-                            "device-group/entry[@name='%s']"
+        xpath_device = "/config/devices/entry[@name='localhost.localdomain']"
+        xpath_vsys = xpath_device + "/vsys/entry[@name='%s']"
+        xpath_devicegroup = xpath_device + "device-group/entry[@name='%s']"
         xpath_shared = "/config/shared"
 
         if self.devicegroup:
             return xpath_devicegroup % self.devicegroup
         elif self.is_panorama:
             return xpath_shared
-        elif self.vsys:
-            return xpath_vsys % self.vsys
         else:
-            return xpath_shared
+            return xpath_device
 
     def _retrieve_api_key(self):
         """Return an API key for a username and password
