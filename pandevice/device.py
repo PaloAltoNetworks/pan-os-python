@@ -659,7 +659,7 @@ class PanDevice(PanObject):
             return
 
         if primary:
-            element61 += "<ntp-server>" \
+            element61 += "<ntp-servers>" \
                          "<primary-ntp-server>" \
                          "<ntp-server-address>%s</ntp-server-address>" \
                          "</primary-ntp-server>" % (primary,)
@@ -667,7 +667,7 @@ class PanDevice(PanObject):
             element61 += "<secondary-ntp-server>" \
                          "<ntp-server-address>%s</ntp-server-address>" \
                          "</secondary-ntp-server>" % (secondary,)
-        element61 += "</ntp-server>"
+        element61 += "</ntp-servers>"
 
         try:
             # PAN-OS 6.1 and higher
