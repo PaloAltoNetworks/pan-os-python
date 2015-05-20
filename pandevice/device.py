@@ -591,12 +591,16 @@ class PanDevice(PanObject):
                 return
             if_result = if_result.get('entry', [])
             for entry in if_result:
+                try:
+                    router = entry['fwd'].split(":", 1)[1]
+                except IndexError:
+                    router = entry['fwd']
                 interface = Interface(name=entry['name'],
-                                         zone=entry['zone'],
-                                         router=entry['fwd'].split(":", 1)[1],
-                                         subnets=[entry['ip']],
-                                         state=hw.get(entry['name'], {}).get('state')
-                                         )
+                                      zone=entry['zone'],
+                                      router=router,
+                                      subnets=[entry['ip']],
+                                      state=hw.get(entry['name'], {}).get('state')
+                                      )
                 interfaces[entry['name']] = interface
         else:
             raise err.PanDeviceError("Could not refresh interfaces",
