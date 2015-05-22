@@ -75,6 +75,8 @@ class Interface(object):
         self.state = state
         if tag is not None and not re.search(r"\.\d+$", self.name):
             self.name += "." + str(self.tag)
+        if tag is None and re.search(r"\.\d+$", self.name):
+            self.tag = self.name.split(".")[1]
 
     # Builtins
 
@@ -82,12 +84,13 @@ class Interface(object):
         return self.name
 
     def __repr__(self):
-        return "<%s name:%s state:%s type:%s mode:%s>" % ('Interface',
-                                                         self.name,
-                                                         self.state,
-                                                         self.type,
-                                                         self.mode,
-                                                         )
+        return "<%s name:%s state:%s type:%s mode:%s zone:%s>" % ('Interface',
+                                                                  self.name,
+                                                                  self.state,
+                                                                  self.type,
+                                                                  self.mode,
+                                                                  self.zone,
+                                                                  )
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
