@@ -252,9 +252,9 @@ class StaticRoute(PanObject):
 
     def __init__(self,
                  name,
-                 destination,
-                 interface,
-                 nexthop,
+                 destination=None,
+                 interface=None,
+                 nexthop=None,
                  ):
         super(StaticRoute, self).__init__(name=name)
         self.destination = destination
@@ -271,7 +271,7 @@ class StaticRoute(PanObject):
                    "</nexthop>"
                    )
         if self.interface is not None:
-            element += "<interface>%s</interface>" % self.interface.name
+            element += "<interface>%s</interface>" % self.interface
         element += "<metric>10</metric>" \
                    "<destination>%s</destination></entry>" % self.destination
         return element
