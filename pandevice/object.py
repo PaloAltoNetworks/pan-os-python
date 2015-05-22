@@ -1,11 +1,21 @@
 __author__ = 'btorres-gil'
 
+import xml.etree.ElementTree as ET
+import logging
+
 import device
 import errors as err
+
+# set logging to nullhandler to prevent exceptions if logging not enabled
+logger = logging.getLogger(__name__)
 
 
 # PanObject type
 class PanObject(object):
+
+    XPATH = "/config"
+    ENTRY = "/entry[@name='%s']"
+    MEMBER = "/member[text()='%s']"
 
     def __init__(self, name=None):
         self.name = name
@@ -29,7 +39,7 @@ class PanObject(object):
         return self.pop(index)  # Just remove the first child that matches the name
 
     def xpath(self):
-        return "/"
+        return self.XPATH
 
     def element(self):
         return "<entry name=\"%s\"></entry>" % self.name

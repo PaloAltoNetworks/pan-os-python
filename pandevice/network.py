@@ -235,6 +235,8 @@ class Interface(object):
 
 class VirtualRouter(PanObject):
 
+    XPATH = "/network/virtual-router"
+
     def __init__(self,
                  name="default",
                  interfaces=(),
@@ -245,10 +247,12 @@ class VirtualRouter(PanObject):
         self.vsys = vsys
 
     def xpath(self):
-        return str(self.parent.xpath()) + "/network" + "/virtual-router/entry[@name='%s']" % self.name
+        return str(self.parent.xpath()) + self.XPATH + self.ENTRY % self.name
 
 
 class StaticRoute(PanObject):
+
+    XPATH = "/routing-table/ip/static-route"
 
     def __init__(self,
                  name,
@@ -262,7 +266,7 @@ class StaticRoute(PanObject):
         self.nexthop = nexthop
 
     def xpath(self):
-        return str(self.parent.xpath()) + "/routing-table/ip/static-route/entry[@name='%s']" % self.name
+        return str(self.parent.xpath()) + self.XPATH + self.ENTRY % self.name
 
     def element(self):
         element = ("<entry name=\"" + self.name + "\">"
