@@ -17,20 +17,16 @@ class PanObject(object):
         self.children.append(child)
         return child
 
-    def remove(self, index):
-        child = self.children[index]
+    def pop(self, index):
+        child = self.children.pop(index)
         child.parent = None
-        self.children.remove(index)
         return child
 
     def remove_by_name(self, name, cls=None):
         index = PanObject.find(self.children, name, cls)
         if index is None:
             return None
-        child = self.children[index]
-        child.parent = None
-        self.children.remove(index)
-        return child  # Just remove the first child that matches the name
+        return self.pop(index)  # Just remove the first child that matches the name
 
     def xpath(self):
         return "/"
@@ -48,6 +44,8 @@ class PanObject(object):
 
     def delete(self):
         self.pandevice()._xapi.delete(self.xpath())
+        if self.parent is not None:
+            self.parent.remove_by_name(self.name, type(self))
 
     def pandevice(self):
         if issubclass(self.__class__, device.PanDevice):
@@ -62,7 +60,7 @@ class PanObject(object):
     def find(cls, list_of_panobjects, name, class_type=None):
         if class_type is None:
             class_type = cls
-        indexes = [i for i, child in enumerate(list_of_panobjects) if child.name == name and issubclass(class_type, child)]
+        indexes = [i for i, child in enumerate(list_of_panobjects) if child.name == name and issubclass(type(child), class_type)]
         for index in indexes:
             return index  # Just return the first index that matches the name
         return None
