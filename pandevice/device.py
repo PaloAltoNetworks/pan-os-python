@@ -338,28 +338,31 @@ class PanDevice(PanObject):
         """
 
         self._xapi.op(cmd="<show><system><info></info></system></show>")
-        system_info = self._xapi.xml_python(True)
+        pconf = PanConfig(self._xapi.element_result)
+        system_info = pconf.python()
+        self._logger.debug("Systeminfo: %s" % system_info)
         if not system_info:
             error_msg = 'Cannot detect device type, unable to get system info'
             self._logger.error(error_msg)
             raise err.PanDeviceError(error_msg, pan_device=self)
 
         if not all_info:
-            version = system_info['system']['sw-version']
-            model = system_info['system']['model']
-            serial = system_info['system']['serial']
+            version = system_info['result']['system']['sw-version']
+            model = system_info['result']['system']['model']
+            serial = system_info['result']['system']['serial']
             return version, model, serial
         else:
-            return system_info
+            return system_info['result']
 
-    def version(self):
+    def refresh_version(self):
         """Get version of PAN-OS
 
         returns:
             version of PAN-OS
         """
         system_info = self.system_info()
-        return system_info[0]
+        self.version = system_info[0]
+        return self.version
 
     def add_address_object(self, name, address, description=''):
         """Add/update an ip-netmask type address object to the configuration
@@ -418,7 +421,9 @@ class PanDevice(PanObject):
         # and raise an exception on error
         address_xpath = self.xpath + "/address"
         self._xapi.get(xpath=address_xpath)
-        return self._xapi.xml_python(True)
+        pconf = PanConfig(self._xapi.element_result)
+        response = pconf.python()
+        return response['result']
 
     def update_dynamic_addresses(self, register, unregister):
         """Add/update the registered addresses
@@ -568,25 +573,26 @@ class PanDevice(PanObject):
 
     def refresh_interfaces(self):
         self._xapi.op('show interface "all"', cmd_xml=True)
-        result = self._xapi.xml_python()
+        pconf = PanConfig(self._xapi.element_root)
+        response = pconf.python()
         hw = {}
         interfaces = {}
         # Check if there is a response and result
         try:
-            result = result['response']['result']
+            response = response['response']['result']
         except KeyError as e:
             raise err.PanDeviceError("Error reading response while refreshing interfaces", pan_device=self)
-        if result:
-            self._logger.debug("Refresh interfaces result: %s" % result)
+        if response:
+            self._logger.debug("Refresh interfaces result: %s" % response)
             # Create a hw dict with all the 'hw' info
-            hw_result = result.get('hw', {})
+            hw_result = response.get('hw', {})
             if hw_result is None:
                 return
             hw_result = hw_result.get('entry', [])
             for hw_entry in hw_result:
                 hw[hw_entry['name']] = hw_entry
 
-            if_result = result.get('ifnet', {})
+            if_result = response.get('ifnet', {})
             if if_result is None:
                 return
             if_result = if_result.get('entry', [])
@@ -710,7 +716,9 @@ class PanDevice(PanObject):
         interface_name = self._interface_name(interface)
 
         self._xapi.op("<show><interface>%s</interface></show>" % (interface_name,))
-        return self._xapi.xml_python(True)
+        pconf = PanConfig(self._xapi.element_result)
+        response = pconf.python()
+        return response['result']
 
     @staticmethod
     def _convert_if_int(string):
@@ -730,7 +738,9 @@ class PanDevice(PanObject):
         interface_name = self._interface_name(interface)
 
         self._xapi.op("<show><counter><interface>%s</interface></counter></show>" % (interface_name,))
-        counters = self._xapi.xml_python(True)
+        pconf = PanConfig(self._xapi.element_result)
+        response = pconf.python()
+        counters = response['result']
         if counters:
             entry = {}
             # Check for entry in ifnet
@@ -759,7 +769,9 @@ class PanDevice(PanObject):
 
     def pending_changes(self):
         self._xapi.op(cmd="check pending-changes", cmd_xml=True)
-        return self._xapi.xml_python(True)
+        pconf = PanConfig(self._xapi.element_result)
+        response = pconf.python()
+        return response['result']
 
     def commit(self, sync=False, exception=False, cmd=None):
         self._logger.debug("Commit initiated on device: %s" % (self.hostname,))
@@ -829,7 +841,9 @@ class PanDevice(PanObject):
         self.config_locked = False
         self.commit_locked = False
         if sync:
-            job = self._xapi.xml_python(True)
+            pconf = PanConfig(self._xapi.element_result)
+            response = pconf.python()
+            job = response['result']
             if job is None:
                 if exception:
                     raise err.PanCommitNotNeeded("Commit not needed",
@@ -1036,7 +1050,8 @@ class PanDevice(PanObject):
         template_stats_by_serial = {}
         # Get the list of managed devices
         self._xapi.op("show devices all", cmd_xml=True)
-        response = self._xapi.xml_python()
+        pconf = PanConfig(self._xapi.element_root)
+        response = pconf.python()
         try:
             for device in response['response']['result']['devices']['entry']:
                 stats_by_ip[device['ip-address']] = device
