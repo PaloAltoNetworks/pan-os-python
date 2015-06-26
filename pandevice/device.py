@@ -28,6 +28,7 @@ import re
 import logging
 import inspect
 import xml.etree.ElementTree as ET
+import time
 from decimal import Decimal
 
 # import Palo Alto Networks api modules
@@ -42,6 +43,7 @@ import pandevice
 import errors as err
 from network import Interface
 from object import PanObject
+from updater import Updater
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -118,6 +120,12 @@ class PanDevice(PanObject):
 
         if detect_device:
             self.set_device_by_detection()
+
+        # Create an updater subsystem
+        self.updater = Updater(self)
+
+        # State variables
+        self.version = None
 
 
     class XapiWrapper(pan.xapi.PanXapi):
@@ -1159,3 +1167,52 @@ class PanDevice(PanObject):
                     "<entry name='%s'/>" % (device.serial,)
                 )
                 device.devicegroup = devicegroup
+
+    def syncjob(self, response, interval=0.5):
+        """Block until job completes and return result
+
+        response: XML response tag from firewall when job is created
+
+        :returns True if job completed successfully, False if not
+        """
+        if interval is not None:
+            try:
+                interval = float(interval)
+                if interval < 0:
+                    raise ValueError
+            except ValueError:
+                raise pan.xapi.PanXapiError('Invalid interval: %s' % interval)
+
+        job = response.find('./result/job')
+        if job is None:
+            return False
+        job = job.text
+
+        self._logger.debug('syncing job: %s', job)
+
+        cmd = 'show jobs id "%s"' % job
+        start_time = time.time()
+
+        while True:
+            try:
+                self.xapi.op(cmd=cmd, cmd_xml=True)
+            except pan.xapi.PanXapiError as msg:
+                raise pan.xapi.PanXapiError('commit %s: %s' % (cmd, msg))
+
+            path = './result/job/status'
+            status = self.xapi.element_root.find(path)
+            if status is None:
+                raise pan.xapi.PanXapiError('no status element in ' +
+                                   "'%s' response" % cmd)
+            if status.text == 'FIN':
+                return True
+
+            self._logger.debug('job %s status %s', job, status.text)
+
+            if (self.timeout is not None and self.timeout != 0 and
+                        time.time() > start_time + self.timeout):
+                raise pan.xapi.PanXapiError('timeout waiting for ' +
+                                   'job %s completion' % job)
+
+            self._logger.debug('sleep %.2f seconds', interval)
+            time.sleep(interval)

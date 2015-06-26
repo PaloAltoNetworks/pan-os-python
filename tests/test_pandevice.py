@@ -110,6 +110,10 @@ class TestPandevice(unittest.TestCase):
         route.create()
         route.delete()
 
+    def test_updater(self):
+        #result = self.d.updater.download("6.1.0", sync=True)
+        result = self.d.updater.check()
+
 
 if __name__ == '__main__':
     unittest.main()
