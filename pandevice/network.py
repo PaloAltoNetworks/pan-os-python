@@ -139,12 +139,12 @@ class Interface(object):
                                      "@name='%s']/network/layer3/" \
                                      "member[text()='%s']" \
                                      % (old_zone, self.name)
-                self.pan_device._xapi.delete(xpath)
+                self.pan_device.xapi.delete(xpath)
             if self._zone is not None:
                 xpath = pandevice.XPATH_ZONE + "/entry[@name='%s']/network/layer3" \
                                      % (self._zone,)
                 element = "<member>%s</member>" % (self.name,)
-                self.pan_device._xapi.set(xpath, element)
+                self.pan_device.xapi.set(xpath, element)
 
     def is_up(self):
         if self.state == "up":
@@ -158,18 +158,18 @@ class Interface(object):
         self.pan_device.set_config_changed()
         # apply the interface
         xpath, element = self._xpath()
-        self.pan_device._xapi.edit(xpath, ET.tostring(element))
+        self.pan_device.xapi.edit(xpath, ET.tostring(element))
         # put it in a zone
         if self.zone:
             xpath = pandevice.XPATH_ZONE + "/entry[@name='%s']/network/layer3" \
                                  % (self.zone,)
             element = "<member>%s</member>" % (self.name,)
-            self.pan_device._xapi.set(xpath, element)
+            self.pan_device.xapi.set(xpath, element)
         # set the virtual router
         if self.router:
             xpath = pandevice.XPATH_DEFAULT_VROUTER_INTERFACES
             element = "<member>%s</member>" % (self.name,)
-            self.pan_device._xapi.set(xpath, element)
+            self.pan_device.xapi.set(xpath, element)
 
     def delete(self):
         if not self.pan_device:
@@ -179,16 +179,16 @@ class Interface(object):
         if self.router:
             xpath = pandevice.XPATH_DEFAULT_VROUTER_INTERFACES + "/member[text()='%s']" \
                                                        % (self.name,)
-            self.pan_device._xapi.delete(xpath)
+            self.pan_device.xapi.delete(xpath)
         # remove the interface from the zone
         if self.zone:
             xpath = pandevice.XPATH_ZONE + "/entry[@name='%s']/network/layer3/member[" \
                                  "text()='%s']" \
                                  % (self.zone, self.name)
-            self.pan_device._xapi.delete(xpath)
+            self.pan_device.xapi.delete(xpath)
         # remove the interface from the configuration
         xpath, element = self._xpath()
-        self.pan_device._xapi.delete(xpath)
+        self.pan_device.xapi.delete(xpath)
 
     def _xpath(self):
         xpath = pandevice.XPATH_INTERFACES + "/%s" % (self.type,)

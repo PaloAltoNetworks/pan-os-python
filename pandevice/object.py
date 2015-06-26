@@ -45,15 +45,15 @@ class PanObject(object):
         return "<entry name=\"%s\"></entry>" % self.name
 
     def apply(self):
-        self.pandevice()._xapi.edit(self.xpath(), self.element())
+        self.pandevice().xapi.edit(self.xpath(), self.element())
 
     def create(self):
         # Remove the last part from the xpath
         xpath = self.xpath().rsplit("/", 1)[0]
-        self.pandevice()._xapi.set(xpath, self.element())
+        self.pandevice().xapi.set(xpath, self.element())
 
     def delete(self):
-        self.pandevice()._xapi.delete(self.xpath())
+        self.pandevice().xapi.delete(self.xpath())
         if self.parent is not None:
             self.parent.remove_by_name(self.name, type(self))
 

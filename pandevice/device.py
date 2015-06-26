@@ -206,7 +206,7 @@ class PanDevice(PanObject):
         return self._api_key
 
     @property
-    def _xapi(self):
+    def xapi(self):
         if self._xapi_private is None:
             if self.classify_exceptions:
                 self._xapi_private = PanDevice.XapiWrapper(
@@ -337,8 +337,8 @@ class PanDevice(PanObject):
             system information like version, platform, etc.
         """
 
-        self._xapi.op(cmd="<show><system><info></info></system></show>")
-        pconf = PanConfig(self._xapi.element_result)
+        self.xapi.op(cmd="<show><system><info></info></system></show>")
+        pconf = PanConfig(self.xapi.element_result)
         system_info = pconf.python()
         self._logger.debug("Systeminfo: %s" % system_info)
         if not system_info:
@@ -385,7 +385,7 @@ class PanDevice(PanObject):
         address_xpath = self.xpath + "/address/entry[@name='%s']" % name
         element = "<ip-netmask>%s</ip-netmask><description>%s</description>" \
                   % (address, description)
-        self._xapi.set(xpath=address_xpath, element=element)
+        self.xapi.set(xpath=address_xpath, element=element)
 
     def delete_address_object(self, name):
         """Delete an address object from the configuration
@@ -402,7 +402,7 @@ class PanDevice(PanObject):
         # TODO: verify what happens if the object doesn't exist
         self.set_config_changed()
         address_xpath = self.xpath + "/address/entry[@name='%s']" % name
-        self._xapi.delete(xpath=address_xpath)
+        self.xapi.delete(xpath=address_xpath)
 
     def get_all_address_objects(self):
         """Return a list containing all address objects
@@ -420,8 +420,8 @@ class PanDevice(PanObject):
         # TODO: Currently returns raw results, but should return a list
         # and raise an exception on error
         address_xpath = self.xpath + "/address"
-        self._xapi.get(xpath=address_xpath)
-        pconf = PanConfig(self._xapi.element_result)
+        self.xapi.get(xpath=address_xpath)
+        pconf = PanConfig(self.xapi.element_result)
         response = pconf.python()
         return response['result']
 
@@ -467,7 +467,7 @@ class PanDevice(PanObject):
             entry = '<entry ip="%s" identifier="%s" />' % address
             unreg_entries += entry
         element = element_dag_update % (reg_entries, unreg_entries)
-        self._xapi.user_id(cmd=element)
+        self.xapi.user_id(cmd=element)
 
     def get_all_registered_addresses(self, return_xml=False):
         """Return all registered/tagged addresses
@@ -494,8 +494,8 @@ class PanDevice(PanObject):
         Raises:
             PanXapiError:  Raised by pan.xapi module for API errors
         """
-        self._xapi.op(cmd='show object registered-ip all', vsys=self.vsys, cmd_xml=True)
-        result = self._xapi.xml_root()
+        self.xapi.op(cmd='show object registered-ip all', vsys=self.vsys, cmd_xml=True)
+        result = self.xapi.xml_root()
         matches = re.finditer(r"<entry[^>]*\"((?:[0-9]{1,3}\.){3}[0-9]{1,3})\".*?<tag>(.*?)</tag>", result, re.DOTALL)
         addresses = []
         address_str = ''
@@ -521,8 +521,8 @@ class PanDevice(PanObject):
         Raises:
             PanXapiError:  Raised by pan.xapi module for API errors
         """
-        self._xapi.op(cmd='show object registered-address all', vsys=self.vsys, cmd_xml=True)
-        result = self._xapi.xml_root()
+        self.xapi.op(cmd='show object registered-address all', vsys=self.vsys, cmd_xml=True)
+        result = self.xapi.xml_root()
         matches = re.finditer(r"<entry[^>]*\"((?:[0-9]{1,3}\.){3}[0-9]{1,3})\".*?<tag>(.*?)</tag>", result, re.DOTALL)
         addresses = []
         for match in matches:
@@ -572,8 +572,8 @@ class PanDevice(PanObject):
         pan_interface.pan_device = None
 
     def refresh_interfaces(self):
-        self._xapi.op('show interface "all"', cmd_xml=True)
-        pconf = PanConfig(self._xapi.element_root)
+        self.xapi.op('show interface "all"', cmd_xml=True)
+        pconf = PanConfig(self.xapi.element_root)
         response = pconf.python()
         hw = {}
         interfaces = {}
@@ -614,8 +614,8 @@ class PanDevice(PanObject):
         self.interfaces = interfaces
 
     def show_system_resources(self):
-        self._xapi.op(cmd="show system resources", cmd_xml=True)
-        result = self._xapi.xml_root()
+        self.xapi.op(cmd="show system resources", cmd_xml=True)
+        result = self.xapi.xml_root()
         regex = re.compile(r"load average: ([\d.]+).* ([\d.]+)%id.*Mem:.*?([\d.]+)k total.*?([\d]+)k free", re.DOTALL)
         match = regex.search(result)
         if match:
@@ -636,7 +636,7 @@ class PanDevice(PanObject):
         self._logger.debug("Set hostname: %s" % (hostname,))
         self.set_config_changed()
         xpath = pandevice.XPATH_DEVICECONFIG_SYSTEM
-        self._xapi.set(xpath, "<hostname>%s</hostname>" % (hostname,))
+        self.xapi.set(xpath, "<hostname>%s</hostname>" % (hostname,))
 
     def set_dns_servers(self, primary, secondary=None):
         self._logger.debug("Set dns-servers: primary:%s secondary:%s" % (primary, secondary))
@@ -648,7 +648,7 @@ class PanDevice(PanObject):
         if secondary:
             element_secondary = ET.SubElement(element, "secondary")
             element_secondary.text = secondary
-        self._xapi.edit(xpath, ET.tostring(element))
+        self.xapi.edit(xpath, ET.tostring(element))
 
     def set_ntp_servers(self, primary, secondary=None):
         self._logger.debug("Set ntp-servers: primary:%s secondary:%s" % (primary, secondary))
@@ -662,10 +662,10 @@ class PanDevice(PanObject):
         # First if primary is None, remove all NTP config
         if primary is None:
             # PAN-OS 6.1 and higher
-            self._xapi.delete(xpath61)
+            self.xapi.delete(xpath61)
             # PAN-OS 6.0 and lower
-            self._xapi.delete(xpath + "/ntp-server-1")
-            self._xapi.delete(xpath + "/ntp-server-2")
+            self.xapi.delete(xpath + "/ntp-server-1")
+            self.xapi.delete(xpath + "/ntp-server-2")
             return
 
         if primary:
@@ -681,7 +681,7 @@ class PanDevice(PanObject):
 
         try:
             # PAN-OS 6.1 and higher
-            self._xapi.edit(xpath61, element61)
+            self.xapi.edit(xpath61, element61)
             self._logger.debug("Set ntp server for PAN-OS 6.1 or higher")
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             try:
@@ -708,15 +708,15 @@ class PanDevice(PanObject):
             element60_pri += "<ntp-server-1>%s</ntp-server-1>" % (primary,)
         if secondary:
             element60_sec += "<ntp-server-2>%s</ntp-server-2>" % (secondary,)
-        self._xapi.edit(xpath60_pri, element60_pri)
-        self._xapi.edit(xpath60_sec, element60_sec)
+        self.xapi.edit(xpath60_pri, element60_pri)
+        self.xapi.edit(xpath60_sec, element60_sec)
 
     def show_interface(self, interface):
         self.set_config_changed()
         interface_name = self._interface_name(interface)
 
-        self._xapi.op("<show><interface>%s</interface></show>" % (interface_name,))
-        pconf = PanConfig(self._xapi.element_result)
+        self.xapi.op("<show><interface>%s</interface></show>" % (interface_name,))
+        pconf = PanConfig(self.xapi.element_result)
         response = pconf.python()
         return response['result']
 
@@ -737,8 +737,8 @@ class PanDevice(PanObject):
         """
         interface_name = self._interface_name(interface)
 
-        self._xapi.op("<show><counter><interface>%s</interface></counter></show>" % (interface_name,))
-        pconf = PanConfig(self._xapi.element_result)
+        self.xapi.op("<show><counter><interface>%s</interface></counter></show>" % (interface_name,))
+        pconf = PanConfig(self.xapi.element_result)
         response = pconf.python()
         counters = response['result']
         if counters:
@@ -768,8 +768,8 @@ class PanDevice(PanObject):
             )
 
     def pending_changes(self):
-        self._xapi.op(cmd="check pending-changes", cmd_xml=True)
-        pconf = PanConfig(self._xapi.element_result)
+        self.xapi.op(cmd="check pending-changes", cmd_xml=True)
+        pconf = PanConfig(self.xapi.element_result)
         response = pconf.python()
         return response['result']
 
@@ -831,7 +831,7 @@ class PanDevice(PanObject):
             action = None
         if sync:
             self._logger.debug("Waiting for commit job to finish...")
-        self._xapi.commit(cmd=cmd,
+        self.xapi.commit(cmd=cmd,
                           action=action,
                           sync=sync,
                           sync_all=sync_all,
@@ -841,7 +841,7 @@ class PanDevice(PanObject):
         self.config_locked = False
         self.commit_locked = False
         if sync:
-            pconf = PanConfig(self._xapi.element_result)
+            pconf = PanConfig(self.xapi.element_result)
             response = pconf.python()
             job = response['result']
             if job is None:
@@ -927,7 +927,7 @@ class PanDevice(PanObject):
                                         result['warnings']))
                 return result
         else:
-            jobid = self._xapi.element_root.find('./result/job')
+            jobid = self.xapi.element_root.find('./result/job')
             if jobid is None:
                 if exception:
                     raise err.PanCommitNotNeeded("Commit not needed",
@@ -946,7 +946,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self._xapi.op(ET.tostring(cmd))
+            self.xapi.op(ET.tostring(cmd))
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is already held", str(e)):
                 raise
@@ -968,7 +968,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "admin")
             subel.text = admin
         try:
-            self._xapi.op(ET.tostring(cmd))
+            self.xapi.op(ET.tostring(cmd))
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is not currently held", str(e)):
                 raise
@@ -990,7 +990,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self._xapi.op(ET.tostring(cmd))
+            self.xapi.op(ET.tostring(cmd))
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config for scope shared is currently locked",
                             str(e)):
@@ -1010,7 +1010,7 @@ class PanDevice(PanObject):
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "remove")
         try:
-            self._xapi.op(ET.tostring(cmd))
+            self.xapi.op(ET.tostring(cmd))
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config is not currently locked for scope shared",
                             str(e)):
@@ -1025,14 +1025,14 @@ class PanDevice(PanObject):
         return True
 
     def check_commit_locks(self):
-        self._xapi.op("show commit-locks", cmd_xml=True)
-        response = self._xapi.element_result.find(".//entry")
+        self.xapi.op("show commit-locks", cmd_xml=True)
+        response = self.xapi.element_result.find(".//entry")
         return True if response is not None else False
 
     def revert_to_running_configuration(self):
         # self.set_config_changed()
         self._logger.debug("Revert to running configuration on device: %s" % (self.hostname,))
-        self._xapi.op("<load><config><from>"
+        self.xapi.op("<load><config><from>"
                       "running-config.xml"
                       "</from></config></load>")
 
@@ -1049,8 +1049,8 @@ class PanDevice(PanObject):
         devicegroup_stats_by_serial = {}
         template_stats_by_serial = {}
         # Get the list of managed devices
-        self._xapi.op("show devices all", cmd_xml=True)
-        pconf = PanConfig(self._xapi.element_root)
+        self.xapi.op("show devices all", cmd_xml=True)
+        pconf = PanConfig(self.xapi.element_root)
         response = pconf.python()
         try:
             for device in response['response']['result']['devices']['entry']:
@@ -1070,8 +1070,8 @@ class PanDevice(PanObject):
             return {}
 
         # Get the list of device groups
-        self._xapi.op("show devicegroups", cmd_xml=True)
-        dg_element = self._xapi.element_result
+        self.xapi.op("show devicegroups", cmd_xml=True)
+        dg_element = self.xapi.element_result
         for dg in dg_element.findall("./devicegroups/entry"):
             for device in dg.findall("./devices/entry"):
                 pconf = PanConfig(config=device)
@@ -1106,7 +1106,7 @@ class PanDevice(PanObject):
         if devices is not None:
             self.set_device_group(devicegroup, devices, exclusive=True)
         else:
-            self._xapi.set(pandevice.XPATH_DEVICE_GROUPS + "/entry[@name='%s']" % (devicegroup,))
+            self.xapi.set(pandevice.XPATH_DEVICE_GROUPS + "/entry[@name='%s']" % (devicegroup,))
 
     def set_device_group(self, devicegroup, devices, exclusive=False):
         """ For Panorama, set the device group for a device
@@ -1134,7 +1134,7 @@ class PanDevice(PanObject):
                             device.devicegroup is not None:
                 self._logger.debug("Moving device %s out of device-group %s" % (device.hostname, device.devicegroup))
                 self.set_config_changed()
-                self._xapi.delete(
+                self.xapi.delete(
                     pandevice.XPATH_DEVICE_GROUPS +
                     "/entry[@name='%s']/devices"
                     "/entry[@name='%s']"
@@ -1145,7 +1145,7 @@ class PanDevice(PanObject):
             if devicegroup is not None:
                 self.set_config_changed()
                 self._logger.debug("Moving device %s into device-group %s" % (device.hostname, devicegroup))
-                self._xapi.set(
+                self.xapi.set(
                     pandevice.XPATH_DEVICE_GROUPS +
                     "/entry[@name='%s']/devices" % (devicegroup,),
                     "<entry name='%s'/>" % (device.serial,)
