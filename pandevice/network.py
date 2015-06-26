@@ -21,7 +21,7 @@ import re
 import logging
 import xml.etree.ElementTree as ET
 import pandevice
-from object import PanObject
+from base import PanObject
 
 # import other parts of this pandevice package
 import errors as err

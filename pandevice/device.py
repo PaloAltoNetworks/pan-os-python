@@ -42,7 +42,7 @@ import pandevice
 # import other parts of this pandevice package
 import errors as err
 from network import Interface
-from object import PanObject
+from base import PanObject
 from updater import Updater
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
