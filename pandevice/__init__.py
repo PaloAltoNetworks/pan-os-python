@@ -31,6 +31,9 @@ if not hasattr(logging, 'NullHandler'):
             pass
     logging.NullHandler = NullHandler
 
+# set logging to nullhandler to prevent exceptions if logging not enabled
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 # XPaths
 XPATH_SHARED = "/config/shared"
