@@ -17,9 +17,9 @@
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 
-"""
-A library for performing common tasks on a
-Palo Alto Networks firewall or Panorama.
+"""Palo Alto Networks device and firewall objects.
+
+For performing common tasks on Palo Alto Networks devices.
 """
 
 
@@ -80,8 +80,9 @@ class PanDevice(PanObject):
                  is_virtual=None,
                  serial=None,
                  devicegroup=None,
-                 timeout=120,
-                 interval=.5):
+                 timeout=1200,
+                 interval=.5,
+                 classify_exceptions=False):
         """Initialize PanDevice"""
         super(PanDevice, self).__init__()
         # create a class logger
@@ -105,7 +106,7 @@ class PanDevice(PanObject):
         self.interval = interval
         self.interfaces = {}
         self._xapi_private = None
-        self.classify_exceptions = False
+        self._classify_exceptions = classify_exceptions
         self.config_locked = False
         self.commit_locked = False
         self.lock_before_change = False
@@ -208,7 +209,7 @@ class PanDevice(PanObject):
     @property
     def xapi(self):
         if self._xapi_private is None:
-            if self.classify_exceptions:
+            if self._classify_exceptions:
                 self._xapi_private = PanDevice.XapiWrapper(
                     pan_device=self,
                     api_key=self.api_key,
@@ -305,7 +306,7 @@ class PanDevice(PanObject):
         """
         self._logger.debug("Getting API Key from %s for user %s" %
                            (self.hostname, self._api_username))
-        if self.classify_exceptions:
+        if self._classify_exceptions:
             xapi = PanDevice.XapiWrapper(
                 pan_device=self,
                 api_username=self._api_username,
@@ -1076,11 +1077,18 @@ class PanDevice(PanObject):
             for device in dg.findall("./devices/entry"):
                 pconf = PanConfig(config=device)
                 stats = pconf.python()
+                # Save device stats
                 stats = stats['entry']
+                # Save device serial
                 serial = stats['serial']
+                # Save device ip-address
+                ip = stats['ip-address']
+                # Save device's device-group
                 dg_name = dg.get('name')
+                # Save the device-group to the device's stats
                 stats['devicegroup'] = dg_name
                 devicegroup_stats_by_serial[serial] = stats
+                stats_by_ip[ip]['devicegroup'] = dg_name
 
         # Set the device-group for each device
         for device in devices:

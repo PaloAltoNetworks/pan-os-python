@@ -1,4 +1,23 @@
-__author__ = 'btorres-gil'
+#!/usr/bin/env python
+
+# Copyright (c) 2014, Palo Alto Networks
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
+
+
+"""Base object classes for inheritence by other classes"""
 
 import xml.etree.ElementTree as ET
 import logging
@@ -12,7 +31,6 @@ logger = logging.getLogger(__name__)
 
 # PanObject type
 class PanObject(object):
-
     XPATH = "/config"
     ENTRY = "/entry[@name='%s']"
     MEMBER = "/member[text()='%s']"
@@ -70,7 +88,8 @@ class PanObject(object):
     def find(cls, list_of_panobjects, name, class_type=None):
         if class_type is None:
             class_type = cls
-        indexes = [i for i, child in enumerate(list_of_panobjects) if child.name == name and issubclass(type(child), class_type)]
+        indexes = [i for i, child in enumerate(list_of_panobjects) if
+                   child.name == name and issubclass(type(child), class_type)]
         for index in indexes:
             return index  # Just return the first index that matches the name
         return None
