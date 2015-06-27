@@ -21,7 +21,7 @@ import re
 import logging
 import xml.etree.ElementTree as ET
 import pandevice
-from base import PanObject
+from base import PanObject, VsysImportMixin, Root
 
 # import other parts of this pandevice package
 import errors as err
@@ -233,40 +233,33 @@ class Interface(object):
         return xpath, root
 
 
-class VirtualRouter(PanObject):
+class VirtualRouter(VsysImportMixin, PanObject):
 
+    ROOT = Root.DEVICE
     XPATH = "/network/virtual-router"
+    SUFFIX = PanObject.ENTRY
 
     def __init__(self,
                  name="default",
-                 interfaces=(),
-                 vsys="vsys1",
-                 ):
+                 interfaces=()):
         super(VirtualRouter, self).__init__(name=name)
         self.interfaces = list(interfaces)
-        self.vsys = vsys
-
-    def xpath(self):
-        return str(self.parent.xpath()) + self.XPATH + self.ENTRY % self.name
 
 
 class StaticRoute(PanObject):
 
     XPATH = "/routing-table/ip/static-route"
+    SUFFIX = PanObject.ENTRY
 
     def __init__(self,
                  name,
                  destination=None,
                  interface=None,
-                 nexthop=None,
-                 ):
+                 nexthop=None):
         super(StaticRoute, self).__init__(name=name)
         self.destination = destination
         self.interface = interface
         self.nexthop = nexthop
-
-    def xpath(self):
-        return str(self.parent.xpath()) + self.XPATH + self.ENTRY % self.name
 
     def element(self):
         element = ("<entry name=\"" + self.name + "\">"

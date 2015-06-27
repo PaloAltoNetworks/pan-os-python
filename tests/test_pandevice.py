@@ -8,7 +8,8 @@ test_pandevice
 Tests for `pandevice` module.
 """
 
-from pandevice import device
+from pandevice import firewall
+from pandevice import panorama
 from pandevice import network
 
 import expect
@@ -16,6 +17,8 @@ import expect
 import mock
 import unittest
 import logging
+
+from pprint import pformat
 
 from credentials import TESTRAMA_HOSTNAME, TESTRAMA_USERNAME, TESTRAMA_PASSWORD
 from credentials import TESTFW_HOSTNAME, TESTFW_USERNAME, TESTFW_PASSWORD
@@ -25,34 +28,39 @@ class TestPandevice(unittest.TestCase):
 
     def setUp(self):
 
-        logging.basicConfig(level=7)
+        logging.basicConfig(level=1)
 
         # Get current test (in string with format):
         #   tests.test_pandevice.TestPandevice.test_refresh_interfaces_mock
         test_method = self.id()
         if test_method.endswith("_mock"):
             # This is a test with a mock firewall
-            mock.patch.object(device.pan.xapi, 'PanXapi', mock.MagicMock())
-            self.d = device.PanDevice(hostname="fake-hostname",
-                                      api_username="fake-username",
-                                      api_password="fake-password",
-                                      )
+            mock.patch.object(firewall.pan.xapi, 'PanXapi', mock.MagicMock())
+            self.d = firewall.Firewall(hostname="fake-hostname",
+                                       api_username="fake-username",
+                                       api_password="fake-password",
+                                       )
             self.d._retrieve_api_key = mock.Mock(return_value="fakekey")
             # Trigger attempt to populate API key by accessing xapi
-            self.xapi = self.d._xapi
+            self.xapi = self.d.xapi
         else:
             # This is a test against a real firewall and panorama
-            self.p = device.PanDevice(hostname=TESTRAMA_HOSTNAME,
-                                      api_username=TESTRAMA_USERNAME,
-                                      api_password=TESTRAMA_PASSWORD,
-                                      )
-            self.d = device.PanDevice(hostname=TESTFW_HOSTNAME,
-                                      api_username=TESTFW_USERNAME,
-                                      api_password=TESTFW_PASSWORD,
-                                      )
+            self.p = panorama.Panorama(hostname=TESTRAMA_HOSTNAME,
+                                       api_username=TESTRAMA_USERNAME,
+                                       api_password=TESTRAMA_PASSWORD,
+                                       )
+            self.d = firewall.Firewall(hostname=TESTFW_HOSTNAME,
+                                       api_username=TESTFW_USERNAME,
+                                       api_password=TESTFW_PASSWORD,
+                                       )
 
     def tearDown(self):
         pass
+
+    def test_system_info(self):
+        version, model, serial = self.d.system_info()
+        self.assertEqual(version, "6.0.0")
+
 
     def test_set_ntp_servers(self):
         self.d.set_ntp_servers(None)
@@ -107,8 +115,10 @@ class TestPandevice(unittest.TestCase):
         vr = network.VirtualRouter()
         self.d.add(vr)
         route = vr.add(network.StaticRoute("Default", "0.0.0.0/0", None, "10.5.5.2"))
-        route.create()
-        route.delete()
+        vr.create()
+        vr.delete()
+        #route.create()
+        #route.delete()
 
     def test_updater(self):
         #result = self.d.updater.download("6.1.0", sync=True)
