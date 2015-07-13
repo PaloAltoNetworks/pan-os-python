@@ -889,3 +889,58 @@ class PanDevice(PanObject):
 
             self._logger.debug('sleep %.2f seconds', interval)
             time.sleep(interval)
+
+    def syncreboot(self, interval=0.5, timeout=600):
+        """Block until reboot completes and return version of device"""
+
+        # Validate interval and convert it to float
+        if interval is not None:
+            try:
+                interval = float(interval)
+                if interval < 0:
+                    raise ValueError
+            except ValueError:
+                raise err.PanDeviceError("Invalid interval: %s" % interval)
+
+        self._logger.debug("Syncing reboot...")
+
+        # Record start time to gauge timeout
+        start_time = time.time()
+        attempts = 0
+        is_rebooting = False
+
+        while True:
+            try:
+                # Try to get the device version (ie. test to see if firewall is up)
+                attempts += 1
+                version = self.refresh_version()
+            except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
+                # Connection errors (URLError) are ok
+                # Invalid cred errors are ok because FW auth system takes longer to start up
+                # Other errors should be raised
+                if not e.msg.startswith("URLError:") and not e.msg.startswith("Invalid credentials."):
+                    # Error not related to connection issue.  Raise it.
+                    raise e
+                else:
+                    # Connection issue.  The firewall is currently rebooting.
+                    is_rebooting = True
+                    self._logger.debug("Connection failed: %s" % str(e))
+                    self._logger.debug("Device is not available yet. Connection attempts: %s" % str(attempts))
+            else:
+                # No exception... connection succeeded and device is up!
+                # This could mean reboot hasn't started yet, so check that we had
+                # a connection error prior to this success.
+                if is_rebooting:
+                    self._logger.debug("Device is up! Running version %s" % version)
+                    return version
+                else:
+                    self._logger.debug("Device is up, but it probably hasn't started rebooting yet.")
+
+            # Check to see if we hit timeout
+            if (self.timeout is not None and self.timeout != 0 and
+                        time.time() > start_time + self.timeout):
+                raise err.PanDeviceError("Timeout waiting for device to reboot")
+
+            # Sleep and try again
+            self._logger.debug("Sleep %.2f seconds", interval)
+            time.sleep(interval)

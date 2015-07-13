@@ -42,7 +42,7 @@ class TestPandevice(unittest.TestCase):
                                        )
             self.d._retrieve_api_key = mock.Mock(return_value="fakekey")
             # Trigger attempt to populate API key by accessing xapi
-            self.xapi = self.d.xapi
+            #self.xapi = self.d.xapi
         else:
             # This is a test against a real firewall and panorama
             self.p = panorama.Panorama(hostname=TESTRAMA_HOSTNAME,
@@ -123,6 +123,13 @@ class TestPandevice(unittest.TestCase):
     def test_updater(self):
         #result = self.d.updater.download("6.1.0", sync=True)
         result = self.d.updater.check()
+
+    def test_syncreboot(self):
+        import re
+        self.d.xapi.op("request restart system", cmd_xml=True)
+        version = self.d.syncreboot(timeout=120)
+        result = re.match(r"\d+\.\d+\.\d+", version)
+        self.assertIsNotNone(result)
 
 
 if __name__ == '__main__':
