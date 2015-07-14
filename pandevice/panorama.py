@@ -37,6 +37,8 @@ class Panorama(pandevice.base.PanDevice):
                  api_username=None,
                  api_password=None,
                  api_key=None,
+                 port=443,
+                 serial=None,
                  classify_exceptions=False):
         super(Panorama, self).__init__(hostname, api_username, api_password, api_key, classify_exceptions=classify_exceptions)
         # create a class logger

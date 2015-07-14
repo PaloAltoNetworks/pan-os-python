@@ -57,10 +57,10 @@ class Firewall(PanDevice):
                  api_username=None,
                  api_password=None,
                  api_key=None,
+                 serial=None,
                  port=443,
                  vsys='vsys1',  # vsys id or 'shared'
                  is_virtual=None,
-                 serial=None,
                  panorama=None,
                  classify_exceptions=False):
         """Initialize PanDevice"""

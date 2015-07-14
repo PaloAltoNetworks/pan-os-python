@@ -173,9 +173,9 @@ class PanDevice(PanObject):
                  api_username=None,
                  api_password=None,
                  api_key=None,
+                 serial=None,
                  port=443,
                  is_virtual=None,
-                 serial=None,
                  timeout=1200,
                  interval=.5,
                  classify_exceptions=False):
@@ -208,6 +208,48 @@ class PanDevice(PanObject):
 
         # State variables
         self.version = None
+        self.content_version = None
+
+    @classmethod
+    def create_from_device(cls,
+                           hostname,
+                           api_username=None,
+                           api_password=None,
+                           api_key=None,
+                           serial=None,
+                           port=443,
+                           classify_exceptions=False):
+        """Create a Firewall or Panorama object from a live device
+
+        This method connects to the device and detects its type and current
+        state in order to create a PanDevice subclass.
+
+        :returns PanDevice subclass instance (Firewall or Panorama instance)
+        """
+        # Create generic PanDevice to connect and get information
+        import firewall
+        import panorama
+        device = PanDevice(hostname,
+                           api_username,
+                           api_password,
+                           api_key,
+                           serial,
+                           port,
+                           classify_exceptions=classify_exceptions)
+        version, model, serial = device.system_info()
+        if model == "Panorama":
+            subclass = panorama.Panorama
+        else:
+            subclass = firewall.Firewall
+        instance = subclass(hostname,
+                            api_username,
+                            api_password,
+                            api_key,
+                            serial,
+                            port,
+                            classify_exceptions=classify_exceptions)
+        instance.version = version
+        return instance
 
     class XapiWrapper(pan.xapi.PanXapi):
         """This is a confusing class used for catching exceptions and
@@ -308,21 +350,16 @@ class PanDevice(PanObject):
         return self._xapi_private
 
     def generate_xapi(self):
+        kwargs = {'api_key': self.api_key,
+                  'hostname': self.hostname,
+                  'port': self.port,
+                  'timeout': self.timeout,
+                  }
         if self._classify_exceptions:
             xapi_constructor = PanDevice.XapiWrapper
-            kwargs = {'pan_device': self,
-                      'api_key': self.api_key,
-                      'hostname': self.hostname,
-                      'port': self.port,
-                      'timeout': self.timeout,
-                      }
+            kwargs['pan_device'] = self,
         else:
             xapi_constructor = pan.xapi.PanXapi
-            kwargs = {'api_key': self.api_key,
-                      'hostname': self.hostname,
-                      'port': self.port,
-                      'timeout': self.timeout,
-                      }
         return xapi_constructor(**kwargs)
 
     def set_config_changed(self):
