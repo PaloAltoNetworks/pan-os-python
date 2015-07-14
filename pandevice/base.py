@@ -664,6 +664,15 @@ class PanDevice(PanObject):
                      "running-config.xml"
                      "</from></config></load>")
 
+    def restart(self):
+        self._logger.debug("Requesting restart on device: %s" % (self.hostname,))
+        try:
+            self.xapi.op("request restart system", cmd_xml=True)
+        except pan.xapi.PanXapiError as e:
+            if not e.msg.startswith("Command succeeded with no output"):
+                raise e
+
+
     def refresh_devices_from_panorama(self, devices=()):
         try:
             # Test if devices is iterable
