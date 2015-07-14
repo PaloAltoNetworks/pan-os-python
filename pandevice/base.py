@@ -899,14 +899,14 @@ class PanDevice(PanObject):
                 if interval < 0:
                     raise ValueError
             except ValueError:
-                raise pan.xapi.PanXapiError('Invalid interval: %s' % interval)
+                raise err.PanDeviceError('Invalid interval: %s' % interval)
 
         job = response.find('./result/job')
         if job is None:
             return False
         job = job.text
 
-        self._logger.debug('syncing job: %s', job)
+        self._logger.debug('Syncing job: %s', job)
 
         cmd = 'show jobs id "%s"' % job
         start_time = time.time()
@@ -920,19 +920,40 @@ class PanDevice(PanObject):
             path = './result/job/status'
             status = self.xapi.element_root.find(path)
             if status is None:
-                raise pan.xapi.PanXapiError('no status element in ' +
+                raise pan.xapi.PanXapiError('No status element in ' +
                                             "'%s' response" % cmd)
             if status.text == 'FIN':
-                return True
+                pconf = PanConfig(self.xapi.element_result)
+                response = pconf.python()
+                job = response['result']
+                if job is None:
+                    return
+                job = job['job']
+                success = True if job['result'] == "OK" else False
+                messages = job['details']['line']
+                if issubclass(messages.__class__, basestring):
+                    messages = [messages]
+                # Create the results dict
+                result = {
+                    'success': success,
+                    'result': job['result'],
+                    'jobid': job['id'],
+                    'user': job['user'],
+                    'warnings': job['warnings'],
+                    'starttime': job['tenq'],
+                    'endtime': job['tfin'],
+                    'messages': messages,
+                }
+                return result
 
-            self._logger.debug('job %s status %s', job, status.text)
+            self._logger.debug('Job %s status %s', job, status.text)
 
             if (self.timeout is not None and self.timeout != 0 and
                         time.time() > start_time + self.timeout):
-                raise pan.xapi.PanXapiError('timeout waiting for ' +
+                raise pan.xapi.PanXapiError('Timeout waiting for ' +
                                             'job %s completion' % job)
 
-            self._logger.debug('sleep %.2f seconds', interval)
+            self._logger.debug('Sleep %.2f seconds', interval)
             time.sleep(interval)
 
     def syncreboot(self, interval=0.5, timeout=600):
