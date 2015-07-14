@@ -28,7 +28,7 @@ class TestPandevice(unittest.TestCase):
 
     def setUp(self):
 
-        logging.basicConfig(level=1)
+        logging.basicConfig(level=10)
 
         # Get current test (in string with format):
         #   tests.test_pandevice.TestPandevice.test_refresh_interfaces_mock
@@ -120,9 +120,17 @@ class TestPandevice(unittest.TestCase):
         #route.create()
         #route.delete()
 
-    def test_updater(self):
+    def test_software_updater(self):
         #result = self.d.updater.download("6.1.0", sync=True)
-        result = self.d.updater.check()
+        result = self.d.software.check()
+
+    def test_content_updater(self):
+        result = self.d.content.download(sync=True)
+        result = self.d.content.install(sync=True)
+
+    def test_upgrade_to_version(self):
+        #result = self.d.software.upgrade_to_version("latest", dryrun=True)
+        result = self.d.software.upgrade_to_version("7.0.0", dryrun=True)
 
     def test_syncreboot(self):
         import re
