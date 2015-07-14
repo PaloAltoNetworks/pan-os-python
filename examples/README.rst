@@ -22,13 +22,16 @@ upgrade.py
 This script upgrades a Palo Alto Networks firewall or Panorama to the
 specified version. It takes care of all intermediate uprades and reboots.
 
-    usage: upgrade.py [-h] [-v] [-q] [-n] hostname username password version
+Usage::
 
-### Example usage:
+    upgrade.py [-h] [-v] [-q] [-n] hostname username password version
 
-    Upgrade a firewall at 10.0.0.1 to PAN-OS 7.0.0
+Examples:
+
+Upgrade a firewall at 10.0.0.1 to PAN-OS 7.0.0::
+
     $ python upgrade.py 10.0.0.1 admin password 7.0.0
 
-    Upgrade a Panorama at 172.16.4.4 to the latest Panorama version
-    $ python upgrade.py 172.16.4.4 admin password latest
+Upgrade a Panorama at 172.16.4.4 to the latest Panorama version::
 
+    $ python upgrade.py 172.16.4.4 admin password latest
