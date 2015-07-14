@@ -279,6 +279,96 @@ class SoftwareUpdater(Updater):
         return False
 
 
+class ContentUpdater(Updater):
+
+    def info(self):
+        response = self._op('request content upgrade info')
+        self.pandevice.content_version = self._parse_current_version(response)
+        self.versions = self._parse_version_list(response)
+
+    def check(self):
+        response = self._op('request content upgrade check')
+        self.pandevice.content_version = self._parse_current_version(response)
+        self.versions = self._parse_version_list(response)
+
+    def download(self, version="latest", sync_to_peer=True, sync=False):
+        if not self.versions:
+            self.check()
+        available_versions = map(PanOSVersion, self.versions.keys())
+        latest_version = max(available_versions)
+        if self.versions[str(latest_version)]['downloaded']:
+            return
+        self._logger.info("Device %s downloading content version: %s" % (self.pandevice.hostname, version))
+        response = self._op('request content upgrade download latest sync-to-peer "%s"' %
+                            "yes" if sync_to_peer else "no")
+        if sync:
+            result = self.pandevice.syncjob(response)
+            if not result['success']:
+                raise err.PanDeviceError("Device %s attempt to download content version %s failed: %s" %
+                                         (self.pandevice.hostname, version, result['messages']))
+            return result
+        else:
+            return True
+
+    def install(self, version="latest", sync_to_peer=True, skip_commit=False, sync=False):
+        if not self.versions:
+            self.check()
+        available_versions = map(PanOSVersion, self.versions.keys())
+        latest_version = max(available_versions)
+        if self.versions[str(latest_version)]['current']:
+            return
+        self._logger.info("Device %s installing content version: %s" % (self.pandevice.hostname, version))
+        op = ('request content upgrade install commit "%s" sync-to-peer "%s" version "%s"' %
+              ("no" if skip_commit else "yes",
+               "yes" if sync_to_peer else "no",
+               version))
+        response = self._op(op)
+        if sync:
+            result = self.pandevice.syncjob(response)
+            if not result['success']:
+                raise err.PanDeviceError("Device %s attempt to install content version %s failed: %s" %
+                                         (self.pandevice.hostname, version, result['messages']))
+            return result
+        else:
+            return True
+
+    def download_and_install_latest(self, sync=False):
+        self.download(sync=sync)
+        self.install(sync=sync)
+
+    def downgrade(self, sync=False):
+        response = self._op('request content downgrade install "previous"')
+        if sync:
+            return self.pandevice.syncjob(response)
+        else:
+            return True
+
+    def _parse_version_list(self, response_element):
+        all_versions = {}
+        for software_version in response_element.findall(".//content-updates/entry"):
+            # This line doesn't work correctly in pan-python < 0.7.0.
+            newversion = PanConfig(software_version).python("./")
+            all_versions[newversion['version']] = newversion
+        return all_versions
+
+    def _parse_current_version(self, response_element):
+        current_entry = response_element.find(".//content-updates/entry/[current='yes']")
+        if current_entry is None:
+            return
+        current_version = current_entry.find("./version").text
+        self._logger.debug("Found current version: %s" % current_version)
+        return current_version
+
+    def download_install(self, version="latest", sync_to_peer=False, skip_commit=False, sync=False):
+        # Get list of software if needed
+        if not self.versions:
+            self.check()
+        # Download the software upgrade
+        self.download(version, sync_to_peer=sync_to_peer, sync=True)
+        # Install the software upgrade
+        self.install(version, sync_to_peer=sync_to_peer, skip_commit=skip_commit, sync=sync)
+
+
 class PanOSVersion(LooseVersion):
     """LooseVersion with convenience properties to access version components"""
     @property

@@ -205,6 +205,8 @@ class PanDevice(PanObject):
 
         # Create a PAN-OS updater subsystem
         self.software = updater.SoftwareUpdater(self)
+        # Create a content updater subsystem
+        self.content = updater.ContentUpdater(self)
 
         # State variables
         self.version = None
