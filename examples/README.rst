@@ -9,7 +9,7 @@ Set up your python environment
 2. Clone or install pandevice
 3. Run this script
 
-For example:
+For example::
 
     pip install pan-python
     git clone https://github.com/PaloAltoNetworks-BD/pandevice
