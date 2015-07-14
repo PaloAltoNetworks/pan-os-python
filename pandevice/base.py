@@ -29,9 +29,8 @@ import pandevice
 
 import pan.xapi
 from pan.config import PanConfig
-import firewall
 import errors as err
-from updater import Updater
+import updater
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 logger = logging.getLogger(__name__)
@@ -107,7 +106,7 @@ class PanObject(object):
             self.parent.remove_by_name(self.name, type(self))
 
     def pandevice(self):
-        if issubclass(self.__class__, firewall.PanDevice):
+        if issubclass(self.__class__, PanDevice):
             return self
         else:
             if self.parent is None:
@@ -204,8 +203,8 @@ class PanDevice(PanObject):
         self.connected_to_panorama = None
         self.dg_in_sync = None
 
-        # Create an updater subsystem
-        self.updater = Updater(self)
+        # Create a PAN-OS updater subsystem
+        self.software = updater.SoftwareUpdater(self)
 
         # State variables
         self.version = None
