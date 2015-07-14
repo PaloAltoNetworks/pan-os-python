@@ -958,8 +958,10 @@ class PanDevice(PanObject):
             self._logger.debug('Sleep %.2f seconds', interval)
             time.sleep(interval)
 
-    def syncreboot(self, interval=0.5, timeout=600):
+    def syncreboot(self, interval=5.0, timeout=600):
         """Block until reboot completes and return version of device"""
+
+        import httplib
 
         # Validate interval and convert it to float
         if interval is not None:
@@ -977,6 +979,7 @@ class PanDevice(PanObject):
         attempts = 0
         is_rebooting = False
 
+        time.sleep(interval)
         while True:
             try:
                 # Try to get the device version (ie. test to see if firewall is up)
@@ -992,8 +995,13 @@ class PanDevice(PanObject):
                 else:
                     # Connection issue.  The firewall is currently rebooting.
                     is_rebooting = True
-                    self._logger.debug("Connection failed: %s" % str(e))
+                    self._logger.debug("Connection attempted: %s" % str(e))
                     self._logger.debug("Device is not available yet. Connection attempts: %s" % str(attempts))
+            except httplib.BadStatusLine as e:
+                # Connection issue.  The firewall is currently rebooting.
+                is_rebooting = True
+                self._logger.debug("Connection attempted: %s" % str(e))
+                self._logger.debug("Device is not available yet. Connection attempts: %s" % str(attempts))
             else:
                 # No exception... connection succeeded and device is up!
                 # This could mean reboot hasn't started yet, so check that we had
