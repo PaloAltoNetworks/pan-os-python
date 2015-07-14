@@ -24,6 +24,12 @@ __version__ = '0.2.0'
 
 import logging
 
+try:
+    import pan
+except ImportError as e:
+    message = e.message + ", please install the pan-python library (pip install pan-python)"
+    raise ImportError(message)
+
 # python 2.6 doesn't have a null handler, so create it
 if not hasattr(logging, 'NullHandler'):
     class NullHandler(logging.Handler):
@@ -60,3 +66,10 @@ def enum(*sequential, **named):
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
+# Adjust pan-python logging levels so they don't interfere with pandevice logging
+pan.DEBUG1 = logging.DEBUG - 1
+pan.DEBUG2 = pan.DEBUG1 - 1
+pan.DEBUG3 = pan.DEBUG2 - 1
+logging.addLevelName(pan.DEBUG1, 'DEBUG1')
+logging.addLevelName(pan.DEBUG2, 'DEBUG2')
+logging.addLevelName(pan.DEBUG3, 'DEBUG3')
