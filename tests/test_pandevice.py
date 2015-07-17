@@ -11,6 +11,7 @@ Tests for `pandevice` module.
 from pandevice import firewall
 from pandevice import panorama
 from pandevice import network
+from pandevice import objects
 
 import expect
 
@@ -138,6 +139,12 @@ class TestPandevice(unittest.TestCase):
         version = self.d.syncreboot(timeout=120)
         result = re.match(r"\d+\.\d+\.\d+", version)
         self.assertIsNotNone(result)
+
+    def test_addressobject(self):
+        address_object = objects.AddressObject("mytest", "5.5.4.5/24",
+                                               description="new test")
+        self.d.add(address_object)
+        address_object.create()
 
 
 if __name__ == '__main__':
