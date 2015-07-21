@@ -217,6 +217,9 @@ class SoftwareUpdater(Updater):
         if issubclass(type(version), basestring):
             version = PanOSVersion(version)
         next_version = PanOSVersion(str(version.major+1)+".0.0")
+        # Account for lack of PAN-OS 7.0.0
+        if next_version == "7.0.0":
+            next_version = PanOSVersion("7.0.1")
         return next_version
 
     def _next_minor_version(self, version):
@@ -230,6 +233,9 @@ class SoftwareUpdater(Updater):
             next_version = PanOSVersion("6.0.0")
         else:
             next_version = PanOSVersion(str(version.major)+".1.0")
+        # Account for lack of PAN-OS 7.0.0
+        if next_version == "7.0.0":
+            next_version = PanOSVersion("7.0.1")
         return next_version
 
     def _next_patch_version(self, version):
