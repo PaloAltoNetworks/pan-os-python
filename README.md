@@ -95,6 +95,11 @@ If you have customized the built-in dashboards of a previous app version, then t
 
 If upgrading from 3.x, please read the __Upgrade Notes__ above.
 
+Version 4.2.2
+
+- Fix drilldowns in Wildfire and Content dashboards
+- Fix panel in Content dashboard to display correct data
+
 Version 4.2.1
 
 - Fix Wildfire Report downloader and Applipedia New App check
