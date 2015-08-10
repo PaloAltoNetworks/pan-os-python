@@ -52,7 +52,7 @@
   <row>
     <chart>
       <title>URL Filtering Actions</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ groupby _time log.action | timechart values(count) by log.action</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ groupby _time log.action | timechart values(count) by log.action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -78,7 +78,7 @@
     </chart>
     <chart>
       <title>Applications</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ groupby _time log.app | timechart values(count) by log.app</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ groupby _time log.app | timechart values(count) by log.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -106,7 +106,7 @@
   <row>
     <table>
       <title>Application Users</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ `table(log.user log.app, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ `table(log.user log.app, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -146,7 +146,7 @@
     </table>
     <table>
       <title>Host Categories</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ `table(log.dst_hostname log.category, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ `table(log.dst_hostname log.category, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

@@ -51,7 +51,7 @@
   <row>
     <chart>
       <title>All WildFire Events by Category</title>
-      <searchString>| `tstats` count FROM `node(log.wildfire)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.category | timechart values(count) by log.category</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.wildfire)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.category | timechart values(count) by log.category</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -77,7 +77,7 @@
     </chart>
     <table>
       <title>Recent Malware Download Attempts</title>
-      <searchString>| `tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.dst_ip log.user log.misc | table _time log.dst_ip log.user log.misc | sort -_time | rename log.user AS "Destination User" | rename log.dst_ip AS "Destination IP" | rename log.action AS Action | rename log.misc AS Filename</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.dst_ip log.user log.misc | table _time log.dst_ip log.user log.misc | sort -_time | rename log.user AS "Destination User" | rename log.dst_ip AS "Destination IP" | rename log.action AS Action | rename log.misc AS Filename</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -101,7 +101,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` dst_ip="$row.Destination IP$" misc="$row.Filename$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dst_ip="$row.Destination IP$" misc="$row.Filename$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -111,7 +111,7 @@
   <row>
     <table>
       <title>Possible Malware Traffic</title>
-      <searchString>| `tstats` count(traffic) FROM `node(log.traffic)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.traffic.dst_ip_port log.dst_ip log.dst_port log.src_ip log.user log.app | rename log.traffic.dst_ip_port AS ip_port | join type=inner ip_port [ | `tstats` count(wildfire_report) FROM datamodel="pan_wildfire_report" WHERE earliest=-1y latest=now nodename="wildfire_report" groupby wildfire_report.wildfire.id wildfire_report.tcp_ip_port | rename wildfire_report.tcp_ip_port AS ip_port ] | dedup 1 log.src_ip log.user ip_port log.app | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View WildFire Report" | table _time log.src_ip log.user log.dst_ip log.dst_port log.app wildfire_report.wildfire.id "Traffic Link" "WildFire Link" | rex mode=sed field=ip_port "s/,/:/" | rename log.src_ip AS Source | rename log.dst_ip AS "Dest IP" | rename log.dst_port AS "Dest Port" | rename log.user AS User | rename log.app AS Application | rename wildfire_report.wildfire.id AS "WildFire Report ID" | sort -_time</searchString>
+      <searchString>| `pan_tstats` count(traffic) FROM `node(log.traffic)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.traffic.dst_ip_port log.dst_ip log.dst_port log.src_ip log.user log.app | rename log.traffic.dst_ip_port AS ip_port | join type=inner ip_port [ | `pan_tstats` count(wildfire_report) FROM datamodel="pan_wildfire_report" WHERE earliest=-1y latest=now nodename="wildfire_report" groupby wildfire_report.wildfire.id wildfire_report.tcp_ip_port | rename wildfire_report.tcp_ip_port AS ip_port ] | dedup 1 log.src_ip log.user ip_port log.app | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View WildFire Report" | table _time log.src_ip log.user log.dst_ip log.dst_port log.app wildfire_report.wildfire.id "Traffic Link" "WildFire Link" | rex mode=sed field=ip_port "s/,/:/" | rename log.src_ip AS Source | rename log.dst_ip AS "Dest IP" | rename log.dst_port AS "Dest Port" | rename log.user AS User | rename log.app AS Application | rename wildfire_report.wildfire.id AS "WildFire Report ID" | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -135,47 +135,47 @@
       <drilldown>
         <link field="Source">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Source$&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $row.Source$&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="User">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.User$&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $row.User$&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="Dest IP">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Dest IP$&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $row.Dest IP$&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="Dest Port">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Dest Port$&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $row.Dest Port$&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="Protocol">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Protocol$&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $row.Protocol$&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="Application">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.Application$&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $row.Application$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="WildFire Report ID">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $row.WildFire Report ID$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $row.WildFire Report ID$
 	  ]]>
         </link>
         <link field="WildFire Link">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` (sourcetype="pan_wildfire_report" (wildfire.id="$row.WildFire Report ID$" OR wildfire.report.id="$row.WildFire Report ID$")) OR (sourcetype="pan_threat" log_subtype="wildfire" report_id="$row.WildFire Report ID$")
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` (sourcetype="pan_wildfire_report" (wildfire.id="$row.WildFire Report ID$" OR wildfire.report.id="$row.WildFire Report ID$")) OR (sourcetype="pan_threat" log_subtype="wildfire" report_id="$row.WildFire Report ID$")
 	  ]]>
         </link>
         <link field="*">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` src_ip="$row.Source$" dst_ip="$row.Dest IP$" dst_port="$row.Dest Port$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` src_ip="$row.Source$" dst_ip="$row.Dest IP$" dst_port="$row.Dest Port$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -185,7 +185,7 @@
   <row>
     <chart>
       <title>Top Malware</title>
-      <searchString>| `tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby log.misc</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby log.misc</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -211,7 +211,7 @@
     </chart>
     <chart>
       <title>Malware Downloads by Application</title>
-      <searchString>| `tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby log.app</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby log.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -237,7 +237,7 @@
     </chart>
     <chart>
       <title>Malware Downloaders by User</title>
-      <searchString>| `tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby log.user</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby log.user</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -265,7 +265,7 @@
   <row>
     <chart>
       <title>Malware Sources</title>
-      <searchString>| `tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby log.src_ip</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby log.src_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -291,7 +291,7 @@
     </chart>
     <chart>
       <title>Previously Analyzed Malware</title>
-      <searchString>| `tstats` count FROM `node(log.wildfire.malicious)` groupby log.action | replace alert with wildfire-upload-skip in log.action | replace wildfire-upload-success with "New Malware" in log.action | replace alert with "Known Malware" in log.action | replace wildfire-upload-skip with "Known Malware" in log.action | stats sum(count) by log.action</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.wildfire.malicious)` groupby log.action | replace alert with wildfire-upload-skip in log.action | replace wildfire-upload-success with "New Malware" in log.action | replace alert with "Known Malware" in log.action | replace wildfire-upload-skip with "Known Malware" in log.action | stats sum(count) by log.action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -317,7 +317,7 @@
     </chart>
     <chart>
       <title>Malware Downloaders by IP</title>
-      <searchString>| `tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby log.dst_ip</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dst_ip$ $user$ $misc$ $vsys$ $app$ groupby log.dst_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

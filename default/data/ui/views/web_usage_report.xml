@@ -37,7 +37,7 @@
   <row>
     <table>
       <title>Web Hits</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.dst_hostname, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.dst_hostname, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -61,14 +61,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` dst_hostname="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dst_hostname="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
     </table>
     <chart>
       <title>Categories</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.category, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.category, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -87,14 +87,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Applications</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.app, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.app, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -113,7 +113,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -122,7 +122,7 @@
   <row>
     <table>
       <title>Web Activity Summary</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.action log.category log.dst_hostname, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dst_hostname$ $user$ `table(log.action log.category log.dst_hostname, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

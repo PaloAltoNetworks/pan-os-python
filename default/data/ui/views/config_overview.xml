@@ -59,7 +59,7 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ `table(_time host log.serial_number log.admin log.admin_ip log.admin_type log.result log.cmd log.configuration_path)` | sort -_time</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ `table(_time host log.serial_number log.admin log.admin_ip log.admin_type log.result log.cmd log.configuration_path)` | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -128,7 +128,7 @@
   <row>
     <chart>
       <title>Config Events</title>
-      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby _time log.cmd | timechart values(count) by log.cmd</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby _time log.cmd | timechart values(count) by log.cmd</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -147,14 +147,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` cmd="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` cmd="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Configuration Administrators</title>
-      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby _time log.admin | timechart values(count) by log.admin</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby _time log.admin | timechart values(count) by log.admin</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -173,7 +173,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` admin="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` admin="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
@@ -182,7 +182,7 @@
   <row>
     <chart>
       <title>Clients Used</title>
-      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby log.admin_ip</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby log.admin_ip</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -201,14 +201,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Results</title>
-      <searchString>| `tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby log.result</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.config)` $admin$ $host$ $admin_ip$ $admin_type$ $cmd$ $result$ groupby log.result</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -227,7 +227,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
