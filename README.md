@@ -11,8 +11,8 @@ Networks Firewall
 #### Latest Version ####
 
 * Splunk Version: 6.x
-* App Version: 4.2.1
-* Last Modified: Feb 2015
+* App Version: 4.2.2
+* Last Modified: Jul 2015
 * Authors:
     * Brian Torres-Gil - Palo Alto Networks
     * Monzy Merza - Splunk, Inc.
