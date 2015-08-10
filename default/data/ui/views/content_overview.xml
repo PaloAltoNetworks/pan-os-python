@@ -142,7 +142,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.Content Type$" app="$row.Application$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
       ]]>
         </link>
       </drilldown>
@@ -173,7 +173,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.Content Type$" app="$row.Application$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -205,7 +205,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.Content Type$" category="$row.Category$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.content_type$" category="$row.category$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
