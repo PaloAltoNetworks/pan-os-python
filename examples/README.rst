@@ -7,7 +7,7 @@ Set up your python environment
 
 1. Install pan-python
 2. Clone or install pandevice
-3. Run this script
+3. Run a script
 
 For example::
 
@@ -20,7 +20,7 @@ upgrade.py
 ----------
 
 This script upgrades a Palo Alto Networks firewall or Panorama to the
-specified version. It takes care of all intermediate uprades and reboots.
+specified version. It takes care of all intermediate upgrades and reboots.
 
 Usage::
 
