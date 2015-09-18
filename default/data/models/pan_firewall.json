@@ -2126,6 +2126,30 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -4297,6 +4321,30 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "wildfire.version",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -6499,6 +6547,30 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -8670,6 +8742,30 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "wildfire.version",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -10849,6 +10945,30 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -13020,6 +13140,30 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "wildfire.version",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -15199,6 +15343,30 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -17374,6 +17542,30 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -19533,6 +19725,30 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "wildfire.version",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -21712,6 +21928,30 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -23883,6 +24123,30 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "wildfire.version",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -26062,6 +26326,30 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -28233,6 +28521,30 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "wildfire.version",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -30412,6 +30724,30 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -32587,6 +32923,30 @@
                     "fieldSearch": ""
                 },
                 {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -34758,6 +35118,30 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "wildfire.version",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "application: saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "SANCTIONED_SAAS",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "application: sanctioned saas",
                     "comment": "",
                     "fieldSearch": ""
                 },
