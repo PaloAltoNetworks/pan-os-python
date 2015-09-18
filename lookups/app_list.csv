@@ -1,4 +1,4 @@
-app,CATEGORY,SUBCATEGORY,TECHNOLOGY,RISK,EVASIVE,EXCESSIVE_BANDWIDTH,USED_BY_MALWARE,ABLE TO TRANSFER FILE,HAS KNOWN VULNERABILITY,TUNNELS OTHER APPLICATION,PRONE TO MISUSE,PERVASIVE_USE,SAAS
+app,CATEGORY,SUBCATEGORY,TECHNOLOGY,RISK,EVASIVE,EXCESSIVE_BANDWIDTH,USED_BY_MALWARE,ABLE_TO_TRANSFER_FILE,HAS_KNOWN_VULNERABILITY,TUNNELS_OTHER_APPLICATION,PRONE_TO_MISUSE,PERVASIVE_USE,SAAS
 100bao,general-internet,file-sharing,peer-to-peer,5,yes,yes,yes,yes,yes,no,yes,yes,no
 104apci-supervisory,business-systems,management,client-server,2,no,no,no,no,yes,yes,no,yes,no
 104apci-unnumbered,business-systems,management,client-server,2,no,no,no,no,yes,yes,no,yes,no
@@ -193,7 +193,7 @@ bitdefender,business-systems,management,client-server,3,no,yes,no,yes,yes,no,no,
 bittorrent,general-internet,file-sharing,peer-to-peer,5,yes,yes,yes,yes,yes,yes,yes,yes,no
 bittorrent-sync,general-internet,file-sharing,client-server,4,yes,yes,no,yes,yes,no,no,no,no
 blackberry,collaboration,email,client-server,4,no,no,yes,yes,yes,no,no,yes,no
-blackboard,collaboration,social-business,browser-based,1,no,no,no,yes,no,no,no,no,yes
+blackboard,collaboration,social-business,browser-based,1,no,no,no,yes,no,no,no,no,no
 blin,media,photo-video,peer-to-peer,3,yes,yes,no,no,no,no,yes,yes,no
 blog-posting,collaboration,web-posting,browser-based,4,no,no,no,yes,yes,yes,yes,no,no
 blogger-blog-posting,collaboration,web-posting,browser-based,3,no,no,no,yes,no,no,no,yes,no
