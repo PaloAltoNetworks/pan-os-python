@@ -1,7 +1,21 @@
+## Add your organization's sanctioned SaaS applications here
+##
+## Use this format, where app_name is the value in the 'app' field
+## of the log.
+##
+## app_name,yes
+##
+## For example:
+##
+## salesforce-base,yes
+## salesforce-chatter,yes
+## gmail-enterprise,yes
+## gmail-chat,yes
+## google-calendar-base,yes
+## skype,yes
+## facebook-base,yes
+## skydrive-base,yes
+##
+##
 app,SANCTIONED_SAAS
-boxnet,yes
-dropbox,yes
-gmail-enterprise,yes
-skype,yes
-facebook-base,yes
-gmail-chat,yes
+paloalto-wildfire-cloud,yes
