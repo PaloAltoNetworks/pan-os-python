@@ -43,7 +43,7 @@
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.traffic.end, log.action)`</populatingSearch>
     </input>
   </fieldset>
-  <searchTemplate>| `tstats` count from `node(log.traffic.end)` log.SAAS="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.SANCTIONED_SAAS log.CATEGORY log.SUBCATEGORY log.user log.bytes, 5m)`</searchTemplate>
+  <searchTemplate>| `tstats` count from `node(log.traffic.end)` log.SAAS="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.SANCTIONED_SAAS log.CATEGORY log.SUBCATEGORY log.user log.bytes)`</searchTemplate>
   <row>
     <single>
       <searchPostProcess>stats dc(app)</searchPostProcess>
@@ -81,7 +81,7 @@
   <row>
       <chart>
         <title>SaaS Usage</title>
-        <searchPostProcess>timechart span=5m values(count) by app</searchPostProcess>
+        <searchPostProcess>timechart count by app</searchPostProcess>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
         <option name="charting.chart">area</option>
