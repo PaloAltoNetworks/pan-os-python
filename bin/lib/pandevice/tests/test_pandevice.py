@@ -11,6 +11,7 @@ Tests for `pandevice` module.
 from pandevice import firewall
 from pandevice import panorama
 from pandevice import network
+from pandevice import objects
 
 import expect
 
@@ -28,7 +29,7 @@ class TestPandevice(unittest.TestCase):
 
     def setUp(self):
 
-        logging.basicConfig(level=1)
+        logging.basicConfig(level=10)
 
         # Get current test (in string with format):
         #   tests.test_pandevice.TestPandevice.test_refresh_interfaces_mock
@@ -42,7 +43,7 @@ class TestPandevice(unittest.TestCase):
                                        )
             self.d._retrieve_api_key = mock.Mock(return_value="fakekey")
             # Trigger attempt to populate API key by accessing xapi
-            self.xapi = self.d.xapi
+            #self.xapi = self.d.xapi
         else:
             # This is a test against a real firewall and panorama
             self.p = panorama.Panorama(hostname=TESTRAMA_HOSTNAME,
@@ -120,9 +121,30 @@ class TestPandevice(unittest.TestCase):
         #route.create()
         #route.delete()
 
-    def test_updater(self):
+    def test_software_updater(self):
         #result = self.d.updater.download("6.1.0", sync=True)
-        result = self.d.updater.check()
+        result = self.d.software.check()
+
+    def test_content_updater(self):
+        result = self.d.content.download(sync=True)
+        result = self.d.content.install(sync=True)
+
+    def test_upgrade_to_version(self):
+        #result = self.d.software.upgrade_to_version("latest", dryrun=True)
+        result = self.d.software.upgrade_to_version("7.0.0", dryrun=True)
+
+    def test_syncreboot(self):
+        import re
+        self.d.xapi.op("request restart system", cmd_xml=True)
+        version = self.d.syncreboot(timeout=120)
+        result = re.match(r"\d+\.\d+\.\d+", version)
+        self.assertIsNotNone(result)
+
+    def test_addressobject(self):
+        address_object = objects.AddressObject("mytest", "5.5.4.5/24",
+                                               description="new test")
+        self.d.add(address_object)
+        address_object.create()
 
 
 if __name__ == '__main__':
