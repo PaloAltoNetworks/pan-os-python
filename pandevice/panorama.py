@@ -26,19 +26,19 @@ For functions specific to Panorama
 # import modules
 import logging
 
-import pandevice
-
 # import other parts of this pandevice package
-from base import PanObject, PanDevice
+import pandevice.base
 
 
-class Panorama(PanDevice):
+class Panorama(pandevice.base.PanDevice):
 
     def __init__(self,
                  hostname,
                  api_username=None,
                  api_password=None,
                  api_key=None,
+                 port=443,
+                 serial=None,
                  classify_exceptions=False):
         super(Panorama, self).__init__(hostname, api_username, api_password, api_key, classify_exceptions=classify_exceptions)
         # create a class logger
@@ -76,7 +76,7 @@ class Panorama(PanDevice):
         """
         # TODO: Implement 'exclusive'
         self._logger.debug("Set device-group to '%s'" % (devicegroup))
-        if issubclass(devices.__class__, PanDevice):
+        if issubclass(devices.__class__, pandevice.base.PanDevice):
             devices = [devices]
         device_refresh_needed = False
         for device in devices:

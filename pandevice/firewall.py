@@ -45,6 +45,7 @@ import errors as err
 from network import Interface
 from base import PanObject, PanDevice
 from updater import Updater
+import userid
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -57,10 +58,10 @@ class Firewall(PanDevice):
                  api_username=None,
                  api_password=None,
                  api_key=None,
+                 serial=None,
                  port=443,
                  vsys='vsys1',  # vsys id or 'shared'
                  is_virtual=None,
-                 serial=None,
                  panorama=None,
                  classify_exceptions=False):
         """Initialize PanDevice"""
@@ -75,6 +76,9 @@ class Firewall(PanDevice):
 
         self.vsys = vsys
         self.panorama = panorama
+
+        # Create a User-ID subsystem
+        self.userid = userid.UserId(self)
 
     def xpath_mgtconfig(self):
         return self.XPATH + "/mgt-config"
@@ -184,113 +188,6 @@ class Firewall(PanDevice):
         pconf = PanConfig(self.xapi.element_result)
         response = pconf.python()
         return response['result']
-
-    def update_dynamic_addresses(self, register, unregister):
-        """Add/update the registered addresses
-
-        Register or unregister addresses and their tags.
-        Registered addresses are a feature of PAN-OS 6.0 that allows tagging
-        of IP addresses for use in dynamic object groups.
-
-        Support:
-            PAN-OS 6.0 and higher
-
-        Args:
-            register: List of tuples of the format (ip_address, tag). The
-                tag will be registered to the IP address.
-            unregister: List of tuples of the format (ip_address, tag). The
-                tag will be unregistered from the IP address.
-
-        Raises:
-            PanXapiError:  Raised by pan.xapi module for API errors
-        """
-        reg_entries = ''
-        unreg_entries = ''
-
-        element_dag_update = """<uid-message>
-                             <version>1.0</version>
-                             <type>update</type>
-                             <payload>
-                             <register>
-                             %s
-                             </register>
-                             <unregister>
-                             %s
-                             </unregister>
-                             </payload>
-                             </uid-message>"""
-
-        for address in register:
-            entry = '<entry ip="%s" identifier="%s" />' % address
-            reg_entries += entry
-        for address in unregister:
-            entry = '<entry ip="%s" identifier="%s" />' % address
-            unreg_entries += entry
-        element = element_dag_update % (reg_entries, unreg_entries)
-        self.xapi.user_id(cmd=element)
-
-    def get_all_registered_addresses(self, return_xml=False):
-        """Return all registered/tagged addresses
-
-        Return all registered addresses as XML or as a list of tuples.
-        Registered addresses are a feature of PAN-OS 6.0 that allows tagging
-        of IP addresses for use in dynamic object groups.
-
-        Support:
-            PAN-OS 6.0 and higher
-
-        Args:
-            return_xml: True cuases the method to return a string containing
-                <entry> elements for each registered address that can be used
-                in a register/unregister XML update call to the API.
-                False causes the method to return a list of tuples, where
-                each tuple is of the format (ip_address, tag).
-
-        Returns:
-            A string of XML, or a list of tuples, containing all the
-            registered addresses paired with their tags. If an address has
-            more than one tag, it is listed once for each tag.
-
-        Raises:
-            PanXapiError:  Raised by pan.xapi module for API errors
-        """
-        self.xapi.op(cmd='show object registered-ip all', vsys=self.vsys, cmd_xml=True)
-        result = self.xapi.xml_root()
-        matches = re.finditer(r"<entry[^>]*\"((?:[0-9]{1,3}\.){3}[0-9]{1,3})\".*?<tag>(.*?)</tag>", result, re.DOTALL)
-        addresses = []
-        address_str = ''
-        for match in matches:
-            ip_address = match.group(1)
-            tags = re.findall(r'<member>(.*?)</member>', match.group(2))
-            for tag in tags:
-                addresses.append((ip_address, tag))
-                address_str += '<entry ip="%s" identifier="%s" />\n' % (ip_address, tag)
-        if return_xml:
-            return address_str
-        else:
-            return addresses
-
-    def unregister_all_addresses(self):
-        """Unregister all registered/tagged addresses
-
-        Removes all registered addresses used by dynamic address groups.
-
-        Support:
-            PAN-OS 6.0 and higher
-
-        Raises:
-            PanXapiError:  Raised by pan.xapi module for API errors
-        """
-        self.xapi.op(cmd='show object registered-address all', vsys=self.vsys, cmd_xml=True)
-        result = self.xapi.xml_root()
-        matches = re.finditer(r"<entry[^>]*\"((?:[0-9]{1,3}\.){3}[0-9]{1,3})\".*?<tag>(.*?)</tag>", result, re.DOTALL)
-        addresses = []
-        for match in matches:
-            ip_address = match.group(1)
-            tags = re.findall(r'<member>(.*?)</member>', match.group(2))
-            for tag in tags:
-                addresses.append((ip_address, tag))
-        self.update_dynamic_addresses([], addresses)
 
     def add_interface(self, pan_interface, apply=True):
         """Apply a Interface object
