@@ -1,17 +1,37 @@
+#!/usr/bin/env python
+
+# Copyright (c) 2015, Palo Alto Networks
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
+
+"""Functions to help set up the command environment (logging, etc)"""
+
 import os
 import sys
 
 
 SPLUNK_HOME = os.environ.get('SPLUNK_HOME')
+SPLUNK_SERVER_NAME = os.environ.get('SPLUNK_SERVER_NAME')
 
 
 def run_by_splunk():
     """Check if this script was run by Splunk, or on the CLI
 
-    :return: True if run by Splunk, otherwise False
+    Returns: True if the script was run by Splunk, otherwise False
     """
-    env = os.environ.get('SPLUNK_SERVER_NAME')
-    if env is None:
+    if SPLUNK_SERVER_NAME is None:
         return False
     else:
         return True

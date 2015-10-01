@@ -1,223 +1,257 @@
-# ##########################################
-# Version 0.8
-# Extremely Experimental
-# author: Brian Torres-Gil
-# 
-# About this script:
-# Given an IP address, tags or identifies the ip address in PAN-OS.
-# Behavior in PAN-OS 6.0 and higher:
-#   IP address is tagged. IP's can have multiple tags. Tags are
-#   referenced in Dynamic Address Groups. Boolean logic (AND/OR)
-#   can be used in Dynamic Address Groups to filter ip's based on tags
-# Behavior in PAN-OS 5.1 and lower:
-#   IP address is mapped to an identifier. Only one identifier
-#   per IP address. The identifier associates the IP with a single
-#   Dynamid Address Object in PAN-OS.
+#!/usr/bin/env python
+
+# Copyright (c) 2015, Palo Alto Networks
 #
-# The script assumes that you have firewall policy setup that blocks
-# traffic for a given dynamic address group
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
 #
-# It is important to recognize that this script does NOT modify a firewall rule!
-# It is only tagging IP addresses with metadata so that the existing firewall
-# policy can act accordingly.
-#
-############################################
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-############################################
-# How to Use this script
-# in the example below, we are blocking all ip's returned by the search
-# example1: index=pan_logs 1.1.1.1 | stats dc(dst_ip) by dst_ip | pantag action="add" tag="malware-infected" device="1.0.0.1"
-# Adds a 'malware-infected' tag to the IP 1.1.1.1 on the firewall with ip 1.0.0.1
-# example2: index=pan_logs wine | stats dc(dst_ip) by dst_ip | pantag action="rem" group="shairpoint" device="sales-fw"
-# Removes the 'shairpoint' tag from all dst_ip returned by the search on the firewall with hostname sales-fw
-###########################################
+# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
-###########################################
-# Known issues:
-# Very limited error checking
-# Errors may not reported in the Splunk UI
-# Does not support panorama
-###########################################
+"""Device updater handles software versions and updates for devices
 
-#############################
-# Change the values below to suit your PAN configuration, or
-# supply these values in the Splunk search bar.
-#
-# WARNING!!!! Password is stored in clear text.
-# It is recommended to leave PANUSER and PANPASS commented out,
-# and user the app configuration screen to provide these instead.
-#############################
+About this script
+-----------------
+Given an IP address, tags or identifies the ip address in PAN-OS.
+Behavior in PAN-OS 6.0 and higher:
+  IP address is tagged. IP's can have multiple tags. Tags are
+  referenced in Dynamic Address Groups. Boolean logic (AND/OR)
+  can be used in Dynamic Address Groups to filter ip's based on tags
+Behavior in PAN-OS 5.1 and lower:
+  IP address is mapped to an identifier. Only one identifier
+  per IP address. The identifier associates the IP with a single
+  Dynamic Address Object in PAN-OS.
 
-# firewall IP. you can provide this via the device parameter
-PAN = '192.168.4.100'
+The script assumes that you have firewall policy setup that blocks
+traffic for a given dynamic address group
 
-# Admin account for the PAN device
-#PANUSER = 'admin'
+It is important to recognize that this script does NOT modify a firewall rule!
+It is only tagging IP addresses with metadata so that the existing firewall
+policy can act accordingly.
 
-# Password for the admin user.
-# Any special characters in the password must be URL/percent-encoded.
-#PANPASS = 'admin'
 
-# Defaults to vsys1. vsys substition is not supported at this time
-VSYS = 'vsys1'
+How to use this script
+----------------------
+In the example below, we are blocking all ip's returned by the search
+example1: index=pan_logs 1.1.1.1 | stats dc(dst_ip) by dst_ip | pantag action="add" tag="malware-infected" device="1.0.0.1"
+Adds a 'malware-infected' tag to the IP 1.1.1.1 on the firewall with ip 1.0.0.1
+example2: index=pan_logs wine | stats dc(dst_ip) by dst_ip | pantag action="rem" group="shairpoint" device="sales-fw"
+Removes the 'shairpoint' tag from all dst_ip returned by the search on the firewall with hostname sales-fw
 
-# Name of the address group for bad actors
-TAG = 'bad-actor'
+"""
 
-# Add or Remove the tag (add or rem)
-ACTION = 'add'
-
-# This is a default actor.
-ACTOR = '1.1.1.1'
-
-# if you DO want to go through a proxy, e.g., HTTP_PROXY={squid:'2.2.2.2'}
-HTTP_PROXY = {}
-
-# Default fields that contain IP addresses and should be tagged if they exist
-IP_FIELDS = ['src_ip', 'dst_ip', 'ip']
-
-# Enable debugging (script is otherwise silent unless there is an error)
-DEBUG = False
 
 #########################################################
 # Do NOT modify anything below this line unless you are
 # certain of the ramifications of the changes
 #########################################################
 
-import splunk.mining.dcutils as dcu
+import sys  # for system params and sys.exit()
+import os
 
-logger = dcu.getLogger().getChild('panTag')
-logger.setLevel(20)
+libpath = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [os.path.join(libpath, 'lib')]
+import common
+import environment
+
+logger = common.logging.getLogger().getChild('panTag')
+#logger.setLevel(pan_common.logging.INFO)
 
 try:
-    import splunk.Intersplunk  # so you can interact with Splunk
-    import splunk.entity as entity  # for splunk config info
-    import urllib2  # make http requests to PAN firewall
-    import sys  # for system params and sys.exit()
-    import os
-    import re  # regular expressions checks in PAN messages
-    import traceback
+    if environment.run_by_splunk():
+        import splunk.Intersplunk  # so you can interact with Splunk
+        import splunk.entity as entity  # for splunk config info
 
     libpath = os.path.dirname(os.path.abspath(__file__))
     sys.path[:0] = [os.path.join(libpath, 'lib')]
     sys.path[:0] = [os.path.join(libpath, 'lib', 'pan-python', 'lib')]
     sys.path[:0] = [os.path.join(libpath, 'lib', 'pandevice')]
     import pandevice
+    from pandevice.panorama import Panorama
+    from pandevice.firewall import Firewall
     import pan.xapi
 
-except Exception, e:
-    logger.error("Error during import")
-    logger.error(traceback.format_exc())
-    raise e
+    from common import log
 
-## Major props to Ledion. copying his function, verbatim and then adding comments and traceback and logging
-## http://blogs.splunk.com/2011/03/15/storing-encrypted-credentials/
-## access the credentials in /servicesNS/nobody/<YourApp>/admin/passwords
-def get_credentials(session_key):
-    """Given a splunk sesionKey returns a clear text user name and password from a splunk password container"""
-    # this is the folder name for the app and not the app's common name
-    myapp = 'SplunkforPaloAltoNetworks'
-    try:
-        # list all credentials
-        entities = entity.getEntities(['admin', 'passwords'], namespace=myapp, owner='nobody', sessionKey=session_key)
-    except Exception, e:
-        logger.error(traceback.format_exc())
-        logger.error("entity exception")
-        raise Exception("Could not get %s credentials from splunk. Error: %s" % (myapp, str(e)))
-    # return first set of credentials
-    for i, c in entities.items():
-        if c['username'] != 'wildfire_api_key':
-            return c['username'], c['clear_password']
-    logger.warn("Attempted to tag ip, however, no credentials for firewall found. "
-                "Try setting credentials in the SplunkforPaloAltoNetworks app set up screen.")
-    raise Exception("No credentials have been found")
+except Exception as e:
+    # Handle exception to produce logs to python.log
+    common.exit_with_error(e)
+
+# Default fields that contain IP addresses and should be tagged if they exist
+IP_FIELDS = ['src_ip', 'dest_ip', 'ip']
 
 
-def tag(device, add_remove, ip_addresses, tag):
-    """Tag the ip address"""
-    ip_tag_sets = []
-    for ip in ip_addresses:
-        ip_tag_sets.append((ip, tag))
+def main_splunk():
+    # Get arguments
+    args, kwargs = splunk.Intersplunk.getKeywordsAndOptions()
 
-    if add_remove == 'add':
-        device.update_dynamic_addresses(ip_tag_sets, [])
+    # Enable debugging by passing 'debug=yes' as an argument of
+    # the command on the Splunk searchbar.
+
+    debug = common.check_debug(kwargs)
+
+    # kwargs contains important parameters.
+    # parameters from splunk searchbar include:
+    #   action
+    #   device
+    #   panorama
+    #   serial
+    #   vsys
+    #   tag
+    #   tag_field
+    #   ip_field
+    #   debug
+
+    # Verify required args were passed to command
+    log(debug, "Determining if required arguments are present")
+    if 'device' not in kwargs and 'panorama' not in kwargs:
+        common.exit_with_error("pantag: Missing required command argument: device or panorama", 3)
+    if 'tag' not in kwargs and 'tag_field' not in kwargs:
+        common.exit_with_error("pantag: Missing required command argument: tag or tag_field", 3)
+
+    # Assign defaults to fields that aren't specified
+    action = kwargs['action'] if 'action' in kwargs else "add"
+    vsys = kwargs['vsys'] if 'vsys' in kwargs else None
+    ip_field = kwargs['ip_field'] if 'ip_field' in kwargs else "src_ip"
+    tag = kwargs['tag'] if 'tag' in kwargs else None
+    tag_field = kwargs['tag_field'] if 'tag_field' in kwargs else None
+
+    # Determine if device hostname or serial was provided as argument or should be pulled from entries
+    log(debug, "Determining how firewalls should be contacted based on arguments")
+    use_panorama = False
+    hostname = None
+    serial = None
+    if "device" in kwargs:
+        hostname = kwargs['device']
+        if vsys is None:
+            vsys = "vsys1"
+    elif "panorama" in kwargs:
+        use_panorama = True
+        hostname = kwargs['panorama']
+        if "serial" in kwargs:
+            serial = kwargs['serial']
+            if vsys is None:
+                vsys = "vsys1"
     else:
-        device.update_dynamic_addresses([], ip_tag_sets)
+        common.exit_with_error("pantag: Missing required command argument: device or panorama", 3)
+    log(debug, "Use Panorama: %s" % use_panorama)
+    log(debug, "VSys: %s" % vsys)
+    log(debug, "Hostname: %s" % hostname)
+    if use_panorama and serial is not None:
+        log(debug, "Device Serial: %s" % serial)
+    else:
+        log(debug, "Using serials from logs")
 
 
-args, kwargs = splunk.Intersplunk.getKeywordsAndOptions()
+    # Results contains the data from the search results and settings
+    # contains the sessionKey that we can use to talk to Splunk
+    results, unused1, settings = splunk.Intersplunk.getOrganizedResults()
+    # Get the sessionKey
+    sessionKey = settings['sessionKey']
 
-if 'debug' in kwargs:
-    logger.info("Debugging enabled")
-    DEBUG = kwargs['debug']
+    log(debug, "Begin get API key")
+    # Get the API key from the Splunk store or from the device at hostname if no apikey is stored
+    apikey = common.apikey(sessionKey, hostname, debug)
 
-if DEBUG:
-    logger.setLevel(10)
-
-#parse the kwargs for ACTION, VSYS, PAN
-if 'action' in kwargs:
-    ACTION = kwargs['action']
-if 'device' in kwargs:
-    PAN = kwargs['device']
-if 'vsys' in kwargs:
-    VSYS = kwargs['vsys']
-if 'group' in kwargs:
-    TAG = kwargs['group']
-if 'identifier' in kwargs:
-    TAG = kwargs['identifier']
-if 'tag' in kwargs:
-    TAG = kwargs['tag']
-if 'field' in kwargs:
-    field = kwargs['field']
-else:
-    field = None
-
-# results contains the data from the search results and settings
-# contains the sessionKey that we can use to talk to splunk
-results, unused1, settings = splunk.Intersplunk.getOrganizedResults()
-# get the sessionKey
-sessionKey = settings['sessionKey']
-# get the user and password using the sessionKey
-PANUSER, PANPASS = get_credentials(sessionKey)
-
-device = pandevice.PanDevice(PAN,
-                             443,
-                             PANUSER,
-                             PANPASS,
-                             detect_device=True,
-                             )
-
-ADDRESSES = []
-
-try:
-    for result in results:
-        if field and field in result:
-            ADDRESSES.append(result[field])
+    # Create the connection to the firewall or Panorama
+    panorama=None
+    if use_panorama:
+        # For Panorama, create the Panorama object, and the firewall if only one serial
+        panorama = Panorama(hostname, api_key=apikey)
+        if serial is not None:
+            firewall = {'firewall': Firewall(panorama=panorama, serial=serial, vsys=vsys)}
+            firewall['firewall'].userid.batch_start()
         else:
-            for field in IP_FIELDS:
-                if field in result:
-                    ADDRESSES.append(result[field])
-        result["status"] = "action submitted"
-    # dedup the ADDRESSES list
-    ADDRESSES = set(ADDRESSES)
-    ADDRESSES = list(ADDRESSES)
-
-    tag(device, ACTION, ADDRESSES, TAG)
-
-except pan.xapi.PanXapiError, e:
-    if re.search(r"tag [^ ]* already exists, ignore", str(e)):
-        pass
+            firewall = {}
     else:
-        stack = traceback.format_exc()
-        logger.warn(stack)
-        splunk.Intersplunk.parseError(str(e))
-        results = splunk.Intersplunk.generateErrorResults(str(e))
+        firewall = {'firewall': Firewall(hostname, api_key=apikey, vsys=vsys)}
+        firewall['firewall'].userid.batch_start()
 
-except Exception, e:
-    stack = traceback.format_exc()
-    logger.warn(stack)
-    splunk.Intersplunk.parseError(str(e))
-    results = splunk.Intersplunk.generateErrorResults(str(e))
+    # Collect all the ip addresses and tags into firewall batch requests
+    for result in results:
 
-# output results
-splunk.Intersplunk.outputResults(results)
+        ## Find the serial (if not a single firewall)
+
+        if use_panorama and serial is None:
+            try:
+                this_serial = result['serial_number']
+                this_vsys = result['vsys']
+            except KeyError as e:
+                result['status'] = "ERROR: Unable to determine serial number or vsys of device"
+                continue
+            else:
+                ## Create the firewall object if using multiple serials
+                if this_serial in firewall:
+                    this_firewall = firewall[(this_serial, this_vsys)]
+                else:
+                    # Create the firewall object for this serial
+                    firewall[(this_serial, this_vsys)] = Firewall(panorama=panorama, serial=this_serial, vsys=this_vsys)
+                    this_firewall = firewall[(this_serial, this_vsys)]
+                    this_firewall.userid.batch_start()
+        else:
+            this_firewall = firewall
+
+        ## Find the tag (if a tag_field was specified)
+
+        this_tag = []
+        if tag_field is not None:
+            try:
+                this_tag.append(result[tag_field])
+            except KeyError as e:
+                result['status'] = "ERROR: Unable to determine tag from field: %s" % tag_field
+                continue
+        if tag is not None:
+            this_tag.append(tag)
+
+        ## Find the IP
+
+        try:
+            this_ip = result[ip_field]
+        except KeyError as e:
+            result['status'] = "ERROR: Unable to determine ip from field: %s" % ip_field
+
+        ## Create a request in the batch user-id update for the firewall
+        ## No API call to the firewall happens until all batch requests are created.
+
+        if action == "add":
+            log(debug, "Registering tags on firewall %s: %s - %s" % (this_firewall, this_ip, this_tag))
+            this_firewall.userid.register(this_ip, this_tag)
+        else:
+            log(debug, "Unregistering tags on firewall %s: %s - %s" % (this_firewall, this_ip, this_tag))
+            this_firewall.userid.unregister(this_ip, this_tag)
+
+        result['status'] = "Submitted successfully"
+
+    ## Make the API calls to the User-ID API of each firewall
+
+    try:
+        for fw in firewall.values():
+            fw.userid.batch_end()
+
+    except pan.xapi.PanXapiError as e:
+        common.exit_with_error(str(e))
+
+    except Exception as e:
+        common.exit_with_error(str(e))
+
+    # output results
+    splunk.Intersplunk.outputResults(results)
+
+
+def main_cli():
+    pass
+
+
+if __name__ == "__main__":
+    if environment.run_by_splunk():
+        main_splunk()
+    else:
+        main_cli()
