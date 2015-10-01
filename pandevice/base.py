@@ -29,9 +29,8 @@ import pandevice
 
 import pan.xapi
 from pan.config import PanConfig
-import firewall
 import errors as err
-from updater import Updater
+import updater
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 logger = logging.getLogger(__name__)
@@ -107,7 +106,7 @@ class PanObject(object):
             self.parent.remove_by_name(self.name, type(self))
 
     def pandevice(self):
-        if issubclass(self.__class__, firewall.PanDevice):
+        if issubclass(self.__class__, PanDevice):
             return self
         else:
             if self.parent is None:
@@ -174,9 +173,9 @@ class PanDevice(PanObject):
                  api_username=None,
                  api_password=None,
                  api_key=None,
+                 serial=None,
                  port=443,
                  is_virtual=None,
-                 serial=None,
                  timeout=1200,
                  interval=.5,
                  classify_exceptions=False):
@@ -204,11 +203,55 @@ class PanDevice(PanObject):
         self.connected_to_panorama = None
         self.dg_in_sync = None
 
-        # Create an updater subsystem
-        self.updater = Updater(self)
+        # Create a PAN-OS updater subsystem
+        self.software = updater.SoftwareUpdater(self)
+        # Create a content updater subsystem
+        self.content = updater.ContentUpdater(self)
 
         # State variables
         self.version = None
+        self.content_version = None
+
+    @classmethod
+    def create_from_device(cls,
+                           hostname,
+                           api_username=None,
+                           api_password=None,
+                           api_key=None,
+                           serial=None,
+                           port=443,
+                           classify_exceptions=False):
+        """Create a Firewall or Panorama object from a live device
+
+        This method connects to the device and detects its type and current
+        state in order to create a PanDevice subclass.
+
+        :returns PanDevice subclass instance (Firewall or Panorama instance)
+        """
+        # Create generic PanDevice to connect and get information
+        import firewall
+        import panorama
+        device = PanDevice(hostname,
+                           api_username,
+                           api_password,
+                           api_key,
+                           serial,
+                           port,
+                           classify_exceptions=classify_exceptions)
+        version, model, serial = device.system_info()
+        if model == "Panorama":
+            subclass = panorama.Panorama
+        else:
+            subclass = firewall.Firewall
+        instance = subclass(hostname,
+                            api_username,
+                            api_password,
+                            api_key,
+                            serial,
+                            port,
+                            classify_exceptions=classify_exceptions)
+        instance.version = version
+        return instance
 
     class XapiWrapper(pan.xapi.PanXapi):
         """This is a confusing class used for catching exceptions and
@@ -309,21 +352,16 @@ class PanDevice(PanObject):
         return self._xapi_private
 
     def generate_xapi(self):
+        kwargs = {'api_key': self.api_key,
+                  'hostname': self.hostname,
+                  'port': self.port,
+                  'timeout': self.timeout,
+                  }
         if self._classify_exceptions:
             xapi_constructor = PanDevice.XapiWrapper
-            kwargs = {'pan_device': self,
-                      'api_key': self.api_key,
-                      'hostname': self.hostname,
-                      'port': self.port,
-                      'timeout': self.timeout,
-                      }
+            kwargs['pan_device'] = self,
         else:
             xapi_constructor = pan.xapi.PanXapi
-            kwargs = {'api_key': self.api_key,
-                      'hostname': self.hostname,
-                      'port': self.port,
-                      'timeout': self.timeout,
-                      }
         return xapi_constructor(**kwargs)
 
     def set_config_changed(self):
@@ -628,6 +666,15 @@ class PanDevice(PanObject):
                      "running-config.xml"
                      "</from></config></load>")
 
+    def restart(self):
+        self._logger.debug("Requesting restart on device: %s" % (self.hostname,))
+        try:
+            self.xapi.op("request restart system", cmd_xml=True)
+        except pan.xapi.PanXapiError as e:
+            if not e.msg.startswith("Command succeeded with no output"):
+                raise e
+
+
     def refresh_devices_from_panorama(self, devices=()):
         try:
             # Test if devices is iterable
@@ -854,14 +901,14 @@ class PanDevice(PanObject):
                 if interval < 0:
                     raise ValueError
             except ValueError:
-                raise pan.xapi.PanXapiError('Invalid interval: %s' % interval)
+                raise err.PanDeviceError('Invalid interval: %s' % interval)
 
         job = response.find('./result/job')
         if job is None:
             return False
         job = job.text
 
-        self._logger.debug('syncing job: %s', job)
+        self._logger.debug('Syncing job: %s', job)
 
         cmd = 'show jobs id "%s"' % job
         start_time = time.time()
@@ -875,17 +922,101 @@ class PanDevice(PanObject):
             path = './result/job/status'
             status = self.xapi.element_root.find(path)
             if status is None:
-                raise pan.xapi.PanXapiError('no status element in ' +
+                raise pan.xapi.PanXapiError('No status element in ' +
                                             "'%s' response" % cmd)
             if status.text == 'FIN':
-                return True
+                pconf = PanConfig(self.xapi.element_result)
+                response = pconf.python()
+                job = response['result']
+                if job is None:
+                    return
+                job = job['job']
+                success = True if job['result'] == "OK" else False
+                messages = job['details']['line']
+                if issubclass(messages.__class__, basestring):
+                    messages = [messages]
+                # Create the results dict
+                result = {
+                    'success': success,
+                    'result': job['result'],
+                    'jobid': job['id'],
+                    'user': job['user'],
+                    'warnings': job['warnings'],
+                    'starttime': job['tenq'],
+                    'endtime': job['tfin'],
+                    'messages': messages,
+                }
+                return result
 
-            self._logger.debug('job %s status %s', job, status.text)
+            self._logger.debug('Job %s status %s', job, status.text)
 
             if (self.timeout is not None and self.timeout != 0 and
                         time.time() > start_time + self.timeout):
-                raise pan.xapi.PanXapiError('timeout waiting for ' +
+                raise pan.xapi.PanXapiError('Timeout waiting for ' +
                                             'job %s completion' % job)
 
-            self._logger.debug('sleep %.2f seconds', interval)
+            self._logger.debug('Sleep %.2f seconds', interval)
+            time.sleep(interval)
+
+    def syncreboot(self, interval=5.0, timeout=600):
+        """Block until reboot completes and return version of device"""
+
+        import httplib
+
+        # Validate interval and convert it to float
+        if interval is not None:
+            try:
+                interval = float(interval)
+                if interval < 0:
+                    raise ValueError
+            except ValueError:
+                raise err.PanDeviceError("Invalid interval: %s" % interval)
+
+        self._logger.debug("Syncing reboot...")
+
+        # Record start time to gauge timeout
+        start_time = time.time()
+        attempts = 0
+        is_rebooting = False
+
+        time.sleep(interval)
+        while True:
+            try:
+                # Try to get the device version (ie. test to see if firewall is up)
+                attempts += 1
+                version = self.refresh_version()
+            except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
+                # Connection errors (URLError) are ok
+                # Invalid cred errors are ok because FW auth system takes longer to start up
+                # Other errors should be raised
+                if not e.msg.startswith("URLError:") and not e.msg.startswith("Invalid credentials."):
+                    # Error not related to connection issue.  Raise it.
+                    raise e
+                else:
+                    # Connection issue.  The firewall is currently rebooting.
+                    is_rebooting = True
+                    self._logger.debug("Connection attempted: %s" % str(e))
+                    self._logger.debug("Device is not available yet. Connection attempts: %s" % str(attempts))
+            except httplib.BadStatusLine as e:
+                # Connection issue.  The firewall is currently rebooting.
+                is_rebooting = True
+                self._logger.debug("Connection attempted: %s" % str(e))
+                self._logger.debug("Device is not available yet. Connection attempts: %s" % str(attempts))
+            else:
+                # No exception... connection succeeded and device is up!
+                # This could mean reboot hasn't started yet, so check that we had
+                # a connection error prior to this success.
+                if is_rebooting:
+                    self._logger.debug("Device is up! Running version %s" % version)
+                    return version
+                else:
+                    self._logger.debug("Device is up, but it probably hasn't started rebooting yet.")
+
+            # Check to see if we hit timeout
+            if (self.timeout is not None and self.timeout != 0 and
+                        time.time() > start_time + self.timeout):
+                raise err.PanDeviceError("Timeout waiting for device to reboot")
+
+            # Sleep and try again
+            self._logger.debug("Sleep %.2f seconds", interval)
             time.sleep(interval)
