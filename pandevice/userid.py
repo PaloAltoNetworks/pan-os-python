@@ -136,8 +136,10 @@ class UserId(object):
         register = payload.find("register")
         if register is None:
             register = et.SubElement(payload, "register")
-        entry = et.SubElement(register, "entry", {"ip": ip})
-        tagelement = et.SubElement(entry, "tag")
+        tagelement = register.find("./entry[@ip='%s']/tag" % ip)
+        if tagelement is None:
+            entry = et.SubElement(register, "entry", {"ip": ip})
+            tagelement = et.SubElement(entry, "tag")
         tags = set(tags)
         for tag in tags:
             member = et.SubElement(tagelement, "member")
@@ -149,8 +151,10 @@ class UserId(object):
         unregister = payload.find("unregister")
         if unregister is None:
             unregister = et.SubElement(payload, "unregister")
-        entry = et.SubElement(unregister, "entry", {"ip": ip})
-        tagelement = et.SubElement(entry, "tag")
+        tagelement = unregister.find("./entry[@ip='%s']/tag" % ip)
+        if tagelement is None:
+            entry = et.SubElement(unregister, "entry", {"ip": ip})
+            tagelement = et.SubElement(entry, "tag")
         tags = set(tags)
         for tag in tags:
             member = et.SubElement(tagelement, "member")
