@@ -58,7 +58,7 @@ sys.path[:0] = [os.path.join(libpath, 'lib')]
 import common
 import environment
 
-logger = common.logging.getLogger().getChild('panTag')
+logger = common.logging.getLogger().getChild('panUserUpdate')
 
 try:
     if environment.run_by_splunk():
