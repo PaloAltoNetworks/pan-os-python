@@ -37,15 +37,7 @@ It is important to recognize that this script does NOT modify a firewall rule!
 It is only tagging IP addresses with metadata so that the existing firewall
 policy can act accordingly.
 
-
-How to use this script
-----------------------
-In the example below, we are blocking all ip's returned by the search
-example1: index=pan_logs 1.1.1.1 | stats dc(dst_ip) by dst_ip | pantag action="add" tag="malware-infected" device="1.0.0.1"
-Adds a 'malware-infected' tag to the IP 1.1.1.1 on the firewall with ip 1.0.0.1
-example2: index=pan_logs wine | stats dc(dst_ip) by dst_ip | pantag action="rem" group="shairpoint" device="sales-fw"
-Removes the 'shairpoint' tag from all dst_ip returned by the search on the firewall with hostname sales-fw
-
+This script supports connection to a firewall or to Panorama.
 """
 
 
@@ -113,9 +105,9 @@ def main_splunk():
     # Verify required args were passed to command
     log(debug, "Determining if required arguments are present")
     if 'device' not in kwargs and 'panorama' not in kwargs:
-        common.exit_with_error("pantag: Missing required command argument: device or panorama", 3)
+        common.exit_with_error("Missing required command argument: device or panorama", 3)
     if 'tag' not in kwargs and 'tag_field' not in kwargs:
-        common.exit_with_error("pantag: Missing required command argument: tag or tag_field", 3)
+        common.exit_with_error("Missing required command argument: tag or tag_field", 3)
 
     # Assign defaults to fields that aren't specified
     action = kwargs['action'] if 'action' in kwargs else "add"
@@ -141,7 +133,7 @@ def main_splunk():
             if vsys is None:
                 vsys = "vsys1"
     else:
-        common.exit_with_error("pantag: Missing required command argument: device or panorama", 3)
+        common.exit_with_error("Missing required command argument: device or panorama", 3)
     log(debug, "Use Panorama: %s" % use_panorama)
     log(debug, "VSys: %s" % vsys)
     log(debug, "Hostname: %s" % hostname)
@@ -162,7 +154,7 @@ def main_splunk():
     apikey = common.apikey(sessionKey, hostname, debug)
 
     # Create the connection to the firewall or Panorama
-    panorama=None
+    panorama = None
     if use_panorama:
         # For Panorama, create the Panorama object, and the firewall if only one serial
         panorama = Panorama(hostname, api_key=apikey)
@@ -247,7 +239,7 @@ def main_splunk():
 
 
 def main_cli():
-    pass
+    raise NotImplementedError
 
 
 if __name__ == "__main__":
