@@ -1,29 +1,69 @@
-# ##########################################
-# Version 0.1
-# author: Brian Torres-Gil
-# 
-# About this script:
-# This script retrieves an xml file with new apps so they
-# can be highlighted in a dashboard.
-# 
-# Script's actions and warning messages are logged in $SPLUNK_HOME/var/log/splunk/python.log
-############################################
-###########################################
+#!/usr/bin/env python
+
+# Copyright (c) 2015, Palo Alto Networks
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
+
+"""Retrieve the latest additions to Applipedia
+
+About this script
+-----------------
+This script retrieves an xml file with new apps so they
+can be highlighted in a dashboard.
+
+As with other scripts in this app, all script actions and warning
+messages are logged in $SPLUNK_HOME/var/log/splunk/python.log
+"""
+
 # if you DO want to go through a proxy, e.g., HTTP_PROXY={squid:'2.2.2.2'}
 HTTP_PROXY = {}
-DEBUG = False
+
 #########################################################
 # Do NOT modify anything below this line unless you are
 # certain of the ramifications of the changes
 #########################################################
-import splunk.Intersplunk  # so you can interact with Splunk
-import splunk.entity as entity  # for splunk config info
-import splunk.mining.dcutils as dcu
-import urllib  # for urllib.urlencode()
-import urllib2  # make http requests to PAN firewall
+
 import sys  # for system params and sys.exit()
-import traceback
+import os
 import xml.etree.ElementTree as ET  # for xml parsing
+import urllib2  # make http requests to PAN firewall
+
+libpath = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [os.path.join(libpath, 'lib')]
+import common
+
+logger = common.logging.getLogger().getChild('panRetrieveNewApps')
+
+try:
+    import splunk.Intersplunk  # so you can interact with Splunk
+    import splunk.entity as entity  # for splunk config info
+
+    libpath = os.path.dirname(os.path.abspath(__file__))
+    sys.path[:0] = [os.path.join(libpath, 'lib')]
+    sys.path[:0] = [os.path.join(libpath, 'lib', 'pan-python', 'lib')]
+    sys.path[:0] = [os.path.join(libpath, 'lib', 'pandevice')]
+    import pandevice
+    from pandevice.panorama import Panorama
+    from pandevice.firewall import Firewall
+    import pan.xapi
+
+    from common import log
+
+except Exception as e:
+    # Handle exception to produce logs to python.log
+    common.exit_with_error(e)
 
 
 def createOpener():
@@ -48,57 +88,49 @@ def retrieveNewApps():
     return result
 
 
-# an empty dictionary will be used to hold system values
-settings = dict()
-# results contains the data from the search results and settings contains the sessionKey that we can use to talk to splunk
-results, unused1, settings = splunk.Intersplunk.getOrganizedResults()
-args, kwargs = splunk.Intersplunk.getKeywordsAndOptions()
-#logger.debug(settings) #For debugging
-# get the sessionKey
-sessionKey = settings['sessionKey']
 
 try:
-    if 'debug' in kwargs:
-        DEBUG = kwargs['debug']
-    # setup the logger. $SPLUNK_HOME/var/log/splunk/python.log
-    logger = dcu.getLogger().getChild('retrieveNewApps')
+    # Get arguments
+    args, kwargs = splunk.Intersplunk.getKeywordsAndOptions()
 
-    if DEBUG:
-        logger.setLevel(DEBUG)
+    # Enable debugging by passing 'debug=yes' as an argument of
+    # the command on the Splunk searchbar.
+
+    debug = common.check_debug(kwargs)
+
+    # Results contains the data from the search results
+    results, unused1, settings = splunk.Intersplunk.getOrganizedResults()
 
     existing_apps = []
     for app in results:
         existing_apps.append(str(app['app{@name}']))
 
     results = []
-    logger.debug("Existing apps already known and considered: %s" % (len(existing_apps),))
-    logger.debug(existing_apps)
+    log(debug, "Existing apps already known and considered: %s" % (len(existing_apps),))
+    log(debug, existing_apps)
 
-    logger.debug("Getting new Apps from Palo Alto Networks")
+    log(debug, "Getting new Apps from Palo Alto Networks")
     resp = retrieveNewApps()
-    logger.debug("Apps retrieved")
+    log(debug, "Apps retrieved")
     xml = resp.read()
 
-    logger.debug("Apps read")
+    log(debug, "Apps read")
     xmlroot = ET.fromstring(xml)
-    logger.debug("Apps parsed")
+    log(debug, "Apps parsed")
 
     newapps = xmlroot.findall("./entry")
-    logger.debug("Found %s new apps at Palo Alto Networks" % (len(newapps),))
+    log(debug, "Found %s new apps at Palo Alto Networks" % (len(newapps),))
 
     for app in newapps:
         app.tag = 'app'
         if app.get('name') not in existing_apps:
             results.append({"_raw": ET.tostring(app)})
 
-    logger.debug("Found %s new apps that weren't already known" % (len(results),))
+    log(debug, "Found %s new apps that weren't already known" % (len(results),))
 
     # output the complete results sent back to splunk
     splunk.Intersplunk.outputResults(results)
 
 except Exception, e:
-    stack = traceback.format_exc()
-    logger.warn("Exception:")
-    logger.warn(stack)
-    raise Exception("Exception while getting new apps. Error: %s" % (str(e),))
+    common.exit_with_error("Exception while getting new apps. Error: %s" % str(e))
 
