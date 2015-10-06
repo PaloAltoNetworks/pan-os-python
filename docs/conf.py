@@ -16,6 +16,7 @@ import sys
 import os
 import shlex
 from recommonmark.parser import CommonMarkParser
+import sphinx_rtd_theme
 
 # Check if building documentation on RTD
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -119,7 +120,8 @@ todo_include_todos = False
 if on_rtd:
     html_theme = 'default'
 else:
-    html_theme = 'alabaster'
+    html_theme = "sphinx_rtd_theme"
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
