@@ -73,11 +73,8 @@ class UserId(object):
             except (err.PanDeviceXapiError, PanXapiError) as e:
                 # Check if this is just an error about duplicates or nonexistant tags
                 # If so, ignore the error. Most operations don't care about this.
-                if hasattr(e, 'msg'):
-                    message = e.msg
-                else:
-                    message = e.message
-                if message.endswith("already exists, ignore") or e.msg.endswith("does not exist, ignore unreg"):
+                message = str(e)
+                if message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg"):
                     return
                 else:
                     raise e
