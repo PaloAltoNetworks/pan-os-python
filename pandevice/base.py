@@ -218,7 +218,6 @@ class PanDevice(PanObject):
                            api_username=None,
                            api_password=None,
                            api_key=None,
-                           serial=None,
                            port=443,
                            classify_exceptions=False):
         """Create a Firewall or Panorama object from a live device
@@ -235,7 +234,6 @@ class PanDevice(PanObject):
                            api_username,
                            api_password,
                            api_key,
-                           serial,
                            port,
                            classify_exceptions=classify_exceptions)
         version, model, serial = device.system_info()
@@ -246,7 +244,7 @@ class PanDevice(PanObject):
         instance = subclass(hostname,
                             api_username,
                             api_password,
-                            api_key,
+                            device.api_key,
                             serial,
                             port,
                             classify_exceptions=classify_exceptions)
