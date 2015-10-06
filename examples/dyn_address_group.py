@@ -35,16 +35,16 @@ from pandevice.panorama import Panorama
 def main():
 
     # Get command line arguments
-    parser = argparse.ArgumentParser(description="Upgrade a Palo Alto Networks Firewall or Panorama to the specified version")
+    parser = argparse.ArgumentParser(description="Tag an IP address on a Palo Alto Networks Next generation Firewall")
     parser.add_argument('-v', '--verbose', action='count', help="Verbose (-vv for extra verbose)")
     parser.add_argument('-q', '--quiet', action='store_true', help="No output")
     parser.add_argument('-u', '--unregister', action='store_true', help="Remove the tags (default is register)")
     parser.add_argument('-c', '--clear', action='store_true', help="Clear all tags. ip and tags arguments are ignored")
     # Palo Alto Networks related arguments
     fw_group = parser.add_argument_group('Palo Alto Networks Device')
-    fw_group.add_argument('hostname', help="Hostname of Firewall or Panorama")
-    fw_group.add_argument('username', help="Username for Firewall or Panorama")
-    fw_group.add_argument('password', help="Password for Firewall or Panorama")
+    fw_group.add_argument('hostname', help="Hostname of Firewall")
+    fw_group.add_argument('username', help="Username for Firewall")
+    fw_group.add_argument('password', help="Password for Firewall")
     fw_group.add_argument('ip', help="The IP address that should be tagged")
     fw_group.add_argument('tags', help="Comma delimited tags.  eg. linux,apache,server")
     args = parser.parse_args()
