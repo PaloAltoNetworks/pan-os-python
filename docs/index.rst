@@ -12,5 +12,6 @@ Splunk for Palo Alto Networks App
    userid
    commands
    faq
+   troubleshoot
    support
    release_notes
