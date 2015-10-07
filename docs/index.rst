@@ -1,17 +1,16 @@
-Welcome to Splunk for Palo Alto Networks's documentation!
-=========================================================
+Splunk for Palo Alto Networks App
+=================================
 
-Contents:
-
+.. #:titlesonly: # Commented out for now
 .. toctree::
+   :caption: Table of Contents
    :maxdepth: 2
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   overview
+   getting_started
+   upgrade
+   userid
+   commands
+   faq
+   support
+   release_notes
