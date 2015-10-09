@@ -30,7 +30,7 @@
       <option name="linkView">search</option>
     </single>
     <single>
-      <searchPostProcess>search sourcetype="pan_traffic" category!="any" category!="private-ip-addresses" category!="not-resolved"  | sort -count | head 1 | stats values(category) as category count(category) | eval category=if(isnull(category),"---",category)</searchPostProcess>
+      <searchPostProcess>search sourcetype="pan:traffic" category!="any" category!="private-ip-addresses" category!="not-resolved"  | sort -count | head 1 | stats values(category) as category count(category) | eval category=if(isnull(category),"---",category)</searchPostProcess>
       <earliestTime>rt-5m</earliestTime>
       <latestTime>rt</latestTime>
       <option name="classField">None</option>
@@ -41,7 +41,7 @@
   <row>
     <chart>
       <title>Event Types</title>
-      <searchString>`pan_logs` sourcetype="pan_*" log_subtype="*" | timechart span=10s count by log_subtype</searchString>
+      <searchString>`pan_logs` sourcetype="pan:*" log_subtype="*" | timechart span=10s count by log_subtype</searchString>
       <earliestTime>rt-5m</earliestTime>
       <latestTime>rt</latestTime>
       <option name="charting.axisX.scale">linear</option>
@@ -78,7 +78,7 @@
       <drilldown>
         <link>
           <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` sourcetype="pan_*" log_subtype="$click.name2$"&earliest=-5m&latest=now
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` sourcetype="pan:*" log_subtype="$click.name2$"&earliest=-5m&latest=now
               ]]>
         </link>
       </drilldown>
@@ -98,7 +98,7 @@
       <drilldown>
         <link>
           <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` sourcetype="pan_traffic" app="$click.value$"&earliest=-5m&latest=now
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` sourcetype="pan:traffic" app="$click.value$"&earliest=-5m&latest=now
               ]]>
         </link>
       </drilldown>
@@ -107,7 +107,7 @@
   <row>
     <table>
       <title>Recently Added to Applipedia</title>
-      <searchString>`pan_logs` sourcetype="pan_newapps" | dedup app{@name} sortby +_time | sort -_time | table _time app{@name} app.technology app.category app.subcategory app.risk | convert timeformat="%m/%d/%y" ctime(_time) | rename _time AS "Date added" | rename app{@name} AS Name | rename app.technology AS Technology | rename app.category AS Category | rename app.subcategory AS Subcategory | rename app.risk AS Risk</searchString>
+      <searchString>`pan_logs` sourcetype="pan:newapps" | dedup app{@name} sortby +_time | sort -_time | table _time app{@name} app.technology app.category app.subcategory app.risk | convert timeformat="%m/%d/%y" ctime(_time) | rename _time AS "Date added" | rename app{@name} AS Name | rename app.technology AS Technology | rename app.category AS Category | rename app.subcategory AS Subcategory | rename app.risk AS Risk</searchString>
       <earliestTime>-2w@w</earliestTime>
       <latestTime>now</latestTime>
       <option name="list.drilldown">full</option>
@@ -127,7 +127,8 @@
   <row>
     <map>
       <title>Applications by Destination IP Location</title>
-      <searchString>`pan_traffic` | iplocation "dst_ip" | geostats count by app</searchString>
+      <searchString>`pan_traffic` | iplocation "dest_ip" | geostats count by
+        app</searchString>
       <earliestTime>rt-5m</earliestTime>
       <latestTime>rt</latestTime>
     </map>

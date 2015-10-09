@@ -170,7 +170,7 @@
         </link>
         <link field="WildFire Link">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` (sourcetype="pan_wildfire_report" (wildfire.id="$row.WildFire Report ID$" OR wildfire.report.id="$row.WildFire Report ID$")) OR (sourcetype="pan_threat" log_subtype="wildfire" report_id="$row.WildFire Report ID$")
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` (sourcetype="pan:wildfire_report" (wildfire.id="$row.WildFire Report ID$" OR wildfire.report.id="$row.WildFire Report ID$")) OR (sourcetype="pan:threat" log_subtype="wildfire" report_id="$row.WildFire Report ID$")
 	  ]]>
         </link>
         <link field="*">
