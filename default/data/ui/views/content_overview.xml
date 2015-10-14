@@ -13,10 +13,10 @@
       <prefix>log.src_ip="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="dst_ip">
+    <input type="text" token="dest_ip">
       <label>Destination IP</label>
       <default/>
-      <prefix>log.dst_ip="</prefix>
+      <prefix>log.dest_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="content_type">
@@ -55,7 +55,7 @@
   <row>
     <chart>
       <title>Major Content Types</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time log.major_content_type | timechart values(count) by log.major_content_type</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ groupby _time log.major_content_type | timechart values(count) by log.major_content_type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -81,7 +81,7 @@
     </chart>
     <chart>
       <title>Full Content Types</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time log.content_type | timechart values(count) by log.content_type</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ groupby _time log.content_type | timechart values(count) by log.content_type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -109,7 +109,7 @@
   <row>
     <table>
       <title>Content Types and Apps</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ `table(log.app log.content_type, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ `table(log.app log.content_type, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -149,7 +149,7 @@
     </table>
     <table>
       <title>Non-Web Browsing Content Types</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ log.TECHNOLOGY!="browser-based" `table(log.app log.content_type, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ log.TECHNOLOGY!="browser-based" `table(log.app log.content_type, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -181,7 +181,7 @@
     </table>
     <table>
       <title>Content Types and Web Categories</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ `table(log.category log.content_type, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ `table(log.category log.content_type, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>

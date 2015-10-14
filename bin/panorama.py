@@ -14,10 +14,10 @@
 ############################################
 # How to Use this script
 # in the example below, we are blocking all ip's returned by the search
-# example1: index=pan_logs 1.1.1.1 | stats dc(dst_ip) by dst_ip | panblock action="add" group="badboys"
+# example1: index=pan_logs 1.1.1.1 | stats dc(dest_ip) by dest_ip | panblock action="add" group="badboys"
 # Adds the IP 1.1.1.1
-# example2: index=pan_logs wine | stats dc(dst_hostname) by dst_hostname | panblock action="rem" group="badboys" device="sales-fw"
-# Removes all dst_hostnames returned by the search from the sales firewall from the badboys group
+# example2: index=pan_logs wine | stats dc(dest_hostname) by dest_hostname | panblock action="rem" group="badboys" device="sales-fw"
+# Removes all dest_hostnames returned by the search from the sales firewall from the badboys group
 ###########################################
 
 ###########################################

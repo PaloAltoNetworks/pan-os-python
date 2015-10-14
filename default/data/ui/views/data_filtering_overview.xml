@@ -13,10 +13,10 @@
       <prefix>log.src_ip="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="dst_ip">
+    <input type="text" token="dest_ip">
       <label>Destination IP</label>
       <default/>
-      <prefix>log.dst_ip="</prefix>
+      <prefix>log.dest_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="user">
@@ -53,7 +53,7 @@
   <row>
     <chart>
       <title>Data Events</title>
-      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -79,7 +79,7 @@
     </chart>
     <chart>
       <title>Application</title>
-      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -107,7 +107,7 @@
   <row>
     <table>
       <title>Data Filter Events by Application</title>
-      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ `table(log.threat_name log.action log.src_ip log.app, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.threat_name log.action log.src_ip log.app, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -147,7 +147,7 @@
     </table>
     <table>
       <title>Data Filter Events by Destination</title>
-      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dst_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dst_ip log.dst_location, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dest_ip log.dest_location, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -171,7 +171,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dst_ip="$row.Destination$" dst_location="$row.Location$" src_ip="$row.Source$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_ip="$row.Destination$" dest_location="$row.Location$" src_ip="$row.Source$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>

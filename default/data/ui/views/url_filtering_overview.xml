@@ -14,10 +14,10 @@
       <prefix>log.src_ip="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="dst_ip">
+    <input type="text" token="dest_ip">
       <label>Destination IP</label>
       <default/>
-      <prefix>log.dst_ip="</prefix>
+      <prefix>log.dest_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="user">
@@ -26,10 +26,10 @@
       <prefix>log.user="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="dst_hostname">
+    <input type="text" token="dest_hostname">
       <label>Destination Hostname</label>
       <default/>
-      <prefix>log.dst_hostname="</prefix>
+      <prefix>log.dest_hostname="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="app">
@@ -52,7 +52,7 @@
   <row>
     <chart>
       <title>URL Filtering Actions</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ groupby _time log.action | timechart values(count) by log.action</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dest_ip$ $app$ $user$ $vsys$ $dest_hostname$ groupby _time log.action | timechart values(count) by log.action</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -78,7 +78,7 @@
     </chart>
     <chart>
       <title>Applications</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ groupby _time log.app | timechart values(count) by log.app</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dest_ip$ $app$ $user$ $vsys$ $dest_hostname$ groupby _time log.app | timechart values(count) by log.app</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -106,7 +106,7 @@
   <row>
     <table>
       <title>Application Users</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ `table(log.user log.app, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dest_ip$ $app$ $user$ $vsys$ $dest_hostname$ `table(log.user log.app, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -146,7 +146,7 @@
     </table>
     <table>
       <title>Host Categories</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dst_ip$ $app$ $user$ $vsys$ $dst_hostname$ `table(log.dst_hostname log.category, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $src_ip$ $dest_ip$ $app$ $user$ $vsys$ $dest_hostname$ `table(log.dest_hostname log.category, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -168,9 +168,9 @@
       <option name="drilldown">row</option>
       <option name="count">10</option>
       <drilldown>
-        <link field="dst_hostname">
+        <link field="dest_hostname">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` dst_hostname="$row.dst_hostname$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` dest_hostname="$row.dest_hostname$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="category">
