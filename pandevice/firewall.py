@@ -68,12 +68,12 @@ class Firewall(PanDevice):
         super(Firewall, self).__init__(hostname, api_username, api_password, api_key,
                                        port=port,
                                        is_virtual=is_virtual,
-                                       serial=serial,
                                        classify_exceptions=classify_exceptions,
                                        )
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
+        self.serial = serial
         self.vsys = vsys
         self.panorama = panorama
 

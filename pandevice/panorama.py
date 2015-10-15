@@ -39,7 +39,7 @@ class Panorama(pandevice.base.PanDevice):
                  api_key=None,
                  port=443,
                  classify_exceptions=False):
-        super(Panorama, self).__init__(hostname, api_username, api_password, api_key, classify_exceptions=classify_exceptions)
+        super(Panorama, self).__init__(hostname, api_username, api_password, api_key, port, classify_exceptions=classify_exceptions)
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 

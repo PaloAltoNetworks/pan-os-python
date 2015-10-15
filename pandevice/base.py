@@ -173,7 +173,6 @@ class PanDevice(PanObject):
                  api_username=None,
                  api_password=None,
                  api_key=None,
-                 serial=None,
                  port=443,
                  is_virtual=None,
                  timeout=1200,
@@ -190,7 +189,6 @@ class PanDevice(PanObject):
         self._api_password = api_password
         self._api_key = api_key
         self.is_virtual = is_virtual
-        self.serial = serial
         self.timeout = timeout
         self.interval = interval
         self.interfaces = {}
