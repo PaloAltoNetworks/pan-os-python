@@ -6,3 +6,6 @@ export = none
 # Export commands so you can interact w/ the firewall with non-PAN logs
 [commands]
 export = system
+
+[searchbnf]
+export = system
