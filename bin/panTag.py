@@ -113,6 +113,9 @@ def main_splunk():
     action = kwargs['action'] if 'action' in kwargs else "add"
     vsys = kwargs['vsys'] if 'vsys' in kwargs else None
     ip_field = kwargs['ip_field'] if 'ip_field' in kwargs else "src_ip"
+    # Support 'field' argument (legacy syntax)
+    if 'field' in kwargs and not 'ip_field' in kwargs:
+        ip_field = kwargs['field']
     tag = kwargs['tag'] if 'tag' in kwargs else None
     tag_field = kwargs['tag_field'] if 'tag_field' in kwargs else None
 
