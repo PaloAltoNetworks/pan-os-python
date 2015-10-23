@@ -20,8 +20,8 @@
   
   <collection label="Traffic">
     <view name="traffic_overview" />
-    <divider />
     <view name="web_usage_report" />
+    <view name="saas_overview" />
     <divider />
     <collection label="Searches &amp; Reports">
       <a href="search?q=search%20%60pan_traffic%60">Search Traffic Data</a>
