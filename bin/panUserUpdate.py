@@ -16,26 +16,29 @@
 
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
-"""Device updater handles software versions and updates for devices
+"""Update users on the firewall from logs in Splunk
 
 About this script
 -----------------
-Given an IP address, tags or identifies the ip address in PAN-OS.
-Behavior in PAN-OS 6.0 and higher:
-  IP address is tagged. IP's can have multiple tags. Tags are
-  referenced in Dynamic Address Groups. Boolean logic (AND/OR)
-  can be used in Dynamic Address Groups to filter ip's based on tags
-Behavior in PAN-OS 5.1 and lower:
-  IP address is mapped to an identifier. Only one identifier
-  per IP address. The identifier associates the IP with a single
-  Dynamic Address Object in PAN-OS.
+User-ID is a mechanism in the firewall that maps users to IP addresses.
+These User to IP mappings can be updated using many methods including from
+Active Directory or by sending syslogs to a firewall from a Radius or other
+authentication server.
 
-The script assumes that you have firewall policy setup that blocks
-traffic for a given dynamic address group
+Many organizations send authentication logs to Splunk, so it is natural for
+Splunk to communicate these authentication events to the firewalls so their
+User to IP mappings are always up-to-date.
 
-It is important to recognize that this script does NOT modify a firewall rule!
-It is only tagging IP addresses with metadata so that the existing firewall
-policy can act accordingly.
+There are two methods to synchronize authentication events from Splunk to the firewall:
+
+  Method 1:  Forward logs from Splunk to the User-ID firewall.
+
+  Method 2:  Use this script to update the firewall using its API.
+
+Method 1 is preferred because it is more efficient.  However, Method 2 is
+useful in cases where the user and the IP are not in the same logs. Splunk
+can correlate the user to the IP before passing the mapping to the firewall
+via API.
 
 This script supports connection to a firewall or to Panorama.
 """
@@ -49,13 +52,13 @@ This script supports connection to a firewall or to Panorama.
 import sys  # for system params and sys.exit()
 import os
 
+
 libpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(libpath, 'lib')]
 import common
 import environment
 
-logger = common.logging.getLogger().getChild('panTag')
-#logger.setLevel(pan_common.logging.INFO)
+logger = common.logging.getLogger().getChild('panUserUpdate')
 
 try:
     if environment.run_by_splunk():
@@ -77,9 +80,6 @@ except Exception as e:
     # Handle exception to produce logs to python.log
     common.exit_with_error(e)
 
-# Default fields that contain IP addresses and should be tagged if they exist
-IP_FIELDS = ['src_ip', 'dest_ip', 'ip']
-
 
 def main_splunk():
     # Get arguments
@@ -97,8 +97,7 @@ def main_splunk():
     #   panorama
     #   serial
     #   vsys
-    #   tag
-    #   tag_field
+    #   user_field
     #   ip_field
     #   debug
 
@@ -106,15 +105,14 @@ def main_splunk():
     log(debug, "Determining if required arguments are present")
     if 'device' not in kwargs and 'panorama' not in kwargs:
         common.exit_with_error("Missing required command argument: device or panorama", 3)
-    if 'tag' not in kwargs and 'tag_field' not in kwargs:
-        common.exit_with_error("Missing required command argument: tag or tag_field", 3)
+    if 'panorama' in kwargs and 'serial' not in kwargs:
+        common.exit_with_error("Found 'panorama' arguments, but missing 'serial' argument", 3)
 
     # Assign defaults to fields that aren't specified
-    action = kwargs['action'] if 'action' in kwargs else "add"
-    vsys = kwargs['vsys'] if 'vsys' in kwargs else None
+    action = kwargs['action'] if 'action' in kwargs else "login"
+    vsys = kwargs['vsys'] if 'vsys' in kwargs else "vsys1"
     ip_field = kwargs['ip_field'] if 'ip_field' in kwargs else "src_ip"
-    tag = kwargs['tag'] if 'tag' in kwargs else None
-    tag_field = kwargs['tag_field'] if 'tag_field' in kwargs else None
+    user_field = kwargs['tag_field'] if 'tag_field' in kwargs else "user"
 
     # Determine if device hostname or serial was provided as argument or should be pulled from entries
     log(debug, "Determining how firewalls should be contacted based on arguments")
@@ -123,15 +121,10 @@ def main_splunk():
     serial = None
     if "device" in kwargs:
         hostname = kwargs['device']
-        if vsys is None:
-            vsys = "vsys1"
     elif "panorama" in kwargs:
         use_panorama = True
         hostname = kwargs['panorama']
-        if "serial" in kwargs:
-            serial = kwargs['serial']
-            if vsys is None:
-                vsys = "vsys1"
+        serial = kwargs['serial']
     else:
         common.exit_with_error("Missing required command argument: device or panorama", 3)
     log(debug, "Use Panorama: %s" % use_panorama)
@@ -139,9 +132,6 @@ def main_splunk():
     log(debug, "Hostname: %s" % hostname)
     if use_panorama and serial is not None:
         log(debug, "Device Serial: %s" % serial)
-    else:
-        log(debug, "Using serials from logs")
-
 
     # Results contains the data from the search results and settings
     # contains the sessionKey that we can use to talk to Splunk
@@ -156,52 +146,25 @@ def main_splunk():
     # Create the connection to the firewall or Panorama
     panorama = None
     if use_panorama:
-        # For Panorama, create the Panorama object, and the firewall if only one serial
+        # For Panorama, create the Panorama object, and the firewall object
         panorama = Panorama(hostname, api_key=apikey)
-        if serial is not None:
-            firewall = {'firewall': Firewall(panorama=panorama, serial=serial, vsys=vsys)}
-            firewall['firewall'].userid.batch_start()
-        else:
-            firewall = {}
+        firewall = Firewall(panorama=panorama, serial=serial, vsys=vsys)
+        firewall.userid.batch_start()
     else:
-        firewall = {'firewall': Firewall(hostname, api_key=apikey, vsys=vsys)}
-        firewall['firewall'].userid.batch_start()
+        # No Panorama, so just create the firewall object
+        firewall = Firewall(hostname, api_key=apikey, vsys=vsys)
+        firewall.userid.batch_start()
 
     # Collect all the ip addresses and tags into firewall batch requests
     for result in results:
 
-        ## Find the serial (if not a single firewall)
-
-        if use_panorama and serial is None:
-            try:
-                this_serial = result['serial_number']
-                this_vsys = result['vsys']
-            except KeyError as e:
-                result['status'] = "ERROR: Unable to determine serial number or vsys of device"
-                continue
-            else:
-                ## Create the firewall object if using multiple serials
-                if this_serial in firewall:
-                    this_firewall = firewall[(this_serial, this_vsys)]
-                else:
-                    # Create the firewall object for this serial
-                    firewall[(this_serial, this_vsys)] = Firewall(panorama=panorama, serial=this_serial, vsys=this_vsys)
-                    this_firewall = firewall[(this_serial, this_vsys)]
-                    this_firewall.userid.batch_start()
-        else:
-            this_firewall = firewall
-
         ## Find the tag (if a tag_field was specified)
 
-        this_tag = []
-        if tag_field is not None:
-            try:
-                this_tag.append(result[tag_field])
-            except KeyError as e:
-                result['status'] = "ERROR: Unable to determine tag from field: %s" % tag_field
-                continue
-        if tag is not None:
-            this_tag.append(tag)
+        try:
+            this_user = result[user_field]
+        except KeyError as e:
+            result['status'] = "ERROR: Unable to determine user from field: %s" % user_field
+            continue
 
         ## Find the IP
 
@@ -213,20 +176,19 @@ def main_splunk():
         ## Create a request in the batch user-id update for the firewall
         ## No API call to the firewall happens until all batch requests are created.
 
-        if action == "add":
-            log(debug, "Registering tags on firewall %s: %s - %s" % (this_firewall, this_ip, this_tag))
-            this_firewall.userid.register(this_ip, this_tag)
+        if action == "login":
+            log(debug, "Login event on firewall %s: %s - %s" % (firewall, this_ip, this_user))
+            firewall.userid.login(this_user, this_ip)
         else:
-            log(debug, "Unregistering tags on firewall %s: %s - %s" % (this_firewall, this_ip, this_tag))
-            this_firewall.userid.unregister(this_ip, this_tag)
+            log(debug, "Logout event on firewall %s: %s - %s" % (firewall, this_ip, this_user))
+            firewall.userid.logout(this_user, this_ip)
 
         result['status'] = "Submitted successfully"
 
     ## Make the API calls to the User-ID API of each firewall
 
     try:
-        for fw in firewall.values():
-            fw.userid.batch_end()
+        firewall.userid.batch_end()
 
     except pan.xapi.PanXapiError as e:
         common.exit_with_error(str(e))
