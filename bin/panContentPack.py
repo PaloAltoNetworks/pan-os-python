@@ -28,10 +28,12 @@ in the Palo Alto Networks Add-On (TA).
 Example usage in Splunk searchbar:
 
 Update app list:
-
+    | pancontentpack 10.5.5.5 apps
 
 Update threat list:
+    | pancontentpack 10.5.5.5 threats
 
+Where 10.5.5.5 is the ip of a firewall or Panorama.
 
 """
 
