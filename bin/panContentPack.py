@@ -43,6 +43,7 @@ Update threat list:
 
 import sys  # for system params and sys.exit()
 import os
+import traceback
 
 libpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(libpath, 'lib')]
@@ -105,9 +106,26 @@ def parse_apps(apps_xml):
             a['app:prone_to_misuse'] = app['prone-to-misuse']
             a['app:pervasive_use'] = app['pervasive-use']
             a['app:is_saas'] = app.get('is-saas', "no")
-        except KeyError as e:
+            a['app:default_ports'] = ""
+            try:
+                # Sometimes there are more than one default tag
+                # so make it a list and iterate over the default tags.
+                default = app['default']
+                if isinstance(default, list):
+                    for d in default:
+                        a['app:default_ports'] = d['port']['member']
+                        break
+                else:
+                    a['app:default_ports'] = default['port']['member']
+            except KeyError:
+                pass
+            else:
+                if not isinstance(a['app:default_ports'], basestring):
+                    a['app:default_ports'] = "|".join(a['app:default_ports'])
+        except Exception as e:
             logger.error("Error parsing app: %s" % app['@name'])
-            raise e
+            logger.error(traceback.format_exc())
+            common.exit_with_error(str(e))
         # convert all out of unicode
         for key in a:
             a[key] = str(a[key])
