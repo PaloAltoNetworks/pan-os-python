@@ -30,10 +30,24 @@ if run_by_splunk():
     import splunk.mining.dcutils as logging
     import splunk.entity as entity  # for splunk config info
     from splunk import ResourceNotFound
+    logger = logging.getLogger()
 else:
     import logging
+    # python 2.6 doesn't have a null handler, so create it
+    if not hasattr(logging, 'NullHandler'):
+        class NullHandler(logging.Handler):
+            def emit(self, record):
+                pass
+        logging.NullHandler = NullHandler
 
-logger = logging.getLogger()
+    # set logging to nullhandler to prevent exceptions if logging not enabled
+    logging.getLogger().addHandler(logging.NullHandler())
+    logger = logging.getLogger()
+    ch = logging.StreamHandler(sys.stdout)
+    logger.addHandler(ch)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+
 
 libpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(libpath)]

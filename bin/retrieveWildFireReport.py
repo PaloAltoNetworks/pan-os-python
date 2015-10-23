@@ -40,7 +40,7 @@ import common
 import environment
 
 logger = common.logging.getLogger().getChild('retrieveWildFireReport')
-logger.setLevel(common.logging.INFO)
+#logger.setLevel(common.logging.INFO)
 
 if environment.run_by_splunk():
     try:
