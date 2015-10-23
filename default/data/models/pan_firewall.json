@@ -187,7 +187,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -559,7 +559,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -698,7 +698,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -710,19 +710,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -734,7 +734,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -746,7 +746,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -758,7 +758,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -770,19 +770,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -794,7 +794,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -806,7 +806,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -818,19 +818,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -842,7 +842,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -866,14 +866,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -1018,6 +1018,54 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -1258,7 +1306,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -1630,7 +1678,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -1769,7 +1817,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -1781,19 +1829,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -1805,7 +1853,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -1817,7 +1865,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -1829,7 +1877,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -1841,19 +1889,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -1865,7 +1913,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -1877,7 +1925,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -1889,19 +1937,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -1913,7 +1961,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -1937,14 +1985,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -2077,6 +2125,66 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -2340,7 +2448,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -2712,7 +2820,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -2851,7 +2959,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -2863,19 +2971,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -2887,7 +2995,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -2899,7 +3007,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -2911,7 +3019,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -2923,19 +3031,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -2947,7 +3055,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -2959,7 +3067,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -2971,19 +3079,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -2995,7 +3103,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -3019,14 +3127,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -3159,6 +3267,66 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -3399,7 +3567,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -3771,7 +3939,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -3910,7 +4078,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -3922,19 +4090,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -3946,7 +4114,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -3958,7 +4126,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -3970,7 +4138,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -3982,19 +4150,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -4006,7 +4174,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -4018,7 +4186,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -4030,19 +4198,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -4054,7 +4222,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -4078,14 +4246,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -4218,6 +4386,66 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -4458,7 +4686,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -4830,7 +5058,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -4969,7 +5197,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -4981,19 +5209,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -5005,7 +5233,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -5017,7 +5245,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -5029,7 +5257,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -5041,19 +5269,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -5065,7 +5293,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -5077,7 +5305,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -5089,19 +5317,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -5113,7 +5341,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -5137,14 +5365,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -5277,6 +5505,66 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -5517,7 +5805,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -5889,7 +6177,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -6028,7 +6316,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -6040,19 +6328,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -6064,7 +6352,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -6076,7 +6364,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -6088,7 +6376,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -6100,19 +6388,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -6124,7 +6412,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -6136,7 +6424,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -6148,19 +6436,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -6172,7 +6460,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -6196,14 +6484,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -6336,6 +6624,66 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -6576,7 +6924,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -6948,7 +7296,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -7087,7 +7435,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -7099,19 +7447,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -7123,7 +7471,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -7135,7 +7483,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -7147,7 +7495,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -7159,19 +7507,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -7183,7 +7531,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -7195,7 +7543,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -7207,19 +7555,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -7231,7 +7579,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -7255,14 +7603,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -7395,6 +7743,66 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -7635,7 +8043,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -8007,7 +8415,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -8146,7 +8554,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -8158,19 +8566,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -8182,7 +8590,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -8194,7 +8602,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -8206,7 +8614,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -8218,19 +8626,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -8242,7 +8650,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -8254,7 +8662,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -8266,19 +8674,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -8290,7 +8698,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -8314,14 +8722,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -8454,6 +8862,66 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -8694,7 +9162,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -9066,7 +9534,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -9205,7 +9673,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -9217,19 +9685,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -9241,7 +9709,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -9253,7 +9721,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -9265,7 +9733,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -9277,19 +9745,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -9301,7 +9769,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -9313,7 +9781,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -9325,19 +9793,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -9349,7 +9817,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -9373,14 +9841,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -9501,6 +9969,66 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -9741,7 +10269,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -10113,7 +10641,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -10252,7 +10780,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -10264,19 +10792,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -10288,7 +10816,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -10300,7 +10828,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -10312,7 +10840,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -10324,19 +10852,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -10348,7 +10876,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -10360,7 +10888,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -10372,19 +10900,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -10396,7 +10924,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -10420,14 +10948,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -10560,6 +11088,66 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -10800,7 +11388,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -11172,7 +11760,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -11311,7 +11899,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -11323,19 +11911,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -11347,7 +11935,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -11359,7 +11947,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -11371,7 +11959,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -11383,19 +11971,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -11407,7 +11995,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -11419,7 +12007,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -11431,19 +12019,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -11455,7 +12043,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -11479,14 +12067,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -11619,6 +12207,66 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -11859,7 +12507,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -12231,7 +12879,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -12370,7 +13018,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -12382,19 +13030,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -12406,7 +13054,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -12418,7 +13066,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -12430,7 +13078,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -12442,19 +13090,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -12466,7 +13114,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -12478,7 +13126,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -12490,19 +13138,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -12514,7 +13162,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -12538,14 +13186,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -12678,6 +13326,66 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -12918,7 +13626,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -13290,7 +13998,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -13429,7 +14137,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -13441,19 +14149,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -13465,7 +14173,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -13477,7 +14185,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -13489,7 +14197,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -13501,19 +14209,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -13525,7 +14233,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -13537,7 +14245,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -13549,19 +14257,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -13573,7 +14281,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -13597,14 +14305,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -13737,6 +14445,66 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -13977,7 +14745,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "dest",
                     "comment": "",
@@ -14349,7 +15117,7 @@
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": true,
+                    "hidden": false,
                     "editable": true,
                     "displayName": "src",
                     "comment": "",
@@ -14488,7 +15256,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -14500,19 +15268,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -14524,7 +15292,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -14536,7 +15304,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -14548,7 +15316,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -14560,19 +15328,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -14584,7 +15352,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -14596,7 +15364,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -14608,19 +15376,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -14632,7 +15400,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -14656,14 +15424,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -14796,6 +15564,66 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -15547,7 +16375,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -15559,19 +16387,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": true,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -15583,7 +16411,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -15595,7 +16423,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -15607,7 +16435,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -15619,19 +16447,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": true,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -15643,7 +16471,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -15655,7 +16483,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -15667,19 +16495,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": true,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -15691,7 +16519,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -15715,14 +16543,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": true,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -15855,6 +16683,66 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -16606,7 +17494,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "ABLE_TO_TRANSFER_FILE",
+                    "fieldName": "app:able_to_transfer_file",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -16618,19 +17506,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "DEFAULT_PORTS",
+                    "fieldName": "app:default_ports",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": true,
                     "editable": true,
-                    "displayName": "app: standard ports",
+                    "displayName": "app: default ports",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "RISK",
+                    "fieldName": "app:risk",
                     "owner": "log",
                     "type": "number",
                     "required": false,
@@ -16642,7 +17530,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EXCESSIVE_BANDWIDTH",
+                    "fieldName": "app:excessive_bandwidth",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -16654,7 +17542,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "CATEGORY",
+                    "fieldName": "app:category",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -16666,7 +17554,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PRONE_TO_MISUSE",
+                    "fieldName": "app:prone_to_misuse",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -16678,19 +17566,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "PERVASIVE_USE",
+                    "fieldName": "app:pervasive_use",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": true,
                     "editable": true,
-                    "displayName": "app: widely use",
+                    "displayName": "app: pervasive use",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "EVASIVE",
+                    "fieldName": "app:evasive",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -16702,7 +17590,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TECHNOLOGY",
+                    "fieldName": "app:technology",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -16714,7 +17602,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "SUBCATEGORY",
+                    "fieldName": "app:subcategory",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -16726,19 +17614,19 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "HAS_KNOWN_VULNERABILITY",
+                    "fieldName": "app:has_known_vulnerability",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
                     "hidden": true,
                     "editable": true,
-                    "displayName": "app: has known vulnerabilities",
+                    "displayName": "app: has known vulnerability",
                     "comment": "",
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "TUNNEL_OTHER_APPLICATION",
+                    "fieldName": "app:tunnels_other_application",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -16750,7 +17638,7 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "USED_BY_MALWARE",
+                    "fieldName": "app:used_by_malware",
                     "owner": "log",
                     "type": "string",
                     "required": false,
@@ -16774,14 +17662,14 @@
                     "fieldSearch": ""
                 },
                 {
-                    "fieldName": "dst_class",
+                    "fieldName": "dest_class",
                     "owner": "log",
                     "type": "string",
                     "required": false,
                     "multivalue": false,
-                    "hidden": false,
+                    "hidden": true,
                     "editable": true,
-                    "displayName": "dst_class",
+                    "displayName": "dest_class",
                     "comment": "",
                     "fieldSearch": ""
                 },
@@ -16914,6 +17802,66 @@
                     "hidden": true,
                     "editable": true,
                     "displayName": "pcap_id",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "app: is saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "app:is_sanctioned_saas",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "app: is sanctioned saas",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "dvc_host",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dvc_host",
+                    "comment": "",
+                    "fieldSearch": ""
+                },
+                {
+                    "fieldName": "session_end_reason",
+                    "owner": "log",
+                    "type": "string",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": true,
+                    "editable": true,
+                    "displayName": "session_end_reason",
                     "comment": "",
                     "fieldSearch": ""
                 },
