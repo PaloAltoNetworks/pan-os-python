@@ -26,10 +26,10 @@
 ############################################
 # How to Use this script
 # in the example below, we are blocking all ip's returned by the search
-# example1: index=pan_logs 1.1.1.1 | stats dc(dst_ip) by dst_ip | pantag action="add" tag="malware-infected" device="1.0.0.1"
+# example1: index=pan_logs 1.1.1.1 | stats dc(dest_ip) by dest_ip | pantag action="add" tag="malware-infected" device="1.0.0.1"
 # Adds a 'malware-infected' tag to the IP 1.1.1.1 on the firewall with ip 1.0.0.1
-# example2: index=pan_logs wine | stats dc(dst_ip) by dst_ip | pantag action="rem" group="shairpoint" device="sales-fw"
-# Removes the 'shairpoint' tag from all dst_ip returned by the search on the firewall with hostname sales-fw
+# example2: index=pan_logs wine | stats dc(dest_ip) by dest_ip | pantag action="rem" group="shairpoint" device="sales-fw"
+# Removes the 'shairpoint' tag from all dest_ip returned by the search on the firewall with hostname sales-fw
 ###########################################
 
 ###########################################
@@ -74,7 +74,7 @@ ACTOR = '1.1.1.1'
 HTTP_PROXY = {}
 
 # Default fields that contain IP addresses and should be tagged if they exist
-IP_FIELDS = ['src_ip', 'dst_ip', 'ip']
+IP_FIELDS = ['src_ip', 'dest_ip', 'ip']
 
 # Enable debugging (script is otherwise silent unless there is an error)
 DEBUG = False

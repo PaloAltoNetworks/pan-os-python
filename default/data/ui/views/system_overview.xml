@@ -49,7 +49,7 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| `tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ `table(_time log.serial_number log.description log.log_subtype log.severity log.event_id)` | sort -_time</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ `table(_time log.serial_number log.description log.log_subtype log.severity log.event_id)` | sort -_time</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -73,32 +73,32 @@
       <drilldown>
         <link field="_time">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` _time="$row._time$"
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` _time="$row._time$"
         ]]>
         </link>
         <link field="serial_number">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` serial_number="$row.serial_number$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` serial_number="$row.serial_number$"&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="description">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` description="$row.description$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` description="$row.description$"&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="log_subtype">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` log_subtype="$row.log_subtype$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` log_subtype="$row.log_subtype$"&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="severity">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` severity="$row.severity$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` severity="$row.severity$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="event_id">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` event_id="$row.event_id$"
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` event_id="$row.event_id$"
 	  ]]>
         </link>
       </drilldown>
@@ -108,7 +108,7 @@
   <row>
     <chart>
       <title>System Events Over Time</title>
-      <searchString>| `tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log.log_subtype | timechart values(count) by log.log_subtype</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log.log_subtype | timechart values(count) by log.log_subtype</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -127,14 +127,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` log_subtype="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` log_subtype="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Severity</title>
-      <searchString>| `tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log.severity | timechart values(count) by log.severity</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log.severity | timechart values(count) by log.severity</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -153,7 +153,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` severity="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` severity="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
