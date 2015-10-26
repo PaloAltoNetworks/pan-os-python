@@ -149,7 +149,7 @@
     </table>
     <table>
       <title>Non-Web Browsing Content Types</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ log.TECHNOLOGY!="browser-based" `table(log.app log.content_type, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ log.app:technology!="browser-based" `table(log.app log.content_type, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
