@@ -43,7 +43,7 @@
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.traffic.end, log.action)`</populatingSearch>
     </input>
   </fieldset>
-  <searchTemplate>| `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.CATEGORY log.SUBCATEGORY log.user log.bytes)`</searchTemplate>
+  <searchTemplate>| `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.app:category log.app:subcategory log.user log.bytes)`</searchTemplate>
   <row>
     <single>
       <searchPostProcess>stats dc(app)</searchPostProcess>
@@ -70,7 +70,7 @@
       <option name="underLabel">Megabytes</option>
     </single>
     <single>
-      <searchString>| `pan_tstats` count from `node(log.threat)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ | stats count</searchString>
+      <searchString>| `pan_tstats` count from `node(log.threat)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$</searchString>
       <earliest>$earliest$</earliest>
       <latest>$latest$</latest>
       <option name="drilldown">none</option>
@@ -110,7 +110,7 @@
   <row>
       <table>
         <title>SaaS Distribution</title>
-        <searchPostProcess>stats sparkline count sum(bytes) AS sbytes by app CATEGORY SUBCATEGORY | sort -sbytes | head 8 | eval "Vol in MB"=round(sbytes/1024/1024) | rename sparkline AS distribution | rename vsys AS VSYS | rename count as Sessions | table app CATEGORY SUBCATEGORY Sessions "Vol in MB" distribution</searchPostProcess>
+        <searchPostProcess>stats sparkline count sum(bytes) AS sbytes by app app:category app:subcategory | sort -sbytes | head 8 | eval "Vol in MB"=round(sbytes/1024/1024) | rename sparkline AS distribution | rename vsys AS VSYS | rename count as Sessions | table app app:category app:subcategory Sessions "Vol in MB" distribution</searchPostProcess>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
         <option name="wrap">true</option>
@@ -219,7 +219,7 @@
   <row>
       <chart>
         <title>Top Categories - Sanctioned</title>
-        <searchPostProcess>search app:is_sanctioned_saas="yes" | top limit=5 SUBCATEGORY</searchPostProcess>
+        <searchPostProcess>search app:is_sanctioned_saas="yes" | top limit=5 app:subcategory</searchPostProcess>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
         <option name="charting.chart">bar</option>
@@ -246,7 +246,7 @@
       </chart>
       <chart>
         <title>Top Categories - Non-Sanctioned</title>
-        <searchPostProcess>search app:is_sanctioned_saas="no" | top limit=5 SUBCATEGORY</searchPostProcess>
+        <searchPostProcess>search app:is_sanctioned_saas="no" | top limit=5 app:subcategory</searchPostProcess>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
