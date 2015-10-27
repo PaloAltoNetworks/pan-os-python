@@ -3,6 +3,63 @@
 Advanced Features
 =================
 
+.. _wildfire:
+
+WildFire
+--------
+
+The Palo Alto Networks App can download a behavioral fingerprint of any
+malware seen by WildFire on your network in the form of a `WildFire report`_.
+This report is indexed by Splunk and can be used for advanced correlations
+to detect malicious behavior and indicators of compromise.
+
+Two steps are needed to enable WildFire report indexing:
+
+**Step 1: Add the Wildfire API key to the Palo Alto Networks App configuration**
+
+During the :ref:`initial setup <initialsetup>`, provide the WildFire API key.
+The WildFire API key is found in the WildFire portal on the **Account** tab:
+https://wildfire.paloaltonetworks.com
+
+To access the configuration screen after initial setup, navigate to the **Palo
+Alto Networks** menu and click **Configuration**.
+
+.. image:: _static/configuration.png
+   :width: 70%
+
+**Step 2: Send WildFire logs to Splunk from a Firewall or Panorama**
+
+To send WildFire logs to Splunk, you must configure the firewall (or
+Panorama) with a syslog server, a log forwarding profile that includes
+WildFire logs, and a security rule with a the log forwarding profile and a
+WildFire profile attached. Use the following links to configure WildFire
+logging:
+
+* `Configure syslog and log forwarding profiles`_
+* `Configure WildFire (PAN-OS 7.0)`_
+* `Configure WildFire (PAN-OS 6.1 and earlier)`_
+
+.. note:: The WildFire API key won't be used unless there are WildFire logs
+   coming from the Firewall or Panorama. The WildFire API key is leveraged to
+   get more context around the syslogs from the firewall.
+
+After you've completed both steps, you should see the WildFire dashboard
+start to populate with data. If not, verify the WildFire and logging
+configuration on the firewall.
+
+.. image:: _static/wildfire_dashboard.png
+
+.. _WildFire report:
+   https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin/monitor-wildfire-activity/wildfire-analysis-reports-close-up.html
+.. _Configure syslog and log forwarding profiles:
+   https://www.paloaltonetworks.com/documentation/70/pan-os/pan-os/monitoring/configure-syslog-monitoring.html
+.. _Configure WildFire (PAN-OS 7.0):
+   https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin/submit-files-for-wildfire-analysis/forward-files-for-wildfire-analysis.html
+.. _Configure WildFire (PAN-OS 6.1 and earlier):
+   https://www.paloaltonetworks.com/documentation/61/wildfire/wf_admin/wildfire-cloud-file-analysis/forward-samples-to-the-wildfire-cloud.html
+.. _Customize your WildFire logs further:
+   https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin/monitor-wildfire-activity/configure-wildfire-submissions-log-settings.html
+
 .. _syncuserid:
 
 Sync user login events with User-ID
@@ -134,13 +191,6 @@ For a list of all SaaS applications, visit `Applipedia`_ and under the
 `Characteristics` header, click `SaaS`.
 
 .. _Applipedia: https://applipedia.paloaltonetworks.com/
-
-.. _wildfire:
-
-WildFire
---------
-
-.. todo:: Wildfire directions
 
 .. _remediation:
 
