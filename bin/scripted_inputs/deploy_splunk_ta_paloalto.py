@@ -4,7 +4,6 @@ import logging
 import logging.handlers
 import os
 import sys
-import re
 import traceback
 
 import splunk
@@ -50,10 +49,6 @@ def install_dependency(dep):
         logger.exception(ex)
 
 def get_loose_version(version, build):
-    pattern = re.compile('(\d+\.\d+).*')
-    m = pattern.match(version)
-    if m:
-        version = m.group(1)
     version = "%s build %s" % (version, build)
     return LooseVersion(version)
 
@@ -83,24 +78,18 @@ if __name__ == '__main__':
     else:
         logger.error("unable to retrieve root_endpoint setting")
 
-    # search for only the entity object for SplunkforPaloAltoNetworks and add into en dictionary
-    en = splunk.entity.getEntities('/apps/local', search=APP_NAME, sessionKey=token)
-    if not en:
-        logger.error("no entity for SplunkforPaloAltoNetworks found, error installing")
+    # search for Splunk_TA_paloalto dependency
+    dependency_en = splunk.entity.getEntities('/apps/local', search=DEPENDENCY_TA, sessionKey=token)
+    needed_version = LooseVersion(DEPENDENCY_VERSION)
+    if not dependency_en:
+        logger.info("dependency %s not found - installing..." % DEPENDENCY_TA)
+        install_dependency(DEPENDENCY_TA)
     else:
-        # search for Splunk_TA_paloalto dependency
-        dependency_en = splunk.entity.getEntities('/apps/local', search=DEPENDENCY_TA, sessionKey=token)            
-        version = get_loose_version(en[APP_NAME]['version'], en[APP_NAME]['build'])
-        if not dependency_en:
-            logger.info("dependency %s not found - installing..." % DEPENDENCY_TA)
-            #install_dependency(DEPENDENCY_TA)
+        dep_version = get_loose_version(dependency_en[DEPENDENCY_TA]['version'], dependency_en[DEPENDENCY_TA]['build'])
+        if needed_version > dep_version:
+            logger.info("installed version of %s is %s, which is older than required version %s - updating..." % (DEPENDENCY_TA, dep_version, needed_version))
+            install_dependency(DEPENDENCY_TA)
         else:
-            dep_version = get_loose_version(dependency_en[DEPENDENCY_TA]['version'], dependency_en[DEPENDENCY_TA]['build'])
-            if version > dep_version:
-                logger.info("installed version of %s is %s, which is older than required version %s - updating..." % (DEPENDENCY_TA, dep_version, version))
-                #install_dependency(DEPENDENCY_TA)
-            else:
-                logger.info("installed version of %s is %s, which is newer or equal to version %s - leaving alone..." % (DEPENDENCY_TA, dep_version, version))
+            logger.info("installed version of %s is %s, which is newer or equal to version %s - leaving alone..." % (DEPENDENCY_TA, dep_version, needed_version))
 
     logger.info("Splunk App for Palo Alto Networks Dependency Manager: Exiting...")
-      
