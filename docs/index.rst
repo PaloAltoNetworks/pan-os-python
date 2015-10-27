@@ -1,5 +1,6 @@
-Splunk for Palo Alto Networks App
-=================================
+
+
+.. image:: _static/logos.png
 
 .. #:titlesonly: # Commented out for now
 .. toctree::
