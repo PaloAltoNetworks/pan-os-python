@@ -1,3 +1,5 @@
+.. _troubleshoot:
+
 Troubleshooting
 ===============
 
@@ -90,3 +92,11 @@ App Version 4.1 and later:
   are, try disabling both apps, and see if the build percentage increases
   over 90%. If it does, open a case with Splunk support to report the
   resource contention issue between the apps and get advice on how to proceed.
+
+**Step 5.  Get support**
+
+If you get to the end of the troubleshooting steps and you still can't figure
+out what's wrong, please search `Splunk Answers`_ and ask a question using the
+information on the :ref:`getsupport` page.
+
+.. _Splunk Answers: https://answers.splunk.com/app/questions/491.html
