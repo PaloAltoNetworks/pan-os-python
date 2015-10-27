@@ -1,7 +1,7 @@
 .. _upgrade:
 
-Upgrades
-========
+Upgrade
+=======
 
 Upgrade to App Version 5.0
 --------------------------
