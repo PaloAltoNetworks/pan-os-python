@@ -1,7 +1,15 @@
+.. _gettingstarted:
+
 Getting Started
 ===============
 
-Step 1: Create the Splunk input
+Step 1: Install the App and Add-on
+----------------------------------
+
+.. todo:: when to use app or add-on
+.. todo:: install on searchheads and indexers and heavy forwarders
+
+Step 2: Create the Splunk input
 -------------------------------
 
 Syslogs can be sent to Splunk using the following protocols:
@@ -38,7 +46,7 @@ exactly as in the example.
 
 Firewall, Panorama, and Traps ESM can all send logs to the same input port.
 
-Step 2: Configure the Firewall or Endpoint Security Manager
+Step 3: Configure the Firewall or Endpoint Security Manager
 -----------------------------------------------------------
 
 There are two ways to send logs from a Next generation Firewall to Splunk:
