@@ -72,6 +72,7 @@ See also:
 .. note:: If none of these features are desired, leave the fields blank and
    click **Save** to continue.
 
+.. _datainput:
 
 Step 3: Create the Splunk input
 -------------------------------
