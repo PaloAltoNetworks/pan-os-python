@@ -31,8 +31,14 @@ resources to focus on critical, time-sensitive investigations.
 Splunk Version Compatibility
 ----------------------------
 
-* Splunk 6 --> Palo Alto Networks App 4.x or 5.x
-* Splunk 5 --> Palo Alto Networks App 3.x
+==============  ===========
+Splunk Version  App Version
+==============  ===========
+Splunk 6        Palo Alto Networks App 4.x or 5.x
+Splunk 5        Palo Alto Networks App 3.x
+==============  ===========
+
+.. _features:
 
 Features
 --------
