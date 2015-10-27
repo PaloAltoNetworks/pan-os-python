@@ -42,11 +42,6 @@ or by installing it from within Splunk.
 Step 2: Initial Setup
 ---------------------
 
-.. figure:: _static/start_app.png
-   :figwidth: 70%
-
-   Select the Palo Alto Networks App from the App menu at the top.
-
 .. figure:: _static/setup_start.png
    :figwidth: 70%
 
@@ -68,10 +63,14 @@ Enter a WildFire API key. Splunk can
 reports from the WildFire cloud. Get your WildFire API key from the
 WildFire portal in the **Accounts** tab:  https://wildfire.paloaltonetworks.com
 
-.. note:: This feature is only available for WildFire subscribers
-
 See also:
   * :ref:`wildfire`
+
+.. note:: The WildFire indexing feature is only available for WildFire
+   subscribers
+
+.. note:: If none of these features are desired, leave the fields blank and
+   click **Save** to continue.
 
 
 Step 3: Create the Splunk input
