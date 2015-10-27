@@ -4,7 +4,7 @@ Upgrades
 Upgrade to App Version 5.0
 --------------------------
 
-todo: Upgrade Guide Here
+.. todo:: Upgrade Guide Here
 
 Upgrade to App Version 4.1
 --------------------------

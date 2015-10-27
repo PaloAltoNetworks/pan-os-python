@@ -5,7 +5,7 @@ Release Notes
 v5.0.0
 ======
 
-* todo: Release notes here
+.. todo:: Release notes here
 
 Previous Versions
 =================

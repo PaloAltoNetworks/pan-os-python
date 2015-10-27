@@ -1,6 +1,8 @@
 Troubleshooting
 ===============
 
+.. todo:: Update troubleshooting for App 5.0 (sourcetypes)
+
 Follow these troubleshooting steps if there are problems getting the
 dashboards to show data.
 

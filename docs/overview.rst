@@ -37,7 +37,9 @@ Splunk Version Compatibility
 Features
 --------
 
-todo: Features
+.. todo:: Features
+
+.. todo:: Difference between App and TA
 
 Install from Github
 -------------------

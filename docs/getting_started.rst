@@ -14,7 +14,7 @@ Configure the input using the direction for your version of the App:
 App Version 5.x
 ~~~~~~~~~~~~~~~
 
-todo: Install directions
+.. todo:: Install directions
 
 App Version 3.x and 4.x
 ~~~~~~~~~~~~~~~~~~~~~~~
