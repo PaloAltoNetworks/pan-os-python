@@ -6,6 +6,8 @@ Getting Started
 Step 1: Install the App and Add-on
 ----------------------------------
 
+First, if upgrading to App v4.1 or 5.0, read the :ref:`Upgrade Guide <upgrade>`.
+
 The Palo Alto Networks Splunk App and Add-on are designed to work together,
 and with Splunk Enterprise Security if available.
 
