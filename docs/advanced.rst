@@ -158,7 +158,53 @@ Webinar: `Defeat APT with Automated Remediation in Splunk`_
 Update metadata from content packs
 ----------------------------------
 
-.. todo:: Content pack command
+*Added in App version 5.0*
+
+The Palo Alto Networks Add-on (TA) comes with two lookup files with metadata
+about applications and threat signatures called ``app_list.csv`` and
+``threat_list.csv``, respectively. These lookup tables are responsible for
+populating the app:**** and threat:*** fields used in the dashboards and
+displayed during a search.
+
+The lookup table files are updated with each TA release, but can get out of
+date between releases. To keep the files up to date, they can be updated
+dynamically from the content pack metadata in your firewall or Panorama.
+This is done by creating a saved search inside the TA to periodically pull
+the metadata from the firewall or Panorama and update the lookup tables.
+
+Create the following saved searches in the TA, by creating the file:
+``$SPLUNK_HOME/etc/apps/Splunk_TA_paloalto/local/savedsearches.conf``
+::
+
+    [Palo Alto Networks - Retrieve ContentPack Apps]
+    cron_schedule = 5 0 * * 6
+    dispatch.earliest_time = -1m@m
+    displayview = flashtimeline
+    enableSched = 1
+    realtime_schedule = 0
+    request.ui_dispatch_view = flashtimeline
+    search = | pancontentpack <IP-or-hostname> apps | outputlookup createinapp=true app_lookup
+    disabled = 0
+
+    [Palo Alto Networks - Retrieve ContentPack Threats]
+    cron_schedule = 10 0 * * 6
+    dispatch.earliest_time = -1m@m
+    displayview = flashtimeline
+    enableSched = 1
+    realtime_schedule = 0
+    request.ui_dispatch_view = flashtimeline
+    search = | pancontentpack <IP-or-hostname> threats | outputlookup createinapp=true threat_lookup
+    disabled = 0
+
+Set ``<IP-or-hostname>`` to the IP or hostname of your Firewall or Panorama.
+Ensure you set the credentials for this device in the
+:ref:`App configuration <initialsetup>`. This example updates the lookup
+tables every Saturday at 12:05 AM for apps and 12:10 AM for threats.
+Change the cron_schedule to your desired update schedule.
+
+.. note:: The Palo Alto Networks App version 5.0 must be installed for the
+   lookup table update to work. But the saved searches must be created in
+   the TA, not the App.
 
 .. rubric:: Footnotes
 
