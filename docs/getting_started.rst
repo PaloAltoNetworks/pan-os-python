@@ -68,7 +68,7 @@ Enter a WildFire API key. Splunk can
 reports from the WildFire cloud. Get your WildFire API key from the
 WildFire portal in the **Accounts** tab:  https://wildfire.paloaltonetworks.com
 
-.. admonition:: This feature is only available for WildFire subscribers
+.. note:: This feature is only available for WildFire subscribers
 
 See also:
   * :ref:`wildfire`
