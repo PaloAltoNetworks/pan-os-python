@@ -72,6 +72,8 @@ detail with several use cases including asset management:
 .. _Applying Order to Computing Chaos:
     https://www.youtube.com/watch?v=Kv0SR9KLDj4
 
+.. _ipclassification:
+
 IP Classification
 -----------------
 
@@ -100,6 +102,8 @@ More specific entries take precedence.
 
 Now look for the classifications in the ``src_class`` and ``dest_class``
 fields during a search that includes these IP address ranges.
+
+.. _sanctioned_saas:
 
 Un/Sanctioned SaaS Detection
 ----------------------------

@@ -92,6 +92,7 @@ The Palo Alto Networks App offers significant additional benefits including:
 * Index the :ref:`behavioral footprint <wildfire>` of malware seen by Wildfire
 * :ref:`Sync user logins <syncuserid>` from authentication logs to User-ID
 * :ref:`Update content pack <contentpack>` metadata for apps and threats
+* Datamodel with Pivots for easy access to data and visualizations
 * Macros for easy access to logs
 * Dashboards to track SaaS application usage, user activity, system health,
   configuration changes for audits, Wildfire malware, and other Palo Alto

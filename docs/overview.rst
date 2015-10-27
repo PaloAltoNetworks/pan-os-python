@@ -31,21 +31,55 @@ resources to focus on critical, time-sensitive investigations.
 Splunk Version Compatibility
 ----------------------------
 
-==============  ===========
-Splunk Version  App Version
-==============  ===========
-Splunk 6        Palo Alto Networks App 4.x or 5.x
-Splunk 5        Palo Alto Networks App 3.x
-==============  ===========
+==============   ===========
+Splunk Version   App Version
+==============   ===========
+Splunk 6         Palo Alto Networks App 4.x or 5.x
+Splunk 5         Palo Alto Networks App 3.x
+==============   ===========
 
 .. _features:
 
 Features
 --------
 
-.. todo:: Features
+The **Palo Alto Networks App** and **Add-on** have different features that are
+designed to work together, and with Splunk Enterprise Security when available.
 
-.. todo:: Difference between App and TA
+**Palo Alto Networks App**
+
+* Dashboards to track SaaS application usage, user activity, system health,
+  configuration changes for audits, Wildfire malware, and other Palo Alto
+  Networks specific features.
+* Advanced correlations in each dashboard
+* Datamodels with pivots for easy access to data and visualizations
+* Index the :ref:`behavioral footprint <wildfire>` of malware seen by Wildfire
+* :ref:`syncuserid`
+* :ref:`dag`
+* :ref:`contentpack`
+* :ref:`Special searchbar commands <commands>`
+* Macros for easy access to logs
+
+**Palo Alto Networks Add-on**
+
+* Fully CIM_ compliant and designed for use with `Splunk Enterprise Security`_
+* Field extraction for Palo Alto Networks logs from Firewalls_, Panorama_, and
+  `Traps Endpoint Security`_
+* :ref:`ipclassification` tailored to your network environment
+* :ref:`Designate SaaS applications <sanctioned_saas>` as sanctioned or
+  unsanctioned for your organization
+* App and Threat metadata from the Palo Alto Networks content and signature
+  packs
+
+.. _CIM: http://docs.splunk.com/Documentation/CIM/latest/User/Overview
+.. _Splunk Enterprise Security:
+   http://www.splunk.com/en_us/products/premium-solutions/splunk-enterprise-security.html
+.. _Firewalls:
+   https://www.paloaltonetworks.com/products/platforms/firewalls.html
+.. _Panorama:
+   https://www.paloaltonetworks.com/products/platforms/centralized-management/panorama/overview.html
+.. _Traps Endpoint Security:
+   https://www.paloaltonetworks.com/products/endpoint-security.html
 
 Install from Github
 -------------------
