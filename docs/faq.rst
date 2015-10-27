@@ -37,6 +37,10 @@ alerts are produced, Splunk can take action by leveraging the firewall and
 Panorama APIs to add context that the firewall uses to prevent targeted
 threats.
 
+Learn more:
+  * :ref:`features`
+  * :ref:`advancedfeatures`
+
 What kinds of data does the app take in?
 ----------------------------------------
 The Splunk for Palo Alto Networks app accepts syslogs from Firewalls,
@@ -79,16 +83,27 @@ Enterprise Security app can be used individually, or together.
 
 .. _Splunk Enterprise Security app: http://www.splunk.com/en_us/products/premium-solutions/splunk-enterprise-security.html
 
+I use Splunk ES with the Palo Alto Add-on (TA), why use the App?
+----------------------------------------------------------------
+
+The Palo Alto Networks App offers significant additional benefits including:
+
+* Take immediate action to stop threats with :ref:`automated remediation <remediation>`
+* Index the :ref:`behavioral footprint <wildfire>` of malware seen by Wildfire
+* :ref:`Sync user logins <syncuserid>` from authentication logs to User-ID
+* :ref:`Update content pack <contentpack>` metadata for apps and threats
+* Macros for easy access to logs
+* Dashboards to track SaaS application usage, user activity, system health,
+  configuration changes for audits, Wildfire malware, and other Palo Alto
+  Networks specific features.
+
 My question isn't answered here, how do I get answers?
 ------------------------------------------------------
 Here are a few ways to get your questions answered. Search for answers in this order:
 
 * Check the App Documentation at http://splunkforpaloaltonetworks.readthedocs.org
 * Search on `Splunk Answers`_
-* If you can't find an answer or need support, ask a question on Splunk
-  Answers by going to the `App Homepage`_ and click **Ask a Question**.
-  Technical representatives from Splunk and Palo Alto Networks will be
-  notified of new questions and will respond.
+* If you can't find an answer or need support, ask a question using the
+  instructions on the :ref:`getsupport` page.
 
 .. _Splunk Answers: http://answers.splunk.com/app/questions/491.html
-.. _App Homepage: https://splunkbase.splunk.com/app/491
