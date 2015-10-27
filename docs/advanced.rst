@@ -47,7 +47,9 @@ After you've completed both steps, you should see the WildFire dashboard
 start to populate with data. If not, verify the WildFire and logging
 configuration on the firewall.
 
-.. image:: _static/wildfire_dashboard.png
+.. figure:: _static/wildfire_dashboard.png
+
+   WildFire dashboard with data
 
 .. _WildFire report:
    https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin/monitor-wildfire-activity/wildfire-analysis-reports-close-up.html
