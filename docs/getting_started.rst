@@ -139,3 +139,32 @@ https://www.paloaltonetworks.com/documentation/70/pan-os/pan-os/monitoring/use-e
 
 **Traps Endpoint Security Manager (ESM) syslog to Splunk:**
 https://www.paloaltonetworks.com/documentation/32/endpoint/endpoint-admin-guide/reports-and-logging/enable-external-reporting-using-the-esm-console.html
+
+.. _test:
+
+Step 5: Test the configuration
+------------------------------
+
+The easiest way to test that everything is working is to configure the
+firewall to syslog all config events. On the firewall or Panorama, navigate to
+the **Device** tab, then **Log Settings**.  Enable config logs and commit
+the configuration.
+
+Now, make any configuration change and the firewall to produce a
+config event syslog. You don't have to commit the change for the syslog to
+be produced; any uncommitted change to the configuration produces a log.
+
+Verify the log reached Splunk by going to the Palo Alto Networks App
+click Search in the navigation bar, and enter::
+
+    eventtype=pan_config
+
+.. note:: Use the default Search app if using just the
+   Palo Alto Networks Add-on.
+
+If Splunk is getting the syslogs from the firewall and parsing them
+correctly, then you'll see the config event syslogs show up here from the
+changes you made on the firewall configuration.
+
+If you don't see the syslog, verify the steps above or try the
+:ref:`Troubleshooting Guide <troubleshoot>`.
