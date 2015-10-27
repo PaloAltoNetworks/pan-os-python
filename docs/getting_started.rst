@@ -21,10 +21,10 @@ App Version 3.x and 4.x
 
 * Edit `$SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/inputs.conf`
 
-Note: The `local` directory does not exist after installation, so you may
+Note: The ``local`` directory does not exist after installation, so you may
 need to create it.
 
-Add the following lines to the `inputs.conf` file.  This examples uses the
+Add the following lines to the ``inputs.conf`` file.  This examples uses the
 default syslog port 514/udp.  Change the port as needed. ::
 
     [udp://514]
@@ -33,7 +33,7 @@ default syslog port 514/udp.  Change the port as needed. ::
     no_appending_timestamp = true
     connection_host = ip
 
-The `index`, `sourcetype`, and `no_appending_timestamp` setting must be set
+The ``index``, ``sourcetype``, and ``no_appending_timestamp`` setting must be set
 exactly as in the example.
 
 Firewall, Panorama, and Traps ESM can all send logs to the same input port.

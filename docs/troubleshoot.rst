@@ -46,7 +46,8 @@ navigation bar, and enter the following search::
     index=pan_logs sourcetype=pan_config
 
 If logs showed in step 2, but no logs show up now, then try
-sourcetype=pan_logs instead of sourcetype=pan_config.  If the logs start
+``sourcetype=pan_logs`` instead of ``sourcetype=pan_config``.  If the logs
+start
 showing up after that change, then the logs are not getting parsed correctly:
 
 - Check that you are not using a Custom Log Format in the syslog server

@@ -34,13 +34,13 @@ https://www.paloaltonetworks.com/documentation/70/pan-os/pan-os/user-id/configur
 Method 2: Searchbar Command
 ---------------------------
 
-Use the `panuserupdate` command that is included with the app.
+Use the ``panuserupdate`` command that is included with the app.
 
 For this method, the logs are not required to contain both the user and ip
 in the same log. For example, where there is an authentication log with user
 and MAC address, and a DHCP log with MAC address and IP address.  Splunk
 can do a search correlating the user to the IP using the MAC as the common
-value, then pass the search results to the `panuserupdate` command which
+value, then pass the search results to the ``panuserupdate`` command which
 will update the mapping on the firewall.
 
 See :ref:`panuserupdate` in the Searchbar Command documentation.

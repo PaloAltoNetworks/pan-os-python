@@ -151,7 +151,7 @@ knowledge of where users are logged in to the firewall.  For example, if
 Splunk is receiving a radius authentication log where 'user' is the field
 containing the user who authenticated, and 'ip' is the field containing the
 IP address where the user logged in, then you can map the user to the ip on
-the firewall using the `panupdate` command like so::
+the firewall using the ``panupdate`` command like so::
 
     `index=main sourcetype=radius | rename user AS addruser | rename ip AS addrip | panupdate device="192.168.4.211"`
 
