@@ -1,4 +1,5 @@
-
+Splunk for Palo Alto Networks
+=============================
 
 .. image:: _static/logos.png
 
