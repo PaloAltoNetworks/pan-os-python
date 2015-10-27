@@ -74,8 +74,8 @@ See also:
 
 .. _datainput:
 
-Step 3: Create the Splunk input
--------------------------------
+Step 3: Create the Splunk data input
+------------------------------------
 
 Syslogs are sent to Splunk using the following protocols:
 
