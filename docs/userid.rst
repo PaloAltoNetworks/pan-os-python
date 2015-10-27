@@ -1,3 +1,5 @@
+.. _userid:
+
 User-ID with Splunk
 ===================
 
@@ -51,8 +53,7 @@ Distribute User-ID
 To simplify administration, you can configure one firewall to be the
 redistribution firewall that collects all the mapping information and
 shares it with other firewalls. You configure the receiving firewalls to
-retrieve the mapping information from the redistribution firewall; they
-don’t need to communicate directly with domain servers.
+retrieve the mapping information from the redistribution firewall.
 
 .. image:: _static/userid_distribution.png
 

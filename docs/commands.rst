@@ -8,34 +8,15 @@ firewall so it can better enforce its security policy.
 
 .. _panuserupdate:
 
-Sync user login events
-----------------------
+panuserupdate
+-------------
 
-**Command: `panuserupdate`**
+The ``panuserupdate`` command synchronizes user login events with
+Palo Alto Networks User-ID. More information: :ref:`userid`
 
-Added in App version 5.0.  If using a previous version, refer to the
+**Added in App version 5.0.** For previous versions, refer to the
 :ref:`panupdate` command.
 
-The Palo Alto Networks firewall will inform Splunk of the user generating
-each connection or event via the syslogs it sends to Splunk.  This assumes
-that the firewall is getting the login information from AD or some other
-authentication system, to know what user is logged into the device
-generating the traffic.
-
-If authentication logs are being indexed by Splunk, then Splunk can synchronize
-knowledge of where users are logged in with the firewall. For example, if
-Splunk is receiving a radius authentication log where 'user' is the field
-containing the user who authenticated, and 'ip' is the field containing the
-IP address where the user logged in, then you can map the user to the ip on
-the firewall.
-
-In this situation, it is often preferred to use Splunk syslog forwarding to
-a User-ID agent or firewall because it is more efficient.  But there are
-some cases where the user and IP are not in the same log.  For example, if
-an authentication log contains the user and MAC address, and the DHCP log
-contains the MAC address and IP.  A correlation must be done on the MAC
-address to know which IP the user logged in from. In this situation, the
-panuserupdate command is the preferred solution.
 
 **Example 1**::
 
@@ -66,28 +47,20 @@ The second search tells the panuserupdate command which fields contain the
 ip and user. It also passes this information via Panorama to a firewall, but
 this example specifies the update is for vsys4 on the firewall.
 
-Share context
--------------
+See also:
+  * :ref:`userid`
+  * :ref:`syncuserid`
 
-**Command: `pantag`**
+
+.. _pantag:
+
+pantag
+------
+
+The ``pantag`` command shares context with the firewall by tagging IP
+addresses found in Splunk into `Dynamic Address Groups`_.
 
 Added in App version 4.1
-
-Tagging an IP address means setting metadata or context on the firewall for
-that IP, which causes it to be added to corresponding Dynamic Address
-Groups in the firewall security policy.  For example, you could create a
-rule in the security policy that blocks and IP address with the tag
-'bad-actor'. Initially, no IP addresses would be blocked, but you can
-create a search in Splunk for criteria that represents a problem device,
-and trigger a tagging of that IP address with the 'bad-actor' tag.  The
-firewall would add the IP address to the Dynamic Address Group in the
-policy automatically and begin blocking the IP.
-
-Blocking a bad actor is just the beginning, and you aren't limited to allow
-or deny as your options.  You could tag an IP address for additional
-scrutiny by the Threat Prevention engine, or as a known trusted server to
-be given additional permissions.  The behaviors are defined by your
-security policy, and how you treat IP addresses with specific tags.
 
 You can tag an IP address using the `pantag` command like so::
 
@@ -98,29 +71,17 @@ by WildFire_ will be tagged with `malware-downloaded`.  Your security policy
 could limit the reach of IP addresses with this tag until the incident is
 remediated.
 
-Note:  IP is tagged on the firewall immediately, however, it can take up to
-60 seconds for the tagged IP addresses to show up in the corresponding
-Dynamic Address Group in the security policy.  This delay is intentional to
-prevent accidental DoS scenarios.
+.. note:: The IP is tagged on the firewall immediately, however, it can take
+   up to 60 seconds for the tagged IP addresses to show up in the corresponding
+   Dynamic Address Group in the security policy.  This delay is intentional to
+   prevent accidental DoS scenarios.
 
-This webinar explains the concept of automated remediation and demonstrates
-a case study of a real customer using this technique with Splunk and Palo
-Alto Networks today:
-
-Webinar: `Defeat APT with Automated Remediation in Splunk`_
-
-This video from Ignite 2015 explains Dynamic Address Groups in more detail
-with several use cases including asset management:
-
-Video: `Applying Order to Computing Chaos`_
 
 Legacy commands
 ---------------
 
 panblock
-~~~~~~~~~
-
-**Command: `panblock`**
+~~~~~~~~
 
 Deprecated in App version 4.1. Use **pantag** instead.
 
@@ -136,7 +97,6 @@ modifying the firewall configuration and requires a configuration commit. ::
 
 panupdate
 ~~~~~~~~~
-**Command: `panupdate`**
 
 Deprecated in App version 5.0. Use **panuserupdate** instead.
 
@@ -158,7 +118,5 @@ the firewall using the ``panupdate`` command like so::
 This would cause the firewall with management IP 192.168.4.211 to receive
 the user-to-IP mapping.  The mapping times out after 30 minutes.
 
+.. _Dynamic Address Groups: https://www.paloaltonetworks.com/documentation/70/pan-os/pan-os/policy/use-dynamic-address-groups-in-policy.html
 .. _WildFire: https://www.paloaltonetworks.com/products/technologies/wildfire.html
-.. _Defeat APT with Automated Remediation in Splunk:
-    https://www.paloaltonetworks.com/resources/webcasts/defeat-apts-improve-security-posture-real-time.html
-.. _Applying Order to Computing Chaos: https://www.youtube.com/watch?v=Kv0SR9KLDj4

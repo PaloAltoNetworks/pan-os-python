@@ -9,6 +9,7 @@ Splunk for Palo Alto Networks App
    overview
    getting_started
    upgrade
+   advanced
    userid
    commands
    faq
