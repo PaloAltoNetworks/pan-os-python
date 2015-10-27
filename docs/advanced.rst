@@ -33,6 +33,8 @@ See also:
   * :ref:`userid`
   * Searchbar Command: :ref:`panuserupdate`
 
+.. _dag:
+
 Share context with Dynamic Address Groups
 -----------------------------------------
 
