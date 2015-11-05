@@ -105,6 +105,13 @@
         <option name="charting.layout.splitSeries">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">right</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+	    ]]>
+          </link>
+        </drilldown>
       </chart>
   </row>
   <row>
@@ -118,6 +125,38 @@
         <option name="drilldown">cell</option>
         <option name="dataOverlayMode">none</option>
         <option name="count">10</option>
+        <drilldown>
+          <link field="app">
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$row.app$"&earliest=$earliest$&latest=$latest$
+          ]]>
+          </link>
+          <link field="app:category">
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app:category="$row.app:category$"&earliest=$earliest$&latest=$latest$
+            ]]>
+          </link>
+          <link field="app:subcategory">
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app:subcategory="$row.app:subcategory$"&earliest=$earliest$&latest=$latest$
+            ]]>
+          </link>
+          <link field="Sessions">
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$row.app$" app:category="$row.app:category$" app:subcategory="$row.app:subcategory$"&earliest=$earliest$&latest=$latest$
+            ]]>
+          </link>
+          <link field="Vol in MB">
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$row.app$" app:category="$row.app:category$" app:subcategory="$row.app:subcategory$"&earliest=$earliest$&latest=$latest$
+	    ]]>
+          </link>
+          <link field="distribution">
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$row.app$" app:category="$row.app:category$" app:subcategory="$row.app:subcategory$"&earliest=$earliest$&latest=$latest$
+	    ]]>
+          </link>
+        </drilldown>
       </table>
   </row>
   <row>
@@ -147,6 +186,13 @@
         <option name="charting.layout.splitSeries">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">right</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=end app:is_saas="yes" | where $app:is_sanctioned_saas$=if("Sanctioned"="$click.value$","yes","no")&earliest=$earliest$&latest=$latest$
+	      ]]>
+          </link>
+        </drilldown>
       </chart>
       <table>
         <title>SaaS Statistics</title>
@@ -158,6 +204,13 @@
         <option name="drilldown">cell</option>
         <option name="dataOverlayMode">none</option>
         <option name="count">10</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=end app:is_saas="yes" | where $app:is_sanctioned_saas$=if("Sanctioned"="$row.SaaS$","yes","no")&earliest=$earliest$&latest=$latest$
+	        ]]>
+          </link>
+        </drilldown>
       </table>
   </row>
   <row>
@@ -187,6 +240,13 @@
         <option name="charting.layout.splitSeries">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">right</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=end app=$click.value$&earliest=$earliest$&latest=$latest$
+	        ]]>
+          </link>
+        </drilldown>
       </chart>
       <chart>
         <title>Non-Sanctioned SaaS Applications</title>
@@ -214,6 +274,13 @@
         <option name="charting.layout.splitSeries">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">right</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=end app=$click.value$&earliest=$earliest$&latest=$latest$
+	        ]]>
+          </link>
+        </drilldown>
       </chart>
   </row>
   <row>
@@ -243,6 +310,13 @@
         <option name="charting.layout.splitSeries">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">none</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=end app:is_saas=yes app.category=$click.value$&earliest=$earliest$&latest=$latest$
+	        ]]>
+          </link>
+        </drilldown>
       </chart>
       <chart>
         <title>Top Categories - Non-Sanctioned</title>
@@ -270,6 +344,13 @@
         <option name="charting.layout.splitSeries">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">none</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=end app:is_saas=yes app.category=$click.value$&earliest=$earliest$&latest=$latest$
+	        ]]>
+          </link>
+        </drilldown>
       </chart>
   </row>
   <row>
@@ -302,8 +383,15 @@
         <option name="wrap">true</option>
         <option name="rowNumbers">false</option>
         <option name="dataOverlayMode">none</option>
-        <option name="drilldown">cell</option>
+        <option name="drilldown">all</option>
         <option name="count">10</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_file` app="$row.Application$"&earliest=$earliest$&latest=$latest$
+          ]]>
+          </link>
+        </drilldown>
       </table>
   </row>
 </form>
