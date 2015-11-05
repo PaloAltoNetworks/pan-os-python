@@ -275,7 +275,7 @@
   <row>
       <table>
         <title>Top File Sharing SaaS Apps</title>
-        <searchString>| `pan_tstats` count dc(log.user) as Users FROM `node(log.file)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$  `groupby(log.app log.RISK)` | sort -count | rename app as Application | rename count as "Uploads/Downloads" | rename RISK as Risk</searchString>
+        <searchString>| `pan_tstats` count dc(log.user) as Users FROM `node(log.file)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$  `groupby(log.app log.app:risk)` | sort -count | rename app as Application | rename count as "Uploads/Downloads" | rename app:risk as Risk</searchString>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
         <option name="charting.chart">pie</option>
