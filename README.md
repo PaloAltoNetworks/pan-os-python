@@ -6,8 +6,8 @@ Palo Alto Networks App for Splunk
 
 **App Version:** 5.0.0
 
-**Required TA Version:** 
-
+**Required TA Version:** 3.5.1 or higher  
+Note: The TA is included with this App, and does **not** have to be installed separately.
 
 ### Documentation ###
 
