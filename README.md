@@ -1,34 +1,24 @@
 
-Splunk for Palo Alto Networks App
+Palo Alto Networks App for Splunk
 =================================
 
-* **App Homepage**: http://splunkbase.splunk.com/app/491
-* **Author**: Brian Torres-Gil - Palo Alto Networks
+**Author:** Brian Torres-Gil - Palo Alto Networks
 
-Documentation
--------------
+**App Version:** 5.0.0
 
-All documentation can be found at:
-
-http://splunkforpaloaltonetworks.readthedocs.org
+**Required TA Version:** 
 
 
-Get Support
------------
+### Documentation ###
 
-Need help? Use these instructions to get support with the App:
+http://splunkforpaloaltonetworks.readthedocs.org/
+
+
+### Release Notes: ###
+
+http://splunkforpaloaltonetworks.readthedocs.org/en/latest/release_notes.html
+
+
+### Support ###
 
 http://splunkforpaloaltonetworks.readthedocs.org/en/latest/support.html
-
-
-Installing from Git
--------------------
-
-This app is available on [Splunkbase](http://splunkbase.splunk.com/app/491) and
-[Github](https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks). Optionally,
-you can clone the github repository to install the app.
-
-From the directory `$SPLUNK_HOME/etc/apps/`, type the following command:
-
-    git clone https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks.git SplunkforPaloAltoNetworks
-
