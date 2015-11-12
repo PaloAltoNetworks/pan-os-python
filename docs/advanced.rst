@@ -221,7 +221,7 @@ Update metadata from content packs
 The Palo Alto Networks Add-on (TA) comes with two lookup files with metadata
 about applications and threat signatures called ``app_list.csv`` and
 ``threat_list.csv``, respectively. These lookup tables are responsible for
-populating the app:**** and threat:*** fields used in the dashboards and
+populating the app:xyz and threat:xyz fields used in the dashboards and
 displayed during a search.
 
 The lookup table files are updated with each TA release, but can get out of
