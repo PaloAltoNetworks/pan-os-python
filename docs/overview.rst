@@ -84,12 +84,17 @@ designed to work together, and with Splunk Enterprise Security when available.
 Install from Github
 -------------------
 
-This app is available on `SplunkBase <http://splunkbase.splunk.com/app/491>`_
+This App is available on `SplunkBase <https://splunkbase.splunk.com/app/491>`_
 and `Github <https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks>`_.
-Optionally, you can clone the github repository to install the app. Please
-feel free to submit contributions to the app using pull requests on github.
+Optionally, you can clone the github repository to install the App. Please
+feel free to submit contributions to the App using pull requests on github.
 
-From the directory ``$SPLUNK_HOME/etc/apps/``, type the following command::
+App:
+  From the directory ``$SPLUNK_HOME/etc/apps/``, type the following command::
 
     git clone https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks.git SplunkforPaloAltoNetworks
 
+Add-on:
+  From the directory ``$SPLUNK_HOME/etc/apps/``, type the following command::
+
+    git clone https://github.com/PaloAltoNetworks-BD/Splunk_TA_paloalto.git Splunk_TA_paloalto
