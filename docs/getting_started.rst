@@ -9,7 +9,8 @@ Step 1: Install the App and Add-on
 First, if upgrading to App v4.1 or 5.0, read the :ref:`Upgrade Guide <upgrade>`.
 
 The Palo Alto Networks Splunk App and Add-on are designed to work together,
-and with Splunk Enterprise Security if available.
+and with Splunk Enterprise Security if available. The Add-on can be used
+without the App.
 
 This table indicates when the Add-on (TA) is necessary:
 
@@ -23,11 +24,14 @@ This table indicates when the Add-on (TA) is necessary:
 | Version 3.x   | No TA required                       |
 +---------------+--------------------------------------+
 
-.. admonition:: The TA called TA_paloalto is deprecated and should be
+.. note:: The Add-on (TA) called TA_paloalto is deprecated and should be
    replaced with Splunk_TA_paloalto.
 
-* `Palo Alto Networks App <http://splunkbase.splunk.com/app/491>`_
-* `Palo Alto Networks Add-on <http://splunkbase.splunk.com/app/491>`_
+   The latest Add-on (TA) is installed automatically by the App, and does
+   **not** need to be installed separately.
+
+* `Palo Alto Networks App <https://splunkbase.splunk.com/app/491>`_
+* `Palo Alto Networks Add-on <https://splunkbase.splunk.com/app/2757>`_
 
 Install the Palo Alto Networks App by downloading it from the App homepage,
 or by installing it from within Splunk.
@@ -41,6 +45,8 @@ or by installing it from within Splunk.
 
 Step 2: Initial Setup
 ---------------------
+
+.. note:: Skip this step if using the Add-on without the App
 
 .. figure:: _static/setup_start.png
    :figwidth: 70%
