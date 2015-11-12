@@ -15,7 +15,7 @@
 import sys
 import os
 import shlex
-from recommonmark.parser import CommonMarkParser
+#from recommonmark.parser import CommonMarkParser
 import sphinx_rtd_theme
 
 # Check if building documentation on RTD
@@ -39,9 +39,9 @@ extensions = ['sphinx.ext.todo']
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
-source_parsers = {
-    '.md': CommonMarkParser,
-}
+#source_parsers = {
+#    '.md': CommonMarkParser,
+#}
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
