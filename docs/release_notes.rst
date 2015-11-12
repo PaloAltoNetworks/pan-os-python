@@ -1,11 +1,62 @@
+.. _releasenotes:
+
 =============
 Release Notes
 =============
 
-v5.0.0
-======
+App v5.0.0
+==========
 
-.. todo:: Release notes here
+This major release re-architects the Palo Alto Networks App by splitting it
+into an App and an Add-on. The `Palo Alto Networks Add-on`_ is included in the
+`Palo Alto Networks App`_ and is installed or upgraded automatically with the App.
+
+Review the :ref:`Upgrade Guide <upgrade>` to upgrade to version 5.0.0.
+
+In addition to the new Palo Alto Networks Add-on, this version also has the
+following new features:
+
+* New SaaS dashboard with :ref:`sanctioned_saas`
+* CIM 4.x compliance
+* Optimized Datamodel for better performance and storage efficiency
+* Logs are no longer required to be stored in the pan_logs index
+* :ref:`Auto update script <contentpack>` for app and threat lookup tables
+* New :ref:`panuserupdate` command for User-ID update
+* Enhanced :ref:`pantag` command to leverage log data for tags
+* Both commands now support Panorama and VSYS targets, and are more effecient and scalable
+* Better command documentation
+* Changed from CC license to ISC license
+* All new documentation website at http://pansplunk.readthedocs.org
+
+.. _Palo Alto Networks Add-on: https://splunkbase.splunk.com/app/2757
+.. _Palo Alto Networks App: https://splunkbase.splunk.com/app/491
+
+Add-on v3.5.1
+=============
+
+* Add support for PAN-OS 7.0 new fields
+* Add hip-match log type from Firewall and Panorama
+* Add sourcetype category
+* Add Sanctioned SaaS lookup table (see :ref:`sanctioned_saas`)
+* Update app_list.csv and threat_list.csv lookup tables with new format and data
+* Fix incorrect value in report_id field for Wildfire logs in PAN-OS 6.1 or higher
+* Fix src_category field should be dest_category
+
+Add-on v3.5.0
+=============
+
+Included with `Splunk Enterprise Security 4`_.
+
+This new Add-on (TA) for Palo Alto Networks supports logs from Palo Alto
+Networks Next-generation Firewall, Panorama, and Traps Endpoint Security
+Manager. It is CIM 4.x compliant and designed to work with `Splunk Enterprise
+Security 4`_ and the `Palo Alto Networks App for Splunk v5`_.
+
+.. _Splunk Enterprise Security 4:
+   https://splunkbase.splunk.com/app/263/
+.. _Palo Alto Networks App for Splunk v5:
+   https://splunkbase.splunk.com/app/491/
+
 
 Previous Versions
 =================
