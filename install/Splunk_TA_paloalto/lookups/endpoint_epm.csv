@@ -1,0 +1,42 @@
+Cycode,epm_code,epm
+GENERIC,0,Generic
+DLLSEC,1,DLL Security
+DEMO,2,Demo
+D01,3,Periodic Heap Spray Check
+G01,5,DEP
+H01,6,Heap Corruption Mitigation
+K01,7,Null Dereference Protection
+R02,8,Random Preallocation
+T01,9,T01 Compatibility
+T02,10,Memory Limit Heap Spray Check
+EXEPROT,13,Execution Protection
+PACKED_DLL,14,Packed DLLs
+MEDIA_CTRL,15,Media Control
+JAVA,16,Java
+CHILD_PROC,17,Child Processes
+SignedExecutables,18,Signed Executables
+ImageAge,19,Image Age
+S01,20,SEH Protection
+R01,21,ROP Mitigation
+UASLR,22,UASLR
+REPORTER,23,Reporter
+SPROT,24,Service Protection
+MasterSEH,25,Master SEH
+MasterVEH,26,Master VEH
+FontProt,27,Font Protection
+DllProt,28,DLL-Hijacking protection
+U32Reserve,29,U32 Reserve
+B01,30,Hot Patch Protection
+CyveraK,33,Traps Kernel
+CyveraU,34,Traps User Mode
+ShellLink,35,ShellLink Protection
+URI,36,URI
+ThreadInj,37,Thread Injection
+WildFire,38,WildFire-detected malware
+P01,39,Shellcode Preallocation
+P02,40,Library Preallocation
+H02,41,Exception Heap Spray Check
+WildFirePostDetection,42,WildFire Post Detection
+ProcessCrash,43,Process Crashed
+WildFirePostUnknownDetection,44,WildFire Unknown
+WildFireUnknown,45,WildFire Unknown

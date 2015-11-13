@@ -1,0 +1,10 @@
+<panel>
+	<title>PAN FW - Top 10 App Traffic Volume in Last 24H</title>
+  <table>
+    <search>
+      <query>sourcetype="pan:traffic" earliest=-1d | stats sum(bytes) AS sbytes by app | sort -sbytes | head 10 | eval "Application and Protocol"=upper(app) | eval "Volume in MB"=round(sbytes/1024/1024) | table "Application and Protocol" "Volume in MB"</query>
+      <earliest></earliest>
+      <latest></latest>
+    </search>
+  </table>
+</panel>
