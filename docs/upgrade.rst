@@ -59,6 +59,22 @@ stored in the ``pan_logs`` index according to the data inputs from the
 previous App version, unless otherwise specified.  The data input can
 optionally be changed to store logs in a different index.
 
+**Lookups**
+
+The lookups have been moved to the Add-on (TA). However, Splunk Enterprise
+does not remove lookup tables during the upgrade process. So you must remove
+the lookup tables from the App after the upgrade, or you will see errors
+while searching within the App.
+
+**ACTION REQUIRED**: Delete any lookups in the App that you did not create.
+If you did not create any lookups in the App directory, then you can safely
+delete the entire lookup directory from the App. The path to the lookup
+directory is ``$SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/lookups``
+
+For example::
+
+    rm -rf $SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/lookups
+
 **Sourcetype**
 
 The sourcetype format has changed:
