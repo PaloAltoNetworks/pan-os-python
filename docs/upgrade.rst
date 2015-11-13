@@ -46,11 +46,18 @@ No TA installed     No action required, TA is installed automatically by App
 **Index**
 
 The new App 5.0 and Add-on 3.5 do not use the ``pan_logs`` index that previous
-versions used. Now, logs can be stored in any index. No action is required
-while upgrading. Logs will continue to be stored in the ``pan_logs`` index
-according to the data inputs from the previous App version, unless otherwise
-specified.  The data input can optionally be changed to store logs in a
-different index.
+versions used. Now, logs can be stored in any index. Since the App no longer
+specifies the pan_logs index, if you are upgrading, you will need to specify
+the index yourself.
+
+**ACTION REQUIRED**: Create a new index called ``pan_logs`` using the
+Splunk GUI or on the command line.
+
+Splunk will not overwrite the data previously indexed, and you will have
+access to all the data indexed before the upgrade. Logs will continue to be
+stored in the ``pan_logs`` index according to the data inputs from the
+previous App version, unless otherwise specified.  The data input can
+optionally be changed to store logs in a different index.
 
 **Sourcetype**
 
