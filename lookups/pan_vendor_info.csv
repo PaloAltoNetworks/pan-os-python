@@ -1,0 +1,9 @@
+sourcetype,vendor,product,ids_type,vendor_product
+pan:config,Palo Alto Networks,Firewall,,Palo Alto Networks Firewall
+pan:system,Palo Alto Networks,Firewall,,Palo Alto Networks Firewall
+pan:threat,Palo Alto Networks,Firewall,network,Palo Alto Networks Firewall
+pan:traffic,Palo Alto Networks,Firewall,,Palo Alto Networks Firewall
+pan:hipmatch,Palo Alto Networks,Firewall,,Palo Alto Networks Firewall
+pan:wildfire_report,Palo Alto Networks,WildFire,,Palo Alto Networks Wildfire
+pan:newapps,Palo Alto Networks,Applipedia,,Palo Alto Networks Appliedia
+pan:endpoint,Palo Alto Networks,Endpoint,host,Palo Alto Networks Endpoint
