@@ -36,7 +36,10 @@ This table indicates when the Add-on (TA) is necessary:
 Install the Palo Alto Networks App by downloading it from the App homepage,
 or by installing it from within Splunk.
 
-.. image:: _static/download_app.png
+.. figure:: _static/download_app.png
+
+   Downloading the App from within Splunk Enterprise. You don't need to
+   download the Add-on; it comes bundled with the App.
 
 .. note:: The Palo Alto Networks App and Add-on must be installed on all
    Searchheads, Indexers, and Heavy Forwarders.
