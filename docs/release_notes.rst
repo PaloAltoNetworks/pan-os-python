@@ -23,7 +23,7 @@ following new features:
 * :ref:`Auto update script <contentpack>` for app and threat lookup tables
 * New :ref:`panuserupdate` command for User-ID update
 * Enhanced :ref:`pantag` command to leverage log data for tags
-* Both commands now support Panorama and VSYS targets, and are more effecient and scalable
+* Both commands now support Panorama and VSYS targets, and are more efficient and scalable
 * Better command documentation
 * Changed from CC license to ISC license
 * All new documentation website at http://pansplunk.readthedocs.org
