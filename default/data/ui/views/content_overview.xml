@@ -13,10 +13,10 @@
       <prefix>log.src_ip="</prefix>
       <suffix>"</suffix>
     </input>
-    <input type="text" token="dst_ip">
+    <input type="text" token="dest_ip">
       <label>Destination IP</label>
       <default/>
-      <prefix>log.dst_ip="</prefix>
+      <prefix>log.dest_ip="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="content_type">
@@ -55,7 +55,7 @@
   <row>
     <chart>
       <title>Major Content Types</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time log.major_content_type | timechart values(count) by log.major_content_type</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ groupby _time log.major_content_type | timechart values(count) by log.major_content_type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -74,14 +74,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$click.name2$*" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$click.name2$*" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Full Content Types</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ groupby _time log.content_type | timechart values(count) by log.content_type</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ groupby _time log.content_type | timechart values(count) by log.content_type</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -100,7 +100,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
@@ -109,7 +109,7 @@
   <row>
     <table>
       <title>Content Types and Apps</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ `table(log.app log.content_type, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ `table(log.app log.content_type, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -142,14 +142,14 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
       ]]>
         </link>
       </drilldown>
     </table>
     <table>
       <title>Non-Web Browsing Content Types</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ log.TECHNOLOGY!="browser-based" `table(log.app log.content_type, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ log.app:technology!="browser-based" `table(log.app log.content_type, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -173,7 +173,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -181,7 +181,7 @@
     </table>
     <table>
       <title>Content Types and Web Categories</title>
-      <searchString>| `tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dst_ip$ $src_ip$ $content_type$ `table(log.category log.content_type, count)`</searchString>
+      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ `table(log.category log.content_type, count)`</searchString>
       <earliestTime>$earliest$</earliestTime>
       <latestTime>$latest$</latestTime>
       <option name="charting.axisTitleX.visibility">visible</option>
@@ -205,7 +205,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_index` content_type="$row.content_type$" category="$row.category$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" category="$row.category$"&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>

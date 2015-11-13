@@ -1,0 +1,14 @@
+vendor_action,action
+alert,allowed
+allow,allowed
+block,blocked
+block-url,blocked
+deny,blocked
+drop,blocked
+Failed,failure
+forward,unknown
+reset-both,blocked
+reset-client,blocked
+reset-server,blocked
+Succeeded,success
+wildfire-upload-skip,unknown

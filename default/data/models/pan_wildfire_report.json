@@ -893,7 +893,7 @@
             "calculations": [],
             "constraints": [
                 {
-                    "search": "index=\"pan_logs\" sourcetype=\"pan_wildfire_report\"",
+                    "search": "eventtype=\"pan_wildfire_report\"",
                     "owner": "wildfire_report"
                 }
             ],

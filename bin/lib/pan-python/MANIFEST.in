@@ -1,0 +1,2 @@
+include MANIFEST.in HISTORY.rst LICENSE.txt
+include doc/Makefile doc/*.rst doc/*.html
