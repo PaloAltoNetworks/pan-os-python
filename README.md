@@ -5,7 +5,7 @@ Palo Alto Networks App for Splunk
 * **App Homepage:** https://splunkbase.splunk.com/app/491
 * **Author:** Brian Torres-Gil - Palo Alto Networks
 * **App Version:** 5.0.0
-* **Required TA Version:** 3.5.1 or higher  
+* **Required Add-on (TA) Version:** Splunk_TA_paloalto 3.5.1 or higher  
 Note: The TA is included with this App, and does **not** have to be installed separately.
 
 ### Documentation ###
