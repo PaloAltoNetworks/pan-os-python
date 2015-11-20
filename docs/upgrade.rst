@@ -13,7 +13,8 @@ Upgrade to App Version 5.0
 This applies if upgrading from a pre-5.0 version of this app to 5.0.0 or higher.
 
 
-**Add-on (TA)**
+Add-on (TA)
+~~~~~~~~~~~
 
 Starting with App v5.0.0, the App now requires the `Palo Alto Networks Add-on
 for Splunk`_. The required version of the TA is always listed in the
@@ -43,7 +44,8 @@ No TA installed     No action required, TA is installed automatically by App
 .. _README.md:
    https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks/blob/master/README.md
 
-**Index**
+Index
+~~~~~
 
 The new App 5.0 and Add-on 3.5 do not use the ``pan_logs`` index that previous
 versions used. Now, logs can be stored in any index. Since the App no longer
@@ -59,7 +61,8 @@ stored in the ``pan_logs`` index according to the data inputs from the
 previous App version, unless otherwise specified.  The data input can
 optionally be changed to store logs in a different index.
 
-**Lookups**
+Lookups
+~~~~~~~
 
 The lookups have been moved to the Add-on (TA). However, Splunk Enterprise
 does not remove lookup tables during the upgrade process. So you must remove
@@ -75,7 +78,8 @@ For example::
 
     rm -rf $SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/lookups
 
-**Sourcetype**
+Sourcetype
+~~~~~~~~~~
 
 The sourcetype format has changed:
 
