@@ -53,13 +53,21 @@ specifies the pan_logs index, if you are upgrading, you will need to specify
 the index yourself.
 
 **ACTION REQUIRED**: Create a new index called ``pan_logs`` using the
-Splunk GUI or on the command line.
+Splunk GUI or on the command line. Also, in your Splunk role settings, add the
+``pan_logs`` index to the list of **Indexes searched by default**.
 
 Splunk will not overwrite the data previously indexed, and you will have
 access to all the data indexed before the upgrade. Logs will continue to be
 stored in the ``pan_logs`` index according to the data inputs from the
 previous App version, unless otherwise specified.  The data input can
 optionally be changed to store logs in a different index.
+
+Results still might not show up during a search. This is because the
+``pan_logs`` index is not searched by default. To add the ``pan_logs`` index
+to the list of indexes searched by default, in your Splunk settings, navigate
+to **Access controls** -> **Roles** -> **<your role>**. Scroll down to the
+section **Indexes searched by default**. Move ``pan_logs`` (or
+``All non-internal indexes``) to the right column.
 
 Lookups
 ~~~~~~~
