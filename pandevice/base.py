@@ -36,13 +36,13 @@ import updater
 logger = logging.getLogger(__name__)
 
 Root = pandevice.enum("DEVICE", "VSYS", "MGTCONFIG")
+ENTRY = "/entry[@name='%s']"
+MEMBER = "/member[text()='%s']"
 
 
 # PanObject type
 class PanObject(object):
     XPATH = "/config"
-    ENTRY = "/entry[@name='%s']"
-    MEMBER = "/member[text()='%s']"
     SUFFIX = None
     ROOT = Root.DEVICE
 

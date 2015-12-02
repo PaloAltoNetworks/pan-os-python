@@ -21,7 +21,7 @@ import re
 import logging
 import xml.etree.ElementTree as ET
 import pandevice
-import base
+from base import PanObject, Root, MEMBER, ENTRY
 
 # import other parts of this pandevice package
 import errors as err
@@ -39,11 +39,11 @@ except AttributeError as e:
     logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-class AddressObject(base.PanObject):
+class AddressObject(PanObject):
 
-    ROOT = base.Root.VSYS
+    ROOT = Root.VSYS
     XPATH = "/address"
-    SUFFIX = base.PanObject.ENTRY
+    SUFFIX = ENTRY
 
     def __init__(self,
                  name,
