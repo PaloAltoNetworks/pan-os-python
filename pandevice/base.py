@@ -114,12 +114,25 @@ class PanObject(object):
             else:
                 return self.parent.pandevice()
 
+    def find(self, name, class_type=None):
+        if class_type is None:
+            indexes = [i for i, child in enumerate(self.children) if
+                       child.name == name and isinstance(child, class_type)]
+        else:
+            indexes = [i for i, child in enumerate(self.children) if child.name == name]
+        for index in indexes:
+            return self.children[index]  # Just return the first object that matches the name
+        return None
+
+    def find_all(self, class_type):
+        return [child for child in self.children if isinstance(child, class_type)]
+
     @classmethod
     def find(cls, list_of_panobjects, name, class_type=None):
         if class_type is None:
             class_type = cls
         indexes = [i for i, child in enumerate(list_of_panobjects) if
-                   child.name == name and issubclass(type(child), class_type)]
+                   child.name == name and isinstance(child, class_type)]
         for index in indexes:
             return index  # Just return the first index that matches the name
         return None
