@@ -43,7 +43,7 @@ class TestPandevice(unittest.TestCase):
                                        )
             self.d._retrieve_api_key = mock.Mock(return_value="fakekey")
             # Trigger attempt to populate API key by accessing xapi
-            #self.xapi = self.d.xapi
+            self.xapi = self.d.xapi
         else:
             # This is a test against a real firewall and panorama
             self.p = panorama.Panorama(hostname=TESTRAMA_HOSTNAME,
@@ -93,9 +93,8 @@ class TestPandevice(unittest.TestCase):
 
     def test_refresh_interfaces_mock(self):
         self.xapi.op = mock.Mock()
-        self.xapi.xml_python = mock.Mock(
-            return_value=expect.op_show_interfaces_all
-        )
+        self.xapi.element_root = expect.op_show_interfaces_all
+
         self.d.refresh_interfaces()
         expected = {'ethernet1/1': network.Interface(name="ethernet1/1",
                                                      zone="untrust",
