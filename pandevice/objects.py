@@ -63,4 +63,4 @@ class AddressObject(PanObject):
         if self.description is not None:
             description = ET.SubElement(element, 'description')
             description.text = self.description
-        return ET.tostring(element)
+        return element

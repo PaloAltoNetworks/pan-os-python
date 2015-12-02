@@ -90,15 +90,51 @@ class PanObject(object):
         return result
 
     def element(self):
-        return "<entry name=\"%s\"></entry>" % self.name
+        return self.root_element()
+
+    def element_str(self):
+        return ET.tostring(self.element())
+
+    def root_element(self):
+        if self.SUFFIX == ENTRY:
+            return ET.Element("entry", {'name': self.name})
+        elif self.SUFFIX == MEMBER:
+            root = ET.Element("member")
+            root.text = self.name
+            return root
+        elif self.SUFFIX is None:
+            tag = self.XPATH.rsplit('/', 1)[-1] # Get right of last / in xpath
+            return ET.Element(tag)
+
+    def subelements(self):
+
+        def _next_xpath_level(child, element, xpath_sections):
+            """Recursive nested method to handle long xpaths"""
+            if not xpath_sections:
+                element.append(child.element())
+                return
+            _next_xpath_level(child,
+                              ET.SubElement(element, xpath_sections[0]),
+                              xpath_sections[1:])
+            return
+
+        elements = ET.Element('root')
+        for child in self.children:
+            # Get the extra layers in the next node's xpath
+            xpath_sections = type(child).XPATH.split('/')[1:-1]
+            _next_xpath_level(child, elements, xpath_sections)
+        # Return a list of subelements
+        return [element for element in elements]
+
+
 
     def apply(self):
-        self.pandevice().xapi.edit(self.xpath(), self.element())
+        self.pandevice().xapi.edit(self.xpath(), self.element_str())
 
     def create(self):
         # Remove the last part from the xpath
         xpath = self.xpath().rsplit("/", 1)[0]
-        self.pandevice().xapi.set(xpath, self.element())
+        self.pandevice().xapi.set(xpath, self.element_str())
 
     def delete(self):
         self.pandevice().xapi.delete(self.xpath())
