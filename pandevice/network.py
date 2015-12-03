@@ -253,22 +253,30 @@ class StaticRoute(PanObject):
 
     def __init__(self,
                  name,
-                 destination=None,
+                 destination,
+                 nexthop,
                  interface=None,
-                 nexthop=None):
+                 admin_dist=None,
+                 metric=10,
+                 ):
         super(StaticRoute, self).__init__(name=name)
         self.destination = destination
-        self.interface = interface
         self.nexthop = nexthop
+        self.interface = interface
+        self.admin_dist = admin_dist
+        self.metric = metric
 
     def element(self):
-        element = ("<entry name=\"" + self.name + "\">"
-                   "<nexthop>"
-                   "<ip-address>" + self.nexthop + "</ip-address>"
-                   "</nexthop>"
-                   )
+        root = self.root_element()
+        nexthop = ET.SubElement(root, 'nexthop')
+        ET.SubElement(nexthop, 'ip-address').text = str(self.nexthop)
         if self.interface is not None:
-            element += "<interface>%s</interface>" % self.interface
-        element += "<metric>10</metric>" \
-                   "<destination>%s</destination></entry>" % self.destination
-        return element
+            ET.SubElement(root, 'interface').text = str(self.interface)
+        ET.SubElement(root, 'destination').text = str(self.destination)
+        if self.admin_dist is not None:
+            ET.SubElement(root, 'admin-dist').text = str(self.admin_dist)
+        ET.SubElement(root, 'metric').text = str(self.metric)
+        return root
+
+class StaticRouteV6(StaticRoute):
+    XPATH = "/routing-table/ipv6/static-route"
