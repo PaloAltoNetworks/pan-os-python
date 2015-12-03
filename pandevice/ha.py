@@ -106,6 +106,8 @@ class HighAvailabilityInterface(PanObject):
                  link_speed="auto",
                  link_duplex="auto",
                  ):
+        if type(self) == HighAvailabilityInterface:
+            raise AssertionError("Do not instantiate a HighAvailabilityInterface. Please use a subclass.")
         super(HighAvailabilityInterface, self).__init__()
         self.port = port
         self.ipaddress = ipaddress
