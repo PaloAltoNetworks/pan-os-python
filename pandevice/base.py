@@ -113,8 +113,12 @@ class PanObject(object):
             if not xpath_sections:
                 element.append(child.element())
                 return
+            next_section = xpath_sections[0]
+            next_element = element.find(next_section)
+            if next_element is None:
+                next_element = ET.SubElement(element, xpath_sections[0])
             _next_xpath_level(child,
-                              ET.SubElement(element, xpath_sections[0]),
+                              next_element,
                               xpath_sections[1:])
             return
 
