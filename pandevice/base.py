@@ -121,7 +121,11 @@ class PanObject(object):
         elements = ET.Element('root')
         for child in self.children:
             # Get the extra layers in the next node's xpath
-            xpath_sections = type(child).XPATH.split('/')[1:-1]
+            xpath_sections = type(child).XPATH.split('/')[1:]
+            # If no suffix, remove the last xpath section
+            # because it will be part of the element
+            if self.SUFFIX is None:
+                xpath_sections = xpath_sections[:-1]
             _next_xpath_level(child, elements, xpath_sections)
         # Return a list of subelements
         return [element for element in elements]
