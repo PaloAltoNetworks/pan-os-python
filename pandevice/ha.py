@@ -55,13 +55,13 @@ class HighAvailability(PanObject):
         self.ha2_keepalive_threshold = 10000
 
     def element(self):
-        element = self.root_element()
+        root = self.root_element()
 
         # Enabled flag
-        ET.SubElement(element, 'enabled').text = "yes" if self.enabled else "no"
+        ET.SubElement(root, 'enabled').text = "yes" if self.enabled else "no"
 
         # Group
-        group = ET.SubElement(element, 'group')
+        group = ET.SubElement(root, 'group')
         group = ET.SubElement(group, 'entry', {'name': str(self.group_id)})
         if self.description is not None:
             ET.SubElement(group, 'description').text = self.description
@@ -87,8 +87,8 @@ class HighAvailability(PanObject):
         ET.SubElement(ha2_keepalive, 'threshold').text = str(self.ha2_keepalive_threshold)
         ET.SubElement(ha2_keepalive, 'enabled').text = "yes" if self.ha2_keepalive else "no"
 
-        element.extend(self.subelements())
-        return element
+        root.extend(self.subelements())
+        return root
 
 
 class HighAvailabilityInterface(PanObject):
@@ -115,14 +115,14 @@ class HighAvailabilityInterface(PanObject):
         self.link_duplex = link_duplex
 
     def element(self):
-        element = self.root_element()
-        ET.SubElement(element, 'ip-address').text = self.ipaddress
-        ET.SubElement(element, 'netmask').text = self.netmask
+        root = self.root_element()
+        ET.SubElement(root, 'ip-address').text = self.ipaddress
+        ET.SubElement(root, 'netmask').text = self.netmask
         if self.gateway is not None:
-            ET.SubElement(element, 'gateway').text = self.gateway
-        ET.SubElement(element, 'link_speed').text = self.link_speed
-        ET.SubElement(element, 'link_duplex').text = self.link_duplex
-        return element
+            ET.SubElement(root, 'gateway').text = self.gateway
+        ET.SubElement(root, 'link_speed').text = self.link_speed
+        ET.SubElement(root, 'link_duplex').text = self.link_duplex
+        return root
 
 
 class HA1(HighAvailabilityInterface):
@@ -147,10 +147,10 @@ class HA1(HighAvailabilityInterface):
         self.monitor_hold_time=monitor_hold_time
 
     def element(self):
-        element = super(HA1, self).element()
+        root = super(HA1, self).element()
         if self.monitor_hold_time != 3000:
-            ET.SubElement(element, 'monitor-hold-time').text = str(self.monitor_hold_time)
-        return element
+            ET.SubElement(root, 'monitor-hold-time').text = str(self.monitor_hold_time)
+        return root
 
 
 class HA1Backup(HighAvailabilityInterface):

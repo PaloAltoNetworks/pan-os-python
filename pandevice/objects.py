@@ -57,10 +57,10 @@ class AddressObject(PanObject):
         self.description = description
 
     def element(self):
-        element = ET.Element("entry", {'name': self.name})
-        type = ET.SubElement(element, self.type)
+        root = ET.Element("entry", {'name': self.name})
+        type = ET.SubElement(root, self.type)
         type.text = self.value
         if self.description is not None:
-            description = ET.SubElement(element, 'description')
+            description = ET.SubElement(root, 'description')
             description.text = self.description
-        return element
+        return root
