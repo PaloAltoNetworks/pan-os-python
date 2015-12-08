@@ -46,6 +46,8 @@ class PanObject(object):
     SUFFIX = None
     ROOT = Root.DEVICE
 
+    VARS = ()
+
     def __init__(self, name=None):
         self.name = name
         self.parent = None
@@ -89,7 +91,34 @@ class PanObject(object):
         raise NotImplementedError("This method can be used on a PanDevice, but not on a PanObject")
 
     def element(self):
-        return self.root_element()
+        root = self.root_element()
+        for var in self.VARS:
+            value = vars(self)[var.variable]
+            if value is None:
+                continue
+            path = var.path.split("/")
+            next = root
+            for section in path:
+                # Search for variable replacements in path
+                matches = re.findall(r'{{(.*?)}}', section)
+                for match in matches:
+                    regex = r'{{' + re.escape(match) + r'}}'
+                    section = re.sub(regex, vars(self)[match], section)
+                found = next.find(section)
+                if found is not None:
+                    # Existing element
+                    next = found
+                else:
+                    # Create element
+                    next = ET.SubElement(next, section)
+            # Create an element containing the value in the instance variable
+            if var.vartype == "member":
+                for member in value:
+                    ET.SubElement(next, 'member').text = str(member)
+            else:
+                next.text = str(value)
+        root.extend(self.subelements())
+        return root
 
     def element_str(self):
         return ET.tostring(self.element())
@@ -132,8 +161,6 @@ class PanObject(object):
             _next_xpath_level(child, elements, xpath_sections)
         # Return a list of subelements
         return [element for element in elements]
-
-
 
     def apply(self):
         self.pandevice().xapi.edit(self.xpath(), self.element_str())
@@ -179,6 +206,31 @@ class PanObject(object):
         for index in indexes:
             return index  # Just return the first index that matches the name
         return None
+
+
+class VarPath(object):
+    """Configuration variable within the object
+
+    Attributes:
+        path (string): The relative xpath to the variable
+        variable (string): The name of the instance variable in the class
+        vartype (string): The type of variable (None or 'member')
+    """
+    def __init__(self, path, variable=None, vartype=None):
+        self.path = path
+        self._variable = variable
+        self.vartype = vartype
+
+    @property
+    def variable(self):
+        if self._variable is None:
+            return self.path.rsplit("/", 1)[-1].replace('-','_')
+        else:
+            return self._variable
+
+    @variable.setter
+    def variable(self, value):
+        self._variable = value
 
 
 class VsysImportMixin(object):

@@ -22,6 +22,7 @@ import logging
 import xml.etree.ElementTree as ET
 import pandevice
 from base import PanObject, Root, MEMBER, ENTRY, VsysImportMixin
+from base import VarPath as Var
 
 # import other parts of this pandevice package
 import errors as err
@@ -239,17 +240,29 @@ class VirtualRouter(VsysImportMixin, PanObject):
     XPATH = "/network/virtual-router"
     SUFFIX = ENTRY
 
+    VARS = (
+        Var("interface", vartype="member"),
+    )
+
     def __init__(self,
                  name="default",
-                 interfaces=()):
+                 interface=()):
         super(VirtualRouter, self).__init__(name=name)
-        self.interfaces = list(interfaces)
+        self.interface = list(interface)
 
 
 class StaticRoute(PanObject):
 
     XPATH = "/routing-table/ip/static-route"
     SUFFIX = ENTRY
+
+    VARS = (
+        Var("destination"),
+        Var("nexthop/ip-address", "nexthop"),
+        Var("interface"),
+        Var("admin-dist"),
+        Var("metric")
+    )
 
     def __init__(self,
                  name,
@@ -266,17 +279,6 @@ class StaticRoute(PanObject):
         self.admin_dist = admin_dist
         self.metric = metric
 
-    def element(self):
-        root = self.root_element()
-        nexthop = ET.SubElement(root, 'nexthop')
-        ET.SubElement(nexthop, 'ip-address').text = str(self.nexthop)
-        if self.interface is not None:
-            ET.SubElement(root, 'interface').text = str(self.interface)
-        ET.SubElement(root, 'destination').text = str(self.destination)
-        if self.admin_dist is not None:
-            ET.SubElement(root, 'admin-dist').text = str(self.admin_dist)
-        ET.SubElement(root, 'metric').text = str(self.metric)
-        return root
 
 class StaticRouteV6(StaticRoute):
     XPATH = "/routing-table/ipv6/static-route"

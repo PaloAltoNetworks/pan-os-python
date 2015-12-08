@@ -22,6 +22,7 @@ import logging
 import xml.etree.ElementTree as ET
 import pandevice
 from base import PanObject, Root, MEMBER, ENTRY
+from base import VarPath as Var
 
 # import other parts of this pandevice package
 import errors as err
@@ -45,6 +46,12 @@ class AddressObject(PanObject):
     XPATH = "/address"
     SUFFIX = ENTRY
 
+    VARS = (
+        Var("ip-netmask|ip-range|fqdn", "type"),
+        Var("{{type}}", "value"),
+        Var("description"),
+    )
+
     def __init__(self,
                  name,
                  value,
@@ -56,11 +63,3 @@ class AddressObject(PanObject):
         self.type = type
         self.description = description
 
-    def element(self):
-        root = ET.Element("entry", {'name': self.name})
-        type = ET.SubElement(root, self.type)
-        type.text = self.value
-        if self.description is not None:
-            description = ET.SubElement(root, 'description')
-            description.text = self.description
-        return root
