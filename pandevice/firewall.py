@@ -86,6 +86,9 @@ class Firewall(PanDevice):
         else:
             return self.XPATH + "/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='%s']" % self.vsys
 
+    def xpath_panorama(self):
+        raise err.PanDeviceError("Attempt to modify Panorama configuration on non-Panorama device")
+
     def op(self, cmd=None, cmd_xml=True, extra_qs=None):
         if self.vsys == "shared":
             vsys = "vsys1"

@@ -44,6 +44,9 @@ class Panorama(base.PanDevice):
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
+    def xpath_vsys(self):
+        raise err.PanDeviceError("Attempt to modify vsys configuration on non-firewall device")
+
     def xpath_panorama(self):
         return self.XPATH + "/panorama"
 

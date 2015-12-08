@@ -87,9 +87,6 @@ class PanObject(object):
         result = str(parent_xpath + self.XPATH + suffix)
         return result
 
-    def xpath_root(self, root_type):
-        raise NotImplementedError("This method can be used on a PanDevice, but not on a PanObject")
-
     def element(self):
         root = self.root_element()
         for var in self.VARS:
@@ -175,6 +172,33 @@ class PanObject(object):
         if self.parent is not None:
             self.parent.remove_by_name(self.name, type(self))
 
+    def refresh(self, candidate=False, xml=None):
+        # Get the root of the xml to parse
+        if xml is None:
+            pandevice = self.pandevice()
+            if candidate:
+                api_action = pandevice.xapi.show
+            else:
+                api_action = pandevice.xapi.get
+            api_action(self.xpath())
+            root = pandevice.xapi.element_root
+            # Determine the first element to look for in the XML
+            if self.SUFFIX is None:
+                lasttag = self.XPATH.rsplit("/", 1)[-1]
+            else:
+                lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
+            # lasttag = self.xpath().rsplit("/", 1)[-1]
+            obj = root.find("result/" + lasttag)
+            if obj is None:
+                raise err.PanDeviceError("Object no longer exists!")
+        else:
+            # Use the xml that was passed in
+            obj = xml
+        # Refresh each variable
+        variables = type(self)._parse_xml(obj)
+        for var, value in variables.iteritems():
+            vars(self)[var] = value
+
     def pandevice(self):
         if issubclass(self.__class__, PanDevice):
             return self
@@ -206,6 +230,110 @@ class PanObject(object):
         for index in indexes:
             return index  # Just return the first index that matches the name
         return None
+
+    @classmethod
+    def refresh_all_from_device(cls, pandevice, candidate=False, update=True):
+        """Factory method to instantiate class from firewall config
+
+        This method is a factory for the class. It takes an firewall or Panorama
+        and gets the xml config from the device. It generates instances of this
+        class for each item this class represents in the xml config. For example,
+        if the class is AddressObject and there are 5 address objects on the
+        firewall, then this method will generate 5 instances of the class AddressObject.
+
+        Args:
+            pandevice (PanDevice): A firewall or Panorama object
+            candidate (bool): False for running config, True for candidate config
+            update (bool): Update the objects of this type in pandevice with
+                the refreshed values
+
+        Returns:
+            list: created instances of class
+        """
+        if candidate:
+            api_action = pandevice.xapi.show
+        else:
+            api_action = pandevice.xapi.get
+        api_action(pandevice.xpath_root(cls.ROOT) + cls.XPATH)
+        root = pandevice.xapi.element_root
+        lasttag = cls.XPATH.rsplit("/", 1)[-1]
+        obj = root.find("result/" + lasttag)
+        # Refresh each object
+        return cls.refresh_all_from_xml(obj)
+
+    @classmethod
+    def refresh_all_from_xml(cls, xml):
+        """Factory method to instantiate class from firewall config
+
+        This method is a factory for the class. It takes an xml config
+        from a firewall and generates instances of this class for each item
+        this class represents in the xml config. For example, if the class is
+        AddressObject and there are 5 address objects on the firewall, then
+        this method will generate 5 instances of the class AddressObject.
+
+        Args:
+            xml (Element): An XML configuration from a firewall or Panorama
+
+        Returns:
+            list: created instances of class
+        """
+        instances = []
+        if cls.SUFFIX is None:
+            lasttag = ""
+        else:
+            lasttag = re.match(r'^/(\w*?)\[', cls.SUFFIX).group(1)
+        objects = xml.findall(lasttag)
+        # Refresh each object
+        for obj in objects:
+            variables = cls._parse_xml(obj)
+            variables['name'] = obj.get('name')
+            # Remove 'None' values
+            variables = {k: v for k, v in variables.iteritems() if v is not None}
+            instance = cls(**variables)
+            instances.append(instance)
+        return instances
+
+    @classmethod
+    def _parse_xml(cls, xml):
+        variables = {}
+        # Parse each variable
+        for var in cls.VARS:
+            if var.vartype is None:
+                if var.path.find("|") != -1:
+                    # This is an element variable
+                    sections = var.path.split("/")
+                    options = sections.pop()
+                    path = "/".join(sections)
+                    if path != "":
+                        path += "/"
+                    options = options.split("|")
+                    found = False
+                    for opt in options:
+                        match = xml.find(path + opt)
+                        if match is not None:
+                            variables[var.variable] = opt
+                            found = True
+                            break
+                    if not found:
+                        variables[var.variable] = None
+                else:
+                    # This is a text variable
+                    # Search for variable replacements in path
+                    path = var.path
+                    matches = re.findall(r'{{(.*?)}}', path)
+                    for match in matches:
+                        regex = r'{{' + re.escape(match) + r'}}'
+                        path = re.sub(regex, variables[match], path)
+                    try:
+                        # Save the variable if it exists in the xml
+                        variables[var.variable] = xml.find(path).text
+                    except AttributeError:
+                        # Couldn't find the path in the xml
+                        variables[var.variable] = None
+            elif var.vartype == "member":
+                members = xml.findall(var.path + "/member")
+                variables[var.variable] = [m.text for m in members]
+        return variables
 
 
 class VarPath(object):
