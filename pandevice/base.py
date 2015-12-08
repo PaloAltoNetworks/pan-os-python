@@ -51,6 +51,9 @@ class PanObject(object):
         self.parent = None
         self.children = []
 
+    def __str__(self):
+        return str(self.name)
+
     def add(self, child):
         child.parent = self
         self.children.append(child)
