@@ -75,19 +75,15 @@ class PanObject(object):
         if self.parent is None:
             parent_xpath = ""
         elif issubclass(type(self.parent), PanDevice):
-            if self.ROOT == Root.DEVICE:
-                parent_xpath = self.parent.xpath_device()
-            elif self.ROOT == Root.VSYS:
-                parent_xpath = self.parent.xpath_vsys()
-            elif self.ROOT == Root.MGTCONFIG:
-                parent_xpath = self.parent.xpath_mgtconfig()
-            else:
-                parent_xpath = self.parent.xpath()
+            parent_xpath = self.parent.xpath_root(self.ROOT)
         else:
             parent_xpath = self.parent.xpath()
         suffix = "" if self.SUFFIX is None else self.SUFFIX % self.name
         result = str(parent_xpath + self.XPATH + suffix)
         return result
+
+    def xpath_root(self, root_type):
+        raise NotImplementedError("This method can be used on a PanDevice, but not on a PanObject")
 
     def element(self):
         return self.root_element()
@@ -430,6 +426,31 @@ class PanDevice(PanObject):
                                             pan_device=self)
                 """
         self.config_changed = True
+
+    def xpath_root(self, root_type):
+        if root_type == Root.DEVICE:
+            xpath = self.xpath_device()
+        elif root_type == Root.VSYS:
+            xpath = self.xpath_vsys()
+        elif root_type == Root.MGTCONFIG:
+            xpath = self.xpath_mgtconfig()
+        elif root_type == Root.PANORAMA:
+            xpath = self.xpath_panorama()
+        else:
+            xpath = self.XPATH
+        return xpath
+
+    def xpath_mgtconfig(self):
+        return self.XPATH + "/mgt-config"
+
+    def xpath_device(self):
+        return self.XPATH + "/devices/entry[@name='localhost.localdomain']"
+
+    def xpath_vsys(self):
+        raise NotImplementedError
+
+    def xpath_panorama(self):
+        raise NotImplementedError
 
     def __get_xpath_scope(self):
         """Return the XPath root for the current device

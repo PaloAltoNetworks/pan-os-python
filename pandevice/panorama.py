@@ -44,6 +44,9 @@ class Panorama(base.PanDevice):
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
+    def xpath_panorama(self):
+        return self.XPATH + "/panorama"
+
     def commit_all(self, sync=False, sync_all=True, exception=False, cmd=None):
         self._logger.debug("Commit-all initiated on device: %s" % (self.hostname,))
         return self._commit(sync=sync,

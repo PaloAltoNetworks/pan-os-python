@@ -80,12 +80,6 @@ class Firewall(PanDevice):
         # Create a User-ID subsystem
         self.userid = userid.UserId(self)
 
-    def xpath_mgtconfig(self):
-        return self.XPATH + "/mgt-config"
-
-    def xpath_device(self):
-        return self.XPATH + "/devices/entry[@name='localhost.localdomain']"
-
     def xpath_vsys(self):
         if self.vsys == "shared":
             return self.XPATH + "/shared"
