@@ -39,6 +39,8 @@ import pan.commit
 from pan.config import PanConfig
 
 import pandevice
+from pandevice import objects
+from pandevice import network
 
 # import other parts of this pandevice package
 import errors as err
@@ -52,6 +54,11 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 class Firewall(PanDevice):
+
+    CHILDTYPES = (
+        objects.AddressObject,
+        network.VirtualRouter,
+    )
 
     def __init__(self,
                  hostname=None,

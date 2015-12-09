@@ -234,6 +234,49 @@ class Interface(object):
         return xpath, root
 
 
+
+    VARS = (
+    )
+
+    def __init__(self,
+
+
+class StaticRoute(PanObject):
+
+    XPATH = "/routing-table/ip/static-route"
+    SUFFIX = ENTRY
+
+    VARS = (
+        Var("destination"),
+        Var("nexthop/ip-address|discard", "nexthop_type"),
+        Var("nexthop/ip-address", "nexthop"),
+        Var("interface"),
+        Var("admin-dist"),
+        Var("metric", vartype="int", default=10),
+    )
+
+    def __init__(self,
+                 name,
+                 destination,
+                 nexthop=None,
+                 nexthop_type="ip-address",
+                 interface=None,
+                 admin_dist=None,
+                 metric=10,
+                 ):
+        super(StaticRoute, self).__init__(name=name)
+        self.destination = destination
+        self.nexthop = nexthop
+        self.nexthop_type = nexthop_type
+        self.interface = interface
+        self.admin_dist = admin_dist
+        self.metric = metric
+
+
+class StaticRouteV6(StaticRoute):
+    XPATH = "/routing-table/ipv6/static-route"
+
+
 class VirtualRouter(VsysImportMixin, PanObject):
 
     ROOT = Root.DEVICE
@@ -244,41 +287,13 @@ class VirtualRouter(VsysImportMixin, PanObject):
         Var("interface", vartype="member"),
     )
 
+    CHILDTYPES = (
+        StaticRoute,
+        StaticRouteV6,
+    )
+
     def __init__(self,
                  name="default",
                  interface=()):
         super(VirtualRouter, self).__init__(name=name)
         self.interface = list(interface)
-
-
-class StaticRoute(PanObject):
-
-    XPATH = "/routing-table/ip/static-route"
-    SUFFIX = ENTRY
-
-    VARS = (
-        Var("destination"),
-        Var("nexthop/ip-address", "nexthop"),
-        Var("interface"),
-        Var("admin-dist"),
-        Var("metric")
-    )
-
-    def __init__(self,
-                 name,
-                 destination,
-                 nexthop,
-                 interface=None,
-                 admin_dist=None,
-                 metric=10,
-                 ):
-        super(StaticRoute, self).__init__(name=name)
-        self.destination = destination
-        self.nexthop = nexthop
-        self.interface = interface
-        self.admin_dist = admin_dist
-        self.metric = metric
-
-
-class StaticRouteV6(StaticRoute):
-    XPATH = "/routing-table/ipv6/static-route"

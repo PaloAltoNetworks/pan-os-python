@@ -47,6 +47,7 @@ class PanObject(object):
     ROOT = Root.DEVICE
 
     VARS = ()
+    CHILDTYPES = ()
 
     def __init__(self, name=None):
         self.name = name
@@ -60,6 +61,12 @@ class PanObject(object):
         child.parent = self
         self.children.append(child)
         return child
+
+    def extend(self, children):
+        for child in children:
+            child.parent = self
+        self.children.extend(children)
+        return children
 
     def pop(self, index):
         child = self.children.pop(index)
@@ -262,7 +269,7 @@ class PanObject(object):
         return cls.refresh_all_from_xml(obj)
 
     @classmethod
-    def refresh_all_from_xml(cls, xml):
+    def refresh_all_from_xml(cls, xml, refresh_children=True):
         """Factory method to instantiate class from firewall config
 
         This method is a factory for the class. It takes an xml config
@@ -272,7 +279,7 @@ class PanObject(object):
         this method will generate 5 instances of the class AddressObject.
 
         Args:
-            xml (Element): An XML configuration from a firewall or Panorama
+            xml (Element): A section of XML configuration from a firewall or Panorama
 
         Returns:
             list: created instances of class
@@ -288,9 +295,15 @@ class PanObject(object):
             variables = cls._parse_xml(obj)
             variables['name'] = obj.get('name')
             # Remove 'None' values
-            variables = {k: v for k, v in variables.iteritems() if v is not None}
+            #variables = {k: v for k, v in variables.iteritems() if v is not None}
             instance = cls(**variables)
             instances.append(instance)
+            # Refresh the children of these instances
+            if refresh_children:
+                for childtype in cls.CHILDTYPES:
+                    childroot = obj.find(childtype.XPATH[1:])
+                    if childroot is not None:
+                        instance.extend(childtype.refresh_all_from_xml(childroot))
         return instances
 
     @classmethod
@@ -298,7 +311,10 @@ class PanObject(object):
         variables = {}
         # Parse each variable
         for var in cls.VARS:
-            if var.vartype is None:
+            if var.vartype == "member":
+                members = xml.findall(var.path + "/member")
+                variables[var.variable] = [m.text for m in members]
+            else:
                 if var.path.find("|") != -1:
                     # This is an element variable
                     sections = var.path.split("/")
@@ -312,6 +328,8 @@ class PanObject(object):
                         match = xml.find(path + opt)
                         if match is not None:
                             variables[var.variable] = opt
+                            if var.vartype == "int":
+                                variables[var.variable] = int(variables[var.variable])
                             found = True
                             break
                     if not found:
@@ -327,12 +345,13 @@ class PanObject(object):
                     try:
                         # Save the variable if it exists in the xml
                         variables[var.variable] = xml.find(path).text
+                        if var.vartype == "int":
+                            variables[var.variable] = int(variables[var.variable])
                     except AttributeError:
                         # Couldn't find the path in the xml
                         variables[var.variable] = None
-            elif var.vartype == "member":
-                members = xml.findall(var.path + "/member")
-                variables[var.variable] = [m.text for m in members]
+                if var.default is not None and variables[var.variable] is None:
+                    variables[var.variable] = var.default
         return variables
 
 
@@ -344,10 +363,11 @@ class VarPath(object):
         variable (string): The name of the instance variable in the class
         vartype (string): The type of variable (None or 'member')
     """
-    def __init__(self, path, variable=None, vartype=None):
+    def __init__(self, path, variable=None, vartype=None, default=None):
         self.path = path
         self._variable = variable
         self.vartype = vartype
+        self.default = default
 
     @property
     def variable(self):
