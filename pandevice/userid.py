@@ -255,7 +255,10 @@ class UserId(object):
             dict: ip addresses as keys with tags as values
 
         """
-        root = self.panfirewall.op(cmd='show object registered-ip all', vsys=self.panfirewall.vsys, cmd_xml=True)
+        if self.panfirewall.version < 6.1:
+            root = self.panfirewall.op(cmd='show object registered-address all', vsys=self.panfirewall.vsys, cmd_xml=True)
+        else:
+            root = self.panfirewall.op(cmd='show object registered-ip all', vsys=self.panfirewall.vsys, cmd_xml=True)
         entries = root.findall("./result/entry")
         if not entries:
             return None
