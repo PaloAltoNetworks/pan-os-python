@@ -164,7 +164,10 @@ class UserId(object):
         Support:
             PAN-OS 6.0 and higher
         """
-        self.panfirewall.xapi.op(cmd='show object registered-address all', vsys=self.panfirewall.vsys, cmd_xml=True)
+        if self.panfirewall.version < 6.1:
+            self.panfirewall.xapi.op(cmd='show object registered-address all', vsys=self.panfirewall.vsys, cmd_xml=True)
+        else:
+            self.panfirewall.xapi.op(cmd='show object registered-ip all', vsys=self.panfirewall.vsys, cmd_xml=True)
         root = self.panfirewall.xapi.element_root
         entries = root.findall("./result/entry")
         if not entries:
