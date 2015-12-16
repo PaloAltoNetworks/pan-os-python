@@ -40,213 +40,345 @@ except AttributeError as e:
     logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-class Interface(object):
-    """An interface on a Palo Alto Networks device
+class StaticMac(PanObject):
 
-    This interface can be physical or logical (like a vlan)
-    """
+    XPATH = "/mac"
+    SUFFIX = ENTRY
 
     def __init__(self,
-                 name=None,
-                 type="ethernet",
-                 mode="layer3",
-                 tag=None,
-                 zone=None,
-                 subnets=None,
-                 router="default",
-                 pan_device=None,
-                 apply_changes=False,
-                 parent=None,
-                 state=None,
+                 mac,
+                 interface,
                  ):
-        """Initialize Interface"""
-        self.name = name
-        self.type = type
-        self.mode = mode
-        self._tag = None
-        self.tag = tag
-        self._zone = zone
-        self.router = router
-        self.parent = parent
-        self.subinterfaces = {}
-        self.apply_changes = apply_changes
-        self.pan_device = pan_device
-        self._subnets = None
-        self.subnets = subnets
-        self.state = state
-        if tag is not None and not re.search(r"\.\d+$", self.name):
-            self.name += "." + str(self.tag)
-        if tag is None and re.search(r"\.\d+$", self.name):
-            self.tag = self.name.split(".")[1]
+        super(StaticMac, self).__init__(name=mac)
+        self.interface = interface
 
-    # Builtins
+    @staticmethod
+    def vars():
+        return (
+            Var("interface")
+        )
 
-    def __str__(self):
+    @property
+    def mac(self):
         return self.name
 
-    def __repr__(self):
-        return "<%s name:%s state:%s type:%s mode:%s zone:%s>" % ('Interface',
-                                                                  self.name,
-                                                                  self.state,
-                                                                  self.type,
-                                                                  self.mode,
-                                                                  self.zone,
-                                                                  )
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
-    # Properties
-
-    @property
-    def subnets(self):
-        return self._subnets
-
-    @property
-    def tag(self):
-        return self._tag
-
-    @property
-    def zone(self):
-        return self._zone
-
-    @subnets.setter
-    def subnets(self, value):
-        if value is None:
-            self._subnets = []
-        elif issubclass(value.__class__, list):
-            self._subnets = value
-        else:
-            self._subnets = [value]
-        if self.apply_changes:
-            self.apply()
-
-    @tag.setter
-    def tag(self, value):
-        if value is not None:
-            self._tag = str(value)
-        else:
-            self._tag = None
-
-    @zone.setter
-    def zone(self, value):
-        if self._zone == value:
-            return
-        old_zone = self._zone
-        self._zone = value
-        if self.apply_changes:
-            if old_zone is not None:
-                xpath = pandevice.XPATH_ZONE + "/entry[" \
-                                     "@name='%s']/network/layer3/" \
-                                     "member[text()='%s']" \
-                                     % (old_zone, self.name)
-                self.pan_device.xapi.delete(xpath)
-            if self._zone is not None:
-                xpath = pandevice.XPATH_ZONE + "/entry[@name='%s']/network/layer3" \
-                                     % (self._zone,)
-                element = "<member>%s</member>" % (self.name,)
-                self.pan_device.xapi.set(xpath, element)
-
-    def is_up(self):
-        if self.state == "up":
-            return True
-        else:
-            return False
-
-    def apply(self):
-        if not self.pan_device:
-            return
-        self.pan_device.set_config_changed()
-        # apply the interface
-        xpath, element = self._xpath()
-        self.pan_device.xapi.edit(xpath, ET.tostring(element))
-        # put it in a zone
-        if self.zone:
-            xpath = pandevice.XPATH_ZONE + "/entry[@name='%s']/network/layer3" \
-                                 % (self.zone,)
-            element = "<member>%s</member>" % (self.name,)
-            self.pan_device.xapi.set(xpath, element)
-        # set the virtual router
-        if self.router:
-            xpath = pandevice.XPATH_DEFAULT_VROUTER_INTERFACES
-            element = "<member>%s</member>" % (self.name,)
-            self.pan_device.xapi.set(xpath, element)
-
-    def delete(self):
-        if not self.pan_device:
-            return
-        self.pan_device.set_config_changed()
-        # remove the interface from the virtual router
-        if self.router:
-            xpath = pandevice.XPATH_DEFAULT_VROUTER_INTERFACES + "/member[text()='%s']" \
-                                                       % (self.name,)
-            self.pan_device.xapi.delete(xpath)
-        # remove the interface from the zone
-        if self.zone:
-            xpath = pandevice.XPATH_ZONE + "/entry[@name='%s']/network/layer3/member[" \
-                                 "text()='%s']" \
-                                 % (self.zone, self.name)
-            self.pan_device.xapi.delete(xpath)
-        # remove the interface from the configuration
-        xpath, element = self._xpath()
-        self.pan_device.xapi.delete(xpath)
-
-    def _xpath(self):
-        xpath = pandevice.XPATH_INTERFACES + "/%s" % (self.type,)
-
-        if self.type == "ethernet":
-            if self.parent:
-                xpath += "/entry[@name='%s']/%s/units/entry[@name='%s']" \
-                         % (self.parent.name,
-                            self.parent.mode,
-                            self.name)
-                root = ET.Element("entry", {"name": self.name})
-                settings = root
-            else:
-                match = re.search(r"(ethernet\d/\d{1,3})\.\d{1,4}", self.name)
-                if match:
-                    xpath += "/entry[@name='%s']/%s/units/entry[@name='%s']"\
-                             % (match.group(1), self.mode, self.name)
-                    root = ET.Element("entry", {"name": self.name})
-                    settings = root
-                else:
-                    xpath += "/entry[@name='%s']" % (self.name,)
-                    root = ET.Element("entry", {"name": self.name})
-                    settings = ET.SubElement(root, self.mode)
-        elif self.type == "vlan":
-            xpath += "/units/entry[@name='%s']" % (self.name,)
-            root = ET.Element("entry", {"name": self.name})
-            settings = root
-        else:
-            raise err.PanDeviceError("Unknown interface type: %s" % self.type)
-
-        # For Layer 3 interfaces, apply any subnet configuration
-        if self.mode == "layer3" and self.subnets:
-            node = ET.SubElement(settings, "ip")
-            for subnet in self.subnets:
-                ET.SubElement(node, "entry", {"name": subnet})
-
-        # If there is a tag, apply it in the XML
-        if self.tag:
-            node = ET.SubElement(settings, "tag")
-            node.text = self.tag
-
-        return xpath, root
+    @mac.setter
+    def mac(self, value):
+        self.name = value
 
 
+class Vlan(PanObject):
 
-    VARS = (
+    XPATH = "/network/vlan"
+    SUFFIX = ENTRY
+    ROOT = Root.DEVICE
+    CHILDTYPES = (
+        StaticMac,
     )
 
     def __init__(self,
+                 name,
+                 interface=(),
+                 virtual_interface=None
+                 ):
+        super(Vlan, self).__init__(name)
+        self.interface = interface
+        self.virtual_interface = virtual_interface
+
+    @staticmethod
+    def vars():
+        return (
+            Var("interface", vartype="member"),
+            Var("virtual-interface/interface", "virtual_interface")
+        )
+
+
+class IPv6Address(PanObject):
+    """IPv6 Address for use on network interfaces"""
+
+    XPATH = "/ipv6/address"
+    SUFFIX = ENTRY
+    NAME = "address"
+
+    def __init__(self,
+                 address,
+                 enable_on_interface=None,
+                 prefix=None,
+                 anycast=None,
+                 advertise_enabled=None,
+                 valid_lifetime=None,
+                 preferred_lifetime=None,
+                 onlink_flag=None,
+                 auto_config_flag=None,
+                 ):
+        super(IPv6Address, self).__init__(name=address)
+        self.enable_on_interface = enable_on_interface
+        self.prefix = prefix
+        self.anycast = anycast
+        self.advertise_enabled = advertise_enabled
+        self.valid_lifetime = valid_lifetime
+        self.preferred_lifetime = preferred_lifetime
+        self.onlink_flag = onlink_flag
+        self.auto_config_flag = auto_config_flag
+
+    @staticmethod
+    def vars():
+        return (
+            Var("enable-on-interface", vartype="bool"),
+            Var("prefix", vartype="exist"),
+            Var("anycast", vartype="exist"),
+            Var("advertise/enable", "advertise_enabled", vartype="bool"),
+            Var("advertise/valid-lifetime", vartype="int"),
+            Var("advertise/preferred-lifetime", vartype="int"),
+            Var("advertise/onlink-flag", vartype="bool"),
+            Var("advertise/auto-config-flag", vartype="bool"),
+        )
+
+    @property
+    def address(self):
+        return self.name
+
+    @address.setter
+    def address(self, value):
+        self.name = value
+
+
+class Interface(PanObject):
+    """Abstract base class for all interfaces"""
+
+    SUFFIX = ENTRY
+    ROOT = Root.DEVICE
+
+    def __init__(self,
+                 name,
+                 ):
+        if type(self) == Interface:
+            raise err.PanDeviceError("Do not instantiate an Interface class. Please use a subclass.")
+        super(Interface, self).__init__(name=name)
+
+
+class Arp(PanObject):
+    """Static ARP Mapping"""
+
+    def __init__(self,
+                 ip,
+                 hw_address,
+                 ):
+        super(Arp, self).__init__(name=ip)
+        self.hw_address = hw_address
+
+    @staticmethod
+    def vars():
+        return (
+            Var("hw-address")
+        )
+
+    @property
+    def ip(self):
+        return self.name
+
+    @ip.setter
+    def ip(self, value):
+        self.name = value
+
+
+class Layer3Interface(Interface):
+    """Abstract base class for L3 interfaces"""
+
+    XPATH = "/layer3"
+    SUFFIX = None
+    CHILDTYPES = (
+        IPv6Address,
+    )
+
+    def __init__(self,
+                 ip=(),
+                 ipv6_enabled=None,
+                 management_profile=None,
+                 mtu=None,
+                 adjust_tcp_mss=None,
+                 netflow_profile=None,
+                 name="",
+                 ):
+        super(Layer3Interface, self).__init__(name=name)
+        self.ip = pandevice.string_or_list(ip)
+        self.ipv6_enabled = ipv6_enabled
+        self.management_profile = management_profile
+        self.mtu = mtu
+        self.adjust_tcp_mss = adjust_tcp_mss
+        self.netflow_profile = netflow_profile
+
+    @staticmethod
+    def vars():
+        return super(Layer3Interface, Layer3Interface).vars() + (
+            Var("ip", vartype="entry"),
+            Var("ipv6/enabled", "ipv6_enabled", vartype="bool"),
+            Var("interface-management-profile", "management_profile"),
+            Var("mtu", vartype="int"),
+            Var("adjust-tcp-mss", vartype="bool"),
+            Var("netflow-profile"),
+        )
+
+
+class Layer2Interface(Interface):
+    """Abstract base class for L2 interfaces"""
+
+    XPATH = "/layer2"
+    SUFFIX = None
+
+    def __init__(self,
+                 lldp_enabled=None,
+                 lldp_profile=None,
+                 netflow_profile=None,
+                 name="",
+                 ):
+        super(Layer2Interface, self).__init__(name=name)
+        self.lldp_enable = lldp_enabled
+        self.lldp_profile = lldp_profile
+        self.netflow_profile = netflow_profile
+
+    @staticmethod
+    def vars():
+        return super(Layer3Interface, Layer3Interface).vars() + (
+            Var("lldp/enable", "lldp_enabled", vartype="bool"),
+            Var("lldp/profile", "lldp_profile"),
+            Var("netflow-profile"),
+        )
+
+
+class VirtualWireInterface(Interface):
+    """Abstract base class for vwire interfaces"""
+
+    XPATH = "/virtual-wire"
+    SUFFIX = None
+
+
+class Layer3Subinterface(VsysImportMixin, Layer3Interface):
+
+    XPATH = "/layer3/units"
+    XPATH_IMPORT = "/network/interface"
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        IPv6Address,
+    )
+
+    def __init__(self,
+                 name,
+                 ip=None,
+                 ipv6_enabled=None,
+                 tag=None,
+                 management_profile=None,
+                 mtu=None,
+                 adjust_tcp_mss=None,
+                 netflow_profile=None,
+                 ):
+        super(Layer3Subinterface, self).__init__(ip,
+                                                 ipv6_enabled,
+                                                 management_profile,
+                                                 mtu,
+                                                 adjust_tcp_mss,
+                                                 netflow_profile,
+                                                 name=name,
+                                                 )
+        self.name = name
+        self.tag = tag
+
+    @staticmethod
+    def vars():
+        return super(Layer3Subinterface, Layer3Subinterface).vars() + (
+            Var("tag", vartype="int"),
+        )
+
+
+class Layer2Subinterface(VsysImportMixin, Interface):
+
+    XPATH = "/layer2/units"
+    XPATH_IMPORT = "/network/interface"
+    SUFFIX = ENTRY
+
+    def __init__(self,
+                 name,
+                 tag,
+                 comment=None,
+                 netflow_profile=None,
+                 ):
+        super(Layer2Subinterface, self).__init__(name=name)
+        self.name = name
+        self.tag = tag
+        self.comment = comment
+        self.netflow_profile = netflow_profile
+
+    @staticmethod
+    def vars():
+        return (
+            Var("tag", vartype="int"),
+            Var("comment"),
+            Var("netflow-profile"),
+        )
+
+
+class EthernetInterface(VsysImportMixin, Interface):
+
+    XPATH = "/network/interface/ethernet"
+    XPATH_IMPORT = "/network/interface"
+    CHILDTYPES = (
+        Layer3Interface,
+        Layer3Subinterface,
+        Layer2Interface,
+        Layer2Subinterface,
+    )
+
+    def __init__(self,
+                 name,
+                 link_speed=None,
+                 link_duplex=None,
+                 link_state=None,
+                 aggregate_group=None,
+                 ):
+        super(EthernetInterface, self).__init__(name)
+        self.link_speed = link_speed
+        self.link_duplex = link_duplex
+        self.link_state = link_state
+        self.aggregate_group = aggregate_group
+
+    @staticmethod
+    def vars():
+        return (
+            Var("link-speed"),
+            Var("link-duplex"),
+            Var("link-state"),
+            Var("aggregate-group"),
+        )
+
+
+class AggregateInterface(VsysImportMixin, Interface):
+
+    XPATH = "/network/interface/aggregate-ethernet"
+    XPATH_IMPORT = "/network/interface"
+    CHILDTYPES = (
+        Layer3Interface,
+        Layer3Subinterface,
+        Layer2Interface,
+        Layer2Subinterface,
+    )
+
+
+class VlanInterface(VsysImportMixin, Layer3Interface):
+    XPATH = "/network/interface/vlan/units"
+
+
+class LoopbackInterface(VsysImportMixin, Layer3Interface):
+    XPATH = "/network/interface/loopback/units"
+
+
+class TunnelInterface(VsysImportMixin, Layer3Interface):
+    XPATH = "/network/interface/tunnel/units"
 
 
 class StaticRoute(PanObject):
 
     XPATH = "/routing-table/ip/static-route"
     SUFFIX = ENTRY
-
-    )
 
     def __init__(self,
                  name,
