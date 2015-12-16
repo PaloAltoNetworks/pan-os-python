@@ -19,6 +19,7 @@
 # import modules
 import xml.etree.ElementTree as ET
 from base import PanObject, Root, MEMBER, ENTRY
+from base import VarPath as Var
 
 
 class HighAvailability(PanObject):
@@ -26,8 +27,8 @@ class HighAvailability(PanObject):
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/high-availability"
 
-    ACTIVE_PASSIVE = 0
-    ACTIVE_ACTIVE = 1
+    ACTIVE_PASSIVE = "active-passive"
+    ACTIVE_ACTIVE = "active-active"
 
     def __init__(self,
                  peer_ip,
@@ -54,41 +55,27 @@ class HighAvailability(PanObject):
         self.ha2_keepalive_action = "log-only"
         self.ha2_keepalive_threshold = 10000
 
-    def element(self):
-        root = self.root_element()
+    @staticmethod
+    def vars():
+        return (
+            # Enabled flag
+            Var("enabled", vartype="bool"),
+            # Group
+            Var("group", "group_id", vartype="entry"),
+            Var("{{group_id}}/description"),
+            Var("{{group_id}}/configuration-synchronization/enabled", "config_sync", vartype="bool"),
+            Var("{{group_id}}/peer-ip"),
+            # HA Mode (A/P, A/A)
+            Var("{{group_id}}/mode/active-passive|active-active", "mode"),
+            Var("{{group_id}}/mode/{{mode}}/passive-link-state", init=False),
+            # State Synchronization
+            Var("{{group_id}}/state-synchronization/enabled", "state_sync", vartype="bool"),
+            # HA2 Keep-alive
+            Var("{{group_id}}/state-synchronization/ha2-keep-alive/enabled", "ha2_keepalive", vartype="bool"),
+            Var("{{group_id}}/state-synchronization/ha2-keep-alive/action", "ha2_keepalive_action", init=False),
+            Var("{{group_id}}/state-synchronization/ha2-keep-alive/threshold", "ha2_keepalive_threshold", vartype="int", init=False),
 
-        # Enabled flag
-        ET.SubElement(root, 'enabled').text = "yes" if self.enabled else "no"
-
-        # Group
-        group = ET.SubElement(root, 'group')
-        group = ET.SubElement(group, 'entry', {'name': str(self.group_id)})
-        if self.description is not None:
-            ET.SubElement(group, 'description').text = self.description
-        config_sync = ET.SubElement(group, 'configuration-syncronization')
-        ET.SubElement(config_sync, 'enabled').text = 'yes' if self.config_sync else 'no'
-        ET.SubElement(group, 'peer-ip').text = self.peer_ip
-
-        # HA Mode (A/P, A/A)
-        mode = ET.SubElement(group, 'mode')
-        if self.mode == HighAvailability.ACTIVE_PASSIVE:
-            mode = ET.SubElement(mode, 'active-passive')
-            ET.SubElement(mode, 'passive-link-state').text = self.passive_link_state
-        elif self.mode == HighAvailability.ACTIVE_ACTIVE:
-            mode = ET.SubElement(mode, 'active-active')
-
-        # State Synchronization
-        state_sync = ET.SubElement(group, 'state-synchronization')
-        ET.SubElement(state_sync, 'enabled').text = "yes" if self.state_sync else "no"
-
-        # HA2 Keep-alive
-        ha2_keepalive = ET.SubElement(state_sync, 'ha2-keep-alive')
-        ET.SubElement(ha2_keepalive, 'action').text = self.ha2_keepalive_action
-        ET.SubElement(ha2_keepalive, 'threshold').text = str(self.ha2_keepalive_threshold)
-        ET.SubElement(ha2_keepalive, 'enabled').text = "yes" if self.ha2_keepalive else "no"
-
-        root.extend(self.subelements())
-        return root
+        )
 
 
 class HighAvailabilityInterface(PanObject):
@@ -97,9 +84,9 @@ class HighAvailabilityInterface(PanObject):
     Do not instantiate this class.  Use its subclasses
 
     """
-
+    # TODO: Support encryption
     def __init__(self,
-                 ipaddress,
+                 ip_address,
                  netmask,
                  port=None,
                  gateway=None,
@@ -110,21 +97,22 @@ class HighAvailabilityInterface(PanObject):
             raise AssertionError("Do not instantiate a HighAvailabilityInterface. Please use a subclass.")
         super(HighAvailabilityInterface, self).__init__()
         self.port = port
-        self.ipaddress = ipaddress
+        self.ip_address = ip_address
         self.netmask = netmask
         self.gateway = gateway
         self.link_speed = link_speed
         self.link_duplex = link_duplex
 
-    def element(self):
-        root = self.root_element()
-        ET.SubElement(root, 'ip-address').text = self.ipaddress
-        ET.SubElement(root, 'netmask').text = self.netmask
-        if self.gateway is not None:
-            ET.SubElement(root, 'gateway').text = self.gateway
-        ET.SubElement(root, 'link_speed').text = self.link_speed
-        ET.SubElement(root, 'link_duplex').text = self.link_duplex
-        return root
+    @staticmethod
+    def vars():
+        return (
+            Var("port"),
+            Var("ip-address"),
+            Var("netmask"),
+            Var("gateway"),
+            Var("link-speed"),
+            Var("link-duplex"),
+        )
 
 
 class HA1(HighAvailabilityInterface):
@@ -137,31 +125,70 @@ class HA1(HighAvailabilityInterface):
     XPATH = "/interface/ha1"
 
     def __init__(self,
-                 ipaddress,
+                 ip_address,
                  netmask,
-                 port=None,
+                 port="dedicated-ha1",
                  gateway=None,
                  link_speed="auto",
                  link_duplex="auto",
                  monitor_hold_time=3000,
                  ):
-        super(HA1, self).__init__(ipaddress, netmask, port, gateway, link_speed, link_duplex)
+        super(HA1, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
         self.monitor_hold_time=monitor_hold_time
 
-    def element(self):
-        root = super(HA1, self).element()
-        if self.monitor_hold_time != 3000:
-            ET.SubElement(root, 'monitor-hold-time').text = str(self.monitor_hold_time)
-        return root
+    @staticmethod
+    def vars():
+        return super(HA1, HA1).vars() + (
+            Var("monitor-hold-time", vartype="int"),
+        )
 
 
 class HA1Backup(HighAvailabilityInterface):
     XPATH = "/interface/ha1-backup"
 
+    def __init__(self,
+                 ip_address,
+                 netmask,
+                 port,
+                 gateway=None,
+                 link_speed="auto",
+                 link_duplex="auto",
+                 ):
+        super(HA1Backup, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
+
 
 class HA2(HighAvailabilityInterface):
     XPATH = "/interface/ha2"
 
+    def __init__(self,
+                 ip_address,
+                 netmask,
+                 port="dedicated-ha2",
+                 gateway=None,
+                 link_speed="auto",
+                 link_duplex="auto",
+                 ):
+        super(HA2, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
+
 
 class HA2Backup(HighAvailabilityInterface):
     XPATH = "/interface/ha2-backup"
+
+    def __init__(self,
+                 ip_address,
+                 netmask,
+                 port,
+                 gateway=None,
+                 link_speed="auto",
+                 link_duplex="auto",
+                 ):
+        super(HA2Backup, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
+
+
+class HA3(HighAvailabilityInterface):
+    XPATH = "/interface/ha3"
+
+    def __init__(self,
+                 port,
+                 ):
+        super(HA3, self).__init__(ip_address=None, netmask=None, port=port, gateway=None, link_speed=None, link_duplex=None)
