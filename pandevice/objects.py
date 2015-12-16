@@ -46,12 +46,6 @@ class AddressObject(PanObject):
     XPATH = "/address"
     SUFFIX = ENTRY
 
-    VARS = (
-        Var("ip-netmask|ip-range|fqdn", "type"),
-        Var("{{type}}", "value"),
-        Var("description"),
-    )
-
     def __init__(self,
                  name,
                  value,
@@ -63,3 +57,10 @@ class AddressObject(PanObject):
         self.type = type
         self.description = description
 
+    @staticmethod
+    def vars():
+        return (
+            Var("ip-netmask|ip-range|fqdn", "type"),
+            Var("{{type}}", "value"),
+            Var("description"),
+        )

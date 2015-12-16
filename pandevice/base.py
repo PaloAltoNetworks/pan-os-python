@@ -45,8 +45,6 @@ class PanObject(object):
     XPATH = "/config"
     SUFFIX = None
     ROOT = Root.DEVICE
-
-    VARS = ()
     CHILDTYPES = ()
 
     def __init__(self, name=None):
@@ -56,6 +54,10 @@ class PanObject(object):
 
     def __str__(self):
         return str(self.name)
+
+    @staticmethod
+    def vars():
+        return ()
 
     def add(self, child):
         child.parent = self
@@ -96,7 +98,8 @@ class PanObject(object):
 
     def element(self):
         root = self.root_element()
-        for var in self.VARS:
+        variables = self.vars()
+        for var in variables:
             value = vars(self)[var.variable]
             if value is None:
                 continue
@@ -310,7 +313,8 @@ class PanObject(object):
     def _parse_xml(cls, xml):
         variables = {}
         # Parse each variable
-        for var in cls.VARS:
+        vars = cls.vars()
+        for var in vars:
             if var.vartype == "member":
                 members = xml.findall(var.path + "/member")
                 variables[var.variable] = [m.text for m in members]

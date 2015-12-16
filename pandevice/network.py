@@ -246,13 +246,6 @@ class StaticRoute(PanObject):
     XPATH = "/routing-table/ip/static-route"
     SUFFIX = ENTRY
 
-    VARS = (
-        Var("destination"),
-        Var("nexthop/ip-address|discard", "nexthop_type"),
-        Var("nexthop/ip-address", "nexthop"),
-        Var("interface"),
-        Var("admin-dist"),
-        Var("metric", vartype="int", default=10),
     )
 
     def __init__(self,
@@ -272,6 +265,17 @@ class StaticRoute(PanObject):
         self.admin_dist = admin_dist
         self.metric = metric
 
+    @staticmethod
+    def vars():
+        return (
+            Var("destination"),
+            Var("nexthop/ip-address|discard", "nexthop_type"),
+            Var("nexthop/ip-address", "nexthop"),
+            Var("interface"),
+            Var("admin-dist"),
+            Var("metric", vartype="int", default=10),
+        )
+
 
 class StaticRouteV6(StaticRoute):
     XPATH = "/routing-table/ipv6/static-route"
@@ -282,11 +286,6 @@ class VirtualRouter(VsysImportMixin, PanObject):
     ROOT = Root.DEVICE
     XPATH = "/network/virtual-router"
     SUFFIX = ENTRY
-
-    VARS = (
-        Var("interface", vartype="member"),
-    )
-
     CHILDTYPES = (
         StaticRoute,
         StaticRouteV6,
@@ -296,4 +295,11 @@ class VirtualRouter(VsysImportMixin, PanObject):
                  name="default",
                  interface=()):
         super(VirtualRouter, self).__init__(name=name)
-        self.interface = list(interface)
+        # Save interface as a list, even if a string was given
+        self.interface = pandevice.string_or_list(interface)
+
+    @staticmethod
+    def vars():
+        return (
+            Var("interface", vartype="member"),
+        )
