@@ -73,3 +73,28 @@ pan.DEBUG3 = pan.DEBUG2 - 1
 logging.addLevelName(pan.DEBUG1, 'DEBUG1')
 logging.addLevelName(pan.DEBUG2, 'DEBUG2')
 logging.addLevelName(pan.DEBUG3, 'DEBUG3')
+
+
+def string_or_list(value):
+    """Return a list containing value
+
+    This method allows flexibility in class __init__ arguments,
+    allowing you to pass a string, object, list, or tuple.
+    In all cases, a list will be returned.
+
+    Args:
+        value: a string, object, list, or tuple
+
+    Returns:
+        list
+
+    Examples:
+        "string" -> [string]
+        ("t1", "t2") -> ["t1", "t2"]
+        ["l1", "l2"] -> ["l1", "l2"]
+
+    """
+    if value is None:
+        return None
+    else:
+        return list(value) if "__iter__" in dir(value) else [value]
