@@ -1128,83 +1128,34 @@ class PanDevice(PanObject):
             action = "all"
         else:
             action = None
-        if sync:
-            self._logger.debug("Waiting for commit job to finish...")
+        self._logger.debug("Initiating commit")
         self.xapi.commit(cmd=cmd,
                          action=action,
-                         sync=sync,
-                         sync_all=sync_all,
+                         sync=False,
                          interval=self.interval,
                          timeout=self.timeout)
+        commit_response = self.xapi.element_root
+        # Set locks off
         self.config_changed = False
         self.config_locked = False
         self.commit_locked = False
-        if sync:
-            pconf = PanConfig(self.xapi.element_result)
-            response = pconf.python()
-            job = response['result']
-            if job is None:
-                if exception:
-                    raise err.PanCommitNotNeeded("Commit not needed",
-                                                 pan_device=self)
-                else:
-                    return
-            job = job['job']
-            # Create a boolean called success to make
-            # testing for success easier
-            devices_results = {}
-            devices_success = True
-            if commit_all and sync_all:
-                devices = job['devices']
-                if devices is not None:
-                    devices = devices['entry']
-                    for device in devices:
-                        success = True if device['result'] == "OK" else False
-                        if not success:
-                            devices_success = False
-                        devices_results[device['serial-no']] = {
-                            'success': success,
-                            'serial': device['serial-no'],
-                            'name': device['devicename'],
-                            'result': device['result'],
-                            'starttime': device['tstart'],
-                            'endtime': device['tfin'],
-                            }
-                        # Errors and warnings might not have a full structure.  If it is just a string, then
-                        # a TypeError will be produced, so in that case, just grab the string.
-                        try:
-                            devices_results[device['serial-no']]['warnings'] = device['details']['msg']['warnings']
-                        except TypeError as e:
-                            devices_results[device['serial-no']]['warnings'] = ""
-                        try:
-                            devices_results[device['serial-no']]['messages'] = device['details']['msg']['errors'][
-                                'line']
-                        except TypeError as e:
-                            devices_results[device['serial-no']]['messages'] = device['details']
-
-            success = True if job['result'] == "OK" and devices_success else False
-
-            if commit_all:
-                messages = []
+        # Determine if a commit was needed and get the job id
+        try:
+            jobid = commit_response.find('./result/job').text
+        except AttributeError:
+            if exception:
+                raise err.PanCommitNotNeeded("Commit not needed",
+                                             pan_device=self)
             else:
-                messages = job['details']['line']
-            if issubclass(messages.__class__, basestring):
-                messages = [messages]
+                return
+        if not sync:
+            # Don't synchronize, just return
+            self._logger.debug("Commit initiated (async), job id: %s" % (jobid,))
+            return jobid
+        else:
+            result = self.syncjob(commit_response, sync_all=sync_all)
 
-            # Create the results dict
-            result = {
-                'success': success,
-                'result': job['result'],
-                'jobid': job['id'],
-                'user': job['user'],
-                'warnings': job['warnings'],
-                'starttime': job['tenq'],
-                'endtime': job['tfin'],
-                'messages': messages,
-                'devices': devices_results
-            }
-
-            if exception and not success:
+            if exception and not result['success']:
                 self._logger.debug("Commit failed - device: %s, job: %s, messages: %s, warnings: %s" %
                                    (self.hostname,
                                     result['jobid'],
@@ -1212,7 +1163,7 @@ class PanDevice(PanObject):
                                     result['warnings']))
                 raise err.PanCommitFailed(pan_device=self, result=result)
             else:
-                if success:
+                if result['success']:
                     self._logger.debug("Commit succeeded - device: %s, job: %s, messages: %s, warnings: %s" %
                                        (self.hostname,
                                         result['jobid'],
@@ -1225,25 +1176,18 @@ class PanDevice(PanObject):
                                         result['messages'],
                                         result['warnings']))
                 return result
-        else:
-            jobid = self.xapi.element_root.find('./result/job')
-            if jobid is None:
-                if exception:
-                    raise err.PanCommitNotNeeded("Commit not needed",
-                                                 pan_device=self)
-                else:
-                    return
-            self._logger.debug("Commit initiated (async), job id: %s" % (jobid,))
-            return jobid
 
 
-    def syncjob(self, response, interval=0.5):
+    def syncjob(self, job_id, sync_all=True, interval=0.5):
         """Block until job completes and return result
 
-        response: XML response tag from firewall when job is created
+        Args:
+            job_id: int job ID, or response XML from job creation
 
-        :returns True if job completed successfully, False if not
+        Returns:
+            Job result dict
         """
+        import httplib
         if interval is not None:
             try:
                 interval = float(interval)
@@ -1252,50 +1196,56 @@ class PanDevice(PanObject):
             except ValueError:
                 raise err.PanDeviceError('Invalid interval: %s' % interval)
 
-        job = response.find('./result/job')
-        if job is None:
-            return False
-        job = job.text
-
-        self._logger.debug('Syncing job: %s', job)
+        try:
+            job = job_id.find('./result/job')
+            if job is None:
+                return False
+            job = job.text
+        except AttributeError:
+            job = job_id
 
         cmd = 'show jobs id "%s"' % job
         start_time = time.time()
 
+        self._logger.debug("Waiting for job to finish...")
+
+        attempts = 0
         while True:
             try:
+                attempts += 1
                 self.xapi.op(cmd=cmd, cmd_xml=True)
-            except pan.xapi.PanXapiError as msg:
-                raise pan.xapi.PanXapiError('commit %s: %s' % (cmd, msg))
+            except (pan.xapi.PanXapiError, err.PanDeviceError) as e:
+                # Connection errors (URLError) are ok, this can happen in PAN-OS 7.0.1 and 7.0.2
+                # if the hostname is changed
+                # Invalid cred errors are ok because FW auth system takes longer to start up in these cases
+                # Other errors should be raised
+                if not str(e).startswith("URLError:") and not str(e).startswith("Invalid credentials."):
+                    # Error not related to connection issue.  Raise it.
+                    raise e
+            except httplib.BadStatusLine as e:
+                # Connection issue.  The firewall is currently restarting the API service or rebooting
+                pass
 
-            path = './result/job/status'
-            status = self.xapi.element_root.find(path)
+            job_xml = self.xapi.element_root
+            status = job_xml.find("./result/job/status")
             if status is None:
                 raise pan.xapi.PanXapiError('No status element in ' +
                                             "'%s' response" % cmd)
-            if status.text == 'FIN':
-                pconf = PanConfig(self.xapi.element_result)
-                response = pconf.python()
-                job = response['result']
-                if job is None:
-                    return
-                job = job['job']
-                success = True if job['result'] == "OK" else False
-                messages = job['details']['line']
-                if issubclass(messages.__class__, basestring):
-                    messages = [messages]
-                # Create the results dict
-                result = {
-                    'success': success,
-                    'result': job['result'],
-                    'jobid': job['id'],
-                    'user': job['user'],
-                    'warnings': job['warnings'],
-                    'starttime': job['tenq'],
-                    'endtime': job['tfin'],
-                    'messages': messages,
-                }
-                return result
+            if status.text == 'FIN' and sync_all:
+                # Check the status of each device commit
+                device_commits_finished = True
+                device_results = job_xml.findall("./result/job/devices/entry/result")
+                for device_result in device_results:
+                    if device_result.text == 'PEND':
+                        device_commits_finished = False
+                        break  # One device isn't finished, so stop checking others
+                if device_results and device_commits_finished:
+                    return self._parse_job_results(job_xml, get_devices=True)
+                else:
+                    return self._parse_job_results(job_xml, get_devices=False)
+            elif status.text == 'FIN':
+                # Job completed, parse the results
+                return self._parse_job_results(job_xml, get_devices=False)
 
             self._logger.debug('Job %s status %s', job, status.text)
 
@@ -1369,3 +1319,64 @@ class PanDevice(PanObject):
             # Sleep and try again
             self._logger.debug("Sleep %.2f seconds", interval)
             time.sleep(interval)
+
+    def _parse_job_results(self, show_job_xml, get_devices=True):
+        # Parse the final results
+        pconf = PanConfig(show_job_xml)
+        job_response = pconf.python()
+        try:
+            job = job_response['response']['result']['job']
+        except KeyError:
+            raise err.PanDeviceError("Can't get job results, error parsing results xml")
+        devices_results = {}
+        devices_success = True
+        # Determine if this was a commit all job
+        devices = show_job_xml.findall("./result/job/devices/entry")
+        if devices and get_devices:
+            devices = job['devices']['entry']
+            for device in devices:
+                dev_success = True if device['result'] == "OK" else False
+                if not dev_success:
+                    devices_success = False
+                devices_results[device['serial-no']] = {
+                    'success': dev_success,
+                    'serial': device['serial-no'],
+                    'name': device['devicename'],
+                    'result': device['result'],
+                    'starttime': device['tstart'],
+                    'endtime': device['tfin'],
+                }
+                # Errors and warnings might not have a full structure.  If it is just a string, then
+                # a TypeError will be produced, so in that case, just grab the string.
+                try:
+                    devices_results[device['serial-no']]['warnings'] = device['details']['msg']['warnings']
+                except TypeError as e:
+                    devices_results[device['serial-no']]['warnings'] = ""
+                try:
+                    devices_results[device['serial-no']]['messages'] = device['details']['msg']['errors'][
+                        'line']
+                except TypeError as e:
+                    devices_results[device['serial-no']]['messages'] = device['details']
+
+        success = True if job['result'] == "OK" and devices_success else False
+
+        if get_devices:
+            messages = []
+        else:
+            messages = job['details']['line']
+        if issubclass(messages.__class__, basestring):
+            messages = [messages]
+        # Create the results dict
+        result = {
+            'success': success,
+            'result': job['result'],
+            'jobid': job['id'],
+            'user': job['user'],
+            'warnings': job['warnings'],
+            'starttime': job['tenq'],
+            'endtime': job['tfin'],
+            'messages': messages,
+            'devices': devices_results,
+            'xml': show_job_xml,
+        }
+        return result
