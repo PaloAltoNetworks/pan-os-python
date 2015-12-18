@@ -25,10 +25,12 @@ For functions specific to Panorama
 
 # import modules
 import logging
+import xml.etree.ElementTree as ET
 
 # import other parts of this pandevice package
 import pandevice
 import base
+import errors as err
 
 
 class Panorama(base.PanDevice):
@@ -50,13 +52,27 @@ class Panorama(base.PanDevice):
     def xpath_panorama(self):
         return self.XPATH + "/panorama"
 
-    def commit_all(self, sync=False, sync_all=True, exception=False, cmd=None):
+    def commit_all(self, sync=False, sync_all=True, exception=False, devicegroup=None, serials=(), cmd=None):
         self._logger.debug("Commit-all initiated on device: %s" % (self.hostname,))
-        return self._commit(sync=sync,
-                            sync_all=sync_all,
-                            commit_all=True,
-                            exception=exception,
-                            cmd=cmd)
+
+        # XXX: This only works on PAN-OS 7.0+
+        e = ET.Element("commit-all")
+        if devicegroup is not None and cmd is None:
+            sp = ET.SubElement(e, "shared-policy")
+            dg = ET.SubElement(sp, "device-group")
+            ET.SubElement(dg, "entry", {"name": devicegroup})
+            if serials:
+                d = ET.SubElement(dg, "devices")
+                for serial in serials:
+                    ET.SubElement(d, "entry", {"name": serial})
+        cmd = ET.tostring(e)
+
+        result = self._commit(sync=sync,
+                              sync_all=sync_all,
+                              commit_all=True,
+                              exception=exception,
+                              cmd=cmd)
+        return result
 
     # XXX: I don't think this method is even needed
     def create_device_group(self, devicegroup, devices=None):
@@ -81,7 +97,7 @@ class Panorama(base.PanDevice):
         :return: None
         """
         # TODO: Implement 'exclusive'
-        self._logger.debug("Set device-group to '%s'" % (devicegroup))
+        self._logger.debug("Set device-group to '%s'" % devicegroup)
         if issubclass(devices.__class__, base.PanDevice):
             devices = [devices]
         device_refresh_needed = False
