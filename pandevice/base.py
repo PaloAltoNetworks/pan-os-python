@@ -64,7 +64,7 @@ class PanObject(object):
     def add(self, child):
         child.parent = self
         self.children.append(child)
-        return self
+        return child
 
     def extend(self, children):
         for child in children:
