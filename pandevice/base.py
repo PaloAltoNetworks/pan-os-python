@@ -101,6 +101,7 @@ class PanObject(object):
         root = self.root_element()
         variables = self.vars()
         for var in variables:
+            missing_replacement = False
             value = vars(self)[var.variable]
             if value is None:
                 continue
@@ -115,16 +116,26 @@ class PanObject(object):
                 entryvar = None
                 for match in matches:
                     regex = r'{{' + re.escape(match) + r'}}'
+                    # Ignore variables that are None
+                    if vars(self)[match] is None:
+                        missing_replacement = True
+                        break
+                    # Find the discovered replacement in the list of vars
                     for nextvar in variables:
                         if nextvar.variable == match:
                             matchedvar = nextvar
+                            break
                     if matchedvar.vartype == "entry":
+                        # If it's an 'entry' variable
                         section = re.sub(regex,
                                          matchedvar.path + "/" + "entry[@name='%s']" % vars(self)[matchedvar.variable],
                                          section)
                         entryvar = matchedvar
                     else:
+                        # Not an 'entry' variable
                         section = re.sub(regex, vars(self)[matchedvar.variable], section)
+                if missing_replacement:
+                    break
                 found = next.find(section)
                 if found is not None:
                     # Existing element
@@ -138,6 +149,8 @@ class PanObject(object):
                     else:
                         # for vartype="entry"
                         next = ET.SubElement(next, section)
+            if missing_replacement:
+                continue
             # Create an element containing the value in the instance variable
             if var.vartype == "member":
                 for member in value:
