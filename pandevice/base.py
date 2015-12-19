@@ -1232,25 +1232,25 @@ class PanDevice(PanObject):
                 device_commits_finished = True
                 device_results = job_xml.findall("./result/job/devices/entry/result")
                 for device_result in device_results:
-                    if device_result.text == 'PEND':
+                    if device_result.text == "PEND":
                         device_commits_finished = False
                         break  # One device isn't finished, so stop checking others
                 if device_results and device_commits_finished:
                     return self._parse_job_results(job_xml, get_devices=True)
                 else:
                     return self._parse_job_results(job_xml, get_devices=False)
-            elif status.text == 'FIN':
+            elif status.text == "FIN":
                 # Job completed, parse the results
                 return self._parse_job_results(job_xml, get_devices=False)
 
-            self._logger.debug('Job %s status %s', job, status.text)
+            self._logger.debug1("Job %s status %s" % (job, status.text))
 
             if (self.timeout is not None and self.timeout != 0 and
                         time.time() > start_time + self.timeout):
-                raise pan.xapi.PanXapiError('Timeout waiting for ' +
-                                            'job %s completion' % job)
+                raise pan.xapi.PanXapiError("Timeout waiting for " +
+                                            "job %s completion" % job)
 
-            self._logger.debug('Sleep %.2f seconds', interval)
+            self._logger.debug2("Sleep %.2f seconds" % interval)
             time.sleep(interval)
 
     def syncreboot(self, interval=5.0, timeout=600):
@@ -1313,7 +1313,7 @@ class PanDevice(PanObject):
                 raise err.PanDeviceError("Timeout waiting for device to reboot")
 
             # Sleep and try again
-            self._logger.debug("Sleep %.2f seconds", interval)
+            self._logger.debug("Sleep %.2f seconds" % interval)
             time.sleep(interval)
 
     def _parse_job_results(self, show_job_xml, get_devices=True):
