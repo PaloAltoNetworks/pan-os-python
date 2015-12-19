@@ -537,6 +537,7 @@ class PanDevice(PanObject):
         # State variables
         self.version = None
         self.content_version = None
+        self.platform = None
 
     @classmethod
     def create_from_device(cls,
@@ -788,29 +789,24 @@ class PanDevice(PanObject):
         xapi.keygen()
         return xapi.api_key
 
-    def system_info(self, all_info=False):
-        """Get system information
+    def show_system_info(self):
+        self.xapi.op(cmd="show system info", cmd_xml=True)
+        pconf = PanConfig(self.xapi.element_root)
+        system_info = pconf.python()
+        return system_info['response']['result']
+
+    def refresh_system_info(self):
+        """Refresh system information variables
 
         Returns:
             system information like version, platform, etc.
         """
+        system_info = self.show_system_info()
 
-        self.xapi.op(cmd="<show><system><info></info></system></show>")
-        pconf = PanConfig(self.xapi.element_result)
-        system_info = pconf.python()
-        self._logger.debug("Systeminfo: %s" % system_info)
-        if not system_info:
-            error_msg = 'Cannot detect device type, unable to get system info'
-            self._logger.error(error_msg)
-            raise err.PanDeviceError(error_msg, pan_device=self)
+        self.version = system_info['system']['sw-version']
+        self.platform = system_info['system']['model']
 
-        if not all_info:
-            version = system_info['result']['system']['sw-version']
-            model = system_info['result']['system']['model']
-            serial = system_info['result']['system']['serial']
-            return version, model, serial
-        else:
-            return system_info['result']
+        return self.version, self.platform
 
     def refresh_version(self):
         """Get version of PAN-OS

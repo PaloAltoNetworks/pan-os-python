@@ -132,6 +132,20 @@ class Firewall(PanDevice):
         else:
             return super(Firewall, self).generate_xapi()
 
+    def refresh_system_info(self):
+        """Refresh system information variables
+
+        Returns:
+            system information like version, platform, etc.
+        """
+        system_info = self.show_system_info()
+
+        self.version = system_info['system']['sw-version']
+        self.platform = system_info['system']['model']
+        self.serial = system_info['system']['serial']
+
+        return self.version, self.platform, self.serial
+
     def add_address_object(self, name, address, description=''):
         """Add/update an ip-netmask type address object to the configuration
 
