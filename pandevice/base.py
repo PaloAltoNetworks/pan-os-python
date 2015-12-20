@@ -245,6 +245,23 @@ class PanObject(object):
             if "delete" in self.CHILDMETHODS:
                 child.delete()
 
+    def update(self, variable):
+        """Change the value of a variable
+
+        Do not attempt this on an element variable (|) or variable with replacement {{}}
+
+        Args:
+            variable (str): the name of an instance variable to update on the device
+        """
+        variables = self.vars()
+        value = vars(self)[variable]
+        # Get the requested variable from the classes variables tuple
+        var = next((x for x in variables if x.variable == variable), None)
+        element_tag = var.path.split("/")[-1]
+        element = ET.Element(element_tag)
+        element.text = value
+        self.pandevice().xapi.edit(self.xpath() + "/" + var.path, ET.tostring(element))
+
     def refresh(self, candidate=False, xml=None, refresh_children=True):
         # Get the root of the xml to parse
         if xml is None:
