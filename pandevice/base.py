@@ -109,11 +109,13 @@ class PanObject(object):
             next = root
             for section in path:
                 if section.find("|") != -1:
-                    # This is an element variable, so break out at this point
-                    break
+                    # This is an element variable, so create an element containing
+                    # the variables's value
+                    section = re.sub(r"\([\w\d|]*\)", str(value), section)
                 # Search for variable replacements in path
                 matches = re.findall(r'{{(.*?)}}', section)
                 entryvar = None
+                # Do variable replacement, ie. {{ }}
                 for match in matches:
                     regex = r'{{' + re.escape(match) + r'}}'
                     # Ignore variables that are None
@@ -147,7 +149,7 @@ class PanObject(object):
                         next = ET.SubElement(next, entryvar.path)
                         next = ET.SubElement(next, "entry", {"name": vars(self)[entryvar.variable]})
                     else:
-                        # for vartype="entry"
+                        # for non-entry vartypes
                         next = ET.SubElement(next, section)
             if missing_replacement:
                 continue
@@ -169,8 +171,10 @@ class PanObject(object):
             elif var.vartype == "bool":
                 next.text = "yes" if value else "no"
             elif var.path.find("|") != -1:
-                # This is an element variable
-                ET.SubElement(next, str(value))
+                # This is an element variable,
+                # it has already been created
+                # so do nothing
+                pass
             else:
                 next.text = str(value)
         root.extend(self.subelements())
@@ -375,10 +379,12 @@ class PanObject(object):
         # Parse each variable
         vars = cls.vars()
         for var in vars:
+            # Determine if variable is part of __init__ args
             if var.init:
                 vardict = variables
             else:
                 vardict = noinit_variables
+            # Determine the type of variable
             if var.vartype == "member":
                 members = xml.findall(var.path + "/member")
                 vardict[var.variable] = [m.text for m in members]
@@ -391,15 +397,13 @@ class PanObject(object):
             else:
                 if var.path.find("|") != -1:
                     # This is an element variable
-                    sections = var.path.split("/")
-                    options = sections.pop()
-                    path = "/".join(sections)
-                    if path != "":
-                        path += "/"
-                    options = options.split("|")
+                    # Get the different options in a list
+                    options = re.search(r"\(([\w\d|]*)\)", var.path).group(1).split("|")
+                    # Create a list of all the possible paths
+                    option_paths = [re.sub(r"\([\w\d|]*\)", opt, var.path) for opt in options]
                     found = False
-                    for opt in options:
-                        match = xml.find(path + opt)
+                    for path in option_paths:
+                        match = xml.find(path)
                         if match is not None:
                             vardict[var.variable] = cls._convert_var(opt, var.vartype)
                             found = True

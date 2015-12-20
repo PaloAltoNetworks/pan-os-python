@@ -66,7 +66,7 @@ class HighAvailability(PanObject):
             Var("{{group_id}}/configuration-synchronization/enabled", "config_sync", vartype="bool"),
             Var("{{group_id}}/peer-ip"),
             # HA Mode (A/P, A/A)
-            Var("{{group_id}}/mode/active-passive|active-active", "mode"),
+            Var("{{group_id}}/mode/(active-passive|active-active)", "mode"),
             Var("{{group_id}}/mode/{{mode}}/passive-link-state", init=False),
             # State Synchronization
             Var("{{group_id}}/state-synchronization/enabled", "state_sync", vartype="bool"),

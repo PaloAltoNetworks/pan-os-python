@@ -60,7 +60,7 @@ class AddressObject(PanObject):
     @staticmethod
     def vars():
         return (
-            Var("ip-netmask|ip-range|fqdn", "type"),
+            Var("(ip-netmask|ip-range|fqdn)", "type"),
             Var("{{type}}", "value"),
             Var("description"),
         )

@@ -401,7 +401,7 @@ class StaticRoute(PanObject):
     def vars():
         return (
             Var("destination"),
-            Var("nexthop/ip-address|discard", "nexthop_type"),
+            Var("nexthop/(ip-address|discard)", "nexthop_type"),
             Var("nexthop/ip-address", "nexthop"),
             Var("interface"),
             Var("admin-dist"),
