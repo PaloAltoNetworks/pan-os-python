@@ -37,47 +37,41 @@ except AttributeError as e:
     logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-class NTPServer(PanObject):
+class NTPServerPrimary(PanObject):
     """A primary or secondary NTP server
 
     Add to a SystemSettings object
 
     Attributes:
-        priority (str): 'primary' or 'secondary'
         address (str): IP address or hostname of DNS server
     """
     # TODO: Add authentication
     # TODO: Add PAN-OS pre-7.0 support
 
-    XPATH = "/ntp-servers"
+    XPATH = "/ntp-servers/primary-ntp-server"
 
     def __init__(self,
-                 priority=None, # 'primary' or 'secondary'
-                 address=None
+                 address=None,
                  ):
-        super(NTPServer, self).__init__()
-        self._priority = None
-        self.address = None
+        super(NTPServerPrimary, self).__init__()
+        self.address = address
 
     @staticmethod
     def vars():
         return (
-            Var("primary-ntp-server|secondary-ntp-server", "priority"),
-            Var("{{priority}}-ntp-server/ntp-server-address", "address"),
+            Var("ntp-server-address", "address"),
         )
 
-    @property
-    def priority(self):
-        return self._priority
 
-    @priority.setter
-    def priority(self, value):
-        if value == "primary-ntp-server":
-            self._priority = "primary"
-        elif value == "secondary-ntp-server":
-            self._priority = "secondary"
-        else:
-            self._priority = value
+class NTPServerSecondary(NTPServerPrimary):
+    """A primary or secondary NTP server
+
+    Add to a SystemSettings object
+
+    Attributes:
+        address (str): IP address or hostname of DNS server
+    """
+    XPATH = "/ntp-servers/secondary-ntp-server"
 
 
 class SystemSettings(PanObject):
@@ -85,7 +79,8 @@ class SystemSettings(PanObject):
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/system"
     CHILDTYPES = (
-        NTPServer,
+        NTPServerPrimary,
+        NTPServerSecondary,
     )
 
     def __init__(self):
