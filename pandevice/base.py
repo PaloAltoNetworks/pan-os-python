@@ -76,6 +76,10 @@ class PanObject(object):
         child.parent = None
         return child
 
+    def remove(self, child):
+        child.parent = None
+        self.children.remove(child)
+
     def remove_by_name(self, name, cls=None):
         index = PanObject.find(self.children, name, cls)
         if index is None:
@@ -241,7 +245,7 @@ class PanObject(object):
             if "delete" in self.CHILDMETHODS:
                 child.delete()
 
-    def refresh(self, candidate=False, xml=None):
+    def refresh(self, candidate=False, xml=None, refresh_children=True):
         # Get the root of the xml to parse
         if xml is None:
             pandevice = self.pandevice()
@@ -256,7 +260,6 @@ class PanObject(object):
                 lasttag = self.XPATH.rsplit("/", 1)[-1]
             else:
                 lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
-            # lasttag = self.xpath().rsplit("/", 1)[-1]
             obj = root.find("result/" + lasttag)
             if obj is None:
                 raise err.PanDeviceError("Object no longer exists!")
@@ -264,9 +267,22 @@ class PanObject(object):
             # Use the xml that was passed in
             obj = xml
         # Refresh each variable
-        variables = type(self)._parse_xml(obj)
+        variables, noninit_variables = type(self)._parse_xml(obj)
         for var, value in variables.iteritems():
             vars(self)[var] = value
+        for var, value in noninit_variables.iteritems():
+            vars(self)[var] = value
+        # Refresh sub-objects
+        if refresh_children:
+            # Remove all the current child instances first
+            for child in self.children:
+                self.remove(child)
+            # Check for children in the remaining XML
+            for childtype in self.CHILDTYPES:
+                childroot = obj.find(childtype.XPATH[1:])
+                if childroot is not None:
+                    l = childtype.refresh_all_from_xml(childroot)
+                    self.extend(l)
 
     def pandevice(self):
         if issubclass(self.__class__, PanDevice):
@@ -301,7 +317,7 @@ class PanObject(object):
         return None
 
     @classmethod
-    def refresh_all_from_device(cls, pandevice, candidate=False, update=True):
+    def refresh_all_from_device(cls, parent, candidate=False, update=True):
         """Factory method to instantiate class from firewall config
 
         This method is a factory for the class. It takes an firewall or Panorama
@@ -311,7 +327,7 @@ class PanObject(object):
         firewall, then this method will generate 5 instances of the class AddressObject.
 
         Args:
-            pandevice (PanDevice): A firewall or Panorama object
+            parent (PanObject): A PanDevice, or a PanObject subclass with a PanDevice as its parental root
             candidate (bool): False for running config, True for candidate config
             update (bool): Update the objects of this type in pandevice with
                 the refreshed values
@@ -319,16 +335,27 @@ class PanObject(object):
         Returns:
             list: created instances of class
         """
+        pandevice = parent.pandevice()
         if candidate:
             api_action = pandevice.xapi.show
         else:
             api_action = pandevice.xapi.get
-        api_action(pandevice.xpath_root(cls.ROOT) + cls.XPATH)
+        if issubclass(type(parent), PanDevice):
+            parent_xpath = parent.xpath_root(cls.ROOT)
+        else:
+            parent_xpath = parent.xpath()
+        xpath = parent_xpath + cls.XPATH
+        api_action(xpath)
         root = pandevice.xapi.element_root
         lasttag = cls.XPATH.rsplit("/", 1)[-1]
         obj = root.find("result/" + lasttag)
+        if obj is None:
+            return []
         # Refresh each object
-        return cls.refresh_all_from_xml(obj)
+        instances = cls.refresh_all_from_xml(obj)
+        if update:
+            parent.extend(instances)
+        return instances
 
     @classmethod
     def refresh_all_from_xml(cls, xml, refresh_children=True):
