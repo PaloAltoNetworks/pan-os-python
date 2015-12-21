@@ -291,15 +291,39 @@ class PanObject(object):
             vars(self)[var] = value
         # Refresh sub-objects
         if refresh_children:
-            # Remove all the current child instances first
-            for child in self.children:
-                self.remove(child)
-            # Check for children in the remaining XML
-            for childtype in self.CHILDTYPES:
-                childroot = obj.find(childtype.XPATH[1:])
-                if childroot is not None:
-                    l = childtype.refresh_all_from_xml(childroot)
-                    self.extend(l)
+            refresh_children(xml=obj)
+
+    def refresh_children(self, candidate=False, xml=None):
+        # Get the root of the xml to parse
+        if xml is None:
+            pandevice = self.pandevice()
+            if candidate:
+                api_action = pandevice.xapi.get
+            else:
+                api_action = pandevice.xapi.show
+            api_action(self.xpath())
+            root = pandevice.xapi.element_root
+            # Determine the first element to look for in the XML
+            if self.SUFFIX is None:
+                lasttag = self.XPATH.rsplit("/", 1)[-1]
+            else:
+                lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
+            obj = root.find("result/" + lasttag)
+            if obj is None:
+                raise err.PanDeviceError("Object no longer exists!")
+        else:
+            # Use the xml that was passed in
+            obj = xml
+        # Remove all the current child instances first
+        for child in self.children:
+            self.remove(child)
+        # Check for children in the remaining XML
+        for childtype in self.CHILDTYPES:
+            childroot = obj.find(childtype.XPATH[1:])
+            if childroot is not None:
+                l = childtype.refresh_all_from_xml(childroot)
+                self.extend(l)
+        return self.children
 
     def pandevice(self):
         if issubclass(self.__class__, PanDevice):
