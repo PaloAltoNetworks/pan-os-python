@@ -482,9 +482,9 @@ class PanObject(object):
                     # Get the different options in a list
                     options = re.search(r"\(([\w\d|]*)\)", var.path).group(1).split("|")
                     # Create a list of all the possible paths
-                    option_paths = [re.sub(r"\([\w\d|]*\)", opt, var.path) for opt in options]
+                    option_paths = {opt: re.sub(r"\([\w\d|]*\)", opt, var.path) for opt in options}
                     found = False
-                    for path in option_paths:
+                    for opt, path in option_paths.iteritems():
                         match = xml.find(path)
                         if match is not None:
                             vardict[var.variable] = cls._convert_var(opt, var.vartype)
