@@ -1279,9 +1279,15 @@ class PanDevice(PanObject):
                 if not str(e).startswith("URLError:") and not str(e).startswith("Invalid credentials."):
                     # Error not related to connection issue.  Raise it.
                     raise e
+                else:
+                    self._logger.debug2("Sleep %.2f seconds" % interval)
+                    time.sleep(interval)
+                    continue
             except httplib.BadStatusLine as e:
                 # Connection issue.  The firewall is currently restarting the API service or rebooting
-                pass
+                self._logger.debug2("Sleep %.2f seconds" % interval)
+                time.sleep(interval)
+                continue
 
             job_xml = self.xapi.element_root
             status = job_xml.find("./result/job/status")
