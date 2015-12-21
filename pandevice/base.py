@@ -230,9 +230,11 @@ class PanObject(object):
         self.pandevice().xapi.edit(self.xpath(), self.element_str())
 
     def create(self):
-        # Remove the last part from the xpath
-        xpath = re.sub(r"/(?=([^/']*'[^']*')[^/']*$).*", "", self.xpath())
-        self.pandevice().xapi.set(xpath, self.element_str())
+        # Remove the outer xml tags from the element
+        # This is required for a 'set' api operation
+        element = self.element_str()
+        element = re.sub(r"<[^>]*>(.*)</[^>]*>", "\g<1>", element)
+        self.pandevice().xapi.set(self.xpath(), element)
         for child in self.children:
             if "create" in self.CHILDMETHODS:
                 child.create()
