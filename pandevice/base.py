@@ -336,23 +336,37 @@ class PanObject(object):
 
     def find(self, name, class_type=None):
         if class_type is None:
-            indexes = [i for i, child in enumerate(self.children) if
-                       child.name == name and isinstance(child, class_type)]
+            # Find the matching object or return None
+            result = next((child for child in self.children if child.name == name), None)
         else:
-            indexes = [i for i, child in enumerate(self.children) if child.name == name]
-        for index in indexes:
-            return self.children[index]  # Just return the first object that matches the name
-        return None
+            # Find the matching object or return None
+            result = next((child for child in self.children if
+                           child.name == name and type(child) == class_type), None)
+        return result
 
-    def find_all(self, class_type):
-        return [child for child in self.children if isinstance(child, class_type)]
+    def findall(self, class_type):
+        return [child for child in self.children if type(child) == class_type]
+
+    def find_or_create(self, name, class_type=None, *args, **kwargs):
+        result = self.find(name, class_type)
+        if result is not None:
+            return result
+        else:
+            return self.add(class_type(*args, **kwargs))
+
+    def findall_or_create(self, class_type, *args, **kwargs):
+        result = self.findall(class_type)
+        if result:
+            return result
+        else:
+            return [self.add(class_type(*args, **kwargs))]
 
     @classmethod
     def find(cls, list_of_panobjects, name, class_type=None):
         if class_type is None:
             class_type = cls
         indexes = [i for i, child in enumerate(list_of_panobjects) if
-                   child.name == name and isinstance(child, class_type)]
+                   child.name == name and type(child) == class_type]
         for index in indexes:
             return index  # Just return the first index that matches the name
         return None
