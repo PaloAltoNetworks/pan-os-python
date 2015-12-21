@@ -875,7 +875,7 @@ class PanDevice(PanObject):
         returns:
             version of PAN-OS
         """
-        system_info = self.system_info()
+        system_info = self.refresh_system_info()
         self.version = system_info[0]
         return self.version
 
