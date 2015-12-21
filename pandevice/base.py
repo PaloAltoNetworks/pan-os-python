@@ -267,9 +267,9 @@ class PanObject(object):
         if xml is None:
             pandevice = self.pandevice()
             if candidate:
-                api_action = pandevice.xapi.show
-            else:
                 api_action = pandevice.xapi.get
+            else:
+                api_action = pandevice.xapi.show
             api_action(self.xpath())
             root = pandevice.xapi.element_root
             # Determine the first element to look for in the XML
@@ -354,9 +354,9 @@ class PanObject(object):
         """
         pandevice = parent.pandevice()
         if candidate:
-            api_action = pandevice.xapi.show
-        else:
             api_action = pandevice.xapi.get
+        else:
+            api_action = pandevice.xapi.show
         if issubclass(type(parent), PanDevice):
             parent_xpath = parent.xpath_root(cls.ROOT)
         else:
