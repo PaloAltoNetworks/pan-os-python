@@ -307,15 +307,6 @@ class Firewall(PanDevice):
             raise err.PanDeviceError("Problem parsing show system resources",
                                      pan_device=self)
 
-    @staticmethod
-    def _convert_if_int(string):
-        """Convert a string to an int, only if it is an int"""
-        try:
-            integer = int(string)
-            return integer
-        except ValueError:
-            return string
-
     def get_interface_counters(self, interface):
         """Pull the counters for an interface
 
@@ -338,7 +329,7 @@ class Firewall(PanDevice):
                     entry = counters['ifnet']['ifnet']['entry'][0]
 
             # Convert strings to integers, if they are integers
-            entry.update((k, PanDevice._convert_if_int(v)) for k, v in entry.iteritems())
+            entry.update((k, pandevice.convert_if_int(v)) for k, v in entry.iteritems())
             # If empty dictionary (no results) it usually means the interface is not
             # configured, so return None
             return entry if entry else None

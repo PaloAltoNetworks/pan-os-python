@@ -75,6 +75,10 @@ logging.addLevelName(pan.DEBUG2, 'DEBUG2')
 logging.addLevelName(pan.DEBUG3, 'DEBUG3')
 
 
+# Convenience methods used internally by module
+# Do not use these methods outside the module
+
+
 def string_or_list(value):
     """Return a list containing value
 
@@ -98,3 +102,12 @@ def string_or_list(value):
         return None
     else:
         return list(value) if "__iter__" in dir(value) else [value]
+
+
+def convert_if_int(string):
+    """Convert a string to an int, only if it is an int"""
+    try:
+        integer = int(string)
+        return integer
+    except ValueError:
+        return string
