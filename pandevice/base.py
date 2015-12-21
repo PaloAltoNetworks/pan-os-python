@@ -251,6 +251,7 @@ class PanObject(object):
         """Change the value of a variable
 
         Do not attempt this on an element variable (|) or variable with replacement {{}}
+        If the variable's value is None, then a delete API call is attempted.
 
         Args:
             variable (str): the name of an instance variable to update on the device
@@ -259,10 +260,14 @@ class PanObject(object):
         value = vars(self)[variable]
         # Get the requested variable from the classes variables tuple
         var = next((x for x in variables if x.variable == variable), None)
-        element_tag = var.path.split("/")[-1]
-        element = ET.Element(element_tag)
-        element.text = value
-        self.pandevice().xapi.edit(self.xpath() + "/" + var.path, ET.tostring(element))
+        # Get the last part of the variable's path
+        if value is None:
+            self.pandevice().xapi.delete(self.xpath() + "/" + var.path)
+        else:
+            element_tag = var.path.split("/")[-1]
+            element = ET.Element(element_tag)
+            element.text = value
+            self.pandevice().xapi.edit(self.xpath() + "/" + var.path, ET.tostring(element))
 
     def refresh(self, candidate=False, xml=None, refresh_children=True):
         # Get the root of the xml to parse
