@@ -672,44 +672,44 @@ class PanDevice(PanObject):
                 try:
                     return super_method(*args, **kwargs)
                 except pan.xapi.PanXapiError as e:
-                    if e.msg == "Invalid credentials.":
+                    if str(e) == "Invalid credentials.":
                         raise err.PanInvalidCredentials(
-                            e.msg,
+                            str(e),
                             pan_device=self.pan_device,
                             )
-                    elif e.msg.startswith("URLError:"):
-                        if e.msg.endswith("timed out"):
+                    elif str(e).startswith("URLError:"):
+                        if str(e).endswith("timed out"):
                             raise err.PanConnectionTimeout(
-                                e.msg,
+                                str(e),
                                 pan_device=self.pan_device,
                                 )
                         else:
-                            raise err.PanURLError(e.msg,
+                            raise err.PanURLError(str(e),
                                                   pan_device=self.pan_device)
 
-                    elif e.msg.startswith("timeout waiting for job"):
-                        raise err.PanJobTimeout(e.msg,
+                    elif str(e).startswith("timeout waiting for job"):
+                        raise err.PanJobTimeout(str(e),
                                                 pan_device=self.pan_device)
 
-                    elif e.msg.startswith("Another commit/validate is in"
+                    elif str(e).startswith("Another commit/validate is in"
                                           " progress. Please try again later"):
-                        raise err.PanCommitInProgress(e.msg,
+                        raise err.PanCommitInProgress(str(e),
                                                       pan_device=self.pan_device)
 
-                    elif e.msg.startswith("A commit is in progress."):
-                        raise err.PanCommitInProgress(e.msg,
+                    elif str(e).startswith("A commit is in progress."):
+                        raise err.PanCommitInProgress(str(e),
                                                       pan_device=self.pan_device)
 
-                    elif e.msg.startswith("You cannot commit while an install is in progress. Please try again later."):
-                        raise err.PanInstallInProgress(e.msg,
+                    elif str(e).startswith("You cannot commit while an install is in progress. Please try again later."):
+                        raise err.PanInstallInProgress(str(e),
                                                        pan_device=self.pan_device)
 
-                    elif e.msg.startswith("Session timed out"):
-                        raise err.PanSessionTimedOut(e.msg,
+                    elif str(e).startswith("Session timed out"):
+                        raise err.PanSessionTimedOut(str(e),
                                                      pan_device=self.pan_device)
 
                     else:
-                        raise err.PanDeviceXapiError(e.msg,
+                        raise err.PanDeviceXapiError(str(e),
                                                      pan_device=self.pan_device)
 
             return method
