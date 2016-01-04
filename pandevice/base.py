@@ -790,7 +790,7 @@ class PanDevice(PanObject):
                   }
         if self._classify_exceptions:
             xapi_constructor = PanDevice.XapiWrapper
-            kwargs['pan_device'] = self,
+            kwargs['pan_device'] = self
         else:
             xapi_constructor = pan.xapi.PanXapi
         return xapi_constructor(**kwargs)
