@@ -147,8 +147,9 @@ class PanObject(object):
                     if matchedvar.vartype == "entry":
                         # If it's an 'entry' variable
                         # XXX: this is using a quick patch.  Should handle array-based entry vars better.
+                        entry_value = pandevice.string_or_list(getattr(self, matchedvar.variable))
                         section = re.sub(regex,
-                                         matchedvar.path + "/" + "entry[@name='%s']" % getattr(self, matchedvar.variable)[0],
+                                         matchedvar.path + "/" + "entry[@name='%s']" % entry_value[0],
                                          section)
                         entryvar = matchedvar
                     else:
@@ -178,7 +179,7 @@ class PanObject(object):
             elif var.vartype == "entry":
                 try:
                     # Value is an array
-                    for entry in value:
+                    for entry in pandevice.string_or_list(value):
                         ET.SubElement(nextelement, 'entry', {'name': str(entry)})
                 except TypeError:
                     # Value is not an array
@@ -541,7 +542,10 @@ class PanObject(object):
                 vardict[var.variable] = [m.text for m in members]
             elif var.vartype == "entry":
                 entries = xml.findall(path + "/entry")
-                vardict[var.variable] = [e.get("name") for e in entries]
+                entries = [e.get("name") for e in entries]
+                if len(entries) == 1:
+                    entries = entries[0]
+                vardict[var.variable] = entries
             elif var.vartype == "exist":
                 match = xml.find(path)
                 vardict[var.variable] = True if match is not None else False
