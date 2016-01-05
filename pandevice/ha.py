@@ -162,7 +162,7 @@ class HighAvailabilityInterface(PanObject):
             self.link_speed = None
             self.link_duplex = None
         if intconfig_needed:
-            interface = pandevice.find_or_create(intname, inttype, intname)
+            interface = pandevice.find_or_create(intname, inttype)
             interface.delete()
 
 

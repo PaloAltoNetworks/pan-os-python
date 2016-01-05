@@ -431,7 +431,10 @@ class PanObject(object):
         if result is not None:
             return result
         else:
-            return self.add(class_type(*args, **kwargs))
+            if name is not None:
+                return self.add(class_type(name, *args, **kwargs))
+            else:
+                return self.add(class_type(*args, **kwargs))
 
     def findall_or_create(self, class_type, *args, **kwargs):
         result = self.findall(class_type)
