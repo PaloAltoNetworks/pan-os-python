@@ -88,6 +88,21 @@ class PanObject(object):
             return None
         return self.pop(index)  # Just remove the first child that matches the name
 
+    def removeall(self, cls=None):
+        if not self.children:
+            return
+        if cls is not None:
+            children = [child for child in self.children if isinstance(child, cls)]
+            for child in children:
+                self.children.remove(child)
+            return children
+        else:
+            children = self.children
+            for child in children:
+                child.parent = None
+            self.children = []
+            return children
+
     def xpath(self):
         """Return the full xpath for this object
 
