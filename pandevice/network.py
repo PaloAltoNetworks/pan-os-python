@@ -363,6 +363,28 @@ class AggregateInterface(VsysImportMixin, Interface):
     )
 
 
+class HAInterfaceMixin(object):
+
+    XPATH_IMPORT = None
+    CHILDTYPES = ()
+
+    def __init__(self, *args, **kwargs):
+        super(HAInterfaceMixin, self).__init__(*args, **kwargs)
+
+    def vars(self):
+        return super(HAInterfaceMixin, self).vars() + (
+            Var("ha", vartype="none"),
+        )
+
+
+class HAEthernetInterface(HAInterfaceMixin, EthernetInterface):
+    pass
+
+
+class HAAggregateInterface(HAInterfaceMixin, AggregateInterface):
+    pass
+
+
 class VlanInterface(VsysImportMixin, Layer3Interface):
     XPATH = "/network/interface/vlan/units"
 
