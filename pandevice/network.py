@@ -153,7 +153,7 @@ class Interface(PanObject):
                  name,
                  ):
         if type(self) == Interface:
-            raise err.PanDeviceError("Do not instantiate an Interface class. Please use a subclass.")
+            raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
         super(Interface, self).__init__(name=name)
 
 
@@ -183,7 +183,10 @@ class Arp(PanObject):
 
 
 class Layer3Interface(Interface):
-    """Abstract base class for L3 interfaces"""
+    """L3 interfaces parameters
+
+    Can be added as a child of an EthernetInterface or other kind of concrete interface
+    """
 
     XPATH = "/layer3"
     SUFFIX = None
@@ -198,9 +201,8 @@ class Layer3Interface(Interface):
                  mtu=None,
                  adjust_tcp_mss=None,
                  netflow_profile=None,
-                 name="",
                  ):
-        super(Layer3Interface, self).__init__(name=name)
+        super(Layer3Interface, self).__init__(name=None)
         self.ip = pandevice.string_or_list(ip)
         self.ipv6_enabled = ipv6_enabled
         self.management_profile = management_profile
@@ -221,7 +223,10 @@ class Layer3Interface(Interface):
 
 
 class Layer2Interface(Interface):
-    """Abstract base class for L2 interfaces"""
+    """L3 interfaces parameters
+
+    Can be added as a child of an EthernetInterface or other kind of concrete interface
+    """
 
     XPATH = "/layer2"
     SUFFIX = None
@@ -230,9 +235,8 @@ class Layer2Interface(Interface):
                  lldp_enabled=None,
                  lldp_profile=None,
                  netflow_profile=None,
-                 name="",
                  ):
-        super(Layer2Interface, self).__init__(name=name)
+        super(Layer2Interface, self).__init__(name=None)
         self.lldp_enable = lldp_enabled
         self.lldp_profile = lldp_profile
         self.netflow_profile = netflow_profile
