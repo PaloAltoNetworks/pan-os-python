@@ -262,32 +262,38 @@ class PanObject(object):
         # Return a list of subelements
         return [element for element in elements]
 
+    def _check_child_methods(self, method):
+        if method in self.CHILDMETHODS:
+            getattr(self, method)()
+        for child in self.children:
+            child.check_child_methods(method)
+
     def apply(self):
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), self.name))
+        pandevice.set_config_changed()
         pandevice.xapi.edit(self.xpath(), self.element_str())
         for child in self.children:
-            if "apply" in self.CHILDMETHODS:
-                child.apply()
+            child._check_child_methods("apply")
 
     def create(self):
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": create called on %s object \"%s\"" % (type(self), self.name))
+        pandevice.set_config_changed()
         element = self.element_str()
         pandevice.xapi.set(self.xpath_short(), element)
         for child in self.children:
-            if "create" in self.CHILDMETHODS:
-                child.create()
+            child._check_child_methods("create")
 
     def delete(self):
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), self.name))
+        pandevice.set_config_changed()
         pandevice.xapi.delete(self.xpath())
         if self.parent is not None:
             self.parent.remove_by_name(self.name, type(self))
         for child in self.children:
-            if "delete" in self.CHILDMETHODS:
-                child.delete()
+            child._check_child_methods("delete")
 
     def update(self, variable):
         """Change the value of a variable
@@ -302,6 +308,7 @@ class PanObject(object):
         logger.debug(pandevice.hostname + ": update called on %s object \"%s\" and variable \"%s\"" % (type(self),
                                                                                                        self.name,
                                                                                                        variable))
+        pandevice.set_config_changed()
         variables = self.vars()
         value = getattr(self, variable)
         # Get the requested variable from the classes variables tuple
