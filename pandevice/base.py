@@ -372,6 +372,35 @@ class PanObject(object):
                 self.extend(l)
         return self.children
 
+    def refresh_xml(self, candidate=False, refresh_children=True, exceptions=True):
+        # Get the root of the xml to parse
+        pandevice = self.pandevice()
+        if candidate:
+            api_action = pandevice.xapi.get
+        else:
+            api_action = pandevice.xapi.show
+        try:
+            api_action(self.xpath())
+        except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
+            if exceptions:
+                raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+            else:
+                return
+        root = pandevice.xapi.element_root
+        # Determine the first element to look for in the XML
+        if self.SUFFIX is None:
+            lasttag = self.XPATH.rsplit("/", 1)[-1]
+        else:
+            lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
+        obj = root.find("result/" + lasttag)
+        if obj is None:
+            if exceptions:
+                raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+            else:
+                return
+        self.refresh(xml=obj, refresh_children=refresh_children, exceptions=exceptions)
+        return obj
+
     def pandevice(self):
         if issubclass(self.__class__, PanDevice):
             return self
@@ -456,6 +485,11 @@ class PanObject(object):
         # Refresh each object
         instances = cls.refresh_all_from_xml(obj)
         if update:
+            # Remove current children of this type from parent
+            current_children = [child for child in parent.children if type(child) == cls]
+            for child in current_children:
+                parent.remove(child)
+            # Add the new children that were just refreshed from the device
             parent.extend(instances)
         return instances
 
