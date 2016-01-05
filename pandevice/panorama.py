@@ -50,7 +50,7 @@ class Panorama(base.PanDevice):
         raise err.PanDeviceError("Attempt to modify vsys configuration on non-firewall device")
 
     def xpath_panorama(self):
-        return self.XPATH + "/panorama"
+        return "/config/panorama"
 
     def commit_all(self, sync=False, sync_all=True, exception=False, devicegroup=None, serials=(), cmd=None):
         self._logger.debug("Commit-all initiated on device: %s" % (self.hostname,))

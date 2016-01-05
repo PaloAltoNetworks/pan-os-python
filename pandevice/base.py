@@ -44,7 +44,7 @@ MEMBER = "/member[text()='%s']"
 
 # PanObject type
 class PanObject(object):
-    XPATH = "/config"
+    XPATH = ""
     SUFFIX = None
     ROOT = Root.DEVICE
     NAME = "name"
@@ -93,7 +93,15 @@ class PanObject(object):
 
         Xpath in the form: parent's xpath + this object's xpath + entry or member if applicable.
         """
-        if self.parent is None:
+        from firewall import Firewall
+        if self.parent is None and isinstance(self, Firewall):
+            if self.vsys == "shared":
+                parent_xpath = self.xpath_root(Root.DEVICE)
+            else:
+                parent_xpath = self.xpath_root(Root.VSYS)
+        elif self.parent is None and isinstance(self, PanDevice):
+            parent_xpath = self.xpath_root(self.ROOT)
+        elif self.parent is None:
             parent_xpath = ""
         elif issubclass(type(self.parent), PanDevice):
             parent_xpath = self.parent.xpath_root(self.ROOT)
@@ -873,10 +881,10 @@ class PanDevice(PanObject):
         return xpath
 
     def xpath_mgtconfig(self):
-        return self.XPATH + "/mgt-config"
+        return "/config/mgt-config"
 
     def xpath_device(self):
-        return self.XPATH + "/devices/entry[@name='localhost.localdomain']"
+        return "/config/devices/entry[@name='localhost.localdomain']"
 
     def xpath_vsys(self):
         raise NotImplementedError

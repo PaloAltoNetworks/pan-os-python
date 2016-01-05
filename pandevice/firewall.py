@@ -39,13 +39,14 @@ import pan.commit
 from pan.config import PanConfig
 
 import pandevice
+from pandevice import device
 from pandevice import objects
 from pandevice import network
 
 # import other parts of this pandevice package
 import errors as err
 from network import Interface
-from base import PanObject, PanDevice
+from base import PanObject, PanDevice, Root
 from updater import Updater
 import userid
 
@@ -55,6 +56,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 class Firewall(PanDevice):
 
+    ROOT = Root.VSYS
     CHILDTYPES = (
         objects.AddressObject,
         network.VirtualRouter,
@@ -67,7 +69,7 @@ class Firewall(PanDevice):
                  api_key=None,
                  serial=None,
                  port=443,
-                 vsys='vsys1',  # vsys id or 'shared'
+                 vsys='vsys1',  # vsys# or 'shared'
                  is_virtual=None,
                  panorama=None,
                  classify_exceptions=False):
@@ -82,16 +84,18 @@ class Firewall(PanDevice):
 
         self.serial = serial
         self.vsys = vsys
+        self.vsys_name = None
         self.panorama = panorama
+        self.multi_vsys = None
 
         # Create a User-ID subsystem
         self.userid = userid.UserId(self)
 
     def xpath_vsys(self):
         if self.vsys == "shared":
-            return self.XPATH + "/shared"
+            return "/config/shared"
         else:
-            return self.XPATH + "/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='%s']" % self.vsys
+            return "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='%s']" % self.vsys
 
     def xpath_panorama(self):
         raise err.PanDeviceError("Attempt to modify Panorama configuration on non-Panorama device")
@@ -143,8 +147,25 @@ class Firewall(PanDevice):
         self.version = system_info['system']['sw-version']
         self.platform = system_info['system']['model']
         self.serial = system_info['system']['serial']
+        self.multi_vsys = True if system_info['system']['multi-vsys'] == "on" else False
 
         return self.version, self.platform, self.serial
+
+    def create(self):
+        """Create an empty vsys
+
+        Alternatively this can be done by adding a VsysResources object
+        """
+        if self.vsys.startswith("vsys"):
+            element = ET.Element("entry", {"name": self.vsys})
+            if self.vsys_name is not None:
+                ET.SubElement(element, "display-name").text = self.vsys_name
+            self.xapi.set(self.xpath_device() + "/vsys", ET.tostring(element))
+
+    def delete(self):
+        """Delete the vsys"""
+        if self.vsys.startswith("vsys"):
+            self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys)
 
     def add_address_object(self, name, address, description=''):
         """Add/update an ip-netmask type address object to the configuration
