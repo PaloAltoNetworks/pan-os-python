@@ -164,11 +164,14 @@ class PanObject(object):
                 else:
                     # Create elements
                     if entryvar is not None:
-                        # for vartype="entry"
+                        # for vartype="entry" with replacement from above
                         nextelement = ET.SubElement(nextelement, entryvar.path)
                         nextelement = ET.SubElement(nextelement, "entry", {"name": getattr(self, entryvar.variable)})
                     else:
-                        # for non-entry vartypes
+                        # for entry vartypes that are empty
+                        if var.vartype == "entry" and not value:
+                            continue
+                        # non-entry vartypes
                         nextelement = ET.SubElement(nextelement, section)
             if missing_replacement:
                 continue
