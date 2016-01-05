@@ -319,6 +319,7 @@ class PanObject(object):
         # Get the root of the xml to parse
         if xml is None:
             pandevice = self.pandevice()
+            logger.debug(pandevice.hostname + ": refresh called on %s object \"%s\"" % (type(self), self.name))
             if candidate:
                 api_action = pandevice.xapi.get
             else:
@@ -344,6 +345,7 @@ class PanObject(object):
                     return
         else:
             # Use the xml that was passed in
+            logger.debug("refresh called using xml on %s object \"%s\"" % (type(self), self.name))
             obj = xml
         # Refresh each variable
         variables, noninit_variables = type(self)._parse_xml(obj)
@@ -390,6 +392,7 @@ class PanObject(object):
     def refresh_xml(self, candidate=False, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse
         pandevice = self.pandevice()
+        logger.debug(pandevice.hostname + ": refresh_xml called on %s object \"%s\"" % (type(self), self.name))
         if candidate:
             api_action = pandevice.xapi.get
         else:
@@ -485,6 +488,7 @@ class PanObject(object):
             list: created instances of class
         """
         pandevice = parent.pandevice()
+        logger.debug(pandevice.hostname + ": refresh_all_from_device called on %s type" % cls)
         if candidate:
             api_action = pandevice.xapi.get
         else:
