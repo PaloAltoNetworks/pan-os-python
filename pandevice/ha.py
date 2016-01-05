@@ -18,11 +18,15 @@
 
 # import modules
 import logging
+import inspect
 import xml.etree.ElementTree as ET
 
-from base import PanObject, Root, MEMBER, ENTRY
+import pan.xapi
+from base import PanObject, PanDevice, Root, MEMBER, ENTRY
 from base import VarPath as Var
+import errors as err
 import network
+import firewall
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 try:
@@ -37,6 +41,94 @@ except AttributeError as e:
     logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 logger = logging.getLogger(__name__)
+
+
+class HAPair(firewall.Firewall):
+    """A high availability pair of firewalls
+
+    This class can be treated like a single firewall, but will act as a high availability pair
+    of firewalls. Most API calls will go to a single firewall, and if connection to that firewall
+    fails, the API call will go to the other firewall.
+
+    Attributes:
+        fw1 (firewall.Firewall): The main firewall. All API calls will be made to this firewall unless it is down
+        fw2 (firewall.Firewall): The other firewall. Used when fw1 is down.
+    """
+    CONNECTION_EXCEPTIONS = (err.PanConnectionTimeout, err.PanURLError, err.PanSessionTimedOut)
+
+    def __init__(self, fw1, fw2):
+        super(HAPair, self).__init__()
+        self.fw1 = fw1
+        self.fw2 = fw2
+        self.hostname = "HAPair:" + self.fw1.hostname + ":" + self.fw2.hostname
+        self.classify_exceptions = True
+        self.fw1.classify_exceptions = True
+        self.fw2.classify_exceptions = True
+        self.is_virtual = fw1.is_virtual
+        self.serial = fw1.serial
+        self.vsys = fw1.vsys
+        self.vsys_name = fw1.vsys_name
+        self.panorama = fw1.panorama
+        self.multi_vsys = fw1.multi_vsys
+        self._fw1_active = True
+
+    class HAXapiWrapper(object):
+        """Nested class to apply configuration correctly in an HA pair"""
+        # TODO: comment the hell out of it!
+
+        def __init__(self, ha_pair):
+            self.ha_pair = ha_pair
+
+            for name, method in inspect.getmembers(
+                pan.xapi.PanXapi,
+                inspect.ismethod):
+                # Ignore hidden methods
+                if name[0] == "_":
+                    continue
+
+                # Wrapper method.  This is used to create
+                # methods in this class that match the methods in the
+                # pan-python xapi class, and call the methods inside
+                # a try/except block.
+                wrapper_method = self.make_ha_method(name)
+
+                # Create method matching each public method of the base class
+                setattr(self, name, wrapper_method)
+
+        def make_ha_method(self, method_name):
+            def method(*args, **kwargs):
+                try:
+                    # Try making the API call to Firewall 1
+                    return getattr(self.ha_pair.active_firewall.xapi, method_name)(*args, **kwargs)
+                except HAPair.CONNECTION_EXCEPTIONS:
+                    # There was a connection failure to Firewall 1
+                    # Try making the API call to Firewall 2
+                    self.ha_pair.toggle_active_firewall()
+                    return getattr(self.ha_pair.active_firewall.xapi, method_name)(*args, **kwargs)
+            return method
+
+    @property
+    def api_key(self):
+        return "No API Key for HA Pair"
+
+    @property
+    def active_firewall(self):
+        if self._fw1_active:
+            return self.fw1
+        else:
+            return self.fw2
+
+    def generate_xapi(self):
+        return HAPair.HAXapiWrapper(self)
+
+    def toggle_active_firewall(self):
+        self._fw1_active = not self._fw1_active
+
+    def activate_firewall1(self):
+        self._fw1_active = True
+
+    def activate_firewall2(self):
+        self._fw1_active = False
 
 
 class HighAvailabilityInterface(PanObject):
