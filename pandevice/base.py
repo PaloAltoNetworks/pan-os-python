@@ -89,9 +89,18 @@ class PanObject(object):
         return self.pop(index)  # Just remove the first child that matches the name
 
     def xpath(self):
-        """Return an xpath for this object
+        """Return the full xpath for this object
 
         Xpath in the form: parent's xpath + this object's xpath + entry or member if applicable.
+        """
+        xpath = self.xpath_short()
+        suffix = "" if self.SUFFIX is None else self.SUFFIX % self.name
+        return str(xpath + suffix)
+
+    def xpath_short(self):
+        """Return an xpath for this object without the final segment
+
+        Xpath in the form: parent's xpath + this object's xpath.  Used for set API calls.
         """
         from firewall import Firewall
         if self.parent is None and isinstance(self, Firewall):
@@ -107,9 +116,11 @@ class PanObject(object):
             parent_xpath = self.parent.xpath_root(self.ROOT)
         else:
             parent_xpath = self.parent.xpath()
-        suffix = "" if self.SUFFIX is None else self.SUFFIX % self.name
-        result = str(parent_xpath + self.XPATH + suffix)
-        return result
+        xpath = str(parent_xpath + self.XPATH)
+        if self.SUFFIX is None:
+            # Remove last segment of xpath
+            xpath = re.sub(r"/(?=[^/']*'[^']*'[^/']*$|[^/]*$).*$", "", xpath)
+        return xpath
 
     def element(self):
         root = self.root_element()
@@ -124,11 +135,14 @@ class PanObject(object):
                 continue
             path = var.path.split("/")
             nextelement = root
+
             for section in path:
+
                 if section.find("|") != -1:
                     # This is an element variable, so create an element containing
                     # the variables's value
                     section = re.sub(r"\([\w\d|-]*\)", str(value), section)
+
                 # Search for variable replacements in path
                 matches = re.findall(r'{{(.*?)}}', section)
                 entryvar = None
@@ -157,6 +171,7 @@ class PanObject(object):
                         section = re.sub(regex, getattr(self, matchedvar.variable), section)
                 if missing_replacement:
                     break
+
                 found = nextelement.find(section)
                 if found is not None:
                     # Existing element
@@ -241,7 +256,7 @@ class PanObject(object):
             xpath_sections = type(child).XPATH.split('/')[1:]
             # If no suffix, remove the last xpath section
             # because it will be part of the element
-            if self.SUFFIX is None:
+            if type(child).SUFFIX is None:
                 xpath_sections = xpath_sections[:-1]
             _next_xpath_level(child, elements, xpath_sections)
         # Return a list of subelements
@@ -256,13 +271,10 @@ class PanObject(object):
                 child.apply()
 
     def create(self):
-        # Remove the outer xml tags from the element
-        # This is required for a 'set' api operation
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": create called on %s object \"%s\"" % (type(self), self.name))
         element = self.element_str()
-        element = re.sub(r"<[^>]*>(.*)</[^>]*>", "\g<1>", element)
-        pandevice.xapi.set(self.xpath(), element)
+        pandevice.xapi.set(self.xpath_short(), element)
         for child in self.children:
             if "create" in self.CHILDMETHODS:
                 child.create()
