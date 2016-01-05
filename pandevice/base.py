@@ -28,6 +28,7 @@ import time
 import pandevice
 
 import pan.xapi
+import pan.commit
 from pan.config import PanConfig
 import errors as err
 import updater
@@ -36,6 +37,7 @@ import updater
 logger = logging.getLogger(__name__)
 
 Root = pandevice.enum("DEVICE", "VSYS", "MGTCONFIG")
+SELF = "/%s"
 ENTRY = "/entry[@name='%s']"
 MEMBER = "/member[text()='%s']"
 
@@ -77,11 +79,11 @@ class PanObject(object):
         return child
 
     def remove(self, child):
-        child.parent = None
         self.children.remove(child)
+        child.parent = None
 
     def remove_by_name(self, name, cls=None):
-        index = PanObject.find(self.children, name, cls)
+        index = PanObject.find_index(self.children, name, cls)
         if index is None:
             return None
         return self.pop(index)  # Just remove the first child that matches the name
@@ -106,16 +108,19 @@ class PanObject(object):
         variables = self.vars()
         for var in variables:
             missing_replacement = False
-            value = vars(self)[var.variable]
+            if var.vartype == "none":
+                value = "nonetype"
+            else:
+                value = getattr(self, var.variable)
             if value is None:
                 continue
             path = var.path.split("/")
-            next = root
+            nextelement = root
             for section in path:
                 if section.find("|") != -1:
                     # This is an element variable, so create an element containing
                     # the variables's value
-                    section = re.sub(r"\([\w\d|]*\)", str(value), section)
+                    section = re.sub(r"\([\w\d|-]*\)", str(value), section)
                 # Search for variable replacements in path
                 matches = re.findall(r'{{(.*?)}}', section)
                 entryvar = None
@@ -123,7 +128,7 @@ class PanObject(object):
                 for match in matches:
                     regex = r'{{' + re.escape(match) + r'}}'
                     # Ignore variables that are None
-                    if vars(self)[match] is None:
+                    if getattr(self, match) is None:
                         missing_replacement = True
                         break
                     # Find the discovered replacement in the list of vars
@@ -133,54 +138,57 @@ class PanObject(object):
                             break
                     if matchedvar.vartype == "entry":
                         # If it's an 'entry' variable
+                        # XXX: this is using a quick patch.  Should handle array-based entry vars better.
                         section = re.sub(regex,
-                                         matchedvar.path + "/" + "entry[@name='%s']" % vars(self)[matchedvar.variable],
+                                         matchedvar.path + "/" + "entry[@name='%s']" % getattr(self, matchedvar.variable)[0],
                                          section)
                         entryvar = matchedvar
                     else:
                         # Not an 'entry' variable
-                        section = re.sub(regex, vars(self)[matchedvar.variable], section)
+                        section = re.sub(regex, getattr(self, matchedvar.variable), section)
                 if missing_replacement:
                     break
-                found = next.find(section)
+                found = nextelement.find(section)
                 if found is not None:
                     # Existing element
-                    next = found
+                    nextelement = found
                 else:
                     # Create elements
                     if entryvar is not None:
                         # for vartype="entry"
-                        next = ET.SubElement(next, entryvar.path)
-                        next = ET.SubElement(next, "entry", {"name": vars(self)[entryvar.variable]})
+                        nextelement = ET.SubElement(nextelement, entryvar.path)
+                        nextelement = ET.SubElement(nextelement, "entry", {"name": getattr(self, entryvar.variable)})
                     else:
                         # for non-entry vartypes
-                        next = ET.SubElement(next, section)
+                        nextelement = ET.SubElement(nextelement, section)
             if missing_replacement:
                 continue
             # Create an element containing the value in the instance variable
             if var.vartype == "member":
                 for member in value:
-                    ET.SubElement(next, 'member').text = str(member)
+                    ET.SubElement(nextelement, 'member').text = str(member)
             elif var.vartype == "entry":
                 try:
                     # Value is an array
                     for entry in value:
-                        ET.SubElement(next, 'entry', {'name': str(entry)})
+                        ET.SubElement(nextelement, 'entry', {'name': str(entry)})
                 except TypeError:
                     # Value is not an array
-                    ET.SubElement(next, 'entry', {'name': str(value)})
+                    ET.SubElement(nextelement, 'entry', {'name': str(value)})
             elif var.vartype == "exist":
                 if value:
-                    ET.SubElement(next, var.variable)
+                    ET.SubElement(nextelement, var.variable)
             elif var.vartype == "bool":
-                next.text = "yes" if value else "no"
+                nextelement.text = "yes" if value else "no"
             elif var.path.find("|") != -1:
                 # This is an element variable,
                 # it has already been created
                 # so do nothing
                 pass
+            elif var.vartype == "none":
+                # There is no variable, so don't try to populate it
+                pass
             else:
-                next.text = str(value)
         root.extend(self.subelements())
         return root
 
@@ -227,20 +235,29 @@ class PanObject(object):
         return [element for element in elements]
 
     def apply(self):
-        self.pandevice().xapi.edit(self.xpath(), self.element_str())
+        pandevice = self.pandevice()
+        logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), self.name))
+        pandevice.xapi.edit(self.xpath(), self.element_str())
+        for child in self.children:
+            if "apply" in self.CHILDMETHODS:
+                child.apply()
 
     def create(self):
         # Remove the outer xml tags from the element
         # This is required for a 'set' api operation
+        pandevice = self.pandevice()
+        logger.debug(pandevice.hostname + ": create called on %s object \"%s\"" % (type(self), self.name))
         element = self.element_str()
         element = re.sub(r"<[^>]*>(.*)</[^>]*>", "\g<1>", element)
-        self.pandevice().xapi.set(self.xpath(), element)
+        pandevice.xapi.set(self.xpath(), element)
         for child in self.children:
             if "create" in self.CHILDMETHODS:
                 child.create()
 
     def delete(self):
-        self.pandevice().xapi.delete(self.xpath())
+        pandevice = self.pandevice()
+        logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), self.name))
+        pandevice.xapi.delete(self.xpath())
         if self.parent is not None:
             self.parent.remove_by_name(self.name, type(self))
         for child in self.children:
@@ -256,20 +273,24 @@ class PanObject(object):
         Args:
             variable (str): the name of an instance variable to update on the device
         """
+        pandevice = self.pandevice()
+        logger.debug(pandevice.hostname + ": update called on %s object \"%s\" and variable \"%s\"" % (type(self),
+                                                                                                       self.name,
+                                                                                                       variable))
         variables = self.vars()
-        value = vars(self)[variable]
+        value = getattr(self, variable)
         # Get the requested variable from the classes variables tuple
         var = next((x for x in variables if x.variable == variable), None)
         # Get the last part of the variable's path
         if value is None:
-            self.pandevice().xapi.delete(self.xpath() + "/" + var.path)
+            pandevice.xapi.delete(self.xpath() + "/" + var.path)
         else:
             element_tag = var.path.split("/")[-1]
             element = ET.Element(element_tag)
             element.text = value
-            self.pandevice().xapi.edit(self.xpath() + "/" + var.path, ET.tostring(element))
+            pandevice.xapi.edit(self.xpath() + "/" + var.path, ET.tostring(element))
 
-    def refresh(self, candidate=False, xml=None, refresh_children=True):
+    def refresh(self, candidate=False, xml=None, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse
         if xml is None:
             pandevice = self.pandevice()
@@ -277,7 +298,13 @@ class PanObject(object):
                 api_action = pandevice.xapi.get
             else:
                 api_action = pandevice.xapi.show
-            api_action(self.xpath())
+            try:
+                api_action(self.xpath())
+            except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
+                if exceptions:
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+                else:
+                    return
             root = pandevice.xapi.element_root
             # Determine the first element to look for in the XML
             if self.SUFFIX is None:
@@ -286,19 +313,22 @@ class PanObject(object):
                 lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
             obj = root.find("result/" + lasttag)
             if obj is None:
-                raise err.PanDeviceError("Object no longer exists!")
+                if exceptions:
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+                else:
+                    return
         else:
             # Use the xml that was passed in
             obj = xml
         # Refresh each variable
         variables, noninit_variables = type(self)._parse_xml(obj)
         for var, value in variables.iteritems():
-            vars(self)[var] = value
+            setattr(self, var, value)
         for var, value in noninit_variables.iteritems():
-            vars(self)[var] = value
+            setattr(self, var, value)
         # Refresh sub-objects
         if refresh_children:
-            refresh_children(xml=obj)
+            self.refresh_children(xml=obj)
 
     def refresh_children(self, candidate=False, xml=None):
         # Get the root of the xml to parse
@@ -348,11 +378,11 @@ class PanObject(object):
         else:
             # Find the matching object or return None
             result = next((child for child in self.children if
-                           child.name == name and type(child) == class_type), None)
+                           child.name == name and isinstance(child, class_type)), None)
         return result
 
     def findall(self, class_type):
-        return [child for child in self.children if type(child) == class_type]
+        return [child for child in self.children if isinstance(child, class_type)]
 
     def find_or_create(self, name, class_type=None, *args, **kwargs):
         result = self.find(name, class_type)
@@ -369,7 +399,7 @@ class PanObject(object):
             return [self.add(class_type(*args, **kwargs))]
 
     @classmethod
-    def find(cls, list_of_panobjects, name, class_type=None):
+    def find_index(cls, list_of_panobjects, name, class_type=None):
         if class_type is None:
             class_type = cls
         indexes = [i for i, child in enumerate(list_of_panobjects) if
@@ -469,30 +499,53 @@ class PanObject(object):
         vars = cls.vars()
         for var in vars:
             # Determine if variable is part of __init__ args
+            if var.vartype == "none":
+                continue
             if var.init:
                 vardict = variables
             else:
                 vardict = noinit_variables
+            # Search for variable replacements in path
+            path = var.path
+            matches = re.findall(r'{{(.*?)}}', path)
+            for match in matches:
+                regex = r'{{' + re.escape(match) + r'}}'
+                # Find the discovered replacement in the list of vars
+                matchedvar = next((x for x in cls.vars() if x.variable == match), None)
+                try:
+                    replacement = variables[match]
+                except KeyError:
+                    replacement = noinit_variables[match]
+                if matchedvar.vartype == "entry":
+                    # If it's an 'entry' variable
+                    if len(replacement) == 1:
+                        replacement = replacement[0]
+                    path = re.sub(regex,
+                                  matchedvar.path + "/" + "entry[@name='%s']" % replacement,
+                                  path)
+                else:
+                    # Not an 'entry' variable
+                    path = re.sub(regex, replacement, path)
             # Determine the type of variable
             if var.vartype == "member":
-                members = xml.findall(var.path + "/member")
+                members = xml.findall(path + "/member")
                 vardict[var.variable] = [m.text for m in members]
             elif var.vartype == "entry":
-                entries = xml.findall(var.path + "/entry")
+                entries = xml.findall(path + "/entry")
                 vardict[var.variable] = [e.get("name") for e in entries]
             elif var.vartype == "exist":
-                match = xml.find(var.path)
+                match = xml.find(path)
                 vardict[var.variable] = True if match is not None else False
             else:
-                if var.path.find("|") != -1:
+                if path.find("|") != -1:
                     # This is an element variable
                     # Get the different options in a list
-                    options = re.search(r"\(([\w\d|]*)\)", var.path).group(1).split("|")
+                    options = re.search(r"\(([\w\d|-]*)\)", path).group(1).split("|")
                     # Create a list of all the possible paths
-                    option_paths = {opt: re.sub(r"\([\w\d|]*\)", opt, var.path) for opt in options}
+                    option_paths = {opt: re.sub(r"\([\w\d|-]*\)", opt, path) for opt in options}
                     found = False
-                    for opt, path in option_paths.iteritems():
-                        match = xml.find(path)
+                    for opt, opt_path in option_paths.iteritems():
+                        match = xml.find(opt_path)
                         if match is not None:
                             vardict[var.variable] = cls._convert_var(opt, var.vartype)
                             found = True
@@ -501,12 +554,6 @@ class PanObject(object):
                         vardict[var.variable] = None
                 else:
                     # This is a text variable
-                    # Search for variable replacements in path
-                    path = var.path
-                    matches = re.findall(r'{{(.*?)}}', path)
-                    for match in matches:
-                        regex = r'{{' + re.escape(match) + r'}}'
-                        path = re.sub(regex, vardict[match], path)
                     try:
                         # Save the variable if it exists in the xml
                         vardict[var.variable] = cls._convert_var(xml.find(path).text, var.vartype)
@@ -569,18 +616,16 @@ class VsysImportMixin(object):
     def create(self, *args, **kwargs):
         super(VsysImportMixin, self).create(*args, **kwargs)
         pandevice = super(VsysImportMixin, self).pandevice()
-        if pandevice.vsys != "shared":
-            xpath_import = self.XPATH_IMPORT if self.XPATH_IMPORT is not None else self.XPATH
-            xpath_import = pandevice.xpath_vsys() + "/import" + xpath_import
+        if pandevice.vsys != "shared" and self.XPATH_IMPORT is not None:
+            xpath_import = pandevice.xpath_vsys() + "/import" + self.XPATH_IMPORT
             pandevice.xapi.set(xpath_import, "<member>%s</member>" % self.name)
 
     def delete(self, *args, **kwargs):
         pandevice = super(VsysImportMixin, self).pandevice()
-        xpath_import = self.XPATH_IMPORT if self.XPATH_IMPORT is not None else self.XPATH
-        xpath_import = pandevice.xpath_vsys() + "/import" + xpath_import
-        if pandevice.vsys != "shared":
+        if pandevice.vsys != "shared" and self.XPATH_IMPORT is not None:
+            xpath_import = pandevice.xpath_vsys() + "/import" + self.XPATH_IMPORT
             pandevice.xapi.delete(xpath_import + "/member[text()='%s']" % self.name)
-            super(VsysImportMixin, self).delete(*args, **kwargs)
+        super(VsysImportMixin, self).delete(*args, **kwargs)
 
 
 class PanDevice(PanObject):
@@ -627,6 +672,7 @@ class PanDevice(PanObject):
         self.interval = interval
         self.interfaces = {}
         self._xapi_private = None
+        # There is currently no way to change this setting, so it is protected
         self._classify_exceptions = classify_exceptions
         self.config_locked = False
         self.commit_locked = False
@@ -669,25 +715,30 @@ class PanDevice(PanObject):
                            api_key,
                            port,
                            classify_exceptions=classify_exceptions)
-        version, model, serial = device.system_info()
+        system_info = device.refresh_system_info()
+        version = system_info[0]
+        model = system_info[1]
         if model == "Panorama":
-            subclass = panorama.Panorama
+            instance = panorama.Panorama(hostname,
+                                         api_username,
+                                         api_password,
+                                         device.api_key,
+                                         port,
+                                         classify_exceptions=classify_exceptions)
         else:
-            subclass = firewall.Firewall
-        instance = subclass(hostname,
-                            api_username,
-                            api_password,
-                            device.api_key,
-                            serial,
-                            port,
-                            classify_exceptions=classify_exceptions)
+            serial = system_info[2]
+            instance = firewall.Firewall(hostname,
+                                         api_username,
+                                         api_password,
+                                         device.api_key,
+                                         serial,
+                                         port,
+                                         classify_exceptions=classify_exceptions)
         instance.version = version
         return instance
 
     class XapiWrapper(pan.xapi.PanXapi):
-        """This is a confusing class used for catching exceptions and
-        faults.
-        """
+        """This is a confusing class used for catching exceptions and faults."""
         # TODO: comment the hell out of it!
 
         def __init__(self, *args, **kwargs):
@@ -753,16 +804,14 @@ class PanDevice(PanObject):
                         raise err.PanSessionTimedOut(str(e),
                                                      pan_device=self.pan_device)
 
+                    elif str(e).startswith("No such node"):
+                        raise err.PanNoSuchNode(str(e),
+                                                pan_device=self.pan_device)
                     else:
                         raise err.PanDeviceXapiError(str(e),
                                                      pan_device=self.pan_device)
 
             return method
-
-    # Generate from a live device (firewall or Panorama)
-    #@classmethod
-    #def create_from_live_device(self, hostname, username=None, password=None, apikey=None, port=443):
-    #    pass
 
     # Properties
 
@@ -1095,7 +1144,7 @@ class PanDevice(PanObject):
         try:
             self.xapi.op("request restart system", cmd_xml=True)
         except pan.xapi.PanXapiError as e:
-            if not e.msg.startswith("Command succeeded with no output"):
+            if not str(e).startswith("Command succeeded with no output"):
                 raise e
 
 
@@ -1186,12 +1235,11 @@ class PanDevice(PanObject):
                 messages: list of warnings or errors
 
         """
-
-        if issubclass(cmd.__class__, pan.commit.PanCommit):
+        if isinstance(cmd, pan.commit.PanCommit):
             cmd = cmd.cmd()
-        elif issubclass(cmd.__class__, ET.Element):
+        elif isinstance(cmd, ET.Element):
             cmd = ET.tostring(cmd)
-        elif issubclass(cmd.__class__, basestring):
+        elif isinstance(cmd, basestring):
             pass
         else:
             cmd = ET.Element("commit")
@@ -1199,6 +1247,11 @@ class PanDevice(PanObject):
                 excluded = ET.SubElement(cmd, "partial")
                 excluded = ET.SubElement(excluded, exclude)
             cmd = ET.tostring(cmd)
+        logger.debug(self.hostname + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s" % (str(commit_all),
+                                                                                                       str(sync),
+                                                                                                       str(sync_all),
+                                                                                                       cmd,
+                                                                                                       ))
         if commit_all:
             action = "all"
         else:

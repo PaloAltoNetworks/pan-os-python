@@ -27,6 +27,7 @@ class PanDeviceError(Exception):
 
     Attributes:
         message: The error message for the exception
+        pan_device: A reference to the PanDevice that generated the exception
     """
     def __init__(self, *args, **kwargs):
         self.pan_device = kwargs.pop('pan_device', None)
@@ -71,4 +72,10 @@ class PanSessionTimedOut(PanDeviceXapiError):
     pass
 
 class PanDeviceNotSet(PanDeviceError):
+    pass
+
+class PanNoSuchNode(PanDeviceError):
+    pass
+
+class PanObjectMissing(PanDeviceError):
     pass
