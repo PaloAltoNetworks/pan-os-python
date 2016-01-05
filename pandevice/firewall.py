@@ -122,7 +122,7 @@ class Firewall(PanDevice):
                  vsys='vsys1',  # vsys# or 'shared'
                  is_virtual=None,
                  panorama=None,
-                 classify_exceptions=False):
+                 classify_exceptions=True):
         """Initialize PanDevice"""
         super(Firewall, self).__init__(hostname, api_username, api_password, api_key,
                                        port=port,
@@ -165,7 +165,7 @@ class Firewall(PanDevice):
         variables are set in this firewall prior to the first connection.
         """
         if self.panorama is not None and self.serial is not None:
-            if self._classify_exceptions:
+            if self.classify_exceptions:
                 xapi_constructor = PanDevice.XapiWrapper
                 kwargs = {'pan_device': self,
                           'api_key': self.panorama.api_key,

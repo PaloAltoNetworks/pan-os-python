@@ -753,7 +753,7 @@ class PanDevice(PanObject):
                  is_virtual=None,
                  timeout=1200,
                  interval=.5,
-                 classify_exceptions=False):
+                 classify_exceptions=True):
         """Initialize PanDevice"""
         super(PanDevice, self).__init__()
         # create a class logger
@@ -769,8 +769,7 @@ class PanDevice(PanObject):
         self.interval = interval
         self.interfaces = {}
         self._xapi_private = None
-        # There is currently no way to change this setting, so it is protected
-        self._classify_exceptions = classify_exceptions
+        self.classify_exceptions = classify_exceptions
         self.config_locked = False
         self.commit_locked = False
         self.lock_before_change = False
@@ -934,7 +933,7 @@ class PanDevice(PanObject):
                   'port': self.port,
                   'timeout': self.timeout,
                   }
-        if self._classify_exceptions:
+        if self.classify_exceptions:
             xapi_constructor = PanDevice.XapiWrapper
             kwargs['pan_device'] = self
         else:
@@ -1021,7 +1020,7 @@ class PanDevice(PanObject):
         """
         self._logger.debug("Getting API Key from %s for user %s" %
                            (self.hostname, self._api_username))
-        if self._classify_exceptions:
+        if self.classify_exceptions:
             xapi = PanDevice.XapiWrapper(
                 pan_device=self,
                 api_username=self._api_username,
