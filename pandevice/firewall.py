@@ -47,6 +47,7 @@ from pandevice import network
 import errors as err
 from network import Interface
 from base import PanObject, PanDevice, Root
+from base import VarPath as Var
 from updater import Updater
 import userid
 
@@ -54,10 +55,59 @@ import userid
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
+class VsysResources(PanObject):
+
+    XPATH = "/import/resource"
+    ROOT = Root.VSYS
+
+    def __init__(self,
+                 max_sessions=None,
+                 max_security_rules=None,
+                 max_nat_rules=None,
+                 max_ssl_decryption_rules=None,
+                 max_qos_rules=None,
+                 max_application_override_rules=None,
+                 max_pbf_rules=None,
+                 max_cp_rules=None,
+                 max_dos_rules=None,
+                 max_site_to_site_vpn_tunnels=None,
+                 max_concurrent_ssl_vpn_tunnels=None,
+                 ):
+        super(VsysResources, self).__init__(name=None)
+        self.max_sessions = max_sessions
+        self.max_security_rules = max_security_rules
+        self.max_nat_rules = max_nat_rules
+        self.max_ssl_decryption_rules = max_ssl_decryption_rules
+        self.max_qos_rules = max_qos_rules
+        self.max_application_override_rules = max_application_override_rules
+        self.max_pbf_rules = max_pbf_rules
+        self.max_cp_rules = max_cp_rules
+        self.max_dos_rules = max_dos_rules
+        self.max_site_to_site_vpn_tunnels = max_site_to_site_vpn_tunnels
+        self.max_concurrent_ssl_vpn_tunnels = max_concurrent_ssl_vpn_tunnels
+
+    @staticmethod
+    def vars():
+        return (
+            Var("max-security-rules", vartype="int"),
+            Var("max-nat-rules", vartype="int"),
+            Var("max-ssl-decryption-rules", vartype="int"),
+            Var("max-qos-rules", vartype="int"),
+            Var("max-application-override-rules", vartype="int"),
+            Var("max-pbf-rules", vartype="int"),
+            Var("max-cp-rules", vartype="int"),
+            Var("max-dos-rules", vartype="int"),
+            Var("max-site-to-site-vpn-tunnels", vartype="int"),
+            Var("max-concurrent-ssl-vpn-tunnels", vartype="int"),
+            Var("max-sessions", vartype="int"),
+        )
+
+
 class Firewall(PanDevice):
 
     ROOT = Root.VSYS
     CHILDTYPES = (
+        VsysResources,
         objects.AddressObject,
         network.VirtualRouter,
     )
