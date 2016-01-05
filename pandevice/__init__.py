@@ -111,3 +111,22 @@ def convert_if_int(string):
         return integer
     except ValueError:
         return string
+
+
+def xml_combine(root, elements):
+    """Combine two xml elements and their subelements
+
+    This method will modify the 'root' argument and does
+    not return anything.
+
+    Args:
+        root (Element): The Element that will contain the merger
+        elements (Element or list): If an Element, merge all subelements of this element into root.
+            If a list, merge all Elements in the list into root.
+    """
+    for element in elements:
+        found_element = root.find(element.tag)
+        if found_element is None:
+            root.append(element)
+            continue
+        xml_combine(found_element, element)

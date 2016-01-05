@@ -189,7 +189,8 @@ class PanObject(object):
                 # There is no variable, so don't try to populate it
                 pass
             else:
-        root.extend(self.subelements())
+                nextelement.text = str(value)
+        pandevice.xml_combine(root, self.subelements())
         return root
 
     def element_str(self):
