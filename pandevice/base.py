@@ -479,7 +479,13 @@ class PanObject(object):
         else:
             parent_xpath = parent.xpath()
         xpath = parent_xpath + cls.XPATH
-        api_action(xpath)
+        try:
+            api_action(xpath)
+        except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
+            if not str(e).startswith("No such node"):
+                raise e
+            else:
+                return []
         root = pandevice.xapi.element_root
         lasttag = cls.XPATH.rsplit("/", 1)[-1]
         obj = root.find("result/" + lasttag)
