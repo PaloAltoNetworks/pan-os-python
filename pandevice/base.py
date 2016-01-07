@@ -108,13 +108,13 @@ class PanObject(object):
 
         Xpath in the form: parent's xpath + this object's xpath + entry or member if applicable.
         """
-        xpath = self._parent_xpath()
+        xpath = self._parent_xpath() + self.XPATH
         suffix = "" if self.SUFFIX is None else self.SUFFIX % self.name
         return xpath + suffix
 
     def xpath_nosuffix(self):
         """Return the xpath without the suffix"""
-        xpath = self._parent_xpath()
+        xpath = self._parent_xpath() + self.XPATH
         return xpath
 
     def xpath_short(self):
@@ -122,29 +122,22 @@ class PanObject(object):
 
         Xpath in the form: parent's xpath + this object's xpath.  Used for set API calls.
         """
-        xpath = self._parent_xpath()
+        xpath = self._parent_xpath() + self.XPATH
         if self.SUFFIX is None:
             # Remove last segment of xpath
             xpath = re.sub(r"/(?=[^/']*'[^']*'[^/']*$|[^/]*$).*$", "", xpath)
         return xpath
 
     def _parent_xpath(self):
-        from firewall import Firewall
-        if self.parent is None and isinstance(self, Firewall):
-            if self.vsys == "shared":
-                parent_xpath = self.xpath_root(Root.DEVICE)
-            else:
-                parent_xpath = self.xpath_root(Root.VSYS)
-        elif self.parent is None and isinstance(self, PanDevice):
-            parent_xpath = self.xpath_root(self.ROOT)
-        elif self.parent is None:
+        if self.parent is None:
+            # self with no parent
             parent_xpath = ""
-        elif issubclass(type(self.parent), PanDevice):
+        elif isinstance(self.parent, PanDevice):
+            # Parent is Firewall or Panorama
             parent_xpath = self.parent.xpath_root(self.ROOT)
         else:
             parent_xpath = self.parent.xpath()
-        xpath = str(parent_xpath + self.XPATH)
-        return xpath
+        return parent_xpath
 
     def element(self):
         root = self.root_element()
@@ -1030,6 +1023,10 @@ class PanDevice(PanObject):
                                             pan_device=self)
                 """
         self.config_changed = True
+
+    def _parent_xpath(self):
+        parent_xpath = self.xpath_root(self.ROOT)
+        return parent_xpath
 
     def xpath_root(self, root_type):
         if root_type == Root.DEVICE:

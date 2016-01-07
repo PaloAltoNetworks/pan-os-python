@@ -150,6 +150,14 @@ class Firewall(PanDevice):
     def xpath_panorama(self):
         raise err.PanDeviceError("Attempt to modify Panorama configuration on non-Panorama device")
 
+    def _parent_xpath(self):
+        # This is a firewall
+        if self.vsys == "shared":
+            parent_xpath = self.xpath_root(Root.DEVICE)
+        else:
+            parent_xpath = self.xpath_root(Root.VSYS)
+        return parent_xpath
+
     def op(self, cmd=None, cmd_xml=True, extra_qs=None):
         if self.vsys == "shared":
             vsys = "vsys1"
