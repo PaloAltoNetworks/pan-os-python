@@ -107,6 +107,7 @@ class Firewall(PanDevice):
 
     ROOT = Root.VSYS
     CHILDTYPES = (
+        device.Vsys,
         VsysResources,
         objects.AddressObject,
         network.VirtualRouter,
@@ -133,13 +134,21 @@ class Firewall(PanDevice):
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
         self.serial = serial
-        self.vsys = vsys
+        self._vsys = vsys
         self.vsys_name = None
         self.panorama = panorama
         self.multi_vsys = None
 
         # Create a User-ID subsystem
         self.userid = userid.UserId(self)
+
+    @property
+    def vsys(self):
+        return self._vsys
+
+    @vsys.setter
+    def vsys(self, value):
+        self._vsys = value
 
     def xpath_vsys(self):
         if self.vsys == "shared":

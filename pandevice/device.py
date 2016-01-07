@@ -37,6 +37,40 @@ except AttributeError as e:
     logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
+class Vsys(PanObject):
+    """Virtual System (VSYS)"""
+
+    XPATH = "/vsys"
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+
+    def __init__(self, name, display_name=None):
+        super(Vsys, self).__init__(name)
+        self.display_name = display_name
+        self.interface = []
+
+    @classmethod
+    def vars(cls):
+        return (
+            Var("display-name"),
+            Var("import/network/interface", vartype="member", init=False)
+        )
+
+    def xpath_vsys(self):
+        if self.name == "shared" or self.name is None:
+            return "/config/shared"
+        else:
+            return "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='%s']" % self.name
+
+    @property
+    def vsys(self):
+        return self.name
+
+    @vsys.setter
+    def vsys(self, value):
+        self.name = value
+
+
 class NTPServerPrimary(PanObject):
     """A primary or secondary NTP server
 

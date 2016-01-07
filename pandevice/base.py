@@ -63,6 +63,15 @@ class PanObject(object):
     def vars():
         return ()
 
+    @property
+    def vsys(self):
+        if self.parent is not None:
+            return self.parent.vsys
+
+    @vsys.setter
+    def vsys(self, value):
+        raise err.PanDeviceError("Cannot set vsys on non-vsys object")
+
     def add(self, child):
         child.parent = self
         self.children.append(child)
@@ -139,6 +148,14 @@ class PanObject(object):
             parent_xpath = self.parent.xpath()
         return parent_xpath
 
+    def xpath_vsys(self):
+        if self.parent is not None:
+            return self.parent.xpath_vsys()
+
+    def xpath_panorama(self):
+        if self.parent is not None:
+            return self.parent.xpath_panorama()
+
     def element(self):
         root = self.root_element()
         variables = self.vars()
@@ -150,6 +167,10 @@ class PanObject(object):
                 value = getattr(self, var.variable)
             if value is None:
                 continue
+            if var.condition is not None:
+                condition = var.condition.split(":")
+                if str(getattr(self, condition[0])) != condition[1]:
+                    continue
             path = var.path.split("/")
             nextelement = root
 
@@ -411,8 +432,7 @@ class PanObject(object):
             # Use the xml that was passed in
             obj = xml
         # Remove all the current child instances first
-        for child in self.children:
-            self.remove(child)
+        self.removeall()
         # Check for children in the remaining XML
         for childtype in self.CHILDTYPES:
             childroot = obj.find(childtype.XPATH[1:])
@@ -611,6 +631,7 @@ class PanObject(object):
         # Parse each variable
         vars = cls.vars()
         for var in vars:
+            missing_replacement = False
             # Determine if variable is part of __init__ args
             if var.vartype == "none":
                 continue
@@ -629,6 +650,9 @@ class PanObject(object):
                     replacement = variables[match]
                 except KeyError:
                     replacement = noinit_variables[match]
+                if replacement is None:
+                    missing_replacement = True
+                    break
                 if matchedvar.vartype == "entry":
                     # If it's an 'entry' variable
                     if len(replacement) == 1:
@@ -639,6 +663,8 @@ class PanObject(object):
                 else:
                     # Not an 'entry' variable
                     path = re.sub(regex, replacement, path)
+            if missing_replacement:
+                continue
             # Determine the type of variable
             if var.vartype == "member":
                 members = xml.findall(path + "/member")
@@ -689,6 +715,37 @@ class PanObject(object):
         elif vartype == "bool":
             return True if value == "yes" else False
 
+    def _set_reference(self, reference_name, reference_type, reference_var, exclusive, refresh, update, candidate, *args, **kwargs):
+        pandevice = self.pandevice()
+        if refresh:
+            allobjects = reference_type.refresh_all_from_device(pandevice, candidate=candidate)
+        else:
+            allobjects = pandevice.findall(reference_type)
+        # Find any current references to self and remove them
+        if exclusive:
+            for obj in allobjects:
+                references = getattr(obj, reference_var)
+                if self in references:
+                    if obj.name == reference_name:
+                        if update: obj.update(reference_var)
+                        return obj
+                    references.remove(self)
+                    if update: obj.update(reference_var)
+                elif str(self) in references:
+                    if obj.name == reference_name:
+                        if update: obj.update(reference_var)
+                        return obj
+                    references.remove(str(self))
+                    if update: obj.update(reference_var)
+        # Add new reference to self in requested object
+        if reference_name is not None:
+            obj = pandevice.find_or_create(reference_name, reference_type, *args, **kwargs)
+            var = getattr(obj, reference_var)
+            if self not in var and str(self) not in var:
+                var.append(self)
+                if update: obj.update(reference_var)
+            return obj
+
 
 class VarPath(object):
     """Configuration variable within the object
@@ -698,12 +755,13 @@ class VarPath(object):
         variable (string): The name of the instance variable in the class
         vartype (string): The type of variable (None or 'member')
     """
-    def __init__(self, path, variable=None, vartype=None, default=None, init=True):
+    def __init__(self, path, variable=None, vartype=None, default=None, init=True, condition=None):
         self.path = path
         self._variable = variable
         self.vartype = vartype
         self.default = default
         self.init = init
+        self.condition = condition
 
     @property
     def variable(self):
@@ -742,25 +800,39 @@ class VsysImportMixin(object):
         super(VsysImportMixin, self).delete(*args, **kwargs)
 
     def child_apply(self):
+        # Don't do anything if interface in ha mode
+        if getattr(self, "mode", "") == "ha":
+            return
         self.create_import()
 
     def child_create(self):
+        # Don't do anything if interface in ha mode
+        if getattr(self, "mode", "") == "ha":
+            return
         self.create_import()
 
     def child_delete(self):
         self.delete_import()
 
-    def create_import(self):
+    def create_import(self, vsys=None):
         pandevice = self.pandevice()
-        if pandevice.vsys != "shared" and self.XPATH_IMPORT is not None:
-            xpath_import = pandevice.xpath_vsys() + "/import" + self.XPATH_IMPORT
+        if vsys is None:
+            vsys = self.vsys
+        if vsys != "shared" and self.XPATH_IMPORT is not None:
+            xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
             pandevice.xapi.set(xpath_import, "<member>%s</member>" % self.name)
 
-    def delete_import(self):
+    def delete_import(self, vsys=None):
         pandevice = self.pandevice()
-        if pandevice.vsys != "shared" and self.XPATH_IMPORT is not None:
-            xpath_import = pandevice.xpath_vsys() + "/import" + self.XPATH_IMPORT
+        if vsys is None:
+            vsys = self.vsys
+        if vsys != "shared" and self.XPATH_IMPORT is not None:
+            xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
             pandevice.xapi.delete(xpath_import + "/member[text()='%s']" % self.name)
+
+    def set_vsys(self, vsys=None, refresh=False, update=False, candidate=False):
+        import device
+        return self._set_reference(vsys, device.Vsys, self.XPATH_IMPORT.split("/")[-1], True, refresh, update, candidate)
 
     @classmethod
     def refresh_all_from_device(cls, parent, candidate=False, add=True):

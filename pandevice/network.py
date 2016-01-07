@@ -179,36 +179,11 @@ class Interface(PanObject):
             raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
         super(Interface, self).__init__(name=name)
 
-    def set_zone(self, zone_name, mode=None, refresh=False, update=False):
-        return self._set_reference(zone_name, Zone, "interface", True, refresh, update, mode=mode)
+    def set_zone(self, zone_name, mode=None, refresh=False, update=False, candidate=False):
+        return self._set_reference(zone_name, Zone, "interface", True, refresh, update, candidate, mode=mode)
 
-    def set_virtual_router(self, virtual_router_name, refresh=False, update=False):
-        return self._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh, update)
-
-    def _set_reference(self, reference_name, reference_type, reference_var, exclusive, refresh, update, *args, **kwargs):
-        pandevice = self.pandevice()
-        if refresh:
-            allobjects = reference_type.refresh_all_from_device(pandevice)
-        else:
-            allobjects = pandevice.findall(reference_type)
-        # Find any current references to self and remove them
-        if exclusive:
-            for obj in allobjects:
-                if self in obj.interface:
-                    getattr(obj, reference_var).remove(self)
-                    if update: obj.update(reference_var)
-                elif str(self) in obj.interface:
-                    getattr(obj, reference_var).remove(str(self))
-                    if update: obj.update(reference_var)
-        # Add new reference to self in requested object
-        if reference_name is not None:
-            obj = pandevice.find_or_create(reference_name, reference_type, *args, **kwargs)
-            var = getattr(obj, reference_var)
-            if self not in var and str(self) not in var:
-                var.append(self)
-                if update: obj.update(reference_var)
-            return obj
-
+    def set_virtual_router(self, virtual_router_name, refresh=False, update=False, candidate=False):
+        return self._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh, update, candidate)
 
 
 class Arp(PanObject):
@@ -236,27 +211,17 @@ class Arp(PanObject):
         self.name = value
 
 
-class Layer3Interface(Interface):
-    """L3 interfaces parameters
+class Layer3Parameters(object):
+    """L3 interfaces parameters mixin"""
 
-    Can be added as a child of an EthernetInterface or other kind of concrete interface
-    """
-
-    XPATH = "/layer3"
-    SUFFIX = None
-    CHILDTYPES = (
-        IPv6Address,
-    )
-
-    def __init__(self,
-                 ip=(),
-                 ipv6_enabled=None,
-                 management_profile=None,
-                 mtu=None,
-                 adjust_tcp_mss=None,
-                 netflow_profile=None,
-                 ):
-        super(Layer3Interface, self).__init__(name=None)
+    def __init__(self, *args, **kwargs):
+        ip = kwargs.pop("ip", None)
+        ipv6_enabled = kwargs.pop("ipv6_enabled", None)
+        management_profile = kwargs.pop("management_profile", None)
+        mtu = kwargs.pop("mtu", None)
+        adjust_tcp_mss = kwargs.pop("adjust_tcp_mss", None)
+        netflow_profile = kwargs.pop("netflow_profile", None)
+        super(Layer3Parameters, self).__init__(*args, **kwargs)
         self.ip = pandevice.string_or_list(ip)
         self.ipv6_enabled = ipv6_enabled
         self.management_profile = management_profile
@@ -264,9 +229,9 @@ class Layer3Interface(Interface):
         self.adjust_tcp_mss = adjust_tcp_mss
         self.netflow_profile = netflow_profile
 
-    @staticmethod
-    def vars():
-        return super(Layer3Interface, Layer3Interface).vars() + (
+    @classmethod
+    def _vars(cls):
+        return (
             Var("ip", vartype="entry"),
             Var("ipv6/enabled", "ipv6_enabled", vartype="bool"),
             Var("interface-management-profile", "management_profile"),
@@ -275,42 +240,53 @@ class Layer3Interface(Interface):
             Var("netflow-profile"),
         )
 
-    def set_zone(self, zone_name, mode="layer3", refresh=False, update=False):
-        super(Layer3Interface, self).set_zone(zone_name, mode, refresh, update)
+    @classmethod
+    def vars(cls):
+        return super(Layer3Parameters, cls).vars() + cls._vars
+
+    @classmethod
+    def vars_with_mode(cls):
+        l3vars = Layer3Parameters._vars()
+        for var in l3vars:
+            var.path = "{{mode}}/" + var.path
+            var.condition = "mode:layer3"
+        return super(Layer3Parameters, cls).vars_with_mode() + l3vars
 
 
-class Layer2Interface(Interface):
-    """L3 interfaces parameters
+class Layer2Parameters(object):
+    """L3 interfaces parameters mixing"""
 
-    Can be added as a child of an EthernetInterface or other kind of concrete interface
-    """
-
-    XPATH = "/layer2"
-    SUFFIX = None
-
-    def __init__(self,
-                 lldp_enabled=None,
-                 lldp_profile=None,
-                 netflow_profile=None,
-                 ):
-        super(Layer2Interface, self).__init__(name=None)
-        self.lldp_enable = lldp_enabled
+    def __init__(self, *args, **kwargs):
+        lldp_enabled = kwargs.pop("lldp_enabled", None)
+        lldp_profile = kwargs.pop("lldp_profile", None)
+        netflow_profile = kwargs.pop("netflow_profile", None)
+        super(Layer2Parameters, self).__init__(*args, **kwargs)
+        self.lldp_enabled = lldp_enabled
         self.lldp_profile = lldp_profile
         self.netflow_profile = netflow_profile
 
-    @staticmethod
-    def vars():
-        return super(Layer2Interface, Layer2Interface).vars() + (
+    @classmethod
+    def _vars(cls):
+        return (
             Var("lldp/enable", "lldp_enabled", vartype="bool"),
             Var("lldp/profile", "lldp_profile"),
             Var("netflow-profile"),
         )
 
-    def set_zone(self, zone_name, mode="layer2", refresh=False, update=False):
-        super(Layer2Interface, self).set_zone(zone_name, mode, refresh, update)
+    @classmethod
+    def vars(cls):
+        return super(Layer2Parameters, cls).vars() + cls._vars()
+
+    @classmethod
+    def vars_with_mode(cls):
+        l2vars = Layer2Parameters._vars()
+        for var in l2vars:
+            var.path = "{{mode}}/" + var.path
+            var.condition = "mode:layer2"
+        return super(Layer2Parameters, cls).vars_with_mode() + l2vars
 
     def set_vlan(self, vlan_name, refresh=False, update=False):
-        super(Layer2Interface, self)._set_reference(vlan_name, Vlan, "interface", True, refresh, update)
+        super(Layer2Parameters, self)._set_reference(vlan_name, Vlan, "interface", True, refresh, update)
 
 
 class VirtualWireInterface(Interface):
@@ -320,7 +296,25 @@ class VirtualWireInterface(Interface):
     SUFFIX = None
 
 
-class Layer3Subinterface(VsysImportMixin, Layer3Interface):
+class Subinterface(Interface):
+    """Subinterface"""
+    def __init__(self, name, tag):
+        super(Subinterface, self).__init__(name)
+        self.tag = tag
+
+    @staticmethod
+    def vars():
+        return super(Subinterface, Subinterface).vars() + (
+            Var("tag", vartype="int"),
+        )
+
+    def set_name(self):
+        """Create a name appropriate for a subinterface if it isn't already"""
+        if self.name.find(".") == -1:
+            self.name = self.name + "." + str(self.tag)
+
+
+class Layer3Subinterface(Layer3Parameters, VsysImportMixin, Subinterface):
 
     XPATH = "/layer3/units"
     XPATH_IMPORT = "/network/interface"
@@ -329,145 +323,131 @@ class Layer3Subinterface(VsysImportMixin, Layer3Interface):
         IPv6Address,
     )
 
-    def __init__(self,
-                 name,
-                 ip=None,
-                 ipv6_enabled=None,
-                 tag=None,
-                 management_profile=None,
-                 mtu=None,
-                 adjust_tcp_mss=None,
-                 netflow_profile=None,
-                 ):
-        super(Layer3Subinterface, self).__init__(ip,
-                                                 ipv6_enabled,
-                                                 management_profile,
-                                                 mtu,
-                                                 adjust_tcp_mss,
-                                                 netflow_profile,
-                                                 name=name,
-                                                 )
-        self.name = name
-        self.tag = tag
+    def __init__(self, name, tag, *args, **kwargs):
+        super(Layer3Subinterface, self).__init__(name, tag, *args, **kwargs)
 
-    @staticmethod
-    def vars():
-        return super(Layer3Subinterface, Layer3Subinterface).vars() + (
-            Var("tag", vartype="int"),
-        )
 
-    def set_zone(self, zone_name, mode="layer3", refresh=False, update=False):
-        super(Layer3Subinterface, self).set_zone(zone_name, mode, refresh, update)
-
-class Layer2Subinterface(VsysImportMixin, Interface):
+class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
 
     XPATH = "/layer2/units"
     XPATH_IMPORT = "/network/interface"
     SUFFIX = ENTRY
 
+    def __init__(self, name, tag, *args, **kwargs):
+        comment = kwargs.pop("comment", None)
+        super(Layer2Subinterface, self).__init__(name, tag, *args, **kwargs)
+        self.comment = comment
+
+    @staticmethod
+    def vars():
+        return super(Layer2Subinterface, Layer2Subinterface).vars() + (
+            Var("comment"),
+        )
+
+
+class PhysicalInterface(Interface):
+    """Absract base class for Ethernet and Aggregate Ethernet Interfaces"""
     def __init__(self,
                  name,
-                 tag,
-                 comment=None,
-                 netflow_profile=None,
+                 mode,
                  ):
-        super(Layer2Subinterface, self).__init__(name=name)
-        self.name = name
-        self.tag = tag
-        self.comment = comment
-        self.netflow_profile = netflow_profile
+        if type(self) == PhysicalInterface:
+            raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
+        super(PhysicalInterface, self).__init__(name=name)
+        self.mode = mode
+
+    def element(self):
+        mode = None
+        if self.children and self.mode is not None:
+            mode = self.mode
+            self.mode = None
+        elif not self.children and self.mode is None:
+            self.mode = "tap"
+        element = super(PhysicalInterface, self).element()
+        if self.children and mode is not None:
+            self.mode = mode
+        return element
 
     @staticmethod
     def vars():
         return (
-            Var("tag", vartype="int"),
-            Var("comment"),
-            Var("netflow-profile"),
-        )
+            Var("(layer3|layer2|virtual-wire|tap|ha|decrypt-mirror|aggregate-group)", "mode"),
+        ) + super(PhysicalInterface, PhysicalInterface).vars()
 
-    def set_zone(self, zone_name, mode="layer2", refresh=False, update=False):
-        super(Layer2Subinterface, self).set_zone(zone_name, mode, refresh, update)
+    @staticmethod
+    def vars_with_mode():
+        return PhysicalInterface.vars()
 
-    def set_vlan(self, vlan_name, refresh=False, update=False):
-        super(Layer2Subinterface, self)._set_reference(vlan_name, Vlan, "interface", True, refresh, update)
+    def set_zone(self, zone_name, mode=None, refresh=False, update=False, candidate=False):
+        if mode is None:
+            mode = self.mode
+        super(PhysicalInterface, self).set_zone(zone_name, mode, refresh, update)
 
-class EthernetInterface(VsysImportMixin, Interface):
+
+
+class EthernetInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, PhysicalInterface):
 
     XPATH = "/network/interface/ethernet"
     XPATH_IMPORT = "/network/interface"
     CHILDTYPES = (
-        Layer3Interface,
         Layer3Subinterface,
-        Layer2Interface,
         Layer2Subinterface,
     )
 
     def __init__(self,
                  name,
+                 mode="layer3",
+                 ip=(),
                  link_speed=None,
                  link_duplex=None,
                  link_state=None,
                  aggregate_group=None,
+                 *args,
+                 **kwargs
                  ):
-        super(EthernetInterface, self).__init__(name)
+        super(EthernetInterface, self).__init__(name, mode, ip=ip, *args, **kwargs)
         self.link_speed = link_speed
         self.link_duplex = link_duplex
         self.link_state = link_state
         self.aggregate_group = aggregate_group
 
-    @staticmethod
-    def vars():
-        return super(EthernetInterface, EthernetInterface).vars() + (
+    @classmethod
+    def vars(cls):
+        return super(EthernetInterface, cls).vars_with_mode() + (
             Var("link-speed"),
             Var("link-duplex"),
             Var("link-state"),
-            Var("aggregate-group"),
+            Var("aggregate-group", condition="mode:aggregate-group"),
         )
 
 
-class AggregateInterface(VsysImportMixin, Interface):
+class AggregateInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, PhysicalInterface):
 
     XPATH = "/network/interface/aggregate-ethernet"
     XPATH_IMPORT = "/network/interface"
     CHILDTYPES = (
-        Layer3Interface,
         Layer3Subinterface,
-        Layer2Interface,
         Layer2Subinterface,
     )
 
-
-class HAInterfaceMixin(object):
-
-    XPATH_IMPORT = None
-    CHILDTYPES = ()
-
-    def __init__(self, *args, **kwargs):
-        super(HAInterfaceMixin, self).__init__(*args, **kwargs)
-
-    def vars(self):
-        return super(HAInterfaceMixin, self).vars() + (
-            Var("ha", vartype="none"),
-        )
+    def __init__(self,
+                 name,
+                 mode="layer3",
+                 *args,
+                 **kwargs
+                 ):
+        super(AggregateInterface, self).__init__(name, mode, *args, **kwargs)
 
 
-class HAEthernetInterface(HAInterfaceMixin, EthernetInterface):
-    pass
-
-
-class HAAggregateInterface(HAInterfaceMixin, AggregateInterface):
-    pass
-
-
-class VlanInterface(VsysImportMixin, Layer3Interface):
+class VlanInterface(VsysImportMixin, Layer3Parameters):
     XPATH = "/network/interface/vlan/units"
 
 
-class LoopbackInterface(VsysImportMixin, Layer3Interface):
+class LoopbackInterface(VsysImportMixin, Layer3Parameters):
     XPATH = "/network/interface/loopback/units"
 
 
-class TunnelInterface(VsysImportMixin, Layer3Interface):
+class TunnelInterface(VsysImportMixin, Layer3Parameters):
     XPATH = "/network/interface/tunnel/units"
 
 

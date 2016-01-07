@@ -252,11 +252,11 @@ class HighAvailabilityInterface(PanObject):
         intconfig_needed = False
         if intname.startswith("ethernet"):
             intprefix = "ethernet"
-            inttype = network.HAEthernetInterface
+            inttype = network.EthernetInterface
             intconfig_needed = True
         elif intname.startswith("ae"):
             intprefix = "ae"
-            inttype = network.HAAggregateInterface
+            inttype = network.AggregateInterface
             intconfig_needed = True
         elif not intname.startswith("dedicated"):
             self.link_speed = None
@@ -266,11 +266,10 @@ class HighAvailabilityInterface(PanObject):
             apply_needed = False
             interface = pandevice.find(intname, (network.EthernetInterface, network.AggregateInterface))
             if interface is None:
-                interface = pandevice.add(inttype(name=intname))
+                interface = pandevice.add(inttype(name=intname, mode="ha"))
                 apply_needed = True
-            elif not isinstance(interface, network.HAInterfaceMixin):
-                self.parent.remove(interface)
-                interface = pandevice.add(inttype(name=intname))
+            elif not interface.mode != "ha":
+                interface.mode = "ha"
                 apply_needed = True
             if self.link_speed is not None:
                 if interface.link_speed != self.link_speed:
@@ -305,11 +304,11 @@ class HighAvailabilityInterface(PanObject):
         intconfig_needed = False
         if intname.startswith("ethernet"):
             intprefix = "ethernet"
-            inttype = network.HAEthernetInterface
+            inttype = network.EthernetInterface
             intconfig_needed = True
         elif intname.startswith("ae"):
             intprefix = "ae"
-            inttype = network.HAAggregateInterface
+            inttype = network.AggregateInterface
             intconfig_needed = True
         elif not intname.startswith("dedicated"):
             self.link_speed = None
