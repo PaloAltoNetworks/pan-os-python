@@ -179,6 +179,37 @@ class Interface(PanObject):
             raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
         super(Interface, self).__init__(name=name)
 
+    def set_zone(self, zone_name, mode=None, refresh=False, update=False):
+        return self._set_reference(zone_name, Zone, "interface", True, refresh, update, mode=mode)
+
+    def set_virtual_router(self, virtual_router_name, refresh=False, update=False):
+        return self._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh, update)
+
+    def _set_reference(self, reference_name, reference_type, reference_var, exclusive, refresh, update, *args, **kwargs):
+        pandevice = self.pandevice()
+        if refresh:
+            allobjects = reference_type.refresh_all_from_device(pandevice)
+        else:
+            allobjects = pandevice.findall(reference_type)
+        # Find any current references to self and remove them
+        if exclusive:
+            for obj in allobjects:
+                if self in obj.interface:
+                    getattr(obj, reference_var).remove(self)
+                    if update: obj.update(reference_var)
+                elif str(self) in obj.interface:
+                    getattr(obj, reference_var).remove(str(self))
+                    if update: obj.update(reference_var)
+        # Add new reference to self in requested object
+        if reference_name is not None:
+            obj = pandevice.find_or_create(reference_name, reference_type, *args, **kwargs)
+            var = getattr(obj, reference_var)
+            if self not in var and str(self) not in var:
+                var.append(self)
+                if update: obj.update(reference_var)
+            return obj
+
+
 
 class Arp(PanObject):
     """Static ARP Mapping"""
@@ -244,6 +275,9 @@ class Layer3Interface(Interface):
             Var("netflow-profile"),
         )
 
+    def set_zone(self, zone_name, mode="layer3", refresh=False, update=False):
+        super(Layer3Interface, self).set_zone(zone_name, mode, refresh, update)
+
 
 class Layer2Interface(Interface):
     """L3 interfaces parameters
@@ -271,6 +305,12 @@ class Layer2Interface(Interface):
             Var("lldp/profile", "lldp_profile"),
             Var("netflow-profile"),
         )
+
+    def set_zone(self, zone_name, mode="layer2", refresh=False, update=False):
+        super(Layer2Interface, self).set_zone(zone_name, mode, refresh, update)
+
+    def set_vlan(self, vlan_name, refresh=False, update=False):
+        super(Layer2Interface, self)._set_reference(vlan_name, Vlan, "interface", True, refresh, update)
 
 
 class VirtualWireInterface(Interface):
@@ -316,6 +356,8 @@ class Layer3Subinterface(VsysImportMixin, Layer3Interface):
             Var("tag", vartype="int"),
         )
 
+    def set_zone(self, zone_name, mode="layer3", refresh=False, update=False):
+        super(Layer3Subinterface, self).set_zone(zone_name, mode, refresh, update)
 
 class Layer2Subinterface(VsysImportMixin, Interface):
 
@@ -343,6 +385,11 @@ class Layer2Subinterface(VsysImportMixin, Interface):
             Var("netflow-profile"),
         )
 
+    def set_zone(self, zone_name, mode="layer2", refresh=False, update=False):
+        super(Layer2Subinterface, self).set_zone(zone_name, mode, refresh, update)
+
+    def set_vlan(self, vlan_name, refresh=False, update=False):
+        super(Layer2Subinterface, self)._set_reference(vlan_name, Vlan, "interface", True, refresh, update)
 
 class EthernetInterface(VsysImportMixin, Interface):
 
