@@ -141,6 +141,56 @@ class HAPair(firewall.Firewall):
     def activate_firewall2(self):
         self._fw1_active = False
 
+    def refresh_active_firewall(self):
+        logger.debug("Refreshing active firewall in HA Pair")
+        ha_state = self.active_firewall.op("show high-availability state")
+        enabled = ha_state.find("./result/enabled")
+        if enabled is None:
+            return
+        if enabled.text == "yes":
+            state = ha_state.find("./result/group/local-info/state")
+            if state is None:
+                return
+            if state.text != "active":
+                logger.debug("Current firewall state is %s, switching to use other firewall" % state.text)
+                self.toggle_active_firewall()
+            else:
+                logger.debug("Current firewall is active, no change made")
+
+    def synchronize_config(self):
+        logger.debug("Syncronizing configuration with HA peer")
+        response = self.active_firewall.op("request high-availability sync-to-remote running-config")
+        line = response.find("./msg/line")
+        if line is None:
+            raise err.PanDeviceError("Unabled to syncronize configuration, no response from firewall")
+        if line.text.startswith("successfully sync'd running configuration to HA peer"):
+            return True
+        else:
+            raise err.PanDeviceError("Unabled to syncronize configuration: %s" % line.text)
+
+    def config_synced(self):
+        logger.debug("Checking if configuration is synced")
+        ha_state = self.active_firewall.op("show high-availability state")
+        enabled = ha_state.find("./result/enabled")
+        if enabled is None or enabled.text == "no":
+            logger.debug("HA is not enabled on firewall")
+            return
+        if enabled.text == "yes":
+            sync_enabled = ha_state.find("./result/group/running-sync-enabled")
+            if sync_enabled is None or sync_enabled.text != "yes":
+                logger.debug("HA config sync is not enabled on firewall")
+                return
+            else:
+                state = ha_state.find("./result/group/running-sync")
+                if state is None:
+                    logger.debug("HA or config sync is not enabled on firewall")
+                    return
+                logger.debug("Current config sync state is: %s" % state.text)
+                if state.text != "synchronized":
+                    return False
+                else:
+                    return True
+
 
 class HighAvailabilityInterface(PanObject):
     """Base class for high availability interface classes
