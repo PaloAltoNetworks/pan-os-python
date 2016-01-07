@@ -78,7 +78,7 @@ class StaticMac(PanObject):
     @staticmethod
     def vars():
         return (
-            Var("interface")
+            Var("interface"),
         )
 
     @property
@@ -112,7 +112,7 @@ class Vlan(PanObject):
     def vars():
         return (
             Var("interface", vartype="member"),
-            Var("virtual-interface/interface", "virtual_interface")
+            Var("virtual-interface/interface", "virtual_interface"),
         )
 
 
@@ -193,7 +193,7 @@ class Arp(PanObject):
     @staticmethod
     def vars():
         return (
-            Var("hw-address")
+            Var("hw-address"),
         )
 
     @property
@@ -266,7 +266,7 @@ class Layer2Interface(Interface):
 
     @staticmethod
     def vars():
-        return super(Layer3Interface, Layer3Interface).vars() + (
+        return super(Layer2Interface, Layer2Interface).vars() + (
             Var("lldp/enable", "lldp_enabled", vartype="bool"),
             Var("lldp/profile", "lldp_profile"),
             Var("netflow-profile"),
@@ -370,7 +370,7 @@ class EthernetInterface(VsysImportMixin, Interface):
 
     @staticmethod
     def vars():
-        return (
+        return super(EthernetInterface, EthernetInterface).vars() + (
             Var("link-speed"),
             Var("link-duplex"),
             Var("link-state"),
