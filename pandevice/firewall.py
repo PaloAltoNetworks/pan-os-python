@@ -155,7 +155,8 @@ class Firewall(PanDevice):
             vsys = "vsys1"
         else:
             vsys = self.vsys
-        return self.xapi.op(cmd, vsys, cmd_xml, extra_qs)
+        self.xapi.op(cmd, vsys, cmd_xml, extra_qs)
+        return self.xapi.element_root
 
     def generate_xapi(self):
         """Override super class to connect to Panorama

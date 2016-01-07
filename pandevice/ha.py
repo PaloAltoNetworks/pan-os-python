@@ -107,6 +107,14 @@ class HAPair(firewall.Firewall):
                     return getattr(self.ha_pair.active_firewall.xapi, method_name)(*args, **kwargs)
             return method
 
+        @property
+        def element_root(self):
+            return self.ha_pair.active_firewall.xapi.element_root
+
+        @property
+        def element_result(self):
+            return self.ha_pair.active_firewall.xapi.element_result
+
     @property
     def api_key(self):
         return "No API Key for HA Pair"
