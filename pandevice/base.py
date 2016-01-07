@@ -1117,6 +1117,9 @@ class PanDevice(PanObject):
         xapi.keygen()
         return xapi.api_key
 
+    def devices(self):
+        return self
+
     def show_system_info(self):
         self.xapi.op(cmd="show system info", cmd_xml=True)
         pconf = PanConfig(self.xapi.element_root)

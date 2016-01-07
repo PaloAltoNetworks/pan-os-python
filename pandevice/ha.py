@@ -121,6 +121,9 @@ class HAPair(firewall.Firewall):
     def generate_xapi(self):
         return HAPair.HAXapiWrapper(self)
 
+    def devices(self):
+        return [self.fw1, self.fw2]
+
     def toggle_active_firewall(self):
         self._fw1_active = not self._fw1_active
 
