@@ -108,15 +108,27 @@ class PanObject(object):
 
         Xpath in the form: parent's xpath + this object's xpath + entry or member if applicable.
         """
-        xpath = self.xpath_short()
+        xpath = self._parent_xpath()
         suffix = "" if self.SUFFIX is None else self.SUFFIX % self.name
-        return str(xpath + suffix)
+        return xpath + suffix
+
+    def xpath_nosuffix(self):
+        """Return the xpath without the suffix"""
+        xpath = self._parent_xpath()
+        return xpath
 
     def xpath_short(self):
         """Return an xpath for this object without the final segment
 
         Xpath in the form: parent's xpath + this object's xpath.  Used for set API calls.
         """
+        xpath = self._parent_xpath()
+        if self.SUFFIX is None:
+            # Remove last segment of xpath
+            xpath = re.sub(r"/(?=[^/']*'[^']*'[^/']*$|[^/]*$).*$", "", xpath)
+        return xpath
+
+    def _parent_xpath(self):
         from firewall import Firewall
         if self.parent is None and isinstance(self, Firewall):
             if self.vsys == "shared":
@@ -132,9 +144,6 @@ class PanObject(object):
         else:
             parent_xpath = self.parent.xpath()
         xpath = str(parent_xpath + self.XPATH)
-        if self.SUFFIX is None:
-            # Remove last segment of xpath
-            xpath = re.sub(r"/(?=[^/']*'[^']*'[^/']*$|[^/]*$).*$", "", xpath)
         return xpath
 
     def element(self):
