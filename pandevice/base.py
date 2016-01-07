@@ -769,6 +769,38 @@ class VsysImportMixin(object):
             xpath_import = pandevice.xpath_vsys() + "/import" + self.XPATH_IMPORT
             pandevice.xapi.delete(xpath_import + "/member[text()='%s']" % self.name)
 
+    @classmethod
+    def refresh_all_from_device(cls, parent, candidate=False, add=True):
+        instances = super(VsysImportMixin, cls).refresh_all_from_device(parent, candidate, add=False)
+        # Filter out instances that are not in this vlan's imports
+        pandevice = parent.pandevice()
+        if candidate:
+            api_action = pandevice.xapi.get
+        else:
+            api_action = pandevice.xapi.show
+        if pandevice.vsys != "shared" and cls.XPATH_IMPORT is not None:
+            xpath_import = pandevice.xpath_vsys() + "/import" + cls.XPATH_IMPORT
+            try:
+                api_action(xpath_import)
+            except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
+                if not str(e).startswith("No such node"):
+                    raise e
+                else:
+                    imports = []
+            else:
+                imports_xml = pandevice.xapi.element_root
+                imports = imports_xml.findall(".//member")
+                if imports is not None:
+                    imports = [member.text for member in imports]
+            if imports is not None:
+                instances = [instance for instance in instances if instance.name in imports]
+        if add:
+            # Remove current children of this type from parent
+            parent.removeall(cls=cls)
+            # Add the new children that were just refreshed from the device
+            parent.extend(instances)
+        return instances
+
 
 class PanDevice(PanObject):
     """A Palo Alto Networks device
