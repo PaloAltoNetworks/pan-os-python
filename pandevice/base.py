@@ -288,7 +288,7 @@ class PanObject(object):
 
     def _check_child_methods(self, method):
         if method in self.CHILDMETHODS:
-            getattr(self, method)()
+            getattr(self, "child_"+method)()
         for child in self.children:
             child.check_child_methods(method)
 
@@ -733,24 +733,43 @@ class VsysImportMixin(object):
     and not part of PanObject
     """
     XPATH_IMPORT = None
-    CHILDMETHODS = ("create", "delete")
+    CHILDMETHODS = ("apply", "create", "delete")
 
     def __init__(self, *args, **kwargs):
         super(VsysImportMixin, self).__init__(*args, **kwargs)
 
+    def apply(self, *args, **kwargs):
+        super(VsysImportMixin, self).apply(*args, **kwargs)
+        self.create_import()
+
     def create(self, *args, **kwargs):
         super(VsysImportMixin, self).create(*args, **kwargs)
-        pandevice = super(VsysImportMixin, self).pandevice()
+        self.create_import()
+
+    def delete(self, *args, **kwargs):
+        self.delete_import()
+        super(VsysImportMixin, self).delete(*args, **kwargs)
+
+    def child_apply(self):
+        self.create_import()
+
+    def child_create(self):
+        self.create_import()
+
+    def child_delete(self):
+        self.delete_import()
+
+    def create_import(self):
+        pandevice = self.pandevice()
         if pandevice.vsys != "shared" and self.XPATH_IMPORT is not None:
             xpath_import = pandevice.xpath_vsys() + "/import" + self.XPATH_IMPORT
             pandevice.xapi.set(xpath_import, "<member>%s</member>" % self.name)
 
-    def delete(self, *args, **kwargs):
-        pandevice = super(VsysImportMixin, self).pandevice()
+    def delete_import(self):
+        pandevice = self.pandevice()
         if pandevice.vsys != "shared" and self.XPATH_IMPORT is not None:
             xpath_import = pandevice.xpath_vsys() + "/import" + self.XPATH_IMPORT
             pandevice.xapi.delete(xpath_import + "/member[text()='%s']" % self.name)
-        super(VsysImportMixin, self).delete(*args, **kwargs)
 
 
 class PanDevice(PanObject):
