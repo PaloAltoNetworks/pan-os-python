@@ -335,16 +335,24 @@ class PanObject(object):
         pandevice.set_config_changed()
         variables = self.vars()
         value = getattr(self, variable)
-        # Get the requested variable from the classes variables tuple
+        # Get the requested variable from the class' variables tuple
         var = next((x for x in variables if x.variable == variable), None)
-        # Get the last part of the variable's path
+        if var is None:
+            raise err.PanDeviceError("Variable %s does not exist in variable tuple" % variable)
         if value is None:
             pandevice.xapi.delete(self.xpath() + "/" + var.path)
         else:
             element_tag = var.path.split("/")[-1]
             element = ET.Element(element_tag)
-            element.text = value
-            pandevice.xapi.edit(self.xpath() + "/" + var.path, ET.tostring(element))
+            if var.vartype == "member":
+                for member in value:
+                    ET.SubElement(element, 'member').text = str(member)
+                xpath = self.xpath() + "/" + var.path
+            else:
+                # Regular text variables
+                element.text = value
+                xpath = self.xpath() + "/" + var.path
+            pandevice.xapi.edit(xpath, ET.tostring(element))
 
     def refresh(self, candidate=False, xml=None, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse
