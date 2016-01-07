@@ -467,7 +467,7 @@ class PanObject(object):
             else:
                 return self.parent.pandevice()
 
-    def find(self, name, class_type=None):
+    def find(self, name, class_type=None, recursive=False):
         if class_type is None:
             # Find the matching object or return None
             result = next((child for child in self.children if child.name == name), None)
@@ -475,10 +475,21 @@ class PanObject(object):
             # Find the matching object or return None
             result = next((child for child in self.children if
                            child.name == name and isinstance(child, class_type)), None)
+        # Search recursively in children
+        if result is None and recursive:
+            for child in self.children:
+                result = child.find(name, class_type, recursive)
+                if result is not None:
+                    break
         return result
 
-    def findall(self, class_type):
-        return [child for child in self.children if isinstance(child, class_type)]
+    def findall(self, class_type, recursive=False):
+        result = [child for child in self.children if isinstance(child, class_type)]
+        # Search recursively in children
+        if recursive:
+            for child in self.children:
+                result.extend(child.findall(class_type, recursive))
+        return result
 
     def find_or_create(self, name, class_type=None, *args, **kwargs):
         result = self.find(name, class_type)
