@@ -519,7 +519,7 @@ class PanObject(object):
         return None
 
     @classmethod
-    def refresh_all_from_device(cls, parent, candidate=False, update=True):
+    def refresh_all_from_device(cls, parent, candidate=False, add=True):
         """Factory method to instantiate class from firewall config
 
         This method is a factory for the class. It takes an firewall or Panorama
@@ -531,7 +531,7 @@ class PanObject(object):
         Args:
             parent (PanObject): A PanDevice, or a PanObject subclass with a PanDevice as its parental root
             candidate (bool): False for running config, True for candidate config
-            update (bool): Update the objects of this type in pandevice with
+            add (bool): Update the objects of this type in pandevice with
                 the refreshed values
 
         Returns:
@@ -562,11 +562,9 @@ class PanObject(object):
             return []
         # Refresh each object
         instances = cls.refresh_all_from_xml(obj)
-        if update:
+        if add:
             # Remove current children of this type from parent
-            current_children = [child for child in parent.children if type(child) == cls]
-            for child in current_children:
-                parent.remove(child)
+            parent.removeall(cls=cls)
             # Add the new children that were just refreshed from the device
             parent.extend(instances)
         return instances
