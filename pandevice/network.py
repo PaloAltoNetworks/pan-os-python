@@ -40,6 +40,29 @@ except AttributeError as e:
     logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
+class Zone(PanObject):
+
+    XPATH = "/zone"
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def __init__(self,
+                 name,
+                 mode="layer3",
+                 interface=(),
+                 ):
+        super(Zone, self).__init__(name=name)
+        self.mode = mode
+        self.interface = interface
+
+    @staticmethod
+    def vars():
+        return (
+            Var("network/(tap|virtual-wire|layer2|layer3|external)", "mode"),
+            Var("network/{{mode}}", "interface", vartype="member"),
+        )
+
+
 class StaticMac(PanObject):
 
     XPATH = "/mac"
