@@ -158,17 +158,25 @@ class HAPair(firewall.Firewall):
                 logger.debug("Current firewall is active, no change made")
 
     def synchronize_config(self):
-        logger.debug("Syncronizing configuration with HA peer")
-        response = self.active_firewall.op("request high-availability sync-to-remote running-config")
-        line = response.find("./msg/line")
-        if line is None:
-            raise err.PanDeviceError("Unabled to syncronize configuration, no response from firewall")
-        if line.text.startswith("successfully sync'd running configuration to HA peer"):
-            return True
+        state = self.config_sync_state()
+        if state == "synchronization in progress":
+            # Wait until synchronization done
+            return self.watch_op("show high-availability state", "group/running-sync", "synchronized")
+        elif state != "synchronized":
+            logger.debug("Synchronizing configuration with HA peer")
+            response = self.active_firewall.op("request high-availability sync-to-remote running-config")
+            line = response.find("./msg/line")
+            if line is None:
+                raise err.PanDeviceError("Unabled to syncronize configuration, no response from firewall")
+            if line.text.startswith("successfully sync'd running configuration to HA peer"):
+                return True
+            else:
+                raise err.PanDeviceError("Unabled to syncronize configuration: %s" % line.text)
         else:
-            raise err.PanDeviceError("Unabled to syncronize configuration: %s" % line.text)
+            logger.debug("Config synchronization is not required, already synchronized")
+            return True
 
-    def config_synced(self):
+    def config_sync_state(self):
         logger.debug("Checking if configuration is synced")
         ha_state = self.active_firewall.op("show high-availability state")
         enabled = ha_state.find("./result/enabled")
@@ -186,11 +194,16 @@ class HAPair(firewall.Firewall):
                     logger.debug("HA or config sync is not enabled on firewall")
                     return
                 logger.debug("Current config sync state is: %s" % state.text)
-                if state.text != "synchronized":
-                    return False
-                else:
-                    return True
+                return state.text
 
+    def config_synced(self):
+        state = self.config_sync_state()
+        if state is None:
+            return False
+        elif state != "synchronized":
+            return False
+        else:
+            return True
 
 class HighAvailabilityInterface(PanObject):
     """Base class for high availability interface classes
@@ -226,8 +239,9 @@ class HighAvailabilityInterface(PanObject):
 
     @port.setter
     def port(self, value):
-        self.old_port = self._port
-        self._port = value
+        if value != self._port:
+            self.old_port = self._port
+            self._port = value
 
     @classmethod
     def vars(cls):
@@ -250,6 +264,7 @@ class HighAvailabilityInterface(PanObject):
         else:
             intname = str(self.port)
         intconfig_needed = False
+        inttype = None
         if intname.startswith("ethernet"):
             intprefix = "ethernet"
             inttype = network.EthernetInterface
@@ -258,29 +273,31 @@ class HighAvailabilityInterface(PanObject):
             intprefix = "ae"
             inttype = network.AggregateInterface
             intconfig_needed = True
-        elif not intname.startswith("dedicated"):
+        elif intname.startswith("management"):
             self.link_speed = None
             self.link_duplex = None
-        interface = None
         if intconfig_needed:
             apply_needed = False
             interface = pandevice.find(intname, (network.EthernetInterface, network.AggregateInterface))
             if interface is None:
                 interface = pandevice.add(inttype(name=intname, mode="ha"))
                 apply_needed = True
-            elif not interface.mode != "ha":
+            elif interface.mode != "ha":
                 interface.mode = "ha"
                 apply_needed = True
-            if self.link_speed is not None:
-                if interface.link_speed != self.link_speed:
-                    interface.link_speed = self.link_speed
-                    apply_needed = True
-                self.link_speed = None
-            if self.link_duplex is not None:
-                if interface.link_duplex != self.link_duplex:
-                    interface.link_duplex = self.link_duplex
-                    apply_needed = True
-                self.link_duplex = None
+            if inttype == network.EthernetInterface:
+                if self.link_speed is not None:
+                    # Transfer the link_speed to the eth interface
+                    if interface.link_speed != self.link_speed:
+                        interface.link_speed = self.link_speed
+                        apply_needed = True
+                if self.link_duplex is not None:
+                    # Transfer the link_duplex to the eth interface
+                    if interface.link_duplex != self.link_duplex:
+                        interface.link_duplex = self.link_duplex
+                        apply_needed = True
+            self.link_speed = None
+            self.link_duplex = None
             if apply_needed:
                 interface.apply()
             return interface
@@ -291,7 +308,12 @@ class HighAvailabilityInterface(PanObject):
             self.old_port = None
 
     def delete_interface(self, interface=None, pandevice=None):
-        """Delete the HA interface from the list of interfaces"""
+        """Delete the HA interface from the list of interfaces
+
+        Args:
+            interface (HighAvailabilityInterface): The HA interface (HA1, HA2, etc)
+            pandevice (PanDevice): The PanDevice object to apply the change
+        """
         if pandevice is None:
             pandevice = self.pandevice()
         if pandevice is None:
@@ -301,21 +323,21 @@ class HighAvailabilityInterface(PanObject):
             intname = port
         else:
             intname = str(port)
-        intconfig_needed = False
         if intname.startswith("ethernet"):
-            intprefix = "ethernet"
-            inttype = network.EthernetInterface
-            intconfig_needed = True
+            interface = pandevice.find(intname, network.EthernetInterface)
+            if interface is None:
+                # Already deleted
+                return
+            elif interface.mode == "ha":
+                interface.delete()
         elif intname.startswith("ae"):
-            intprefix = "ae"
-            inttype = network.AggregateInterface
-            intconfig_needed = True
-        elif not intname.startswith("dedicated"):
-            self.link_speed = None
-            self.link_duplex = None
-        if intconfig_needed:
-            interface = pandevice.find_or_create(intname, inttype)
-            interface.delete()
+            interface = pandevice.find(intname, network.AggregateInterface)
+            if interface is None:
+                # Already deleted
+                return
+            elif interface.mode == "ha":
+                interface.mode = "tap"
+                interface.apply()
 
 
 class HA1(HighAvailabilityInterface):
@@ -429,7 +451,7 @@ class HighAvailability(PanObject):
                  enabled=True,
                  mode=ACTIVE_PASSIVE,
                  config_sync=True,
-                 state_sync=True,
+                 state_sync=False,
                  ha2_keepalive=False,
                  group_id=(1,),
                  description=None,
