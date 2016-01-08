@@ -71,23 +71,17 @@ class Vsys(PanObject):
         self.name = value
 
 
-class NTPServerPrimary(PanObject):
-    """A primary or secondary NTP server
-
-    Add to a SystemSettings object
-
-    Attributes:
-        address (str): IP address or hostname of DNS server
-    """
+class NTPServer(PanObject):
+    """A primary or secondary NTP server"""
     # TODO: Add authentication
     # TODO: Add PAN-OS pre-7.0 support
 
     XPATH = "/ntp-servers/primary-ntp-server"
 
-    def __init__(self,
-                 address=None,
-                 ):
-        super(NTPServerPrimary, self).__init__()
+    def __init__(self, address=None):
+        if type(self) == NTPServer:
+            raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
+        super(NTPServer, self).__init__(name=None)
         self.address = address
 
     @classmethod
@@ -97,8 +91,19 @@ class NTPServerPrimary(PanObject):
         )
 
 
-class NTPServerSecondary(NTPServerPrimary):
-    """A primary or secondary NTP server
+class NTPServerPrimary(NTPServer):
+    """A primary NTP server
+
+    Add to a SystemSettings object
+
+    Attributes:
+        address (str): IP address or hostname of DNS server
+    """
+    XPATH = "/ntp-servers/primary-ntp-server"
+
+
+class NTPServerSecondary(NTPServer):
+    """A secondary NTP server
 
     Add to a SystemSettings object
 

@@ -1243,13 +1243,19 @@ class PanDevice(PanObject):
 
         Args:
             hostname (str): hostname to set (should never be None)
+
+        Raises:
+            ValueError: if hostname is None
         """
+        if hostname is None:
+            raise ValueError("hostname should not be None")
         from pandevice import device
         self._logger.debug("Set hostname: %s" % str(hostname))
-        self.set_config_changed()
         system = self.findall_or_create(device.SystemSettings)[0]
-        system.hostname = hostname
-        system.update("hostname")
+        if system.hostname != hostname:
+            system.hostname = hostname
+            # This handles addition and deletion
+            system.update("hostname")
 
     def set_dns_servers(self, primary, secondary=None):
         """Set the device DNS Servers
@@ -1263,11 +1269,13 @@ class PanDevice(PanObject):
         from pandevice import device
         self._logger.debug("Set dns-servers: primary:%s secondary:%s" % (primary, secondary))
         system = self.findall_or_create(device.SystemSettings)[0]
-        system.dns_primary = primary
-        system.dns_secondary = secondary
-        # This handles addition and deletion
-        system.update("dns_primary")
-        system.update("dns_secondary")
+        if system.dns_primary != primary:
+            system.dns_primary = primary
+            # This handles addition and deletion
+            system.update("dns_primary")
+        if system.dns_secondary != secondary:
+            system.dns_secondary = secondary
+            system.update("dns_secondary")
 
     def set_ntp_servers(self, primary, secondary=None):
         from pandevice import device
@@ -1279,14 +1287,18 @@ class PanDevice(PanObject):
                 ntp1[0].delete()
         else:
             ntp1 = system.findall_or_create(device.NTPServerPrimary)[0]
-            ntp1.address = primary
+            if ntp1.address != primary:
+                ntp1.address = primary
+                ntp1.create()
         if secondary is None:
             ntp2 = system.findall(device.NTPServerSecondary)
             if ntp2:
                 ntp2[0].delete()
         else:
             ntp2 = system.findall_or_create(device.NTPServerSecondary)[0]
-            ntp2.address = secondary
+            if ntp2.address != secondary:
+                ntp2.address = secondary
+                ntp2.create()
 
     def show_interface(self, interface):
         self.set_config_changed()
