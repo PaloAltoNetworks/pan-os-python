@@ -1614,12 +1614,12 @@ class PanDevice(PanObject):
                     # Error not related to connection issue.  Raise it.
                     raise e
                 else:
-                    self._logger.debug2("Sleep %.2f seconds" % interval)
+                    #self._logger.debug2("Sleep %.2f seconds" % interval)
                     time.sleep(interval)
                     continue
             except httplib.BadStatusLine as e:
                 # Connection issue.  The firewall is currently restarting the API service or rebooting
-                self._logger.debug2("Sleep %.2f seconds" % interval)
+                #self._logger.debug2("Sleep %.2f seconds" % interval)
                 time.sleep(interval)
                 continue
 
@@ -1651,7 +1651,7 @@ class PanDevice(PanObject):
                 raise pan.xapi.PanXapiError("Timeout waiting for " +
                                             "job %s completion" % job)
 
-            self._logger.debug2("Sleep %.2f seconds" % interval)
+            #self._logger.debug2("Sleep %.2f seconds" % interval)
             time.sleep(interval)
 
     def syncreboot(self, interval=5.0, timeout=600):
