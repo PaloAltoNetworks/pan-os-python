@@ -532,7 +532,7 @@ class PanObject(object):
         return None
 
     @classmethod
-    def refresh_all_from_device(cls, parent, candidate=False, add=True):
+    def refresh_all_from_device(cls, parent, candidate=False, add=True, exceptions=False):
         """Factory method to instantiate class from firewall config
 
         This method is a factory for the class. It takes an firewall or Panorama
@@ -546,10 +546,15 @@ class PanObject(object):
             candidate (bool): False for running config, True for candidate config
             add (bool): Update the objects of this type in pandevice with
                 the refreshed values
+            exceptions (bool): If False, exceptions are ignored if the xpath can't be found
 
         Returns:
             list: created instances of class
         """
+        if candidate and exceptions:
+            # This is because get api calls don't produce exceptions when the
+            # node doesn't exist
+            raise ValueError("candidate and exceptions can't both be True")
         pandevice = parent.pandevice()
         logger.debug(pandevice.hostname + ": refresh_all_from_device called on %s type" % cls)
         if candidate:
@@ -564,6 +569,8 @@ class PanObject(object):
         try:
             api_action(xpath)
         except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
+            if exceptions:
+                raise e
             if not str(e).startswith("No such node"):
                 raise e
             else:
