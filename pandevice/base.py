@@ -801,13 +801,13 @@ class VsysImportMixin(object):
 
     def child_apply(self):
         # Don't do anything if interface in ha mode
-        if getattr(self, "mode", "") == "ha":
+        if getattr(self, "mode", "") in ("ha", "aggregate-group"):
             return
         self.create_import()
 
     def child_create(self):
         # Don't do anything if interface in ha mode
-        if getattr(self, "mode", "") == "ha":
+        if getattr(self, "mode", "") in ("ha", "aggregate-group"):
             return
         self.create_import()
 
