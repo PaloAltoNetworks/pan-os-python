@@ -229,8 +229,8 @@ class HighAvailabilityInterface(PanObject):
         self.old_port = self._port
         self._port = value
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("port"),
             Var("ip-address"),
@@ -339,8 +339,8 @@ class HA1(HighAvailabilityInterface):
         super(HA1, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
         self.monitor_hold_time=monitor_hold_time
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return super(HA1, HA1).vars() + (
             Var("monitor-hold-time", vartype="int"),
         )
@@ -402,8 +402,8 @@ class HA3(HighAvailabilityInterface):
                                   link_duplex=None,
                                   )
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("port"),
         )
@@ -449,8 +449,8 @@ class HighAvailability(PanObject):
         self.ha2_keepalive_action = "log-only"
         self.ha2_keepalive_threshold = 10000
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             # Enabled flag
             Var("enabled", vartype="bool"),

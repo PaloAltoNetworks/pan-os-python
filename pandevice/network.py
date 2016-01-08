@@ -55,8 +55,8 @@ class Zone(PanObject):
         self.mode = mode
         self.interface = interface
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("network/(tap|virtual-wire|layer2|layer3|external)", "mode"),
             Var("network/{{mode}}", "interface", vartype="member"),
@@ -75,8 +75,8 @@ class StaticMac(PanObject):
         super(StaticMac, self).__init__(name=mac)
         self.interface = interface
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("interface"),
         )
@@ -108,8 +108,8 @@ class Vlan(PanObject):
         self.interface = interface
         self.virtual_interface = virtual_interface
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("interface", vartype="member"),
             Var("virtual-interface/interface", "virtual_interface"),
@@ -144,8 +144,8 @@ class IPv6Address(PanObject):
         self.onlink_flag = onlink_flag
         self.auto_config_flag = auto_config_flag
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("enable-on-interface", vartype="bool"),
             Var("prefix", vartype="exist"),
@@ -196,8 +196,8 @@ class Arp(PanObject):
         super(Arp, self).__init__(name=ip)
         self.hw_address = hw_address
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("hw-address"),
         )
@@ -242,7 +242,7 @@ class Layer3Parameters(object):
 
     @classmethod
     def vars(cls):
-        return super(Layer3Parameters, cls).vars() + cls._vars
+        return super(Layer3Parameters, cls).vars() + cls._vars()
 
     @classmethod
     def vars_with_mode(cls):
@@ -302,8 +302,8 @@ class Subinterface(Interface):
         super(Subinterface, self).__init__(name)
         self.tag = tag
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return super(Subinterface, Subinterface).vars() + (
             Var("tag", vartype="int"),
         )
@@ -338,8 +338,8 @@ class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
         super(Layer2Subinterface, self).__init__(name, tag, *args, **kwargs)
         self.comment = comment
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return super(Layer2Subinterface, Layer2Subinterface).vars() + (
             Var("comment"),
         )
@@ -368,8 +368,8 @@ class PhysicalInterface(Interface):
             self.mode = mode
         return element
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("(layer3|layer2|virtual-wire|tap|ha|decrypt-mirror|aggregate-group)", "mode"),
         ) + super(PhysicalInterface, PhysicalInterface).vars()
@@ -473,8 +473,8 @@ class StaticRoute(PanObject):
         self.admin_dist = admin_dist
         self.metric = metric
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("destination"),
             Var("nexthop/(ip-address|discard)", "nexthop_type"),
@@ -506,8 +506,8 @@ class VirtualRouter(VsysImportMixin, PanObject):
         # Save interface as a list, even if a string was given
         self.interface = pandevice.string_or_list(interface)
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("interface", vartype="member"),
         )

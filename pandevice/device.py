@@ -90,8 +90,8 @@ class NTPServerPrimary(PanObject):
         super(NTPServerPrimary, self).__init__()
         self.address = address
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("ntp-server-address", "address"),
         )
@@ -134,8 +134,8 @@ class SystemSettings(PanObject):
         self.login_banner = None
         self.update_server = None
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("hostname", init=False),
             Var("domain", init=False),

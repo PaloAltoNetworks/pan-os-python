@@ -86,8 +86,8 @@ class VsysResources(PanObject):
         self.max_site_to_site_vpn_tunnels = max_site_to_site_vpn_tunnels
         self.max_concurrent_ssl_vpn_tunnels = max_concurrent_ssl_vpn_tunnels
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("max-security-rules", vartype="int"),
             Var("max-nat-rules", vartype="int"),

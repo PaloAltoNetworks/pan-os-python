@@ -59,8 +59,8 @@ class PanObject(object):
     def __str__(self):
         return str(self.name)
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return ()
 
     @property
@@ -1626,7 +1626,7 @@ class PanDevice(PanObject):
                 # Job completed, parse the results
                 return self._parse_job_results(job_xml, get_devices=False)
 
-            self._logger.debug1("Job %s status %s" % (job, status.text))
+            logger.debug("Job %s status %s" % (job, status.text))
 
             if (self.timeout is not None and self.timeout != 0 and
                         time.time() > start_time + self.timeout):

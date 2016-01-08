@@ -57,8 +57,8 @@ class AddressObject(PanObject):
         self.type = type
         self.description = description
 
-    @staticmethod
-    def vars():
+    @classmethod
+    def vars(cls):
         return (
             Var("(ip-netmask|ip-range|fqdn)", "type"),
             Var("{{type}}", "value"),
