@@ -1762,3 +1762,37 @@ class PanDevice(PanObject):
             'xml': show_job_xml,
         }
         return result
+
+    def watch_op(self, cmd, path, value, cmd_xml=True, interval=1.0):
+        """Watch an operational command for an expected value"""
+        if interval is not None:
+            try:
+                interval = float(interval)
+                if interval < 0:
+                    raise ValueError
+            except ValueError:
+                raise err.PanDeviceError('Invalid interval: %s' % interval)
+
+        self._logger.debug("Waiting for value %s..." % value)
+
+        start_time = time.time()
+        attempts = 0
+        while True:
+            attempts += 1
+            self.xapi.op(cmd=cmd, cmd_xml=cmd_xml)
+            xml = self.xapi.element_root
+            status = xml.find("./result/%s" % path)
+            if status is None:
+                raise err.PanNoSuchNode("No element at path")
+            current_value = status.text
+            logger.debug("Current value %s" % current_value)
+
+            if current_value == value:
+                return True
+
+            if (self.timeout is not None and self.timeout != 0 and
+                        time.time() > start_time + self.timeout):
+                raise err.PanJobTimeout("Timeout waiting for value: %s" % value)
+
+            logger.debug("Sleep %.2f seconds" % interval)
+            time.sleep(interval)
