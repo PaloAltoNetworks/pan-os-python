@@ -789,27 +789,35 @@ class VsysImportMixin(object):
 
     def apply(self, *args, **kwargs):
         super(VsysImportMixin, self).apply(*args, **kwargs)
-        self.create_import()
+        self.child_apply()
 
     def create(self, *args, **kwargs):
         super(VsysImportMixin, self).create(*args, **kwargs)
-        self.create_import()
+        self.child_create()
 
     def delete(self, *args, **kwargs):
-        self.delete_import()
+        self.child_delete()
         super(VsysImportMixin, self).delete(*args, **kwargs)
 
     def child_apply(self):
-        # Don't do anything if interface in ha mode
-        if getattr(self, "mode", "") in ("ha", "aggregate-group"):
-            return
-        self.create_import()
+        # Don't do anything if interface in ha or ag mode
+        if str(self.mode) in ("ha", "aggregate-group"):
+            # TODO: right now this only deletes from the firewall's vsys,
+            # but a more complete solution would delete from any vsys
+            # where it exists.
+            self.delete_import()
+        else:
+            self.create_import()
 
     def child_create(self):
-        # Don't do anything if interface in ha mode
-        if getattr(self, "mode", "") in ("ha", "aggregate-group"):
-            return
-        self.create_import()
+        # Don't do anything if interface in ha or ag mode
+        if str(self.mode) in ("ha", "aggregate-group"):
+            # TODO: right now this only deletes from the firewall's vsys,
+            # but a more complete solution would delete from any vsys
+            # where it exists.
+            self.delete_import()
+        else:
+            self.create_import()
 
     def child_delete(self):
         self.delete_import()
