@@ -1045,6 +1045,9 @@ class PanDevice(PanObject):
                     elif str(e).startswith("No such node"):
                         raise err.PanNoSuchNode(str(e),
                                                 pan_device=self.pan_device)
+                    elif str(e).startswith("Failed to synchronize running configuration with HA peer"):
+                        raise err.PanHAConfigSyncFailed(str(e),
+                                                        pan_device=self.pan_device)
                     else:
                         raise err.PanDeviceXapiError(str(e),
                                                      pan_device=self.pan_device)

@@ -79,3 +79,6 @@ class PanNoSuchNode(PanDeviceError):
 
 class PanObjectMissing(PanDeviceError):
     pass
+
+class PanHAConfigSyncFailed(PanDeviceError):
+    pass
