@@ -314,6 +314,42 @@ class Subinterface(Interface):
             self.name = self.name + "." + str(self.tag)
 
 
+class AbstractSubinterface(object):
+    """When a subinterface is needed, but the layer is unknown
+
+    Kinda like a placeholder or reference for a Layer2Subinterface or Layer3Subinterface.
+    This class gets a parent which is the ethernet or aggregate interface, but it should
+    not be added to the parent interface with add().
+    """
+    def __init__(self, name, tag, parent=None):
+        self.name = name
+        self.tag = tag
+        self.parent = parent
+
+    def set_name(self):
+        """Create a name appropriate for a subinterface if it isn't already"""
+        if self.name.find(".") == -1:
+            self.name = self.name + "." + str(self.tag)
+
+    def get_layered_subinterface(self, mode):
+        if self.parent is not None:
+            if mode == "layer3":
+                subintclass = Layer3Subinterface
+            elif mode == "layer2":
+                subintclass = Layer2Subinterface
+            else:
+                raise err.PanDeviceError("Unknown layer passed to subinterface factory: %s" % mode)
+            layered_subinterface = self.parent.find_or_create(self.name, subintclass, tag=self.tag)
+            return layered_subinterface
+
+    def delete(self):
+        """Override delete method to delete both Layer3 and Layer2 types by name"""
+        layer3subinterface = self.parent.find_or_create(self.name, Layer3Subinterface, tag=self.tag)
+        layer3subinterface.delete()
+        layer2subinterface = self.parent.find_or_create(self.name, Layer2Subinterface, tag=self.tag)
+        layer2subinterface.delete()
+
+
 class Layer3Subinterface(Layer3Parameters, VsysImportMixin, Subinterface):
 
     XPATH = "/layer3/units"
