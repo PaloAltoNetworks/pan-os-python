@@ -347,7 +347,7 @@ class PanObject(object):
                                                                                                        self.name,
                                                                                                        variable))
         pandevice.set_config_changed()
-        variables = self.vars()
+        variables = type(self).vars()
         value = getattr(self, variable)
         # Get the requested variable from the class' variables tuple
         var = next((x for x in variables if x.variable == variable), None)
@@ -410,11 +410,62 @@ class PanObject(object):
         if refresh_children:
             self.refresh_children(xml=obj)
 
+    def refresh_variable(self, variable, running_config=False, xml=None, exceptions=False):
+        """Refresh a single variable in an object
+
+        Doesn't work for variables with replacements or selections in path
+        """
+        # Get the root of the xml to parse
+        variables = type(self).vars()
+        # Get the requested variable from the class' variables tuple
+        var = next((x for x in variables if x.variable == variable), None)
+        if var is None:
+            raise err.PanDeviceError("Variable %s does not exist in variable tuple" % variable)
+        if xml is None:
+            pandevice = self.pandevice()
+            logger.debug(pandevice.hostname + ": refresh_variable called on %s object \"%s\" with variable %s" % (type(self), self.name, variable))
+            if running_config:
+                api_action = pandevice.xapi.show
+            else:
+                api_action = pandevice.xapi.get
+            try:
+                api_action(self.xpath() + "/" + var.path)
+            except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
+                if exceptions:
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+                else:
+                    setattr(self, variable, None)
+            root = pandevice.xapi.element_root
+            # Determine the first element to look for in the XML
+            lasttag = var.path.rsplit("/", 1)[-1]
+            obj = root.find("result/" + lasttag)
+            if obj is None:
+                if exceptions:
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+                else:
+                    setattr(self, variable, None)
+        else:
+            # Use the xml that was passed in
+            logger.debug("refresh_variable called using xml on %s object \"%s\" with variable %s" % (type(self), self.name, variable))
+            obj = xml
+        # Rebuild the elements that are lost by refreshing the variable directly
+        sections = var.path.split("/")[:-1]
+        root = ET.Element("root")
+        next_element = root
+        for section in sections:
+            next_element = ET.SubElement(next_element, section)
+        next_element.append(obj)
+        # Refresh each variable
+        variables, noninit_variables = type(self)._parse_xml(root)
+        for var, value in variables.iteritems():
+            setattr(self, var, value)
+        for var, value in noninit_variables.iteritems():
+            setattr(self, var, value)
+
+    def refresh_children(self, running_config=False, xml=None):
         # Get the root of the xml to parse
         if xml is None:
             pandevice = self.pandevice()
-            else:
-    def refresh_children(self, running_config=False, xml=None):
             if running_config:
                 api_action = pandevice.xapi.show
             else:
@@ -548,6 +599,8 @@ class PanObject(object):
             add (bool): Update the objects of this type in pandevice with
                 the refreshed values
             exceptions (bool): If False, exceptions are ignored if the xpath can't be found
+            name_only (bool): If True, refresh only the name of the object, but not its variables
+                This results in a smaller response to the API call when only the object name is needed.
 
         Returns:
             list: created instances of class
@@ -556,6 +609,10 @@ class PanObject(object):
             # This is because get api calls don't produce exceptions when the
             # node doesn't exist
             raise ValueError("exceptions requires running_config to be True")
+        if name_only and running_config:
+            raise ValueError("can't get name_only from running_config")
+        if name_only and cls.SUFFIX != ENTRY:
+            raise ValueError("name_only is invalid, can only be used on entry type objects")
         pandevice = parent.pandevice()
         logger.debug(pandevice.hostname + ": refresh_all_from_device called on %s type" % cls)
         if running_config:
@@ -567,6 +624,8 @@ class PanObject(object):
         else:
             parent_xpath = parent.xpath()
         xpath = parent_xpath + cls.XPATH
+        if name_only:
+            xpath = xpath + "/entry/@name"
         try:
             api_action(xpath)
         except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
@@ -577,8 +636,11 @@ class PanObject(object):
             else:
                 return []
         root = pandevice.xapi.element_root
-        lasttag = cls.XPATH.rsplit("/", 1)[-1]
-        obj = root.find("result/" + lasttag)
+        if name_only:
+            obj = root.find("result")
+        else:
+            lasttag = cls.XPATH.rsplit("/", 1)[-1]
+            obj = root.find("result/" + lasttag)
         if obj is None:
             return []
         # Refresh each object
@@ -734,15 +796,13 @@ class PanObject(object):
             for obj in allobjects:
                 references = getattr(obj, reference_var)
                 if self in references:
-                    if obj.name == reference_name:
-                        if update: obj.update(reference_var)
-                        return obj
+                    if reference_name is not None and obj.name == reference_name:
+                        continue
                     references.remove(self)
                     if update: obj.update(reference_var)
                 elif str(self) in references:
-                    if obj.name == reference_name:
-                        if update: obj.update(reference_var)
-                        return obj
+                    if reference_name is not None and obj.name == reference_name:
+                        continue
                     references.remove(str(self))
                     if update: obj.update(reference_var)
         # Add new reference to self in requested object
@@ -810,20 +870,14 @@ class VsysImportMixin(object):
     def child_apply(self):
         # Don't do anything if interface in ha or ag mode
         if str(self.mode) in ("ha", "aggregate-group"):
-            # TODO: right now this only deletes from the firewall's vsys,
-            # but a more complete solution would delete from any vsys
-            # where it exists.
-            self.delete_import()
+            self.set_vsys(None, refresh=True, update=True)
         else:
             self.create_import()
 
     def child_create(self):
         # Don't do anything if interface in ha or ag mode
         if str(self.mode) in ("ha", "aggregate-group"):
-            # TODO: right now this only deletes from the firewall's vsys,
-            # but a more complete solution would delete from any vsys
-            # where it exists.
-            self.delete_import()
+            self.set_vsys(None, refresh=True, update=True)
         else:
             self.create_import()
 
@@ -848,6 +902,13 @@ class VsysImportMixin(object):
 
     def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
         import device
+        if refresh and running_config:
+            raise ValueError("Can't refresh vsys from running config in set_vsys method")
+        if refresh:
+            pandevice = self.pandevice()
+            all_vsys = device.Vsys.refresh_all_from_device(pandevice, name_only=True)
+            for a_vsys in all_vsys:
+                a_vsys.refresh_variable(self.XPATH_IMPORT.split("/")[-1])
         return self._set_reference(vsys_id, device.Vsys, self.XPATH_IMPORT.split("/")[-1], True, refresh=False, update=update, running_config=running_config)
 
     @classmethod
