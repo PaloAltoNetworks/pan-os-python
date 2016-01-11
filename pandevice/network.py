@@ -179,11 +179,11 @@ class Interface(PanObject):
             raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
         super(Interface, self).__init__(name=name)
 
-    def set_zone(self, zone_name, mode=None, refresh=False, update=False, candidate=False):
-        return self._set_reference(zone_name, Zone, "interface", True, refresh, update, candidate, mode=mode)
+    def set_zone(self, zone_name, mode=None, refresh=False, update=False, running_config=False):
+        return self._set_reference(zone_name, Zone, "interface", True, refresh, update, running_config, mode=mode)
 
-    def set_virtual_router(self, virtual_router_name, refresh=False, update=False, candidate=False):
-        return self._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh, update, candidate)
+    def set_virtual_router(self, virtual_router_name, refresh=False, update=False, running_config=False):
+        return self._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh, update, running_config)
 
 
 class Arp(PanObject):
@@ -414,10 +414,10 @@ class PhysicalInterface(Interface):
     def vars_with_mode():
         return PhysicalInterface.vars()
 
-    def set_zone(self, zone_name, mode=None, refresh=False, update=False, candidate=False):
+    def set_zone(self, zone_name, mode=None, refresh=False, update=False, running_config=False):
         if mode is None:
             mode = self.mode
-        super(PhysicalInterface, self).set_zone(zone_name, mode, refresh, update)
+        super(PhysicalInterface, self).set_zone(zone_name, mode, refresh, update, running_config)
 
 
 

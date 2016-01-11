@@ -368,15 +368,15 @@ class PanObject(object):
                 xpath = self.xpath() + "/" + var.path
             pandevice.xapi.edit(xpath, ET.tostring(element))
 
-    def refresh(self, candidate=False, xml=None, refresh_children=True, exceptions=True):
+    def refresh(self, running_config=False, xml=None, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse
         if xml is None:
             pandevice = self.pandevice()
             logger.debug(pandevice.hostname + ": refresh called on %s object \"%s\"" % (type(self), self.name))
-            if candidate:
-                api_action = pandevice.xapi.get
-            else:
+            if running_config:
                 api_action = pandevice.xapi.show
+            else:
+                api_action = pandevice.xapi.get
             try:
                 api_action(self.xpath())
             except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
@@ -410,14 +410,15 @@ class PanObject(object):
         if refresh_children:
             self.refresh_children(xml=obj)
 
-    def refresh_children(self, candidate=False, xml=None):
         # Get the root of the xml to parse
         if xml is None:
             pandevice = self.pandevice()
-            if candidate:
-                api_action = pandevice.xapi.get
             else:
+    def refresh_children(self, running_config=False, xml=None):
+            if running_config:
                 api_action = pandevice.xapi.show
+            else:
+                api_action = pandevice.xapi.get
             api_action(self.xpath())
             root = pandevice.xapi.element_root
             # Determine the first element to look for in the XML
@@ -441,14 +442,14 @@ class PanObject(object):
                 self.extend(l)
         return self.children
 
-    def refresh_xml(self, candidate=False, refresh_children=True, exceptions=True):
+    def refresh_xml(self, running_config=False, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": refresh_xml called on %s object \"%s\"" % (type(self), self.name))
-        if candidate:
-            api_action = pandevice.xapi.get
-        else:
+        if running_config:
             api_action = pandevice.xapi.show
+        else:
+            api_action = pandevice.xapi.get
         try:
             api_action(self.xpath())
         except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
@@ -532,7 +533,7 @@ class PanObject(object):
         return None
 
     @classmethod
-    def refresh_all_from_device(cls, parent, candidate=False, add=True, exceptions=False):
+    def refresh_all_from_device(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
         """Factory method to instantiate class from firewall config
 
         This method is a factory for the class. It takes an firewall or Panorama
@@ -543,7 +544,7 @@ class PanObject(object):
 
         Args:
             parent (PanObject): A PanDevice, or a PanObject subclass with a PanDevice as its parental root
-            candidate (bool): False for running config, True for candidate config
+            running_config (bool): False for candidate config, True for running config
             add (bool): Update the objects of this type in pandevice with
                 the refreshed values
             exceptions (bool): If False, exceptions are ignored if the xpath can't be found
@@ -551,17 +552,17 @@ class PanObject(object):
         Returns:
             list: created instances of class
         """
-        if candidate and exceptions:
+        if not running_config and exceptions:
             # This is because get api calls don't produce exceptions when the
             # node doesn't exist
-            raise ValueError("candidate and exceptions can't both be True")
+            raise ValueError("exceptions requires running_config to be True")
         pandevice = parent.pandevice()
         logger.debug(pandevice.hostname + ": refresh_all_from_device called on %s type" % cls)
-        if candidate:
-            api_action = pandevice.xapi.get
-        else:
+        if running_config:
             api_action = pandevice.xapi.show
-        if issubclass(type(parent), PanDevice):
+        else:
+            api_action = pandevice.xapi.get
+        if isinstance(parent, PanDevice):
             parent_xpath = parent.xpath_root(cls.ROOT)
         else:
             parent_xpath = parent.xpath()
@@ -722,10 +723,10 @@ class PanObject(object):
         elif vartype == "bool":
             return True if value == "yes" else False
 
-    def _set_reference(self, reference_name, reference_type, reference_var, exclusive, refresh, update, candidate, *args, **kwargs):
+    def _set_reference(self, reference_name, reference_type, reference_var, exclusive, refresh, update, running_config, *args, **kwargs):
         pandevice = self.pandevice()
         if refresh:
-            allobjects = reference_type.refresh_all_from_device(pandevice, candidate=candidate)
+            allobjects = reference_type.refresh_all_from_device(pandevice, running_config=running_config)
         else:
             allobjects = pandevice.findall(reference_type)
         # Find any current references to self and remove them
@@ -845,21 +846,21 @@ class VsysImportMixin(object):
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
             pandevice.xapi.delete(xpath_import + "/member[text()='%s']" % self.name)
 
-    def set_vsys(self, vsys=None, refresh=False, update=False, candidate=False):
+    def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
         import device
-        return self._set_reference(vsys, device.Vsys, self.XPATH_IMPORT.split("/")[-1], True, refresh, update, candidate)
+        return self._set_reference(vsys_id, device.Vsys, self.XPATH_IMPORT.split("/")[-1], True, refresh=False, update=update, running_config=running_config)
 
     @classmethod
-    def refresh_all_from_device(cls, parent, candidate=False, add=True):
-        instances = super(VsysImportMixin, cls).refresh_all_from_device(parent, candidate, add=False)
+    def refresh_all_from_device(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
+        instances = super(VsysImportMixin, cls).refresh_all_from_device(parent, running_config, add=False, exceptions=exceptions, name_only=name_only)
         # Filter out instances that are not in this vlan's imports
         pandevice = parent.pandevice()
-        if candidate:
-            api_action = pandevice.xapi.get
-        else:
+        if running_config:
             api_action = pandevice.xapi.show
-        if pandevice.vsys != "shared" and cls.XPATH_IMPORT is not None:
-            xpath_import = pandevice.xpath_vsys() + "/import" + cls.XPATH_IMPORT
+        else:
+            api_action = pandevice.xapi.get
+        if parent.vsys != "shared" and cls.XPATH_IMPORT is not None:
+            xpath_import = parent.xpath_vsys() + "/import" + cls.XPATH_IMPORT
             try:
                 api_action(xpath_import)
             except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
