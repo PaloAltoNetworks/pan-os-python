@@ -26,6 +26,7 @@ import inspect
 import time
 
 import pandevice
+from pandevice import yesno
 
 import pan.xapi
 import pan.commit
@@ -244,7 +245,7 @@ class PanObject(object):
                 if value:
                     ET.SubElement(nextelement, var.variable)
             elif var.vartype == "bool":
-                nextelement.text = "yes" if value else "no"
+                nextelement.text = yesno(value)
             elif var.path.find("|") != -1:
                 # This is an element variable,
                 # it has already been created
@@ -343,9 +344,8 @@ class PanObject(object):
             variable (str): the name of an instance variable to update on the device
         """
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": update called on %s object \"%s\" and variable \"%s\"" % (type(self),
-                                                                                                       self.name,
-                                                                                                       variable))
+        logger.debug(pandevice.hostname + ": update called on %s object \"%s\" and variable \"%s\"" %
+                     (type(self), self.name, variable))
         pandevice.set_config_changed()
         variables = type(self).vars()
         value = getattr(self, variable)
@@ -353,19 +353,49 @@ class PanObject(object):
         var = next((x for x in variables if x.variable == variable), None)
         if var is None:
             raise err.PanDeviceError("Variable %s does not exist in variable tuple" % variable)
+        varpath = var.path
+        # Do replacements on variable path
+        if varpath.find("|") != -1:
+            # This is an element variable, so create an element containing
+            # the variables's value
+            varpath = re.sub(r"\([\w\d|-]*\)", str(value), varpath)
+        # Search for variable replacements in path
+        matches = re.findall(r'{{(.*?)}}', varpath)
+        entryvar = None
+        # Do variable replacement, ie. {{ }}
+        for match in matches:
+            regex = r'{{' + re.escape(match) + r'}}'
+            # Ignore variables that are None
+            if getattr(self, match) is None:
+                raise ValueError("While updating variable %s, missing replacement variable %s in path" %(variable, match))
+            # Find the discovered replacement in the list of vars
+            for nextvar in variables:
+                if nextvar.variable == match:
+                    matchedvar = nextvar
+                    break
+            if matchedvar.vartype == "entry":
+                # If it's an 'entry' variable
+                # XXX: this is using a quick patch.  Should handle array-based entry vars better.
+                entry_value = pandevice.string_or_list(getattr(self, matchedvar.variable))
+                varpath = re.sub(regex,
+                                 matchedvar.path + "/" + "entry[@name='%s']" % entry_value[0],
+                                 varpath)
+            else:
+                # Not an 'entry' variable
+                varpath = re.sub(regex, getattr(self, matchedvar.variable), varpath)
         if value is None:
-            pandevice.xapi.delete(self.xpath() + "/" + var.path)
+            pandevice.xapi.delete(self.xpath() + "/" + varpath)
         else:
-            element_tag = var.path.split("/")[-1]
+            element_tag = varpath.split("/")[-1]
             element = ET.Element(element_tag)
             if var.vartype == "member":
                 for member in value:
                     ET.SubElement(element, 'member').text = str(member)
-                xpath = self.xpath() + "/" + var.path
+                xpath = self.xpath() + "/" + varpath
             else:
                 # Regular text variables
                 element.text = value
-                xpath = self.xpath() + "/" + var.path
+                xpath = self.xpath() + "/" + varpath
             pandevice.xapi.edit(xpath, ET.tostring(element))
 
     def refresh(self, running_config=False, xml=None, refresh_children=True, exceptions=True):
@@ -443,7 +473,11 @@ class PanObject(object):
                 if exceptions:
                     raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
                 else:
-                    setattr(self, variable, None)
+                    if var.vartype in ("member", "entry"):
+                        setattr(self, variable, [])
+                    else:
+                        setattr(self, variable, None)
+                    return
         else:
             # Use the xml that was passed in
             logger.debug("refresh_variable called using xml on %s object \"%s\" with variable %s" % (type(self), self.name, variable))
@@ -783,7 +817,7 @@ class PanObject(object):
         elif vartype == "int":
             return int(value)
         elif vartype == "bool":
-            return True if value == "yes" else False
+            return yesno(value)
 
     def _set_reference(self, reference_name, reference_type, reference_var, exclusive, refresh, update, running_config, *args, **kwargs):
         pandevice = self.pandevice()
@@ -1149,6 +1183,9 @@ class PanDevice(PanObject):
         self._xapi_private = self.generate_xapi()
         return self._xapi_private
 
+    def pandevice(self):
+        return self
+
     def generate_xapi(self):
         kwargs = {'api_key': self.api_key,
                   'hostname': self.hostname,
@@ -1466,6 +1503,11 @@ class PanDevice(PanObject):
 
     def check_commit_locks(self):
         self.xapi.op("show commit-locks", cmd_xml=True)
+        response = self.xapi.element_result.find(".//entry")
+        return True if response is not None else False
+
+    def check_config_locks(self):
+        self.xapi.op("show config-locks", cmd_xml=True)
         response = self.xapi.element_result.find(".//entry")
         return True if response is not None else False
 

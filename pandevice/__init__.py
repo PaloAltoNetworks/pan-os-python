@@ -130,3 +130,13 @@ def xml_combine(root, elements):
             root.append(element)
             continue
         xml_combine(found_element, element)
+
+
+def yesno(value):
+    convert = {
+        "yes": True,
+        "no": False,
+        True: "yes",
+        False: "no",
+    }
+    return convert[value]
