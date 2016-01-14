@@ -53,7 +53,7 @@ class Zone(PanObject):
                  ):
         super(Zone, self).__init__(name=name)
         self.mode = mode
-        self.interface = interface
+        self.interface = pandevice.string_or_list(interface)
 
     @classmethod
     def vars(cls):
@@ -90,7 +90,7 @@ class StaticMac(PanObject):
         self.name = value
 
 
-class Vlan(PanObject):
+class Vlan(VsysImportMixin, PanObject):
 
     XPATH = "/network/vlan"
     SUFFIX = ENTRY
@@ -98,6 +98,7 @@ class Vlan(PanObject):
     CHILDTYPES = (
         StaticMac,
     )
+    XPATH_IMPORT = "/network/vlan"
 
     def __init__(self,
                  name,
@@ -105,7 +106,7 @@ class Vlan(PanObject):
                  virtual_interface=None
                  ):
         super(Vlan, self).__init__(name)
-        self.interface = interface
+        self.interface = pandevice.string_or_list(interface)
         self.virtual_interface = virtual_interface
 
     @classmethod
@@ -254,7 +255,7 @@ class Layer3Parameters(object):
 
 
 class Layer2Parameters(object):
-    """L3 interfaces parameters mixing"""
+    """L2 interfaces parameters mixing"""
 
     def __init__(self, *args, **kwargs):
         lldp_enabled = kwargs.pop("lldp_enabled", None)
@@ -285,8 +286,8 @@ class Layer2Parameters(object):
             var.condition = "mode:layer2"
         return super(Layer2Parameters, cls).vars_with_mode() + l2vars
 
-    def set_vlan(self, vlan_name, refresh=False, update=False):
-        super(Layer2Parameters, self)._set_reference(vlan_name, Vlan, "interface", True, refresh, update)
+    def set_vlan(self, vlan_name, refresh=False, update=False, running_config=False):
+        super(Layer2Parameters, self)._set_reference(vlan_name, Vlan, "interface", True, refresh, update, running_config)
 
 
 class VirtualWireInterface(Interface):
@@ -299,6 +300,8 @@ class VirtualWireInterface(Interface):
 class Subinterface(Interface):
     """Subinterface"""
     def __init__(self, name, tag):
+        if type(self) == Subinterface:
+            raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
         super(Subinterface, self).__init__(name)
         self.tag = tag
 
@@ -331,6 +334,17 @@ class AbstractSubinterface(object):
         if self.name.find(".") == -1:
             self.name = self.name + "." + str(self.tag)
 
+    def pandevice(self):
+        return self.parent.pandevice()
+
+    def set_zone(self, zone_name, mode=None, refresh=False, update=False, running_config=False):
+        raise err.PanDeviceError("Unable to set zone on abstract subinterface because layer must be known to set zone")
+
+    def set_virtual_router(self, virtual_router_name, refresh=False, update=False, running_config=False):
+        interface = Layer3Subinterface()
+        interface.parent = self.parent
+        return interface._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh=False, update=update, running_config=running_config)
+
     def get_layered_subinterface(self, mode):
         if self.parent is not None:
             if mode == "layer3":
@@ -362,6 +376,9 @@ class Layer3Subinterface(Layer3Parameters, VsysImportMixin, Subinterface):
     def __init__(self, name, tag, *args, **kwargs):
         super(Layer3Subinterface, self).__init__(name, tag, *args, **kwargs)
 
+    def set_zone(self, zone_name, mode="layer3", refresh=False, update=False, running_config=False):
+        return self._set_reference(zone_name, Zone, "interface", True, refresh, update, running_config, mode=mode)
+
 
 class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
 
@@ -379,6 +396,9 @@ class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
         return super(Layer2Subinterface, Layer2Subinterface).vars() + (
             Var("comment"),
         )
+
+    def set_zone(self, zone_name, mode="layer2", refresh=False, update=False, running_config=False):
+        return self._set_reference(zone_name, Zone, "interface", True, refresh, update, running_config, mode=mode)
 
 
 class PhysicalInterface(Interface):
