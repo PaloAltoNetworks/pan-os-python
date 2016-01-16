@@ -67,7 +67,7 @@ def main():
     device = PanDevice.create_from_device(args.hostname,
                                           args.username,
                                           args.password,
-                                          classify_exceptions=True)
+                                          )
 
     logging.debug("Detecting type of device")
 

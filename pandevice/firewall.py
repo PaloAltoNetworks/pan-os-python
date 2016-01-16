@@ -80,13 +80,11 @@ class Firewall(PanDevice):
                  port=443,
                  vsys='vsys1',  # vsys# or 'shared'
                  is_virtual=None,
-                 classify_exceptions=True,
                  ):
         """Initialize PanDevice"""
         super(Firewall, self).__init__(hostname, api_username, api_password, api_key,
                                        port=port,
                                        is_virtual=is_virtual,
-                                       classify_exceptions=classify_exceptions,
                                        )
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
@@ -154,23 +152,14 @@ class Firewall(PanDevice):
         except err.PanDeviceNotSet:
             return super(Firewall, self).generate_xapi()
         if self.serial is not None and self.hostname is None:
-            if self.classify_exceptions:
-                xapi_constructor = PanDevice.XapiWrapper
-                kwargs = {'pan_device': self,
-                          'api_key': self.panorama().api_key,
-                          'hostname': self.panorama().hostname,
-                          'port': self.panorama().port,
-                          'timeout': self.timeout,
-                          'serial': self.serial,
-                          }
-            else:
-                xapi_constructor = pan.xapi.PanXapi
-                kwargs = {'api_key': self.panorama().api_key,
-                          'hostname': self.panorama().hostname,
-                          'port': self.panorama().port,
-                          'timeout': self.timeout,
-                          'serial': self.serial,
-                          }
+            xapi_constructor = PanDevice.XapiWrapper
+            kwargs = {'pan_device': self,
+                      'api_key': self.panorama().api_key,
+                      'hostname': self.panorama().hostname,
+                      'port': self.panorama().port,
+                      'timeout': self.timeout,
+                      'serial': self.serial,
+                      }
             return xapi_constructor(**kwargs)
         else:
             return super(Firewall, self).generate_xapi()

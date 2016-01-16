@@ -68,7 +68,7 @@ def main():
     device = PanDevice.create_from_device(args.hostname,
                                           args.username,
                                           args.password,
-                                          classify_exceptions=True)
+                                          )
 
     # Panorama does not have a userid API, so exit.
     # You can use the userid API on a firewall with the Panorama 'target'

@@ -66,7 +66,7 @@ def main():
     device = PanDevice.create_from_device(args.hostname,
                                           args.username,
                                           args.password,
-                                          classify_exceptions=True)
+                                          )
 
     # Perform the upgrades in sequence with reboots between each upgrade
     device.software.upgrade_to_version(args.version, args.dryrun)

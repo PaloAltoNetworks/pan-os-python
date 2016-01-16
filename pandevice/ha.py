@@ -64,9 +64,6 @@ class HAPair(firewall.Firewall):
         self.fw1.parent = self
         self.fw2.parent = self
         self.hostname = "HAPair:" + self.fw1.hostname + ":" + self.fw2.hostname
-        self.classify_exceptions = True
-        self.fw1.classify_exceptions = True
-        self.fw2.classify_exceptions = True
         self.is_virtual = fw1.is_virtual
         self.serial = fw1.serial
         self.vsys = fw1.vsys

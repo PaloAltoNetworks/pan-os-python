@@ -1054,7 +1054,7 @@ class PanDevice(PanObject):
                  is_virtual=None,
                  timeout=1200,
                  interval=.5,
-                 classify_exceptions=True):
+                 ):
         """Initialize PanDevice"""
         super(PanDevice, self).__init__()
         # create a class logger
@@ -1069,7 +1069,6 @@ class PanDevice(PanObject):
         self.timeout = timeout
         self.interval = interval
         self._xapi_private = None
-        self.classify_exceptions = classify_exceptions
         self.config_locked = False
         self.commit_locked = False
         self.lock_before_change = False
@@ -1093,7 +1092,7 @@ class PanDevice(PanObject):
                            api_password=None,
                            api_key=None,
                            port=443,
-                           classify_exceptions=False):
+                           ):
         """Create a Firewall or Panorama object from a live device
 
         This method connects to the device and detects its type and current
@@ -1109,7 +1108,7 @@ class PanDevice(PanObject):
                            api_password,
                            api_key,
                            port,
-                           classify_exceptions=classify_exceptions)
+                           )
         system_info = device.refresh_system_info()
         version = system_info[0]
         model = system_info[1]
@@ -1119,7 +1118,7 @@ class PanDevice(PanObject):
                                          api_password,
                                          device.api_key,
                                          port,
-                                         classify_exceptions=classify_exceptions)
+                                         )
         else:
             serial = system_info[2]
             instance = firewall.Firewall(hostname,
@@ -1128,7 +1127,7 @@ class PanDevice(PanObject):
                                          device.api_key,
                                          serial,
                                          port,
-                                         classify_exceptions=classify_exceptions)
+                                         )
         instance.version = version
         return instance
 
@@ -1240,12 +1239,9 @@ class PanDevice(PanObject):
                   'hostname': self.hostname,
                   'port': self.port,
                   'timeout': self.timeout,
+                  'pan_device': self,
                   }
-        if self.classify_exceptions:
-            xapi_constructor = PanDevice.XapiWrapper
-            kwargs['pan_device'] = self
-        else:
-            xapi_constructor = pan.xapi.PanXapi
+        xapi_constructor = PanDevice.XapiWrapper
         return xapi_constructor(**kwargs)
 
     def set_config_changed(self, vsys=None):
@@ -1307,23 +1303,14 @@ class PanDevice(PanObject):
         """
         self._logger.debug("Getting API Key from %s for user %s" %
                            (self.hostname, self._api_username))
-        if self.classify_exceptions:
-            xapi = PanDevice.XapiWrapper(
-                pan_device=self,
-                api_username=self._api_username,
-                api_password=self._api_password,
-                hostname=self.hostname,
-                port=self.port,
-                timeout=self.timeout
-            )
-        else:
-            xapi = pan.xapi.PanXapi(
-                api_username=self._api_username,
-                api_password=self._api_password,
-                hostname=self.hostname,
-                port=self.port,
-                timeout=self.timeout
-            )
+        xapi = PanDevice.XapiWrapper(
+            pan_device=self,
+            api_username=self._api_username,
+            api_password=self._api_password,
+            hostname=self.hostname,
+            port=self.port,
+            timeout=self.timeout
+        )
         xapi.keygen()
         return xapi.api_key
 
