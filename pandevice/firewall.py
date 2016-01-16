@@ -133,10 +133,8 @@ class Firewall(PanDevice):
                 parent_xpath = self.parent.xpath()
         return parent_xpath
 
-    def op(self, cmd=None, cmd_xml=True, extra_qs=None):
-        if self.vsys == "shared":
-            vsys = "vsys1"
-        else:
+    def op(self, cmd=None, vsys=None, cmd_xml=True, extra_qs=None):
+        if vsys is None:
             vsys = self.vsys
         self.xapi.op(cmd, vsys, cmd_xml, extra_qs)
         return self.xapi.element_root

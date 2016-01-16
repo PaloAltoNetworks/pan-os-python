@@ -928,18 +928,18 @@ class VsysImportMixin(object):
         self.delete_import()
 
     def create_import(self, vsys=None):
-        pandevice = self.pandevice()
         if vsys is None:
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
+            pandevice = self.pandevice()
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
             pandevice.xapi.set(xpath_import, "<member>%s</member>" % self.name)
 
     def delete_import(self, vsys=None):
-        pandevice = self.pandevice()
         if vsys is None:
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
+            pandevice = self.pandevice()
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
             pandevice.xapi.delete(xpath_import + "/member[text()='%s']" % self.name)
 
@@ -1402,7 +1402,9 @@ class PanDevice(PanObject):
         response = pconf.python()
         return response['result']
 
-    def add_commit_lock(self, comment=None, exception=False):
+    def add_commit_lock(self, comment=None, vsys=None, exception=False):
+        if vsys is None:
+            vsys = self.vsys
         self._logger.debug("Add commit lock requested")
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "commit-lock")
@@ -1411,7 +1413,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd))
+            self.xapi.op(ET.tostring(cmd), vsys=vsys)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is already held", str(e)):
                 raise
@@ -1424,7 +1426,9 @@ class PanDevice(PanObject):
         self.commit_locked = True
         return True
 
-    def remove_commit_lock(self, admin=None, exception=False):
+    def remove_commit_lock(self, admin=None, vsys=None, exception=False):
+        if vsys is None:
+            vsys = self.vsys
         self._logger.debug("Remove commit lock requested")
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "commit-lock")
@@ -1433,7 +1437,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "admin")
             subel.text = admin
         try:
-            self.xapi.op(ET.tostring(cmd))
+            self.xapi.op(ET.tostring(cmd), vsys=vsys)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is not currently held", str(e)):
                 raise
@@ -1446,8 +1450,10 @@ class PanDevice(PanObject):
         self.commit_locked = False
         return True
 
-    def add_config_lock(self, comment=None, exception=False):
-        self._logger.debug("Add config lock requested")
+    def add_config_lock(self, comment=None, vsys=None, exception=False):
+        if vsys is None:
+            vsys = self.vsys
+        self._logger.debug("Add config lock requested on scope %s" % vsys)
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "add")
@@ -1455,10 +1461,10 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd))
+            self.xapi.op(ET.tostring(cmd), vsys=vsys)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
-            if not re.match(r"Config for scope shared is currently locked",
-                            str(e)):
+            if not re.match(r"Config for scope (shared|vsys\d) is currently locked", str(e)) and \
+                    not re.match(r"You already own a config lock for scope", str(e)):
                 raise
             else:
                 if exception:
@@ -1469,16 +1475,17 @@ class PanDevice(PanObject):
         self.config_locked = True
         return True
 
-    def remove_config_lock(self, exception=False):
-        self._logger.debug("Remove config lock requested")
+    def remove_config_lock(self, vsys=None, exception=False):
+        if vsys is None:
+            vsys = self.vsys
+        self._logger.debug("Remove config lock requested on scope %s" % vsys)
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "remove")
         try:
-            self.xapi.op(ET.tostring(cmd))
+            self.xapi.op(ET.tostring(cmd), vsys=vsys)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
-            if not re.match(r"Config is not currently locked for scope shared",
-                            str(e)):
+            if not re.match(r"Config is not currently locked for scope (shared|vsys\d)", str(e)):
                 raise
             else:
                 if exception:
