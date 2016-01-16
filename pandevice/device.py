@@ -170,38 +170,38 @@ class SystemSettings(PanObject):
         NTPServerSecondary,
     )
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(SystemSettings, self).__init__()
-        self.hostname = None
-        self.domain = None
-        self.ip_address = None
-        self.netmask = None
-        self.default_gateway = None
-        self.ipv6_address = None
-        self.ipv6_default_gateway = None
-        self.dns_primary = None
-        self.dns_secondary = None
-        self.timezone = None
-        self.panorama = None
-        self.panorama2 = None
-        self.login_banner = None
-        self.update_server = None
+        self.hostname = kwargs.pop("hostname", None)
+        self.domain = kwargs.pop("domain", None)
+        self.ip_address = kwargs.pop("ip_address", None)
+        self.netmask = kwargs.pop("netmask", None)
+        self.default_gateway = kwargs.pop("default_gateway", None)
+        self.ipv6_address = kwargs.pop("ipv6_address", None)
+        self.ipv6_default_gateway = kwargs.pop("ipv6_default_gateway", None)
+        self.dns_primary = kwargs.pop("dns_primary", None)
+        self.dns_secondary = kwargs.pop("dns_secondary", None)
+        self.timezone = kwargs.pop("timezone", None)
+        self.panorama = kwargs.pop("panorama", None)
+        self.panorama2 = kwargs.pop("panorama2", None)
+        self.login_banner = kwargs.pop("login_banner", None)
+        self.update_server = kwargs.pop("update_server", None)
 
     @classmethod
     def vars(cls):
         return (
-            Var("hostname", init=False),
-            Var("domain", init=False),
-            Var("ip-address", init=False),
-            Var("netmask", init=False),
-            Var("default-gateway", init=False),
-            Var("ipv6-address", init=False),
-            Var("ipv6-default-gateway", init=False),
-            Var("dns-setting/servers/primary", "dns_primary", init=False),
-            Var("dns-setting/servers/secondary", "dns_secondary", init=False),
-            Var("timezone", init=False),
-            Var("panorama-server", "panorama", init=False),
-            Var("panorama-server-2", "panorama2", init=False),
-            Var("login-banner", init=False),
-            Var("update-server", init=False),
+            Var("hostname"),
+            Var("domain"),
+            Var("ip-address"),
+            Var("netmask"),
+            Var("default-gateway"),
+            Var("ipv6-address"),
+            Var("ipv6-default-gateway"),
+            Var("dns-setting/servers/primary", "dns_primary"),
+            Var("dns-setting/servers/secondary", "dns_secondary"),
+            Var("timezone"),
+            Var("panorama-server", "panorama"),
+            Var("panorama-server-2", "panorama2"),
+            Var("login-banner"),
+            Var("update-server"),
         )
