@@ -78,6 +78,10 @@ class Panorama(base.PanDevice):
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
+    def op(self, cmd=None, vsys=None, cmd_xml=True, extra_qs=None):
+        self.xapi.op(cmd, cmd_xml=cmd_xml, extra_qs=extra_qs)
+        return self.xapi.element_root
+
     def xpath_vsys(self):
         raise err.PanDeviceError("Attempt to modify vsys configuration on non-firewall device")
 
@@ -172,3 +176,114 @@ class Panorama(base.PanDevice):
                 )
                 device.devicegroup = devicegroup
 
+    def refresh_devices(self, devices=(), only_connected=False, expand_vsys=True, include_device_groups=True, add=False):
+        """Refresh device groups and devices using operational commands"""
+        logger.debug(self.hostname + ": refresh_devices called")
+        try:
+            # Test if devices is iterable
+            test_iterable = iter(devices)
+        except TypeError:
+            # This probably means a single device was passed in, not an iterable.
+            # Convert to an iterable with a single item.
+            devices = (devices,)
+        # Get the list of managed devices
+        if only_connected:
+            cmd = "show devices connected"
+        else:
+            cmd = "show devices all"
+        devices_xml = self.op(cmd)
+        devices_xml = devices_xml.find("result/devices")
+
+        # Filter to only requested devices
+        if devices:
+            filtered_devices_xml = ET.Element("devices")
+            for serial, vsys in [(d.serial, d.vsys) for d in devices]:
+                if serial is None:
+                    continue
+                entry = devices_xml.find("entry[@name='%s']" % serial)
+                if entry is None:
+                    raise err.PanDeviceError("Can't find device with serial %s attached to Panorama at %s" %
+                                             (serial, self.hostname))
+                multi_vsys = yesno(entry.findtext("multi-vsys"))
+                # Create entry if needed
+                if filtered_devices_xml.find("entry[@name='%s']") is None:
+                    entry_copy = deepcopy(entry)
+                    # If multivsys firewall with vsys defined, erase all vsys in filtered
+                    if multi_vsys and vsys != "shared" and vsys is not None:
+                        entry_copy.remove(entry_copy.find("vsys"))
+                        ET.SubElement(entry_copy, "vsys")
+                    filtered_devices_xml.append(entry_copy)
+                # Get specific vsys
+                if vsys != "shared" and vsys is not None:
+                    vsys_entry = entry.find("vsys/entry[@name='%s']" % vsys)
+                    vsys_section = filtered_devices_xml.find("entry[@name='%s']/vsys")
+                    vsys_section.append(vsys_entry)
+            devices_xml = filtered_devices_xml
+
+        # Manipulate devices_xml so each vsys is a separate device
+        if expand_vsys:
+            original_devices_xml = deepcopy(devices_xml)
+            for entry in original_devices_xml:
+                multi_vsys = yesno(entry.findtext("multi-vsys"))
+                if multi_vsys:
+                    serial = entry.findtext("serial")
+                    for vsys_entry in entry.findall("vsys/entry"):
+                        if vsys_entry.get("name") == "vsys1":
+                            continue
+                        new_vsys_device = deepcopy(entry)
+                        new_vsys_device.set("name", serial)
+                        ET.SubElement(new_vsys_device, "vsysid").text = vsys_entry.get("name")
+                        ET.SubElement(new_vsys_device, "vsysname").text = vsys_entry.findtext("display-name")
+                        devices_xml.append(new_vsys_device)
+
+        # Create firewall instances
+        firewall_instances = firewall.Firewall.refresh_all_from_xml(devices_xml, refresh_children=not expand_vsys)
+
+        if not include_device_groups:
+            if add:
+                self.removeall(firewall.Firewall)
+                self.extend(firewall_instances)
+            return firewall_instances
+
+        # Create device-groups
+
+        # Get the list of device groups
+        devicegroup_xml = self.op("show devicegroups")
+        devicegroup_xml = devicegroup_xml.find("result/devicegroups")
+
+        devicegroup_instances = DeviceGroup.refresh_all_from_xml(devicegroup_xml, refresh_children=False)
+
+        for dg in devicegroup_instances:
+            dg_serials = [entry.get("name") for entry in devicegroup_xml.findall("entry[@name='%s']/devices/entry" % dg.name)]
+            # Find firewall with each serial
+            for dg_serial in dg_serials:
+                all_dg_vsys = [entry.get("name") for entry in devicegroup_xml.findall("entry[@name='%s']/devices/entry[@name='%s']"
+                                                                                  "/vsys/entry" % (dg.name, dg_serial))]
+                if not all_dg_vsys:
+                    dg_vsys = "vsys1"
+                    fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
+                    # Move the firewall to the device-group
+                    dg.add(fw)
+                    firewall_instances.remove(fw)
+                else:
+                    for dg_vsys in all_dg_vsys:
+                        fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
+                        # Move the firewall to the device-group
+                        dg.add(fw)
+                        firewall_instances.remove(fw)
+
+        if add:
+            for dg in devicegroup_instances:
+                found_dg = self.find(dg.name, DeviceGroup)
+                if found_dg is not None:
+                    # Move the firewalls to the existing devicegroup
+                    found_dg.removeall(firewall.Firewall)
+                    found_dg.extend(dg.children)
+                else:
+                    # Devicegroup doesn't exist, add it
+                    self.add(dg)
+            # Add firewalls that are not in devicegroups
+            self.removeall(firewall.Firewall)
+            self.extend(firewall_instances)
+
+        return firewall_instances + devicegroup_instances

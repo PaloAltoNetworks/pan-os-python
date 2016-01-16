@@ -94,6 +94,8 @@ class Firewall(PanDevice):
         self._vsys = vsys
         self.vsys_name = None
         self.multi_vsys = None
+        self.serial_ha_peer = None
+        self.management_ip = None
 
         # Create a User-ID subsystem
         self.userid = userid.UserId(self)
@@ -263,6 +265,45 @@ class Firewall(PanDevice):
         if self.vsys.startswith("vsys"):
             self.set_config_changed()
             self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys)
+
+    @classmethod
+    def refresh_all_from_xml(cls, xml, refresh_children=False, variables=None):
+        if len(xml) == 0:
+            return []
+        if variables is not None:
+            return super(Firewall, cls).refresh_all_from_xml(xml, refresh_children, variables)
+        op_vars = (
+            Var("serial"),
+            Var("ip-address", "hostname"),
+            Var("ip-address", "management_ip", init=False),
+            Var("sw-version", "version", init=False),
+            Var("multi-vsys", vartype="bool", init=False),
+            Var("vsysid", "vsys", default="vsys1"),
+            Var("vsysname", "vsys_name", init=False),
+            Var("ha/state/peer/serial", "serial_ha_peer", init=False),
+        )
+        if len(xml[0]) > 1:
+            # This is a 'show devices' op command
+            firewall_instances = super(Firewall, cls).refresh_all_from_xml(xml, refresh_children=False, variables=op_vars)
+            # Add system settings to firewall instances
+            for fw in firewall_instances:
+                entry = xml.find("entry[@name='%s']" % fw.serial)
+                system = fw.find_or_create(None, device.SystemSettings)
+                system.hostname = entry.findtext("hostname")
+                system.ip_address = entry.findtext("ip-address")
+        else:
+            # This is a config command
+            # For each vsys, instantiate a new firewall
+            firewall_instances = []
+            all_serial = xml.findall("entry")
+            for entry in all_serial:
+                all_vsys = entry.findall("vsys/entry")
+                if all_vsys:
+                    for vsys in all_vsys:
+                        firewall_instances.append(cls(serial=entry.get("name"), vsys=vsys.get("name")))
+                else:
+                    firewall_instances.append(cls(serial=entry.get("name")))
+        return firewall_instances
 
     def show_system_resources(self):
         self.xapi.op(cmd="show system resources", cmd_xml=True)

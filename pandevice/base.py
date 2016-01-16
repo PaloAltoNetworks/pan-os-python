@@ -696,7 +696,7 @@ class PanObject(object):
         return instances
 
     @classmethod
-    def refresh_all_from_xml(cls, xml, refresh_children=True):
+    def refresh_all_from_xml(cls, xml, refresh_children=True, variables=None):
         """Factory method to instantiate class from firewall config
 
         This method is a factory for the class. It takes an xml config
@@ -707,6 +707,7 @@ class PanObject(object):
 
         Args:
             xml (Element): A section of XML configuration from a firewall or Panorama
+                Should not contain response or result tags
 
         Returns:
             list: created instances of class
@@ -719,11 +720,13 @@ class PanObject(object):
             objects = xml.findall(lasttag)
         # Refresh each object
         for obj in objects:
-            variables, noinit_variables = cls._parse_xml(obj)
-            name = obj.get('name')
-            if name is not None:
-                variables[cls.NAME] = name
-            instance = cls(**variables)
+            init_variables, noinit_variables = cls._parse_xml(obj, variables=variables)
+            if cls.SUFFIX is not None:
+                name = obj.get('name')
+                if name is not None:
+                    init_variables[cls.NAME] = name
+            # Create the object instance
+            instance = cls(**init_variables)
             # Set values of no init variables
             for var, value in noinit_variables.iteritems():
                 vars(instance)[var] = value
@@ -738,18 +741,21 @@ class PanObject(object):
         return instances
 
     @classmethod
-    def _parse_xml(cls, xml):
-        variables = {}
+    def _parse_xml(cls, xml, variables=None):
+        init_variables = {}
         noinit_variables = {}
         # Parse each variable
-        vars = cls.vars()
+        if variables:
+            vars = variables
+        else:
+            vars = cls.vars()
         for var in vars:
             missing_replacement = False
             # Determine if variable is part of __init__ args
             if var.vartype == "none":
                 continue
             if var.init:
-                vardict = variables
+                vardict = init_variables
             else:
                 vardict = noinit_variables
             # Search for variable replacements in path
@@ -760,7 +766,7 @@ class PanObject(object):
                 # Find the discovered replacement in the list of vars
                 matchedvar = next((x for x in cls.vars() if x.variable == match), None)
                 try:
-                    replacement = variables[match]
+                    replacement = init_variables[match]
                 except KeyError:
                     replacement = noinit_variables[match]
                 if replacement is None:
@@ -809,19 +815,17 @@ class PanObject(object):
                         vardict[var.variable] = None
                 else:
                     # This is a text variable
-                    try:
-                        # Save the variable if it exists in the xml
-                        vardict[var.variable] = cls._convert_var(xml.find(path).text, var.vartype)
-                    except AttributeError:
-                        # Couldn't find the path in the xml
-                        vardict[var.variable] = None
+                    # Save the variable if it exists in the xml
+                    vardict[var.variable] = cls._convert_var(xml.findtext(path), var.vartype)
                 if var.default is not None and vardict[var.variable] is None:
                     vardict[var.variable] = var.default
-        return variables, noinit_variables
+        return init_variables, noinit_variables
 
     @classmethod
     def _convert_var(cls, value, vartype):
-        if vartype is None:
+        if value is None:
+            return None
+        elif vartype is None:
             return value
         elif vartype == "int":
             return int(value)
@@ -1035,8 +1039,6 @@ class PanDevice(PanObject):
         self.commit_locked = False
         self.lock_before_change = False
         self.shared_lock_before_change = False
-        self.connected_to_panorama = None
-        self.dg_in_sync = None
         self.config_changed = []
 
         # Create a PAN-OS updater subsystem
@@ -1518,71 +1520,6 @@ class PanDevice(PanObject):
         except pan.xapi.PanXapiError as e:
             if not str(e).startswith("Command succeeded with no output"):
                 raise e
-
-
-    def refresh_devices_from_panorama(self, devices=()):
-        try:
-            # Test if devices is iterable
-            test_iterable = iter(devices)
-        except TypeError:
-            # This probably means a single device was passed in, not an iterable.
-            # Convert to an iterable with a single item.
-            devices = (devices,)
-        stats_by_ip = {}
-        stats_by_host = {}
-        devicegroup_stats_by_serial = {}
-        template_stats_by_serial = {}
-        # Get the list of managed devices
-        self.xapi.op("show devices all", cmd_xml=True)
-        pconf = PanConfig(self.xapi.element_root)
-        response = pconf.python()
-        try:
-            for device in response['response']['result']['devices']['entry']:
-                stats_by_ip[device['ip-address']] = device
-                stats_by_host[device['ip-address']] = device
-                stats_by_host[device['hostname']] = device
-            # Populate the device objects with some of the data
-            for device in devices:
-                try:
-                    device.serial = stats_by_host[device.hostname]['serial']
-                    device.connected_to_panorama = stats_by_host[device.hostname]['connected']
-                except KeyError as e:
-                    raise err.PanDeviceError("Can't determine serial for "
-                                             "device", pan_device=device)
-        # Ignore errors because it means there are no devices
-        except KeyError:
-            return {}
-
-        # Get the list of device groups
-        self.xapi.op("show devicegroups", cmd_xml=True)
-        dg_element = self.xapi.element_result
-        for dg in dg_element.findall("./devicegroups/entry"):
-            for device in dg.findall("./devices/entry"):
-                pconf = PanConfig(config=device)
-                stats = pconf.python()
-                # Save device stats
-                stats = stats['entry']
-                # Save device serial
-                serial = stats['serial']
-                # Save device ip-address
-                ip = stats['ip-address']
-                # Save device's device-group
-                dg_name = dg.get('name')
-                # Save the device-group to the device's stats
-                stats['devicegroup'] = dg_name
-                devicegroup_stats_by_serial[serial] = stats
-                stats_by_ip[ip]['devicegroup'] = dg_name
-
-        # Set the device-group for each device
-        for device in devices:
-            if device.serial is not None:
-                stats = devicegroup_stats_by_serial.get(device.serial)
-                if stats is not None:
-                    device.devicegroup = stats['devicegroup']
-                    sync_status = stats['shared-policy-status']
-                    device.dg_in_sync = True if sync_status == "In Sync" else False
-
-        return stats_by_ip
 
     def commit(self, sync=False, exception=False, cmd=None):
         self._logger.debug("Commit initiated on device: %s" % (self.hostname,))
