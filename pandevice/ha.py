@@ -60,6 +60,9 @@ class HAPair(firewall.Firewall):
         super(HAPair, self).__init__()
         self.fw1 = fw1
         self.fw2 = fw2
+        self.firewalls = [fw1, fw2]
+        self.fw1.parent = self
+        self.fw2.parent = self
         self.hostname = "HAPair:" + self.fw1.hostname + ":" + self.fw2.hostname
         self.classify_exceptions = True
         self.fw1.classify_exceptions = True
@@ -68,9 +71,10 @@ class HAPair(firewall.Firewall):
         self.serial = fw1.serial
         self.vsys = fw1.vsys
         self.vsys_name = fw1.vsys_name
-        self.panorama = fw1.panorama
         self.multi_vsys = fw1.multi_vsys
         self._fw1_active = True
+        self.fw1.serial_ha_pair = self.fw2.serial
+        self.fw2.serial_ha_pair = self.fw1.serial
 
     class HAXapiWrapper(object):
         """Nested class to apply configuration correctly in an HA pair"""
@@ -126,8 +130,18 @@ class HAPair(firewall.Firewall):
         else:
             return self.fw2
 
+    @property
+    def passive_firewall(self):
+        if self._fw1_active:
+            return self.fw2
+        else:
+            return self.fw1
+
     def generate_xapi(self):
         return HAPair.HAXapiWrapper(self)
+
+    def xpath_bypass(self):
+        return self._parent_xpath()
 
     def devices(self):
         return [self.fw1, self.fw2]
@@ -140,6 +154,13 @@ class HAPair(firewall.Firewall):
 
     def activate_firewall2(self):
         self._fw1_active = False
+
+    def refresh_system_info(self):
+        self.fw1.refresh_system_info()
+        self.fw2.refresh_system_info()
+        self.serial = self.active_firewall.serial
+        self.multi_vsys = self.active_firewall.multi_vsys
+        self.serial_ha_peer = self.passive_firewall.serial
 
     def refresh_active_firewall(self):
         logger.debug("Refreshing active firewall in HA Pair")
