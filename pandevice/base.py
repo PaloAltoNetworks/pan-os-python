@@ -1029,7 +1029,6 @@ class PanDevice(PanObject):
         self.is_virtual = is_virtual
         self.timeout = timeout
         self.interval = interval
-        self.interfaces = {}
         self._xapi_private = None
         self.classify_exceptions = classify_exceptions
         self.config_locked = False
