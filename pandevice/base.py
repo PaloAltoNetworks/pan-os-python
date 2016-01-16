@@ -51,6 +51,7 @@ class PanObject(object):
     NAME = "name"
     CHILDTYPES = ()
     CHILDMETHODS = ()
+    NO_HA_SYNC = False
 
     def __init__(self, name=None):
         self.name = name
@@ -308,27 +309,48 @@ class PanObject(object):
             child.check_child_methods(method)
 
     def apply(self):
+        import ha
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), self.name))
         pandevice.set_config_changed()
-        pandevice.xapi.edit(self.xpath(), self.element_str())
+        if self.NO_HA_SYNC and isinstance(pandevice, ha.HAPair):
+            active_fw = pandevice.active_firewall
+            pandevice.xapi.edit(self.xpath(), self.element_str())
+            if pandevice.passive_firewall != active_fw:
+                pandevice.passive_firewall.xapi.edit(self.xpath(), self.element_str())
+        else:
+            pandevice.xapi.edit(self.xpath(), self.element_str())
         for child in self.children:
             child._check_child_methods("apply")
 
     def create(self):
+        import ha
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": create called on %s object \"%s\"" % (type(self), self.name))
         pandevice.set_config_changed()
         element = self.element_str()
-        pandevice.xapi.set(self.xpath_short(), element)
+        if self.NO_HA_SYNC and isinstance(pandevice, ha.HAPair):
+            active_fw = pandevice.active_firewall
+            pandevice.xapi.set(self.xpath_short(), element)
+            if pandevice.passive_firewall != active_fw:
+                pandevice.passive_firewall.xapi.set(self.xpath_short(), element)
+        else:
+            pandevice.xapi.set(self.xpath_short(), element)
         for child in self.children:
             child._check_child_methods("create")
 
     def delete(self):
+        import ha
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), self.name))
         pandevice.set_config_changed()
-        pandevice.xapi.delete(self.xpath())
+        if self.NO_HA_SYNC and isinstance(pandevice, ha.HAPair):
+            active_fw = pandevice.active_firewall
+            pandevice.xapi.delete(self.xpath())
+            if pandevice.passive_firewall != active_fw:
+                pandevice.passive_firewall.xapi.delete(self.xpath())
+        else:
+            pandevice.xapi.delete(self.xpath())
         if self.parent is not None:
             self.parent.remove_by_name(self.name, type(self))
         for child in self.children:
@@ -343,6 +365,7 @@ class PanObject(object):
         Args:
             variable (str): the name of an instance variable to update on the device
         """
+        import ha
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": update called on %s object \"%s\" and variable \"%s\"" %
                      (type(self), self.name, variable))
@@ -384,7 +407,13 @@ class PanObject(object):
                 # Not an 'entry' variable
                 varpath = re.sub(regex, getattr(self, matchedvar.variable), varpath)
         if value is None:
-            pandevice.xapi.delete(self.xpath() + "/" + varpath)
+            if self.NO_HA_SYNC and isinstance(pandevice, ha.HAPair):
+                active_fw = pandevice.active_firewall
+                pandevice.xapi.delete(self.xpath() + "/" + varpath)
+                if pandevice.passive_firewall != active_fw:
+                    pandevice.passive_firewall.xapi.delete(self.xpath() + "/" + varpath)
+            else:
+                pandevice.xapi.delete(self.xpath() + "/" + varpath)
         else:
             element_tag = varpath.split("/")[-1]
             element = ET.Element(element_tag)
@@ -396,7 +425,13 @@ class PanObject(object):
                 # Regular text variables
                 element.text = value
                 xpath = self.xpath() + "/" + varpath
-            pandevice.xapi.edit(xpath, ET.tostring(element))
+            if self.NO_HA_SYNC and isinstance(pandevice, ha.HAPair):
+                active_fw = pandevice.active_firewall
+                pandevice.xapi.edit(xpath, ET.tostring(element))
+                if pandevice.passive_firewall != active_fw:
+                    pandevice.passive_firewall.xapi.edit(xpath, ET.tostring(element))
+            else:
+                pandevice.xapi.edit(xpath, ET.tostring(element))
 
     def refresh(self, running_config=False, xml=None, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse

@@ -63,6 +63,7 @@ class Firewall(PanDevice):
     ROOT = Root.MGTCONFIG
     SUFFIX = ENTRY
     NAME = "serial"
+    NO_HA_SYNC = True
     CHILDTYPES = (
         device.Vsys,
         VsysResources,
