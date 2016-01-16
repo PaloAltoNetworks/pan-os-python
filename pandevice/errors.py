@@ -16,8 +16,12 @@
 
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
+
+from pan.xapi import PanXapiError
+
+
 # Exceptions used by PanDevice Class
-class PanDeviceError(Exception):
+class PanDeviceError(PanXapiError):
     """Exception for errors in the PanDevice class
 
     The PanDevice class may raise errors when problems occur such as
@@ -34,6 +38,7 @@ class PanDeviceError(Exception):
         super(PanDeviceError, self).__init__(*args, **kwargs)
 
 class PanDeviceXapiError(PanDeviceError):
+    """General error returned by an API call"""
     pass
 
 class PanInvalidCredentials(PanDeviceXapiError):
@@ -45,7 +50,7 @@ class PanURLError(PanDeviceXapiError):
 class PanConnectionTimeout(PanDeviceXapiError):
     pass
 
-class PanJobTimeout(PanDeviceXapiError):
+class PanJobTimeout(PanDeviceError):
     pass
 
 class PanLockError(PanDeviceError):
@@ -60,12 +65,12 @@ class PanCommitInProgress(PanDeviceXapiError):
 class PanInstallInProgress(PanDeviceXapiError):
     pass
 
-class PanCommitFailed(PanDeviceError):
+class PanCommitFailed(PanDeviceXapiError):
     def __init__(self, *args, **kwargs):
         self.result = kwargs.pop('result', None)
         super(PanCommitFailed, self).__init__("Commit failed", *args, **kwargs)
 
-class PanCommitNotNeeded(PanDeviceError):
+class PanCommitNotNeeded(PanDeviceXapiError):
     pass
 
 class PanSessionTimedOut(PanDeviceXapiError):
@@ -74,11 +79,11 @@ class PanSessionTimedOut(PanDeviceXapiError):
 class PanDeviceNotSet(PanDeviceError):
     pass
 
-class PanNoSuchNode(PanDeviceError):
+class PanNoSuchNode(PanDeviceXapiError):
     pass
 
-class PanObjectMissing(PanDeviceError):
+class PanObjectMissing(PanDeviceXapiError):
     pass
 
-class PanHAConfigSyncFailed(PanDeviceError):
+class PanHAConfigSyncFailed(PanDeviceXapiError):
     pass
