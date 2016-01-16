@@ -341,11 +341,11 @@ class AbstractSubinterface(object):
         raise err.PanDeviceError("Unable to set zone on abstract subinterface because layer must be known to set zone")
 
     def set_virtual_router(self, virtual_router_name, refresh=False, update=False, running_config=False):
-        interface = Layer3Subinterface()
+        interface = Layer3Subinterface(self.name, self.tag)
         interface.parent = self.parent
         return interface._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh=False, update=update, running_config=running_config)
 
-    def get_layered_subinterface(self, mode):
+    def get_layered_subinterface(self, mode, create=True):
         if self.parent is not None:
             if mode == "layer3":
                 subintclass = Layer3Subinterface
@@ -353,7 +353,15 @@ class AbstractSubinterface(object):
                 subintclass = Layer2Subinterface
             else:
                 raise err.PanDeviceError("Unknown layer passed to subinterface factory: %s" % mode)
-            layered_subinterface = self.parent.find_or_create(self.name, subintclass, tag=self.tag)
+            layered_subinterface = self.parent.find(self.name, subintclass)
+            # Verify tag is correct
+            if layered_subinterface is not None:
+                if layered_subinterface.tag != self.tag:
+                    layered_subinterface.tag = self.tag
+                    if create: layered_subinterface.create()
+            else:
+                layered_subinterface = self.parent.add(subintclass(self.name, tag=self.tag))
+                if create: layered_subinterface.create()
             return layered_subinterface
 
     def delete(self):
@@ -375,6 +383,7 @@ class Layer3Subinterface(Layer3Parameters, VsysImportMixin, Subinterface):
 
     def __init__(self, name, tag, *args, **kwargs):
         super(Layer3Subinterface, self).__init__(name, tag, *args, **kwargs)
+        self.mode = "layer3"
 
     def set_zone(self, zone_name, mode="layer3", refresh=False, update=False, running_config=False):
         return self._set_reference(zone_name, Zone, "interface", True, refresh, update, running_config, mode=mode)
@@ -390,6 +399,7 @@ class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
         comment = kwargs.pop("comment", None)
         super(Layer2Subinterface, self).__init__(name, tag, *args, **kwargs)
         self.comment = comment
+        self.mode = "layer2"
 
     @classmethod
     def vars(cls):
