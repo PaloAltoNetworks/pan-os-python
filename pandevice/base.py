@@ -1035,9 +1035,10 @@ class PanDevice(PanObject):
         self.config_locked = False
         self.commit_locked = False
         self.lock_before_change = False
-        self.config_changed = False
+        self.shared_lock_before_change = False
         self.connected_to_panorama = None
         self.dg_in_sync = None
+        self.config_changed = []
 
         # Create a PAN-OS updater subsystem
         self.software = updater.SoftwareUpdater(self)
@@ -1211,19 +1212,17 @@ class PanDevice(PanObject):
             xapi_constructor = pan.xapi.PanXapi
         return xapi_constructor(**kwargs)
 
-    def set_config_changed(self):
+    def set_config_changed(self, vsys=None):
+        if vsys is None:
+            vsys = getattr(self, "vsys", None)
         if self.lock_before_change:
             if not self.config_locked:
-                self.add_config_lock(exception=True)
-                """
-                if self.pending_changes():
-                    self.revert_to_running_configuration()
-                    raise err.PanPendingChanges("There are pending changes, "
-                                            "cannot apply configuration "
-                                            "because cannot get config-lock",
-                                            pan_device=self)
-                """
-        self.config_changed = True
+                self.add_config_lock(vsys=vsys, exception=True)
+        elif self.shared_lock_before_change:
+            if not self.config_locked:
+                self.add_config_lock(vsys="shared", exception=True)
+        if vsys not in self.config_changed:
+            self.config_changed.append(vsys)
 
     def _parent_xpath(self):
         parent_xpath = self.xpath_root(self.ROOT)
@@ -1501,7 +1500,6 @@ class PanDevice(PanObject):
         return True if response is not None else False
 
     def revert_to_running_configuration(self):
-        # self.set_config_changed()
         self._logger.debug("Revert to running configuration on device: %s" % (self.hostname,))
         self.xapi.op("<load><config><from>"
                      "running-config.xml"
@@ -1585,7 +1583,7 @@ class PanDevice(PanObject):
         return self._commit(sync=sync, exception=exception, cmd=cmd)
 
     def _commit(self, cmd=None, exclude=None, commit_all=False,
-                sync=False, sync_all=True, exception=False):
+                sync=False, sync_all=False, exception=False):
         """Internal use commit helper method.
 
         :param exclude:
@@ -1632,7 +1630,7 @@ class PanDevice(PanObject):
                          timeout=self.timeout)
         commit_response = self.xapi.element_root
         # Set locks off
-        self.config_changed = False
+        self.config_changed = []
         self.config_locked = False
         self.commit_locked = False
         # Determine if a commit was needed and get the job id
@@ -1673,8 +1671,7 @@ class PanDevice(PanObject):
                                         result['warnings']))
                 return result
 
-
-    def syncjob(self, job_id, sync_all=True, interval=0.5):
+    def syncjob(self, job_id, sync_all=False, interval=0.5):
         """Block until job completes and return result
 
         Args:
@@ -1743,7 +1740,7 @@ class PanDevice(PanObject):
                         break  # One device isn't finished, so stop checking others
                 if device_results and device_commits_finished:
                     return self._parse_job_results(job_xml, get_devices=True)
-                else:
+                elif not device_results:
                     return self._parse_job_results(job_xml, get_devices=False)
             elif status.text == "FIN":
                 # Job completed, parse the results

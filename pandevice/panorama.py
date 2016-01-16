@@ -90,17 +90,22 @@ class Panorama(base.PanDevice):
     def commit_all(self, sync=False, sync_all=True, exception=False, devicegroup=None, serials=(), cmd=None):
         self._logger.debug("Commit-all initiated on device: %s" % (self.hostname,))
 
-        # XXX: This only works on PAN-OS 7.0+
-        e = ET.Element("commit-all")
-        if devicegroup is not None and cmd is None:
-            sp = ET.SubElement(e, "shared-policy")
-            dg = ET.SubElement(sp, "device-group")
-            ET.SubElement(dg, "entry", {"name": devicegroup})
-            if serials:
-                d = ET.SubElement(dg, "devices")
-                for serial in serials:
-                    ET.SubElement(d, "entry", {"name": serial})
-        cmd = ET.tostring(e)
+        if cmd is None:
+            # XXX: This only works on PAN-OS 7.0+
+            e = ET.Element("commit-all")
+            if devicegroup is not None and cmd is None:
+                sp = ET.SubElement(e, "shared-policy")
+                dg = ET.SubElement(sp, "device-group")
+                ET.SubElement(dg, "entry", {"name": devicegroup})
+                if serials:
+                    d = ET.SubElement(dg, "devices")
+                    for serial in serials:
+                        ET.SubElement(d, "entry", {"name": serial})
+            cmd = ET.tostring(e)
+        elif isinstance(cmd, pan.commit.PanCommit):
+            cmd = cmd.cmd()
+        elif isinstance(cmd, ET.Element):
+            cmd = ET.tostring(cmd)
 
         result = self._commit(sync=sync,
                               sync_all=sync_all,
