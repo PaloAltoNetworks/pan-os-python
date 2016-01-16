@@ -558,13 +558,22 @@ class PanObject(object):
         return obj
 
     def pandevice(self):
-        if issubclass(self.__class__, PanDevice):
-            return self
+        if self.parent is None:
+            raise err.PanDeviceNotSet("No PanDevice set for object tree")
         else:
-            if self.parent is None:
-                raise err.PanDeviceNotSet("No PanDevice set for object tree")
-            else:
-                return self.parent.pandevice()
+            return self.parent.pandevice()
+
+    def panorama(self):
+        if self.parent is None:
+            raise err.PanDeviceNotSet("No Panorama set for object tree")
+        else:
+            return self.parent.panorama()
+
+    def devicegroup(self):
+        if self.parent is None:
+            return
+        else:
+            return self.parent.devicegroup()
 
     def find(self, name, class_type=None, recursive=False):
         if class_type is None:
@@ -1184,7 +1193,10 @@ class PanDevice(PanObject):
         return self._xapi_private
 
     def pandevice(self):
-        return self
+        if self.parent is None:
+            return self
+        else:
+            return self.parent.pandevice()
 
     def generate_xapi(self):
         kwargs = {'api_key': self.api_key,
@@ -1241,29 +1253,6 @@ class PanDevice(PanObject):
 
     def xpath_panorama(self):
         raise NotImplementedError
-
-    def __get_xpath_scope(self):
-        """Return the XPath root for the current device
-
-        A private helper method to return an XPath that is appropriate given
-        the current state of the instance variables. This XPath represents
-        the root of the VSYS, Device-Group, or Shared object area.
-
-        Returns:
-            A string containing an XPath to be used as the root for
-            other API calls
-        """
-        xpath_device = "/config/devices/entry[@name='localhost.localdomain']"
-        xpath_vsys = xpath_device + "/vsys/entry[@name='%s']"
-        xpath_devicegroup = xpath_device + "device-group/entry[@name='%s']"
-        xpath_shared = "/config/shared"
-
-        if self.devicegroup:
-            return xpath_devicegroup % self.devicegroup
-        elif self.is_panorama:
-            return xpath_shared
-        else:
-            return xpath_device
 
     def _retrieve_api_key(self):
         """Return an API key for a username and password

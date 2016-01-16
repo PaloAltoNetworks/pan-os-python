@@ -39,6 +39,7 @@ import pan.commit
 from pan.config import PanConfig
 
 import pandevice
+from pandevice import panorama
 from pandevice import device
 from pandevice import objects
 from pandevice import network
@@ -46,18 +47,22 @@ from pandevice import network
 # import other parts of this pandevice package
 import errors as err
 from network import Interface
-from base import PanObject, PanDevice, Root
+from base import PanObject, PanDevice, Root, ENTRY
 from base import VarPath as Var
 from updater import Updater
 import userid
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 
 class Firewall(PanDevice):
 
-    ROOT = Root.VSYS
+    XPATH = "/devices"
+    ROOT = Root.MGTCONFIG
+    SUFFIX = ENTRY
+    NAME = "serial"
     CHILDTYPES = (
         device.Vsys,
         VsysResources,
@@ -74,8 +79,8 @@ class Firewall(PanDevice):
                  port=443,
                  vsys='vsys1',  # vsys# or 'shared'
                  is_virtual=None,
-                 panorama=None,
-                 classify_exceptions=True):
+                 classify_exceptions=True,
+                 ):
         """Initialize PanDevice"""
         super(Firewall, self).__init__(hostname, api_username, api_password, api_key,
                                        port=port,
@@ -88,7 +93,6 @@ class Firewall(PanDevice):
         self.serial = serial
         self._vsys = vsys
         self.vsys_name = None
-        self.panorama = panorama
         self.multi_vsys = None
 
         # Create a User-ID subsystem
@@ -112,11 +116,21 @@ class Firewall(PanDevice):
         raise err.PanDeviceError("Attempt to modify Panorama configuration on non-Panorama device")
 
     def _parent_xpath(self):
-        # This is a firewall
-        if self.vsys == "shared":
-            parent_xpath = self.xpath_root(Root.DEVICE)
+        if self.parent is None:
+            # self with no parent
+            if self.vsys == "shared":
+                parent_xpath = self.xpath_root(Root.DEVICE)
+            else:
+                parent_xpath = self.xpath_root(Root.VSYS)
+        elif isinstance(self.parent, panorama.Panorama):
+            # Parent is Firewall or Panorama
+            parent_xpath = self.parent.xpath_root(self.ROOT)
         else:
-            parent_xpath = self.xpath_root(Root.VSYS)
+            try:
+                # Bypass xpath of HAPairs
+                parent_xpath = self.parent.xpath_bypass()
+            except AttributeError:
+                parent_xpath = self.parent.xpath()
         return parent_xpath
 
     def op(self, cmd=None, cmd_xml=True, extra_qs=None):
@@ -134,21 +148,25 @@ class Firewall(PanDevice):
         to this firewall's serial number.  This happens when panorama and serial
         variables are set in this firewall prior to the first connection.
         """
-        if self.panorama is not None and self.serial is not None:
+        try:
+            self.panorama()
+        except err.PanDeviceNotSet:
+            return super(Firewall, self).generate_xapi()
+        if self.serial is not None and self.hostname is None:
             if self.classify_exceptions:
                 xapi_constructor = PanDevice.XapiWrapper
                 kwargs = {'pan_device': self,
-                          'api_key': self.panorama.api_key,
-                          'hostname': self.panorama.hostname,
-                          'port': self.panorama.port,
+                          'api_key': self.panorama().api_key,
+                          'hostname': self.panorama().hostname,
+                          'port': self.panorama().port,
                           'timeout': self.timeout,
                           'serial': self.serial,
                           }
             else:
                 xapi_constructor = pan.xapi.PanXapi
-                kwargs = {'api_key': self.panorama.api_key,
-                          'hostname': self.panorama.hostname,
-                          'port': self.panorama.port,
+                kwargs = {'api_key': self.panorama().api_key,
+                          'hostname': self.panorama().hostname,
+                          'port': self.panorama().port,
                           'timeout': self.timeout,
                           'serial': self.serial,
                           }
@@ -171,20 +189,81 @@ class Firewall(PanDevice):
 
         return self.version, self.platform, self.serial
 
-    def create(self):
-        """Create an empty vsys
+    def element(self):
+        if self.serial is None:
+            raise ValueError("Serial number must be set to generate element")
+        entry = ET.Element("entry", {"name": self.serial})
+        if self.parent == self.panorama() and self.serial is not None:
+            # This is a firewall under a panorama
+            if not self.multi_vsys:
+                vsys = ET.SubElement(entry, "vsys")
+                ET.SubElement(vsys, "entry", {"name": "vsys1"})
+        elif self.parent == self.devicegroup() and self.multi_vsys:
+            # This is a firewall under a device group
+            if self.vsys.startswith("vsys"):
+                vsys = ET.SubElement(entry, "vsys")
+                ET.SubElement(vsys, "entry", {"name": self.vsys})
+            else:
+                vsys = ET.SubElement(entry, "vsys")
+                all_vsys = self.findall(device.Vsys)
+                for a_vsys in all_vsys:
+                    ET.SubElement(vsys, "entry", {"name": a_vsys})
+        return entry
 
-        Alternatively this can be done by adding a VsysResources object
-        """
+    def apply(self):
+        return
+
+    def create(self):
+        if self.parent is None:
+            self.create_vsys()
+            return
+        # This is a firewall under a panorama or devicegroup
+        panorama = self.panorama()
+        logger.debug(panorama.hostname + ": create called on %s object \"%s\"" % (type(self), self.name))
+        panorama.set_config_changed()
+        element = self.element_str()
+        panorama.xapi.set(self.xpath_short(), element)
+
+    def delete(self):
+        if self.parent is None:
+            self.delete_vsys()
+            return
+        panorama = self.panorama()
+        logger.debug(panorama.hostname + ": delete called on %s object \"%s\"" % (type(self), self.serial))
+        if self.parent == self.devicegroup() and self.multi_vsys:
+            # This is a firewall under a devicegroup
+            # Refresh device-group first to see if this is the only vsys
+            devices_xpath = self.devicegroup().xpath() + self.XPATH
+            panorama.xapi.get(devices_xpath)
+            devices_xml = panorama.xapi.element_root
+            dg_vsys = devices_xml.findall("entry[@name='%s']/vsys/entry" % self.serial)
+            if dg_vsys:
+                if len(dg_vsys) == 1:
+                    # Only vsys, so delete whole entry
+                    panorama.set_config_changed()
+                    panorama.xapi.delete(self.xpath())
+                else:
+                    # It's not the only vsys, just delete the vsys
+                    panorama.set_config_changed()
+                    panorama.xapi.delete(self.xpath() + "/vsys/entry[@name='%s']" % self.vsys)
+        else:
+            # This is a firewall under a panorama
+            panorama.set_config_changed()
+            panorama.xapi.delete(self.xpath())
+        if self.parent is not None:
+            self.parent.remove_by_name(self.name, type(self))
+
+    def create_vsys(self):
         if self.vsys.startswith("vsys"):
             element = ET.Element("entry", {"name": self.vsys})
             if self.vsys_name is not None:
                 ET.SubElement(element, "display-name").text = self.vsys_name
+            self.set_config_changed()
             self.xapi.set(self.xpath_device() + "/vsys", ET.tostring(element))
 
-    def delete(self):
-        """Delete the vsys"""
+    def delete_vsys(self):
         if self.vsys.startswith("vsys"):
+            self.set_config_changed()
             self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys)
 
     def add_address_object(self, name, address, description=''):

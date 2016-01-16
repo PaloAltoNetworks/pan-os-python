@@ -26,14 +26,46 @@ For functions specific to Panorama
 # import modules
 import logging
 import xml.etree.ElementTree as ET
+from copy import deepcopy
 
 # import other parts of this pandevice package
 import pandevice
 import base
+import firewall
 import errors as err
+from base import VarPath as Var
+from base import PanObject, Root, MEMBER, ENTRY
+from pandevice import yesno
+
+import pan.commit
+
+
+logger = logging.getLogger(__name__)
+
+
+class DeviceGroup(PanObject):
+
+    XPATH = "/device-group"
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+
+    def __init__(self, name, tag=()):
+        super(DeviceGroup, self).__init__(name)
+        self.tag = pandevice.string_or_list(tag)
+
+    @classmethod
+    def vars(cls):
+        return (
+            Var("tag", vartype="entry"),
+        )
+
+    def devicegroup(self):
+        return self
 
 
 class Panorama(base.PanDevice):
+
+    CHILDTYPES = DeviceGroup
 
     def __init__(self,
                  hostname,
@@ -51,6 +83,9 @@ class Panorama(base.PanDevice):
 
     def xpath_panorama(self):
         return "/config/panorama"
+
+    def panorama(self):
+        return self
 
     def commit_all(self, sync=False, sync_all=True, exception=False, devicegroup=None, serials=(), cmd=None):
         self._logger.debug("Commit-all initiated on device: %s" % (self.hostname,))
