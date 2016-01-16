@@ -133,6 +133,8 @@ def xml_combine(root, elements):
 
 
 def yesno(value):
+    if value is None:
+        return
     convert = {
         "yes": True,
         "no": False,
