@@ -119,7 +119,7 @@ class PanObject(object):
         Xpath in the form: parent's xpath + this object's xpath + entry or member if applicable.
         """
         xpath = self._parent_xpath() + self.XPATH
-        suffix = "" if self.SUFFIX is None else self.SUFFIX % self.name
+        suffix = "" if self.SUFFIX is None else self.SUFFIX % getattr(self, self.NAME)
         return xpath + suffix
 
     def xpath_nosuffix(self):
