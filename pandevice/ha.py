@@ -217,8 +217,8 @@ class HighAvailabilityInterface(PanObject):
                  netmask=None,
                  port=None,
                  gateway=None,
-                 link_speed="auto",
-                 link_duplex="auto",
+                 link_speed=None,
+                 link_duplex=None,
                  ):
         if type(self) == HighAvailabilityInterface:
             raise AssertionError("Do not instantiate a HighAvailabilityInterface. Please use a subclass.")
@@ -352,11 +352,11 @@ class HA1(HighAvailabilityInterface):
     def __init__(self,
                  ip_address=None,
                  netmask=None,
-                 port="dedicated-ha1",
+                 port=None,
                  gateway=None,
-                 link_speed="auto",
-                 link_duplex="auto",
-                 monitor_hold_time=3000,
+                 link_speed=None,
+                 link_duplex=None,
+                 monitor_hold_time=None,
                  ):
         super(HA1, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
         self.monitor_hold_time=monitor_hold_time
@@ -376,8 +376,8 @@ class HA1Backup(HighAvailabilityInterface):
                  netmask=None,
                  port=None,
                  gateway=None,
-                 link_speed="auto",
-                 link_duplex="auto",
+                 link_speed=None,
+                 link_duplex=None,
                  ):
         super(HA1Backup, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
 
@@ -388,10 +388,10 @@ class HA2(HighAvailabilityInterface):
     def __init__(self,
                  ip_address=None,
                  netmask=None,
-                 port="dedicated-ha2",
+                 port=None,
                  gateway=None,
-                 link_speed="auto",
-                 link_duplex="auto",
+                 link_speed=None,
+                 link_duplex=None,
                  ):
         super(HA2, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
 
@@ -404,8 +404,8 @@ class HA2Backup(HighAvailabilityInterface):
                  netmask=None,
                  port=None,
                  gateway=None,
-                 link_speed="auto",
-                 link_duplex="auto",
+                 link_speed=None,
+                 link_duplex=None,
                  ):
         super(HA2Backup, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
 
@@ -467,9 +467,9 @@ class HighAvailability(PanObject):
         self.description = description
 
         # Other settings that can be modified after instantiation
-        self.passive_link_state = "auto"
-        self.ha2_keepalive_action = "log-only"
-        self.ha2_keepalive_threshold = 10000
+        self.passive_link_state = None
+        self.ha2_keepalive_action = None
+        self.ha2_keepalive_threshold = None
 
     @classmethod
     def vars(cls):
