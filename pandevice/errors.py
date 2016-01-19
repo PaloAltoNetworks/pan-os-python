@@ -87,3 +87,6 @@ class PanObjectMissing(PanDeviceXapiError):
 
 class PanHAConfigSyncFailed(PanDeviceXapiError):
     pass
+
+class PanHASyncInProgress(PanDeviceXapiError):
+    pass

@@ -89,7 +89,7 @@ class UserId(object):
 
     def logins(self, users):
         """Login multiple users in the same API call
-        
+
         Arguments:
             users: a list of sets of user/ip mappings
                    eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
@@ -109,10 +109,10 @@ class UserId(object):
             logout = et.SubElement(payload, "logout")
         et.SubElement(logout, "entry", {"name": user, "ip": ip})
         self.send(root)
-    
+
     def logouts(self, users):
         """Logout multiple users in the same API call
-        
+
         Arguments:
             users: a list of sets of user/ip mappings
                    eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
@@ -164,8 +164,7 @@ class UserId(object):
         Support:
             PAN-OS 6.0 and higher
         """
-        self.panfirewall.xapi.op(cmd='show object registered-address all', vsys=self.panfirewall.vsys, cmd_xml=True)
-        root = self.panfirewall.xapi.element_root
+        root = self.panfirewall.xapi.op(cmd='show object registered-address all', vsys=self.panfirewall.vsys, cmd_xml=True)
         entries = root.findall("./result/entry")
         if not entries:
             return None

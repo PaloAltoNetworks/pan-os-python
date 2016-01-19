@@ -165,7 +165,7 @@ class SystemSettings(PanObject):
 
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/system"
-    NO_HA_SYNC = True
+    HA_SYNC = False
     CHILDTYPES = (
         NTPServerPrimary,
         NTPServerSecondary,

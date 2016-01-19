@@ -78,9 +78,9 @@ class Panorama(base.PanDevice):
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
-    def op(self, cmd=None, vsys=None, cmd_xml=True, extra_qs=None):
-        self.xapi.op(cmd, cmd_xml=cmd_xml, extra_qs=extra_qs)
-        return self.xapi.element_root
+    def op(self, cmd=None, vsys=None, cmd_xml=True, extra_qs=None, retry_on_peer=False):
+        # TODO: Support device-group and template scope
+        return self.xapi.op(cmd, vsys=None, cmd_xml=cmd_xml, extra_qs=extra_qs, retry_on_peer=retry_on_peer)
 
     def xpath_vsys(self):
         raise err.PanDeviceError("Attempt to modify vsys configuration on non-firewall device")
@@ -262,12 +262,18 @@ class Panorama(base.PanDevice):
                 if not all_dg_vsys:
                     dg_vsys = "vsys1"
                     fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
+                    if fw is None:
+                        # It's possible for device-groups to reference a serial/vsys that doesn't exist
+                        continue
                     # Move the firewall to the device-group
                     dg.add(fw)
                     firewall_instances.remove(fw)
                 else:
                     for dg_vsys in all_dg_vsys:
                         fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
+                        if fw is None:
+                            # It's possible for device-groups to reference a serial/vsys that doesn't exist
+                            continue
                         # Move the firewall to the device-group
                         dg.add(fw)
                         firewall_instances.remove(fw)

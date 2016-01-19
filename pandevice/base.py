@@ -24,6 +24,7 @@ import xml.etree.ElementTree as ET
 import logging
 import inspect
 import time
+import copy
 
 import pandevice
 from pandevice import yesno
@@ -51,7 +52,7 @@ class PanObject(object):
     NAME = "name"
     CHILDTYPES = ()
     CHILDMETHODS = ()
-    NO_HA_SYNC = False
+    HA_SYNC = True
 
     def __init__(self, name=None):
         self.name = name
@@ -309,52 +310,40 @@ class PanObject(object):
             child.check_child_methods(method)
 
     def apply(self):
-        import ha
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), self.name))
         pandevice.set_config_changed()
-        if self.NO_HA_SYNC and isinstance(pandevice, ha.HAPair):
-            active_fw = pandevice.active_firewall
-            pandevice.xapi.edit(self.xpath(), self.element_str())
-            if pandevice.passive_firewall != active_fw:
-                pandevice.passive_firewall.xapi.edit(self.xpath(), self.element_str())
+        if self.HA_SYNC:
+            pandevice.active().xapi.edit(self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC)
         else:
-            pandevice.xapi.edit(self.xpath(), self.element_str())
+            pandevice.xapi.edit(self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC)
         for child in self.children:
             child._check_child_methods("apply")
 
     def create(self):
-        import ha
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": create called on %s object \"%s\"" % (type(self), self.name))
         pandevice.set_config_changed()
         element = self.element_str()
-        if self.NO_HA_SYNC and isinstance(pandevice, ha.HAPair):
-            active_fw = pandevice.active_firewall
-            pandevice.xapi.set(self.xpath_short(), element)
-            if pandevice.passive_firewall != active_fw:
-                pandevice.passive_firewall.xapi.set(self.xpath_short(), element)
+        if self.HA_SYNC:
+            pandevice.active().xapi.set(self.xpath_short(), element, retry_on_peer=self.HA_SYNC)
         else:
-            pandevice.xapi.set(self.xpath_short(), element)
+            pandevice.xapi.set(self.xpath_short(), element, retry_on_peer=self.HA_SYNC)
         for child in self.children:
             child._check_child_methods("create")
 
     def delete(self):
-        import ha
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), self.name))
         pandevice.set_config_changed()
-        if self.NO_HA_SYNC and isinstance(pandevice, ha.HAPair):
-            active_fw = pandevice.active_firewall
-            pandevice.xapi.delete(self.xpath())
-            if pandevice.passive_firewall != active_fw:
-                pandevice.passive_firewall.xapi.delete(self.xpath())
-        else:
-            pandevice.xapi.delete(self.xpath())
-        if self.parent is not None:
-            self.parent.remove_by_name(self.name, type(self))
         for child in self.children:
             child._check_child_methods("delete")
+        if self.HA_SYNC:
+            pandevice.active().xapi.delete(self.xpath(), retry_on_peer=self.HA_SYNC)
+        else:
+            pandevice.xapi.delete(self.xpath(), retry_on_peer=self.HA_SYNC)
+        if self.parent is not None:
+            self.parent.remove_by_name(getattr(self, self.NAME), type(self))
 
     def update(self, variable):
         """Change the value of a variable
@@ -407,13 +396,7 @@ class PanObject(object):
                 # Not an 'entry' variable
                 varpath = re.sub(regex, getattr(self, matchedvar.variable), varpath)
         if value is None:
-            if self.NO_HA_SYNC and isinstance(pandevice, ha.HAPair):
-                active_fw = pandevice.active_firewall
-                pandevice.xapi.delete(self.xpath() + "/" + varpath)
-                if pandevice.passive_firewall != active_fw:
-                    pandevice.passive_firewall.xapi.delete(self.xpath() + "/" + varpath)
-            else:
-                pandevice.xapi.delete(self.xpath() + "/" + varpath)
+            pandevice.xapi.delete(self.xpath() + "/" + varpath, retry_on_peer=self.HA_SYNC)
         else:
             element_tag = varpath.split("/")[-1]
             element = ET.Element(element_tag)
@@ -425,13 +408,7 @@ class PanObject(object):
                 # Regular text variables
                 element.text = value
                 xpath = self.xpath() + "/" + varpath
-            if self.NO_HA_SYNC and isinstance(pandevice, ha.HAPair):
-                active_fw = pandevice.active_firewall
-                pandevice.xapi.edit(xpath, ET.tostring(element))
-                if pandevice.passive_firewall != active_fw:
-                    pandevice.passive_firewall.xapi.edit(xpath, ET.tostring(element))
-            else:
-                pandevice.xapi.edit(xpath, ET.tostring(element))
+            pandevice.xapi.edit(xpath, ET.tostring(element), retry_on_peer=self.HA_SYNC)
 
     def refresh(self, running_config=False, xml=None, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse
@@ -443,13 +420,12 @@ class PanObject(object):
             else:
                 api_action = pandevice.xapi.get
             try:
-                api_action(self.xpath())
+                root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
             except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
                 if exceptions:
                     raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
                 else:
                     return
-            root = pandevice.xapi.element_root
             # Determine the first element to look for in the XML
             if self.SUFFIX is None:
                 lasttag = self.XPATH.rsplit("/", 1)[-1]
@@ -494,13 +470,13 @@ class PanObject(object):
             else:
                 api_action = pandevice.xapi.get
             try:
-                api_action(self.xpath() + "/" + var.path)
+                root = api_action(self.xpath() + "/" + var.path, retry_on_peer=self.HA_SYNC)
             except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
                 if exceptions:
                     raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
                 else:
                     setattr(self, variable, None)
-            root = pandevice.xapi.element_root
+                    return
             # Determine the first element to look for in the XML
             lasttag = var.path.rsplit("/", 1)[-1]
             obj = root.find("result/" + lasttag)
@@ -530,6 +506,7 @@ class PanObject(object):
             setattr(self, var, value)
         for var, value in noninit_variables.iteritems():
             setattr(self, var, value)
+        return getattr(self, variable, None)
 
     def refresh_children(self, running_config=False, xml=None):
         # Get the root of the xml to parse
@@ -539,8 +516,7 @@ class PanObject(object):
                 api_action = pandevice.xapi.show
             else:
                 api_action = pandevice.xapi.get
-            api_action(self.xpath())
-            root = pandevice.xapi.element_root
+            root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
             # Determine the first element to look for in the XML
             if self.SUFFIX is None:
                 lasttag = self.XPATH.rsplit("/", 1)[-1]
@@ -571,13 +547,12 @@ class PanObject(object):
         else:
             api_action = pandevice.xapi.get
         try:
-            api_action(self.xpath())
+            root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
         except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
             if exceptions:
                 raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
             else:
                 return
-        root = pandevice.xapi.element_root
         # Determine the first element to look for in the XML
         if self.SUFFIX is None:
             lasttag = self.XPATH.rsplit("/", 1)[-1]
@@ -593,10 +568,13 @@ class PanObject(object):
         return obj
 
     def pandevice(self):
-        if self.parent is None:
-            raise err.PanDeviceNotSet("No PanDevice set for object tree")
+        if self.parent is not None:
+            if isinstance(self.parent, PanDevice):
+                return self.parent
+            else:
+                return self.parent.pandevice()
         else:
-            return self.parent.pandevice()
+            raise err.PanDeviceNotSet("No PanDevice set for object tree")
 
     def panorama(self):
         if self.parent is None:
@@ -613,11 +591,11 @@ class PanObject(object):
     def find(self, name, class_type=None, recursive=False):
         if class_type is None:
             # Find the matching object or return None
-            result = next((child for child in self.children if child.name == name), None)
+            result = next((child for child in self.children if getattr(child, child.NAME) == name), None)
         else:
             # Find the matching object or return None
             result = next((child for child in self.children if
-                           child.name == name and isinstance(child, class_type)), None)
+                           getattr(child, child.NAME) == name and isinstance(child, class_type)), None)
         # Search recursively in children
         if result is None and recursive:
             for child in self.children:
@@ -656,10 +634,31 @@ class PanObject(object):
         if class_type is None:
             class_type = cls
         indexes = [i for i, child in enumerate(list_of_panobjects) if
-                   child.name == name and type(child) == class_type]
+                   getattr(child, child.NAME) == name and type(child) == class_type]
         for index in indexes:
             return index  # Just return the first index that matches the name
         return None
+
+    @classmethod
+    def apply_all_to_device(cls, parent):
+        pandevice = parent.pandevice()
+        logger.debug(pandevice.hostname + ": refresh_all_to_device called on %s type" % cls)
+        objects = parent.findall(cls)
+        if not objects:
+            return
+        # Create the xpath
+        xpath = objects[0].xpath_nosuffix()
+        # Create the root element
+        lasttag = cls.XPATH.rsplit("/", 1)[-1]
+        element = ET.Element(lasttag)
+        # Build the full element from the objects
+        for obj in objects:
+            pandevice.xml_combine(element, [obj.element()])
+        # Apply the element to the xpath
+        pandevice.set_config_changed()
+        pandevice.xapi.edit(xpath, ET.tostring(element), retry_on_peer=cls.HA_SYNC)
+        for obj in objects:
+            obj._check_child_methods("apply")
 
     @classmethod
     def refresh_all_from_device(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
@@ -691,21 +690,22 @@ class PanObject(object):
             raise ValueError("can't get name_only from running_config")
         if name_only and cls.SUFFIX != ENTRY:
             raise ValueError("name_only is invalid, can only be used on entry type objects")
-        pandevice = parent.pandevice()
+        if isinstance(parent, PanDevice):
+            pandevice = parent
+            parent_xpath = parent.xpath_root(cls.ROOT)
+        else:
+            pandevice = parent.pandevice()
+            parent_xpath = parent.xpath()
         logger.debug(pandevice.hostname + ": refresh_all_from_device called on %s type" % cls)
         if running_config:
             api_action = pandevice.xapi.show
         else:
             api_action = pandevice.xapi.get
-        if isinstance(parent, PanDevice):
-            parent_xpath = parent.xpath_root(cls.ROOT)
-        else:
-            parent_xpath = parent.xpath()
         xpath = parent_xpath + cls.XPATH
         if name_only:
             xpath = xpath + "/entry/@name"
         try:
-            api_action(xpath)
+            root = api_action(xpath, retry_on_peer=cls.HA_SYNC)
         except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
             if exceptions:
                 raise e
@@ -713,7 +713,6 @@ class PanObject(object):
                 raise e
             else:
                 return []
-        root = pandevice.xapi.element_root
         if name_only:
             obj = root.find("result")
         else:
@@ -970,24 +969,24 @@ class VsysImportMixin(object):
         if vsys is None:
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
-            pandevice = self.pandevice()
+            pandevice = self.pandevice().active()
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            pandevice.xapi.set(xpath_import, "<member>%s</member>" % self.name)
+            pandevice.xapi.set(xpath_import, "<member>%s</member>" % self.name, retry_on_peer=True)
 
     def delete_import(self, vsys=None):
         if vsys is None:
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
-            pandevice = self.pandevice()
+            pandevice = self.pandevice().active()
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            pandevice.xapi.delete(xpath_import + "/member[text()='%s']" % self.name)
+            pandevice.xapi.delete(xpath_import + "/member[text()='%s']" % self.name, retry_on_peer=True)
 
     def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
         import device
         if refresh and running_config:
             raise ValueError("Can't refresh vsys from running config in set_vsys method")
         if refresh:
-            pandevice = self.pandevice()
+            pandevice = self.pandevice().active()
             all_vsys = device.Vsys.refresh_all_from_device(pandevice, name_only=True)
             for a_vsys in all_vsys:
                 a_vsys.refresh_variable(self.XPATH_IMPORT.split("/")[-1])
@@ -1005,14 +1004,13 @@ class VsysImportMixin(object):
         if parent.vsys != "shared" and cls.XPATH_IMPORT is not None:
             xpath_import = parent.xpath_vsys() + "/import" + cls.XPATH_IMPORT
             try:
-                api_action(xpath_import)
+                imports_xml = api_action(xpath_import, retry_on_peer=True)
             except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
                 if not str(e).startswith("No such node"):
                     raise e
                 else:
                     imports = []
             else:
-                imports_xml = pandevice.xapi.element_root
                 imports = imports_xml.findall(".//member")
                 if imports is not None:
                     imports = [member.text for member in imports]
@@ -1085,6 +1083,11 @@ class PanDevice(PanObject):
         self.content_version = None
         self.platform = None
 
+        # HA Pair Firewall or Panorama
+        self._ha_peer = None
+        self._ha_active = True
+        self.ha_failed = None
+
     @classmethod
     def create_from_device(cls,
                            hostname,
@@ -1135,6 +1138,8 @@ class PanDevice(PanObject):
         """This is a confusing class used for catching exceptions and faults."""
         # TODO: comment the hell out of it!
 
+        CONNECTION_EXCEPTIONS = (err.PanConnectionTimeout, err.PanURLError, err.PanSessionTimedOut)
+
         def __init__(self, *args, **kwargs):
             self.pan_device = kwargs.pop('pan_device', None)
             pan.xapi.PanXapi.__init__(self, *args, **kwargs)
@@ -1145,6 +1150,9 @@ class PanDevice(PanObject):
                 # Ignore hidden methods
                 if name[0] == "_":
                     continue
+                # Ignore non-api methods
+                if name in ('xml_result', 'xml_root', 'cmd_xml'):
+                    continue
 
                 # Wrapper method.  This is used to create
                 # methods in this class that match the methods in the
@@ -1152,63 +1160,106 @@ class PanDevice(PanObject):
                 # a try/except block, which allows us to check and
                 # analyze the exceptions and convert them to more
                 # useful exceptions than generic PanXapiErrors.
-                wrapper_method = self.make_method(method)
+                wrapper_method = PanDevice.XapiWrapper.make_method(name, method)
 
                 # Create method matching each public method of the base class
                 setattr(PanDevice.XapiWrapper, name, wrapper_method)
 
-        def make_method(self, super_method):
-            def method(*args, **kwargs):
-                try:
-                    return super_method(*args, **kwargs)
-                except pan.xapi.PanXapiError as e:
-                    if str(e) == "Invalid credentials.":
-                        raise err.PanInvalidCredentials(
-                            str(e),
-                            pan_device=self.pan_device,
-                            )
-                    elif str(e).startswith("URLError:"):
-                        if str(e).endswith("timed out"):
-                            raise err.PanConnectionTimeout(
-                                str(e),
-                                pan_device=self.pan_device,
-                                )
+        @classmethod
+        def make_method(cls, super_method_name, super_method):
+            def method(self, *args, **kwargs):
+                retry_on_peer = kwargs.pop("retry_on_peer", True if super_method_name not in ('keygen', 'op', 'ad_hoc', 'export') else False)
+                if self.pan_device.ha_failed and self.pan_device.ha_peer is not None \
+                    and not self.pan_device.ha_peer.ha_failed and retry_on_peer:
+                    # This device is failed, use the other
+                    # TODO: Should this be retry_on_peer, or should there be some way to remove failure status?
+                    # TODO: Don't do this if retry on peer is false!
+                    logger.debug("Current device is failed, starting with other device")
+                    result = getattr(self.pan_device.ha_peer.xapi, super_method_name)(retry_on_peer=True, *args, **kwargs)
+                elif not self.pan_device.is_active() and self.pan_device.ha_peer is not None and retry_on_peer:
+                    # I'm not active, call the peer
+                    logger.debug("super_method_name: " + str(super_method_name))
+                    logger.debug("ha_peer: " + str(self.pan_device.ha_peer))
+                    result = getattr(self.pan_device.ha_peer.xapi, super_method_name)(retry_on_peer=True, *args, **kwargs)
+                else:
+                    try:
+                        # This device has not failed, or both have failed
+                        # and this device is active
+                        # Frist get the superclass method
+                        super_method(self, *args, **kwargs)
+                        result = copy.deepcopy(self.element_root)
+                    except pan.xapi.PanXapiError as e:
+                        the_exception = self.classify_exception(e)
+                        if type(the_exception) in self.CONNECTION_EXCEPTIONS:
+                            # The attempt on the active failed with a connection error
+                            new_active = self.pan_device.set_failed()
+                            if retry_on_peer and new_active is not None:
+                                logger.debug("Connection to device '%s' failed, using HA peer '%s'" %
+                                             (self.pan_device.hostname, new_active.hostname))
+                                # The active failed, apply on passive (which is now active)
+                                kwargs["retry_on_peer"] = False
+                                getattr(new_active.xapi, super_method_name)(*args, **kwargs)
+                                result = copy.deepcopy(new_active.xapi.element_root)
+                            else:
+                                raise the_exception
                         else:
-                            raise err.PanURLError(str(e),
-                                                  pan_device=self.pan_device)
-
-                    elif str(e).startswith("timeout waiting for job"):
-                        raise err.PanJobTimeout(str(e),
-                                                pan_device=self.pan_device)
-
-                    elif str(e).startswith("Another commit/validate is in"
-                                          " progress. Please try again later"):
-                        raise err.PanCommitInProgress(str(e),
-                                                      pan_device=self.pan_device)
-
-                    elif str(e).startswith("A commit is in progress."):
-                        raise err.PanCommitInProgress(str(e),
-                                                      pan_device=self.pan_device)
-
-                    elif str(e).startswith("You cannot commit while an install is in progress. Please try again later."):
-                        raise err.PanInstallInProgress(str(e),
-                                                       pan_device=self.pan_device)
-
-                    elif str(e).startswith("Session timed out"):
-                        raise err.PanSessionTimedOut(str(e),
-                                                     pan_device=self.pan_device)
-
-                    elif str(e).startswith("No such node"):
-                        raise err.PanNoSuchNode(str(e),
-                                                pan_device=self.pan_device)
-                    elif str(e).startswith("Failed to synchronize running configuration with HA peer"):
-                        raise err.PanHAConfigSyncFailed(str(e),
-                                                        pan_device=self.pan_device)
-                    else:
-                        raise err.PanDeviceXapiError(str(e),
-                                                     pan_device=self.pan_device)
+                            raise the_exception
+                return result
 
             return method
+
+        def classify_exception(self, e):
+            if str(e) == "Invalid credentials.":
+                return err.PanInvalidCredentials(
+                    str(e),
+                    pan_device=self.pan_device,
+                )
+            elif str(e).startswith("URLError:"):
+                if str(e).endswith("timed out"):
+                    return err.PanConnectionTimeout(
+                        str(e),
+                        pan_device=self.pan_device,
+                    )
+                else:
+                    return err.PanURLError(str(e),
+                                          pan_device=self.pan_device)
+
+            elif str(e).startswith("timeout waiting for job"):
+                return err.PanJobTimeout(str(e),
+                                        pan_device=self.pan_device)
+
+            elif str(e).startswith("Another commit/validate is in"
+                                   " progress. Please try again later"):
+                return err.PanCommitInProgress(str(e),
+                                              pan_device=self.pan_device)
+
+            elif str(e).startswith("A commit is in progress."):
+                return err.PanCommitInProgress(str(e),
+                                              pan_device=self.pan_device)
+
+            elif str(e).startswith("You cannot commit while an install is in progress. Please try again later."):
+                return err.PanInstallInProgress(str(e),
+                                               pan_device=self.pan_device)
+
+            elif str(e).startswith("Session timed out"):
+                return err.PanSessionTimedOut(str(e),
+                                             pan_device=self.pan_device)
+
+            elif str(e).startswith("No such node"):
+                return err.PanNoSuchNode(str(e),
+                                        pan_device=self.pan_device)
+            elif str(e).startswith("Failed to synchronize running configuration with HA peer"):
+                return err.PanHAConfigSyncFailed(str(e),
+                                                pan_device=self.pan_device)
+            elif str(e).startswith("Configuration is locked by"):
+                return err.PanLockError(str(e),
+                                       pan_device=self.pan_device)
+            elif str(e).startswith("Another sync is in progress. Please try again later"):
+                return err.PanHASyncInProgress(str(e),
+                                              pan_device=self.pan_device)
+            else:
+                return err.PanDeviceXapiError(str(e),
+                                             pan_device=self.pan_device)
 
     # Properties
 
@@ -1244,17 +1295,20 @@ class PanDevice(PanObject):
         xapi_constructor = PanDevice.XapiWrapper
         return xapi_constructor(**kwargs)
 
-    def set_config_changed(self, vsys=None):
-        if vsys is None:
-            vsys = getattr(self, "vsys", None)
+    def set_config_changed(self, scope=None):
+        # TODO: enhance to support device-group and template scope
+        if scope is None:
+            scope = getattr(self, "vsys", None)
+        if scope is None:
+            scope = "shared"
         if self.lock_before_change:
             if not self.config_locked:
-                self.add_config_lock(vsys=vsys, exception=True)
+                self.add_config_lock(scope=scope, exceptions=True)
         elif self.shared_lock_before_change:
             if not self.config_locked:
-                self.add_config_lock(vsys="shared", exception=True)
-        if vsys not in self.config_changed:
-            self.config_changed.append(vsys)
+                self.add_config_lock(scope="shared", exceptions=True)
+        if scope not in self.config_changed:
+            self.config_changed.append(scope)
 
     def _parent_xpath(self):
         parent_xpath = self.xpath_root(self.ROOT)
@@ -1295,11 +1349,6 @@ class PanDevice(PanObject):
 
         Returns:
             A string containing the API key
-
-        Raises:
-            PanDeviceError: If unable to retrieve the API key for reasons
-                other than an API connectivity problem
-            PanXapiError:  Raised by pan.xapi module for API errors
         """
         self._logger.debug("Getting API Key from %s for user %s" %
                            (self.hostname, self._api_username))
@@ -1311,15 +1360,15 @@ class PanDevice(PanObject):
             port=self.port,
             timeout=self.timeout
         )
-        xapi.keygen()
+        xapi.keygen(retry_on_peer=False)
         return xapi.api_key
 
     def devices(self):
         return self
 
     def show_system_info(self):
-        self.xapi.op(cmd="show system info", cmd_xml=True)
-        pconf = PanConfig(self.xapi.element_root)
+        root = self.xapi.op(cmd="show system info", cmd_xml=True)
+        pconf = PanConfig(root)
         system_info = pconf.python()
         return system_info['response']['result']
 
@@ -1410,25 +1459,14 @@ class PanDevice(PanObject):
                 ntp2.address = secondary
                 ntp2.create()
 
-    def show_interface(self, interface):
-        self.set_config_changed()
-        interface_name = self._interface_name(interface)
-
-        self.xapi.op("<show><interface>%s</interface></show>" % (interface_name,))
-        pconf = PanConfig(self.xapi.element_result)
-        response = pconf.python()
-        return response['result']
-
     def pending_changes(self):
         self.xapi.op(cmd="check pending-changes", cmd_xml=True)
         pconf = PanConfig(self.xapi.element_result)
         response = pconf.python()
         return response['result']
 
-    def add_commit_lock(self, comment=None, vsys=None, exception=False):
-        if vsys is None:
-            vsys = self.vsys
-        self._logger.debug("Add commit lock requested")
+    def add_commit_lock(self, comment=None, scope="shared", exceptions=True):
+        self._logger.debug("Add commit lock requested for scope %s" % scope)
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "commit-lock")
         subel = ET.SubElement(subel, "add")
@@ -1436,12 +1474,12 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=vsys)
+            self.xapi.op(ET.tostring(cmd), vsys=scope)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is already held", str(e)):
                 raise
             else:
-                if exception:
+                if exceptions:
                     raise err.PanLockError(str(e), pan_device=self)
                 else:
                     self._logger.debug(str(e))
@@ -1449,10 +1487,8 @@ class PanDevice(PanObject):
         self.commit_locked = True
         return True
 
-    def remove_commit_lock(self, admin=None, vsys=None, exception=False):
-        if vsys is None:
-            vsys = self.vsys
-        self._logger.debug("Remove commit lock requested")
+    def remove_commit_lock(self, admin=None, scope="shared", exceptions=True):
+        self._logger.debug("Remove commit lock requested for scope %s" % scope)
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "commit-lock")
         subel = ET.SubElement(subel, "remove")
@@ -1460,12 +1496,12 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "admin")
             subel.text = admin
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=vsys)
+            self.xapi.op(ET.tostring(cmd), vsys=scope)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is not currently held", str(e)):
                 raise
             else:
-                if exception:
+                if exceptions:
                     raise err.PanLockError(str(e), pan_device=self)
                 else:
                     self._logger.debug(str(e))
@@ -1473,10 +1509,8 @@ class PanDevice(PanObject):
         self.commit_locked = False
         return True
 
-    def add_config_lock(self, comment=None, vsys=None, exception=False):
-        if vsys is None:
-            vsys = self.vsys
-        self._logger.debug("Add config lock requested on scope %s" % vsys)
+    def add_config_lock(self, comment=None, scope="shared", exceptions=True):
+        self._logger.debug("Add config lock requested for scope %s" % scope)
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "add")
@@ -1484,13 +1518,13 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=vsys)
+            self.xapi.op(ET.tostring(cmd), vsys=scope)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config for scope (shared|vsys\d) is currently locked", str(e)) and \
                     not re.match(r"You already own a config lock for scope", str(e)):
                 raise
             else:
-                if exception:
+                if exceptions:
                     raise err.PanLockError(str(e), pan_device=self)
                 else:
                     self._logger.debug(str(e))
@@ -1498,26 +1532,28 @@ class PanDevice(PanObject):
         self.config_locked = True
         return True
 
-    def remove_config_lock(self, vsys=None, exception=False):
-        if vsys is None:
-            vsys = self.vsys
-        self._logger.debug("Remove config lock requested on scope %s" % vsys)
+    def remove_config_lock(self, scope="shared", exceptions=True):
+        self._logger.debug("Remove config lock requested for scope %s" % scope)
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "remove")
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=vsys)
+            self.xapi.op(ET.tostring(cmd), vsys=scope)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config is not currently locked for scope (shared|vsys\d)", str(e)):
                 raise
             else:
-                if exception:
+                if exceptions:
                     raise err.PanLockError(str(e), pan_device=self)
                 else:
                     self._logger.debug(str(e))
                     return False
         self.config_locked = False
         return True
+
+    def remove_all_locks(self, scope="shared"):
+        self.remove_config_lock(scope=scope, exceptions=False)
+        self.remove_commit_lock(scope=scope, exceptions=False)
 
     def check_commit_locks(self):
         self.xapi.op("show commit-locks", cmd_xml=True)
@@ -1543,6 +1579,124 @@ class PanDevice(PanObject):
             if not str(e).startswith("Command succeeded with no output"):
                 raise e
 
+    # High Availability Methods
+
+    @property
+    def ha_peer(self):
+        return self._ha_peer
+
+    def set_ha_peers(self, pandevice):
+        self._ha_peer = pandevice
+        self.ha_peer._ha_peer = self
+        # If both are active or both are passive,
+        # set self to active and ha_peer to passive
+        if self._ha_active == self.ha_peer._ha_active:
+            self._ha_active = True
+            self.ha_peer._ha_active = False
+
+    def active(self):
+        if self._ha_active:
+            return self
+        else:
+            return self.ha_peer
+
+    def passive(self):
+        if self._ha_active:
+            return self.ha_peer
+        else:
+            return self
+
+    def is_active(self):
+        return self._ha_active
+
+    def activate(self):
+        self._ha_active = True
+        if self.ha_peer is not None:
+            self.ha_peer._ha_active = False
+
+    def toggle_ha_active(self):
+        if self.ha_peer is not None:
+            self._ha_active = not self._ha_active
+            self.ha_peer._ha_active = not self.ha_peer._ha_active
+
+    def update_ha_active(self):
+        # TODO: Implement this
+        raise NotImplementedError
+
+    def set_failed(self):
+        if self.ha_peer is None:
+            return None
+        self.ha_failed = True
+        if self.ha_peer is not None:
+            self.ha_peer.activate()
+            return self.ha_peer
+
+    def refresh_ha_active(self):
+        logger.debug("Refreshing active firewall in HA Pair")
+        ha_state = self.active().op("show high-availability state")
+        enabled = ha_state.find("./result/enabled")
+        if enabled is None:
+            return
+        if enabled.text == "yes":
+            state = ha_state.find("./result/group/local-info/state")
+            if state is None:
+                return
+            if state.text != "active":
+                logger.debug("Current firewall state is %s, switching to use other firewall" % state.text)
+                self.toggle_ha_active()
+            else:
+                logger.debug("Current firewall is active, no change made")
+
+    def synchronize_config(self):
+        state = self.config_sync_state()
+        if state == "synchronization in progress":
+            # Wait until synchronization done
+            return self.watch_op("show high-availability state", "group/running-sync", "synchronized")
+        elif state != "synchronized":
+            logger.debug("Synchronizing configuration with HA peer")
+            response = self.active().op("request high-availability sync-to-remote running-config", "shared")
+            line = response.find("./msg/line")
+            if line is None:
+                raise err.PanDeviceError("Unable to syncronize configuration, no response from firewall")
+            if line.text.startswith("successfully sync'd running configuration to HA peer"):
+                return True
+            else:
+                raise err.PanDeviceError("Unable to syncronize configuration: %s" % line.text)
+        else:
+            logger.debug("Config synchronization is not required, already synchronized")
+            return True
+
+    def config_sync_state(self):
+        logger.debug("Checking configuration sync state")
+        ha_state = self.active().op("show high-availability state")
+        enabled = ha_state.find("./result/enabled")
+        if enabled is None or enabled.text == "no":
+            logger.debug("HA is not enabled on firewall")
+            return
+        if enabled.text == "yes":
+            sync_enabled = ha_state.find("./result/group/running-sync-enabled")
+            if sync_enabled is None or sync_enabled.text != "yes":
+                logger.debug("HA config sync is not enabled on firewall")
+                return
+            else:
+                state = ha_state.find("./result/group/running-sync")
+                if state is None:
+                    logger.debug("HA or config sync is not enabled on firewall")
+                    return
+                logger.debug("Current config sync state is: %s" % state.text)
+                return state.text
+
+    def config_synced(self):
+        state = self.config_sync_state()
+        if state is None:
+            return False
+        elif state != "synchronized":
+            return False
+        else:
+            return True
+
+    # Commit methods
+
     def commit(self, sync=False, exception=False, cmd=None):
         self._logger.debug("Commit initiated on device: %s" % (self.hostname,))
         return self._commit(sync=sync, exception=exception, cmd=cmd)
@@ -1550,6 +1704,7 @@ class PanDevice(PanObject):
     def _commit(self, cmd=None, exclude=None, commit_all=False,
                 sync=False, sync_all=False, exception=False):
         """Internal use commit helper method.
+        # TODO: Support per-vsys commit
 
         :param exclude:
             Can be:
@@ -1588,12 +1743,13 @@ class PanDevice(PanObject):
         else:
             action = None
         self._logger.debug("Initiating commit")
-        self.xapi.commit(cmd=cmd,
-                         action=action,
-                         sync=False,
-                         interval=self.interval,
-                         timeout=self.timeout)
-        commit_response = self.xapi.element_root
+        commit_response = self.xapi.commit(cmd=cmd,
+                                           action=action,
+                                           sync=False,
+                                           interval=self.interval,
+                                           timeout=self.timeout,
+                                           retry_on_peer=True,
+                                           )
         # Set locks off
         self.config_changed = []
         self.config_locked = False
@@ -1671,7 +1827,7 @@ class PanDevice(PanObject):
         while True:
             try:
                 attempts += 1
-                self.xapi.op(cmd=cmd, cmd_xml=True)
+                job_xml = self.xapi.op(cmd=cmd, cmd_xml=True, retry_on_peer=True)
             except (pan.xapi.PanXapiError, err.PanDeviceError) as e:
                 # Connection errors (URLError) are ok, this can happen in PAN-OS 7.0.1 and 7.0.2
                 # if the hostname is changed
@@ -1690,7 +1846,6 @@ class PanDevice(PanObject):
                 time.sleep(interval)
                 continue
 
-            job_xml = self.xapi.element_root
             status = job_xml.find("./result/job/status")
             if status is None:
                 raise pan.xapi.PanXapiError('No status element in ' +
@@ -1845,7 +2000,7 @@ class PanDevice(PanObject):
         }
         return result
 
-    def watch_op(self, cmd, path, value, cmd_xml=True, interval=1.0):
+    def watch_op(self, cmd, path, value, vsys=None, cmd_xml=True, interval=1.0):
         """Watch an operational command for an expected value"""
         if interval is not None:
             try:
@@ -1855,14 +2010,16 @@ class PanDevice(PanObject):
             except ValueError:
                 raise err.PanDeviceError('Invalid interval: %s' % interval)
 
+        if vsys is None:
+            vsys = self.vsys
+
         self._logger.debug("Waiting for value %s..." % value)
 
         start_time = time.time()
         attempts = 0
         while True:
             attempts += 1
-            self.xapi.op(cmd=cmd, cmd_xml=cmd_xml)
-            xml = self.xapi.element_root
+            xml = self.xapi.op(cmd=cmd, cmd_xml=cmd_xml)
             status = xml.find("./result/%s" % path)
             if status is None:
                 raise err.PanNoSuchNode("No element at path")

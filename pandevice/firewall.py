@@ -63,10 +63,8 @@ class Firewall(PanDevice):
     ROOT = Root.MGTCONFIG
     SUFFIX = ENTRY
     NAME = "serial"
-    NO_HA_SYNC = True
     CHILDTYPES = (
-        device.Vsys,
-        VsysResources,
+        device.VsysResources,
         objects.AddressObject,
         network.VirtualRouter,
     )
@@ -96,6 +94,9 @@ class Firewall(PanDevice):
         self.serial_ha_peer = None
         self.management_ip = None
 
+        # Panorama state variables
+        self.connected = None
+
         # Create a User-ID subsystem
         self.userid = userid.UserId(self)
 
@@ -106,6 +107,8 @@ class Firewall(PanDevice):
     @vsys.setter
     def vsys(self, value):
         self._vsys = value
+        if self.ha_peer is not None:
+            self.ha_peer._vsys = value
 
     def xpath_vsys(self):
         if self.vsys == "shared":
@@ -134,11 +137,10 @@ class Firewall(PanDevice):
                 parent_xpath = self.parent.xpath()
         return parent_xpath
 
-    def op(self, cmd=None, vsys=None, cmd_xml=True, extra_qs=None):
+    def op(self, cmd=None, vsys=None, cmd_xml=True, extra_qs=None, retry_on_peer=False):
         if vsys is None:
             vsys = self.vsys
-        self.xapi.op(cmd, vsys, cmd_xml, extra_qs)
-        return self.xapi.element_root
+        return self.xapi.op(cmd, vsys, cmd_xml, extra_qs, retry_on_peer=retry_on_peer)
 
     def generate_xapi(self):
         """Override super class to connect to Panorama
@@ -224,9 +226,8 @@ class Firewall(PanDevice):
             # This is a firewall under a devicegroup
             # Refresh device-group first to see if this is the only vsys
             devices_xpath = self.devicegroup().xpath() + self.XPATH
-            panorama.xapi.get(devices_xpath)
-            devices_xml = panorama.xapi.element_root
-            dg_vsys = devices_xml.findall("entry[@name='%s']/vsys/entry" % self.serial)
+            devices_xml = panorama.xapi.get(devices_xpath)
+            dg_vsys = devices_xml.findall("result/devices/entry[@name='%s']/vsys/entry" % self.serial)
             if dg_vsys:
                 if len(dg_vsys) == 1:
                     # Only vsys, so delete whole entry
@@ -249,12 +250,12 @@ class Firewall(PanDevice):
             if self.vsys_name is not None:
                 ET.SubElement(element, "display-name").text = self.vsys_name
             self.set_config_changed()
-            self.xapi.set(self.xpath_device() + "/vsys", ET.tostring(element))
+            self.xapi.set(self.xpath_device() + "/vsys", ET.tostring(element), retry_on_peer=True)
 
     def delete_vsys(self):
         if self.vsys.startswith("vsys"):
             self.set_config_changed()
-            self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys)
+            self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys, retry_on_peer=True)
 
     @classmethod
     def refresh_all_from_xml(cls, xml, refresh_children=False, variables=None):

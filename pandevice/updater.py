@@ -35,8 +35,7 @@ class Updater(object):
         self.versions = {}
 
     def _op(self, cmd):
-        self.pandevice.xapi.op(cmd, cmd_xml=True)
-        return self.pandevice.xapi.element_root
+        return self.pandevice.xapi.op(cmd, cmd_xml=True)
 
 
 class SoftwareUpdater(Updater):

@@ -185,11 +185,11 @@ class HAPair(firewall.Firewall):
             response = self.active_firewall.op("request high-availability sync-to-remote running-config")
             line = response.find("./msg/line")
             if line is None:
-                raise err.PanDeviceError("Unabled to syncronize configuration, no response from firewall")
+                raise err.PanDeviceError("Unable to synchronize configuration, no response from firewall")
             if line.text.startswith("successfully sync'd running configuration to HA peer"):
                 return True
             else:
-                raise err.PanDeviceError("Unabled to syncronize configuration: %s" % line.text)
+                raise err.PanDeviceError("Unable to synchronize configuration: %s" % line.text)
         else:
             logger.debug("Config synchronization is not required, already synchronized")
             return True
@@ -229,6 +229,9 @@ class HighAvailabilityInterface(PanObject):
     Do not instantiate this class.  Use its subclasses
 
     """
+
+    HA_SYNC = False
+
     # TODO: Support encryption
     def __init__(self,
                  ip_address=None,
@@ -453,6 +456,7 @@ class HighAvailability(PanObject):
 
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/high-availability"
+    HA_SYNC = False
     CHILDTYPES = (
         HA1,
         HA1Backup,
