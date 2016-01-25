@@ -100,7 +100,7 @@ Share context with Dynamic Address Groups
 Tagging an IP address means setting metadata or context on the firewall for
 that IP, which causes it to be added to corresponding Dynamic Address
 Groups in the firewall security policy.  For example, you could create a
-rule in the security policy that blocks and IP address with the tag
+rule in the security policy that blocks any IP address with the tag
 'bad-actor'. Initially, no IP addresses would be blocked, but you can
 create a search in Splunk for criteria that represents a problem device,
 and trigger a tagging of that IP address with the 'bad-actor' tag.  The
