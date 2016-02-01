@@ -315,33 +315,6 @@ class Firewall(PanDevice):
             raise err.PanDeviceError("Problem parsing show system resources",
                                      pan_device=self)
 
-    def get_interface_counters(self, interface):
-        """Pull the counters for an interface
-
-        :param interface: interface object or str with name of interface
-        :return: Dictionary of counters, or None if no counters for interface
-        """
-        interface_name = self._interface_name(interface)
-
-        self.xapi.op("<show><counter><interface>%s</interface></counter></show>" % (interface_name,))
-        pconf = PanConfig(self.xapi.element_result)
-        response = pconf.python()
-        counters = response['result']
-        if counters:
-            entry = {}
-            # Check for entry in ifnet
-            if 'entry' in counters.get('ifnet', {}):
-                entry = counters['ifnet']['entry'][0]
-            elif 'ifnet' in counters.get('ifnet', {}):
-                if 'entry' in counters['ifnet'].get('ifnet', {}):
-                    entry = counters['ifnet']['ifnet']['entry'][0]
-
-            # Convert strings to integers, if they are integers
-            entry.update((k, pandevice.convert_if_int(v)) for k, v in entry.iteritems())
-            # If empty dictionary (no results) it usually means the interface is not
-            # configured, so return None
-            return entry if entry else None
-
     def commit_device_and_network(self, sync=False, exception=False):
         return self._commit(sync=sync, exclude="device-and-network",
                             exception=exception)

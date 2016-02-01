@@ -186,6 +186,29 @@ class Interface(PanObject):
     def set_virtual_router(self, virtual_router_name, refresh=False, update=False, running_config=False):
         return self._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh, update, running_config)
 
+    def get_counters(self):
+        """Pull the counters for an interface"""
+        from pan.config import PanConfig
+        pconf = self.pandevice().op('show counter interface "%s"' % self.name)
+        pconf = PanConfig(pconf)
+        response = pconf.python()
+        logger.debug("response: " + str(response))
+        counters = response['response']['result']
+        if counters is not None:
+            entry = {}
+            # Check for entry in ifnet
+            if 'entry' in counters.get('ifnet', {}):
+                entry = counters['ifnet']['entry'][0]
+            elif 'ifnet' in counters.get('ifnet', {}):
+                if 'entry' in counters['ifnet'].get('ifnet', {}):
+                    entry = counters['ifnet']['ifnet']['entry'][0]
+
+            # Convert strings to integers, if they are integers
+            entry.update((k, pandevice.convert_if_int(v)) for k, v in entry.iteritems())
+            # If empty dictionary (no results) it usually means the interface is not
+            # configured, so return None
+            return entry if entry else None
+
 
 class Arp(PanObject):
     """Static ARP Mapping"""
