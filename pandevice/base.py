@@ -423,7 +423,7 @@ class PanObject(object):
                 root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
             except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
                 if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
                 else:
                     return
             # Determine the first element to look for in the XML
@@ -434,7 +434,7 @@ class PanObject(object):
             obj = root.find("result/" + lasttag)
             if obj is None:
                 if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
                 else:
                     return
         else:
@@ -473,7 +473,7 @@ class PanObject(object):
                 root = api_action(self.xpath() + "/" + var.path, retry_on_peer=self.HA_SYNC)
             except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
                 if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
                 else:
                     setattr(self, variable, None)
                     return
@@ -482,7 +482,7 @@ class PanObject(object):
             obj = root.find("result/" + lasttag)
             if obj is None:
                 if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
                 else:
                     if var.vartype in ("member", "entry"):
                         setattr(self, variable, [])
@@ -550,7 +550,7 @@ class PanObject(object):
             root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
         except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
             if exceptions:
-                raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+                raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
             else:
                 return
         # Determine the first element to look for in the XML
@@ -561,7 +561,7 @@ class PanObject(object):
         obj = root.find("result/" + lasttag)
         if obj is None:
             if exceptions:
-                raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self)
+                raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
             else:
                 return
         self.refresh(xml=obj, refresh_children=refresh_children, exceptions=exceptions)
@@ -877,12 +877,12 @@ class PanObject(object):
             for obj in allobjects:
                 references = getattr(obj, reference_var)
                 if self in references:
-                    if reference_name is not None and obj.name == reference_name:
+                    if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
                         continue
                     references.remove(self)
                     if update: obj.update(reference_var)
                 elif str(self) in references:
-                    if reference_name is not None and obj.name == reference_name:
+                    if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
                         continue
                     references.remove(str(self))
                     if update: obj.update(reference_var)
