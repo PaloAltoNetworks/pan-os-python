@@ -26,6 +26,10 @@ import pandevice.errors as err
 from pan.xapi import PanXapiError
 
 
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
+
+
 class UserId(object):
 
     def __init__(self, panfirewall):

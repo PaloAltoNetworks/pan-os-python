@@ -38,8 +38,8 @@ if not hasattr(logging, 'NullHandler'):
     logging.NullHandler = NullHandler
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
-logging.getLogger(__name__).addHandler(logging.NullHandler())
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 # XPaths
 XPATH_SHARED = "/config/shared"
@@ -66,13 +66,21 @@ def enum(*sequential, **named):
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
+# Create more debug logging levels
+DEBUG1 = logging.DEBUG -1
+DEBUG2 = DEBUG1 - 1
+DEBUG3 = DEBUG2 - 1
+DEBUG4 = DEBUG3 - 1
+
+logging.addLevelName(DEBUG1, 'DEBUG1')
+logging.addLevelName(DEBUG2, 'DEBUG2')
+logging.addLevelName(DEBUG3, 'DEBUG3')
+logging.addLevelName(DEBUG4, 'DEBUG4')
+
 # Adjust pan-python logging levels so they don't interfere with pandevice logging
-pan.DEBUG1 = logging.DEBUG - 1
+pan.DEBUG1 = logging.DEBUG - 2  # equavalent to DEBUG2
 pan.DEBUG2 = pan.DEBUG1 - 1
 pan.DEBUG3 = pan.DEBUG2 - 1
-logging.addLevelName(pan.DEBUG1, 'DEBUG1')
-logging.addLevelName(pan.DEBUG2, 'DEBUG2')
-logging.addLevelName(pan.DEBUG3, 'DEBUG3')
 
 
 # Convenience methods used internally by module

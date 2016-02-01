@@ -25,6 +25,10 @@ from pan.config import PanConfig
 import pandevice.errors as err
 
 
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
+
+
 class Updater(object):
     """This class is instantiated by the PanDevice class as a software update subsystem"""
 

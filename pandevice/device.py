@@ -25,16 +25,8 @@ from base import VarPath as Var
 import errors as err
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
-try:
-    # working for python 2.7 and higher
-    logging.getLogger(__name__).addHandler(logging.NullHandler())
-except AttributeError as e:
-    # python 2.6 doesn't have a null handler, so create it
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-    logging.NullHandler = NullHandler
-    logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class VsysResources(PanObject):

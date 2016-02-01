@@ -37,6 +37,7 @@ import updater
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 Root = pandevice.enum("DEVICE", "VSYS", "MGTCONFIG")
 SELF = "/%s"

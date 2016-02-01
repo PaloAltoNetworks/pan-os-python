@@ -41,6 +41,7 @@ import pan.commit
 
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class DeviceGroup(PanObject):

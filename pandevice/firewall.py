@@ -53,8 +53,8 @@ from updater import Updater
 import userid
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
-logging.getLogger(__name__).addHandler(logging.NullHandler())
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class Firewall(PanDevice):
