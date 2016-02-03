@@ -247,6 +247,9 @@ def main_cli():
 
 if __name__ == "__main__":
     if environment.run_by_splunk():
-        main_splunk()
+        try:
+            main_splunk()
+        except Exception as e:
+            common.exit_with_error(e)
     else:
         main_cli()
