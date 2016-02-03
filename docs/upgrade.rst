@@ -13,7 +13,8 @@ Upgrade to App Version 5.0
 This applies if upgrading from a pre-5.0 version of this app to 5.0.0 or higher.
 
 
-**Add-on (TA)**
+Add-on (TA)
+~~~~~~~~~~~
 
 Starting with App v5.0.0, the App now requires the `Palo Alto Networks Add-on
 for Splunk`_. The required version of the TA is always listed in the
@@ -43,16 +44,50 @@ No TA installed     No action required, TA is installed automatically by App
 .. _README.md:
    https://github.com/PaloAltoNetworks-BD/SplunkforPaloAltoNetworks/blob/master/README.md
 
-**Index**
+Index
+~~~~~
 
 The new App 5.0 and Add-on 3.5 do not use the ``pan_logs`` index that previous
-versions used. Now, logs can be stored in any index. No action is required
-while upgrading. Logs will continue to be stored in the ``pan_logs`` index
-according to the data inputs from the previous App version, unless otherwise
-specified.  The data input can optionally be changed to store logs in a
-different index.
+versions used. Now, logs can be stored in any index. Since the App no longer
+specifies the pan_logs index, if you are upgrading, you will need to specify
+the index yourself.
 
-**Sourcetype**
+**ACTION REQUIRED**: Create a new index called ``pan_logs`` using the
+Splunk GUI or on the command line. Also, in your Splunk role settings, add the
+``pan_logs`` index to the list of **Indexes searched by default**.
+
+Splunk will not overwrite the data previously indexed, and you will have
+access to all the data indexed before the upgrade. Logs will continue to be
+stored in the ``pan_logs`` index according to the data inputs from the
+previous App version, unless otherwise specified.  The data input can
+optionally be changed to store logs in a different index.
+
+Results still might not show up during a search. This is because the
+``pan_logs`` index is not searched by default. To add the ``pan_logs`` index
+to the list of indexes searched by default, in your Splunk settings, navigate
+to **Access controls** -> **Roles** -> **<your role>**. Scroll down to the
+section **Indexes searched by default**. Move ``pan_logs`` (or
+``All non-internal indexes``) to the right column.
+
+Lookups
+~~~~~~~
+
+The lookups have been moved to the Add-on (TA). However, Splunk Enterprise
+does not remove lookup tables during the upgrade process. So you must remove
+the lookup tables from the App after the upgrade, or you will see errors
+while searching within the App.
+
+**ACTION REQUIRED**: Delete any lookups in the App that you did not create.
+If you did not create any lookups in the App directory, then you can safely
+delete the entire lookup directory from the App. The path to the lookup
+directory is ``$SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/lookups``
+
+For example::
+
+    rm -rf $SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/lookups
+
+Sourcetype
+~~~~~~~~~~
 
 The sourcetype format has changed:
 

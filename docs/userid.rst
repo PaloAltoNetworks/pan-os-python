@@ -9,10 +9,12 @@ that the firewall is getting the login information from AD or some other
 authentication system, to know what user is logged into the device
 generating the traffic.
 
-If authentication logs are being indexed by Splunk, then Splunk can synchronize
-knowledge of where users are logged in with the firewall. There are two ways
-to synchronize user-id information to the firewall, depending on how your
-authentication logs are formatted in Splunk.
+Often a system like a RADIUS server sends authentication logs to Splunk to
+be indexed. When these logs arrive at Splunk, Splunk can synchronize with
+the firewall the knowledge of where users logged in. This keeps the
+firewall's User-ID up to date for policy enforcement and monitoring. There are
+two ways to synchronize user-id information to the firewall, depending on
+how your authentication logs are formatted in Splunk.
 
 
 Method 1: Splunk Forwarding
@@ -20,9 +22,10 @@ Method 1: Splunk Forwarding
 
 This is the **recommended** method.
 
-Forward the authentication logs from Splunk to a User-ID Agent or User-ID
-Firewall. The logs must contain both the user and the IP address where they
-logged in/out.
+When Splunk receives authentication logs from an external system (like
+a RADIUS server), forward the authentication logs from Splunk to a User-ID
+Agent or User-ID Firewall. The logs must contain both the user and the IP
+address where they logged in/out.
 
 This method is recommended because it is more efficient.
 

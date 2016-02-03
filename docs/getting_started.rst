@@ -6,11 +6,17 @@ Getting Started
 Step 1: Install the App and Add-on
 ----------------------------------
 
+* `Palo Alto Networks App <https://splunkbase.splunk.com/app/491>`_
+* `Palo Alto Networks Add-on <https://splunkbase.splunk.com/app/2757>`_
+
 First, if upgrading to App v4.1 or 5.0, read the :ref:`Upgrade Guide <upgrade>`.
 
 The Palo Alto Networks Splunk App and Add-on are designed to work together,
 and with Splunk Enterprise Security if available. The Add-on can be used
 without the App.
+
+.. note:: The Palo Alto Networks App and Add-on must be installed on all
+   Searchheads, Indexers, and Heavy Forwarders.
 
 This table indicates when the Add-on (TA) is necessary:
 
@@ -30,9 +36,6 @@ This table indicates when the Add-on (TA) is necessary:
    The latest Add-on (TA) is installed automatically by the App, and does
    **not** need to be installed separately.
 
-* `Palo Alto Networks App <https://splunkbase.splunk.com/app/491>`_
-* `Palo Alto Networks Add-on <https://splunkbase.splunk.com/app/2757>`_
-
 Install the Palo Alto Networks App by downloading it from the App homepage,
 or by installing it from within Splunk.
 
@@ -40,9 +43,6 @@ or by installing it from within Splunk.
 
    Downloading the App from within Splunk Enterprise. You don't need to
    download the Add-on; it comes bundled with the App.
-
-.. note:: The Palo Alto Networks App and Add-on must be installed on all
-   Searchheads, Indexers, and Heavy Forwarders.
 
 .. _initialsetup:
 
@@ -59,6 +59,8 @@ Step 2: Initial Setup
 
 .. image:: _static/setup.png
 
+**Firewall Credentials**
+
 Enter the credentials for your Firewall or Panorama. The
 credentials are encrypted by Splunk and used for the
 following features:
@@ -66,6 +68,17 @@ following features:
 * :ref:`syncuserid`
 * :ref:`dag`
 * :ref:`contentpack`
+
+Optionally, you can create a user for Splunk on the firewall or Panorama,
+and reduce the user's role to just what is required. The App needs
+**User-ID Agent** permissions in the **XML API** tab.
+
+.. figure:: _static/admin_role.png
+   :figwidth: 75%
+
+   Firewall permissions required for App special features
+
+**Wildfire API Key**
 
 Enter a WildFire API key. Splunk can
 :ref:`index malware behavioral fingerprints <wildfire>` by downloading malware
