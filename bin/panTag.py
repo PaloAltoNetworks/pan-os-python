@@ -192,7 +192,7 @@ def main_splunk():
                     this_firewall = firewall[(this_serial, this_vsys)]
                     this_firewall.userid.batch_start()
         else:
-            this_firewall = firewall
+            this_firewall = firewall['firewall']
 
         ## Find the tag (if a tag_field was specified)
 
@@ -247,6 +247,9 @@ def main_cli():
 
 if __name__ == "__main__":
     if environment.run_by_splunk():
-        main_splunk()
+        try:
+            main_splunk()
+        except Exception as e:
+            common.exit_with_error(e)
     else:
         main_cli()

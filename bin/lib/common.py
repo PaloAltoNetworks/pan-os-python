@@ -75,9 +75,7 @@ def get_firewall_credentials(session_key):
         logger.debug("Getting firewall credentials from Splunk")
         entities = entity.getEntities(['admin', 'passwords'], namespace=APPNAME, owner='nobody', sessionKey=session_key)
     except Exception as e:
-        import traceback
-        logger.warn(traceback.format_exc())
-        raise Exception("Could not get %s credentials from splunk. Error: %s" % (APPNAME, str(e)))
+        exit_with_error("Could not get %s credentials from splunk. Error: %s" % (APPNAME, str(e)))
     # return first set of credentials
     for i, c in entities.items():
         if c['username'] != 'wildfire_api_key':
@@ -90,17 +88,14 @@ def get_wildfire_apikey(session_key):
     try:
         entities = entity.getEntities(['admin', 'passwords'], namespace=APPNAME, owner='nobody', sessionKey=session_key)
     except Exception as e:
-        stack = traceback.format_exc()
-        logger.warn(stack)
-        logger.warn("entity exception")
-        raise Exception("Could not get %s credentials from splunk. Error: %s" % (APPNAME, str(e)))
+        exit_with_error("Could not get %s credentials from splunk. Error: %s" % (APPNAME, str(e)))
     # return first set of credentials
     for i, c in entities.items():
         if c['username'] == 'wildfire_api_key':
             return c['clear_password']
     logger.warn(
         "There are Palo Alto Networks WildFire malware events, but no WildFire API Key found, please set the API key in the SplunkforPaloAltoNetworks App set up page")
-    raise NoCredentialsFound("No Wildfire API key is set")
+    exit_with_error("No Wildfire API key is set, set apikey in App configuration.")
 
 
 def get_firewall_apikey(session_key):
@@ -108,10 +103,7 @@ def get_firewall_apikey(session_key):
     try:
         entities = entity.getEntities(['admin', 'passwords'], namespace=APPNAME, owner='nobody', sessionKey=session_key)
     except Exception as e:
-        stack = traceback.format_exc()
-        logger.warn(stack)
-        logger.warn("entity exception")
-        raise Exception("Could not get %s credentials from splunk. Error: %s" % (APPNAME, str(e)))
+        exit_with_error("Could not get %s credentials from splunk. Error: %s" % (APPNAME, str(e)))
     for i, c in entities.items():
         if c['username'] == 'firewall_api_key':
             return c['clear_password']
@@ -130,7 +122,7 @@ def set_firewall_apikey(session_key, apikey):
         stack = traceback.format_exc()
         logger.warn(stack)
         logger.warn("entity exception")
-        raise Exception("Could not set %s firewall apikey from splunk. Error: %s" % (APPNAME, str(e)))
+        exit_with_error("Could not set %s firewall apikey from splunk. Error: %s" % (APPNAME, str(e)))
 
 
 def delete_firewall_apikey(session_key):
@@ -140,10 +132,7 @@ def delete_firewall_apikey(session_key):
     except ResourceNotFound:
         pass
     except Exception as e:
-        stack = traceback.format_exc()
-        logger.warn(stack)
-        logger.warn("entity exception")
-        raise Exception("Could not delete %s firewall apikey from splunk. Error: %s" % (APPNAME, str(e)))
+        exit_with_error("Could not delete %s firewall apikey from splunk. Error: %s" % (APPNAME, str(e)))
 
 
 def apikey(sessionKey, hostname, debug=False):
@@ -172,11 +161,9 @@ def apikey(sessionKey, hostname, debug=False):
             set_firewall_apikey(sessionKey, apikey)
             return apikey
         except NoCredentialsFound as e:
-            logger.error("No Firewall/Panorama credentials for searchbar command. Please set the username and password in the App set up page.")
-            exit_with_error(str(e))
+            exit_with_error("No Firewall/Panorama credentials for searchbar command. Please set the username and password in the App set up page.")
         except Exception as e:
-            logger.error("Unable to get apikey")
-            exit_with_error(str(e))
+            exit_with_error("Unable to get apikey from firewall: %s" % str(e))
 
 
 def check_debug(arguments):
