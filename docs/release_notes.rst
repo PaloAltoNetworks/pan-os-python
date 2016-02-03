@@ -4,8 +4,27 @@
 Release Notes
 =============
 
+Version 5.0.x is a major release that re-architects the Palo Alto Networks App by splitting it
+into an App and an Add-on. The `Palo Alto Networks Add-on`_ is included in the
+`Palo Alto Networks App`_ and is installed or upgraded automatically with the App.
+
+App v5.0.1
+----------
+
+* Fix error when using pantag command with single firewall
+* Fix error when using pancontentpack command
+* Improved searchbar command logging
+
+Add-on v3.5.2
+-------------
+
+* Fix issue where endpoint logs would show up in CIM apps, but not Palo Alto Networks app
+
+Previous Versions
+=================
+
 App v5.0.0
-==========
+----------
 
 This major release re-architects the Palo Alto Networks App by splitting it
 into an App and an Add-on. The `Palo Alto Networks Add-on`_ is included in the
@@ -31,8 +50,9 @@ following new features:
 .. _Palo Alto Networks Add-on: https://splunkbase.splunk.com/app/2757
 .. _Palo Alto Networks App: https://splunkbase.splunk.com/app/491
 
+
 Add-on v3.5.1
-=============
+-------------
 
 * Add support for PAN-OS 7.0 new fields
 * Add hip-match log type from Firewall and Panorama
@@ -42,8 +62,9 @@ Add-on v3.5.1
 * Fix incorrect value in report_id field for Wildfire logs in PAN-OS 6.1 or higher
 * Fix src_category field should be dest_category
 
+
 Add-on v3.5.0
-=============
+-------------
 
 Included with `Splunk Enterprise Security 4`_.
 
@@ -57,9 +78,6 @@ Security 4`_ and the `Palo Alto Networks App for Splunk v5`_.
 .. _Palo Alto Networks App for Splunk v5:
    https://splunkbase.splunk.com/app/491/
 
-
-Previous Versions
-=================
 
 v4.2.2
 ------
