@@ -192,7 +192,7 @@ def main_splunk():
                     this_firewall = firewall[(this_serial, this_vsys)]
                     this_firewall.userid.batch_start()
         else:
-            this_firewall = firewall
+            this_firewall = firewall['firewall']
 
         ## Find the tag (if a tag_field was specified)
 
