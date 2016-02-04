@@ -9,14 +9,14 @@ into an App and an Add-on. The `Palo Alto Networks Add-on`_ is included in the
 `Palo Alto Networks App`_ and is installed or upgraded automatically with the App.
 
 App v5.0.1
-----------
+==========
 
 * Fix error when using pantag command with single firewall
 * Fix error when using pancontentpack command
 * Improved searchbar command logging
 
 Add-on v3.5.2
--------------
+=============
 
 * Fix issue where endpoint logs would show up in CIM apps, but not Palo Alto Networks app
 
