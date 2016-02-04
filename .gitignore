@@ -77,3 +77,6 @@ git-repositories/
 
 # PyCharm/IntelliJ meta-directory
 .idea
+
+# Sublime Text
+sftp-config.json
