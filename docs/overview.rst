@@ -50,7 +50,7 @@ designed to work together, and with Splunk Enterprise Security when available.
 **Palo Alto Networks App**
 
 * Dashboards to track SaaS application usage, user activity, system health,
-  configuration changes for audits, Wildfire malware, and other Palo Alto
+  configuration changes for audits, Wildfire malware, GlobalProtect and other Palo Alto
   Networks specific features.
 * Advanced correlations in each dashboard
 * Datamodels with pivots for easy access to data and visualizations
