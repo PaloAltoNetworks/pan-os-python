@@ -1971,12 +1971,16 @@ class PanDevice(PanObject):
                 # Errors and warnings might not have a full structure.  If it is just a string, then
                 # a TypeError will be produced, so in that case, just grab the string.
                 try:
-                    devices_results[device['serial-no']]['warnings'] = device['details']['msg']['warnings']
+                    devices_results[device['serial-no']]['warnings'] = device['details']['msg']['warnings']['line']
+                except KeyError as e:
+                    try:
+                        devices_results[device['serial-no']]['warnings'] = device['details']['msg']['warnings']
+                    except TypeError as e:
+                        devices_results[device['serial-no']]['warnings'] = ""
                 except TypeError as e:
                     devices_results[device['serial-no']]['warnings'] = ""
                 try:
-                    devices_results[device['serial-no']]['messages'] = device['details']['msg']['errors'][
-                        'line']
+                    devices_results[device['serial-no']]['messages'] = device['details']['msg']['errors']['line']
                 except TypeError as e:
                     devices_results[device['serial-no']]['messages'] = device['details']
 
