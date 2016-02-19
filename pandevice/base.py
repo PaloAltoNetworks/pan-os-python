@@ -1644,15 +1644,20 @@ class PanDevice(PanObject):
             state = ha_state.find("./result/group/local-info/state")
             if state is None:
                 return
-            if state.text != "active":
+            if state.text == "initial":
+                logger.debug("HA is initializing, try again soon")
+            elif state.text != "active":
                 logger.debug("Current firewall state is %s, switching to use other firewall" % state.text)
                 self.toggle_ha_active()
             else:
                 logger.debug("Current firewall is active, no change made")
+            return state.text
 
     def synchronize_config(self):
         state = self.config_sync_state()
-        if state == "synchronization in progress":
+        if state is None:
+            return
+        elif state == "synchronization in progress":
             # Wait until synchronization done
             return self.watch_op("show high-availability state", "group/running-sync", "synchronized")
         elif state != "synchronized":
