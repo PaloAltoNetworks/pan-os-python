@@ -318,16 +318,16 @@ class HighAvailabilityInterface(PanObject):
             self.delete_interface(self.old_port)
             self.old_port = None
 
-    def delete_interface(self, interface=None, pandevice=None):
+    def delete_interface(self, interface=None, pan_device=None):
         """Delete the HA interface from the list of interfaces
 
         Args:
             interface (HighAvailabilityInterface): The HA interface (HA1, HA2, etc)
-            pandevice (PanDevice): The PanDevice object to apply the change
+            pan_device (PanDevice): The PanDevice object to apply the change
         """
-        if pandevice is None:
-            pandevice = self.pandevice()
-        if pandevice is None:
+        if pan_device is None:
+            pan_device = self.pandevice()
+        if pan_device is None:
             return None
         port = interface if interface is not None else self.port
         if isinstance(port, basestring):
@@ -335,14 +335,14 @@ class HighAvailabilityInterface(PanObject):
         else:
             intname = str(port)
         if intname.startswith("ethernet"):
-            interface = pandevice.find(intname, network.EthernetInterface)
+            interface = pan_device.find(intname, network.EthernetInterface)
             if interface is None:
                 # Already deleted
                 return
             elif interface.mode == "ha":
                 interface.delete()
         elif intname.startswith("ae"):
-            interface = pandevice.find(intname, network.AggregateInterface)
+            interface = pan_device.find(intname, network.AggregateInterface)
             if interface is None:
                 # Already deleted
                 return
