@@ -187,6 +187,8 @@ class Panorama(base.PanDevice):
             # This probably means a single device was passed in, not an iterable.
             # Convert to an iterable with a single item.
             devices = (devices,)
+        # Remove None from list of devices
+        devices = [x for x in devices if x is not None]
         # Get the list of managed devices
         if only_connected:
             cmd = "show devices connected"
@@ -217,6 +219,11 @@ class Panorama(base.PanDevice):
                 # Get specific vsys
                 if vsys != "shared" and vsys is not None:
                     vsys_entry = entry.find("vsys/entry[@name='%s']" % vsys)
+                    if vsys_entry is None:
+                        raise err.PanDeviceError("Can't find device with serial %s and"
+                                                 " vsys %s attached to Panorama at %s" %
+                                                 (serial, vsys, self.hostname)
+                                                 )
                     vsys_section = filtered_devices_xml.find("entry[@name='%s']/vsys" % serial)
                     vsys_section.append(vsys_entry)
             devices_xml = filtered_devices_xml
@@ -260,7 +267,10 @@ class Panorama(base.PanDevice):
             for dg_serial in dg_serials:
                 all_dg_vsys = [entry.get("name") for entry in devicegroup_xml.findall("entry[@name='%s']/devices/entry[@name='%s']"
                                                                                   "/vsys/entry" % (dg.name, dg_serial))]
+                # Collect the firewall serial entry to get current status information
+                fw_entry = devicegroup_xml.find("entry[@name='%s']/devices/entry[@name='%s']" % (dg.name, dg_serial))
                 if not all_dg_vsys:
+                    # This is a single-context firewall
                     dg_vsys = "vsys1"
                     fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
                     if fw is None:
@@ -269,7 +279,11 @@ class Panorama(base.PanDevice):
                     # Move the firewall to the device-group
                     dg.add(fw)
                     firewall_instances.remove(fw)
+                    fw.state.connected = yesno(fw_entry.findtext("connected"))
+                    fw.state.unsupported_version = yesno(fw_entry.findtext("unsupported-version"))
+                    fw.state.set_shared_policy_synced(fw_entry.findtext("shared-policy-status"))
                 else:
+                    # This is a multi-context firewall
                     for dg_vsys in all_dg_vsys:
                         fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
                         if fw is None:
@@ -278,6 +292,9 @@ class Panorama(base.PanDevice):
                         # Move the firewall to the device-group
                         dg.add(fw)
                         firewall_instances.remove(fw)
+                        fw.state.connected = yesno(fw_entry.findtext("connected"))
+                        fw.state.unsupported_version = yesno(fw_entry.findtext("unsupported-version"))
+                        fw.state.set_shared_policy_synced(fw_entry.findtext("shared-policy-status"))
 
         if add:
             for dg in devicegroup_instances:

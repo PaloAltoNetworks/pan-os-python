@@ -98,7 +98,7 @@ class Firewall(PanDevice):
         self.shared = False
 
         # Panorama state variables
-        self.connected = None
+        self.state = FirewallState()
 
         # Create a User-ID subsystem
         self.userid = userid.UserId(self)
@@ -329,3 +329,20 @@ class Firewall(PanDevice):
         return self._commit(sync=sync, exclude="policy-and-objects",
                             exception=exception)
 
+
+class FirewallState(object):
+
+    def __init__(self):
+        self.connected = None
+        self.shared_policy_synced = None
+        self.unsupported_version = None
+
+    def set_shared_policy_synced(self, sync_status):
+        if sync_status == "In Sync":
+            self.shared_policy_synced = True
+        elif sync_status == "Out of Sync":
+            self.shared_policy_synced = False
+        elif sync_status is None:
+            self.shared_policy_synced = None
+        else:
+            raise err.PanDeviceError("Unknown shared policy status: %s" % str(sync_status))
