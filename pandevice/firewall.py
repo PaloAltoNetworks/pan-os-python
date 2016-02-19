@@ -94,6 +94,9 @@ class Firewall(PanDevice):
         self.serial_ha_peer = None
         self.management_ip = None
 
+        # Set to True to act on the shared part of this firewall
+        self.shared = False
+
         # Panorama state variables
         self.connected = None
 
@@ -102,7 +105,10 @@ class Firewall(PanDevice):
 
     @property
     def vsys(self):
-        return self._vsys
+        if self.shared:
+            return "shared"
+        else:
+            return self._vsys
 
     @vsys.setter
     def vsys(self, value):
