@@ -171,6 +171,13 @@ class Interface(PanObject):
         if type(self) == Interface:
             raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
         super(Interface, self).__init__(name=name)
+        self.state = None
+
+    def up(self):
+        if self.state == "up":
+            return True
+        else:
+            return False
 
     def set_zone(self, zone_name, mode=None, refresh=False, update=False, running_config=False):
         return self._set_reference(zone_name, Zone, "interface", True, refresh, update, running_config, mode=mode)
@@ -200,6 +207,14 @@ class Interface(PanObject):
             # If empty dictionary (no results) it usually means the interface is not
             # configured, so return None
             return entry if entry else None
+
+    def refresh_state(self):
+        response = self.pandevice().op('show interface "%s"' % self.name)
+        state = response.findtext("result/hw/state")
+        if state is None:
+            state = "unconfigured"
+        self.state = state
+        return self.state
 
 
 class Arp(PanObject):
