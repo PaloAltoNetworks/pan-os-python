@@ -951,14 +951,16 @@ class VsysImportMixin(object):
 
     def child_apply(self):
         # Don't do anything if interface in ha or ag mode
-        if str(self.mode) in ("ha", "aggregate-group"):
+        # Use getattr since some classes won't have a mode (like virtual router)
+        if str(getattr(self, "mode", "None")) in ("ha", "aggregate-group"):
             self.set_vsys(None, refresh=True, update=True)
         else:
             self.create_import()
 
     def child_create(self):
         # Don't do anything if interface in ha or ag mode
-        if str(self.mode) in ("ha", "aggregate-group"):
+        # Use getattr since some classes won't have a mode (like virtual router)
+        if str(getattr(self, "mode", "None")) in ("ha", "aggregate-group"):
             self.set_vsys(None, refresh=True, update=True)
         else:
             self.create_import()
