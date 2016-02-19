@@ -520,15 +520,15 @@ class AggregateInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, Ph
         super(AggregateInterface, self).__init__(name, mode, *args, **kwargs)
 
 
-class VlanInterface(VsysImportMixin, Layer3Parameters):
+class VlanInterface(Layer3Parameters, VsysImportMixin, Interface):
     XPATH = "/network/interface/vlan/units"
 
 
-class LoopbackInterface(VsysImportMixin, Layer3Parameters):
+class LoopbackInterface(Layer3Parameters, VsysImportMixin, Interface):
     XPATH = "/network/interface/loopback/units"
 
 
-class TunnelInterface(VsysImportMixin, Layer3Parameters):
+class TunnelInterface(Layer3Parameters, VsysImportMixin, Interface):
     XPATH = "/network/interface/tunnel/units"
 
 
