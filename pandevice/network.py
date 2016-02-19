@@ -32,6 +32,48 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
+def interface(name, *args, **kwargs):
+    """Interface object factory
+
+    The object type is determined by the name of the interface
+    """
+    if name.startswith("ethernet") and name.find(".") == -1:
+        return EthernetInterface(name, *args, **kwargs)
+    elif name.startswith("ae") and name.find(".") == -1:
+        return AggregateInterface(name, *args, **kwargs)
+    elif name.startswith("ethernet") or name.startswith("ae"):
+        # Subinterface
+        # Get mode from args
+        args = list(args)
+        if len(args) > 0:
+            mode = args[0]
+            del args[0]
+        else:
+            mode = kwargs.pop("mode", None)
+        # Get tag from args
+        if len(args) > 0:
+            tag = args[0]
+        else:
+            tag = kwargs.get("tag", None)
+        if tag is None:
+            # Determine tag from name
+            tag = name.split(".")[-1]
+            kwargs["tag"] = tag
+        if mode == "layer3":
+            return Layer3Subinterface(name, *args, **kwargs)
+        elif mode == "layer2":
+            return Layer2Subinterface(name, *args, **kwargs)
+        else:
+            return AbstractSubinterface(name, *args, **kwargs)
+    elif name.startswith("vlan"):
+        return VlanInterface(name, *args, **kwargs)
+    elif name.startswith("loopback"):
+        return LoopbackInterface(name, *args, **kwargs)
+    elif name.startswith("tunnel"):
+        return TunnelInterface(name, *args, **kwargs)
+    else:
+        raise err.PanDeviceError("Can't identify interface type from name: %s" % name)
+
 class Zone(PanObject):
 
     XPATH = "/zone"
