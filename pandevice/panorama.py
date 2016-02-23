@@ -101,9 +101,9 @@ class Panorama(base.PanDevice):
             if devicegroup is not None and cmd is None:
                 sp = ET.SubElement(e, "shared-policy")
                 dg = ET.SubElement(sp, "device-group")
-                ET.SubElement(dg, "entry", {"name": devicegroup})
+                dg_e = ET.SubElement(dg, "entry", {"name": devicegroup})
                 if serials:
-                    d = ET.SubElement(dg, "devices")
+                    d = ET.SubElement(dg_e, "devices")
                     for serial in serials:
                         ET.SubElement(d, "entry", {"name": serial})
             cmd = ET.tostring(e)
