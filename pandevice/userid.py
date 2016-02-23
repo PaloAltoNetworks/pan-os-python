@@ -23,6 +23,7 @@ import xml.etree.ElementTree as et
 from copy import deepcopy
 
 import pandevice.errors as err
+from pandevice import string_or_list
 from pan.xapi import PanXapiError
 
 
@@ -141,7 +142,8 @@ class UserId(object):
         if tagelement is None:
             entry = et.SubElement(register, "entry", {"ip": ip})
             tagelement = et.SubElement(entry, "tag")
-        tags = set(tags)
+        tags = string_or_list(tags)
+        tags = list(set(tags))
         for tag in tags:
             member = et.SubElement(tagelement, "member")
             member.text = tag
@@ -156,7 +158,8 @@ class UserId(object):
         if tagelement is None:
             entry = et.SubElement(unregister, "entry", {"ip": ip})
             tagelement = et.SubElement(entry, "tag")
-        tags = set(tags)
+        tags = string_or_list(tags)
+        tags = list(set(tags))
         for tag in tags:
             member = et.SubElement(tagelement, "member")
             member.text = tag
@@ -168,7 +171,7 @@ class UserId(object):
         Support:
             PAN-OS 6.0 and higher
         """
-        root = self.panfirewall.xapi.op(cmd='show object registered-address all', vsys=self.panfirewall.vsys, cmd_xml=True)
+        root = self.panfirewall.op(cmd='show object registered-ip all', vsys=self.panfirewall.vsys, cmd_xml=True)
         entries = root.findall("./result/entry")
         if not entries:
             return None
