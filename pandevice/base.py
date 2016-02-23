@@ -1634,24 +1634,32 @@ class PanDevice(PanObject):
             self.ha_peer.activate()
             return self.ha_peer
 
+    def show_highavailability_state(self):
+        ha_state = self.active().op("show high-availability state")
+        enabled = ha_state.findtext("result/enabled")
+        if enabled is None or enabled == "no":
+            return "disabled", None
+        else:
+            return ha_state.findtext("result/group/local-info/state"), ha_state
+
     def refresh_ha_active(self):
         logger.debug("Refreshing active firewall in HA Pair")
-        ha_state = self.active().op("show high-availability state")
-        enabled = ha_state.find("./result/enabled")
-        if enabled is None:
+        if self.ha_peer is None:
             return
-        if enabled.text == "yes":
-            state = ha_state.find("./result/group/local-info/state")
-            if state is None:
-                return
-            if state.text == "initial":
-                logger.debug("HA is initializing, try again soon")
-            elif state.text != "active":
-                logger.debug("Current firewall state is %s, switching to use other firewall" % state.text)
-                self.toggle_ha_active()
-            else:
+        self_state = self.show_highavailability_state()[0]
+        peer_state = self.ha_peer.show_highavailability_state()[0]
+        states = (self_state, peer_state)
+        if "disabled" not in states:
+            if "initial" in states:
+                logger.debug("HA is initializing on one or both devices, try again soon")
+                return "initial"
+            elif self_state == "active":
                 logger.debug("Current firewall is active, no change made")
-            return state.text
+                return "active"
+            else:
+                logger.debug("Current firewall state is %s, switching to use other firewall" % self_state)
+                self.toggle_ha_active()
+                return self_state
 
     def synchronize_config(self):
         state = self.config_sync_state()
@@ -1977,16 +1985,16 @@ class PanDevice(PanObject):
                 # a TypeError will be produced, so in that case, just grab the string.
                 try:
                     devices_results[device['serial-no']]['warnings'] = device['details']['msg']['warnings']['line']
-                except KeyError as e:
+                except (TypeError, KeyError) as e:
                     try:
                         devices_results[device['serial-no']]['warnings'] = device['details']['msg']['warnings']
-                    except TypeError as e:
+                    except (TypeError, KeyError) as e:
                         devices_results[device['serial-no']]['warnings'] = ""
-                except TypeError as e:
+                except (TypeError, KeyError) as e:
                     devices_results[device['serial-no']]['warnings'] = ""
                 try:
                     devices_results[device['serial-no']]['messages'] = device['details']['msg']['errors']['line']
-                except TypeError as e:
+                except (TypeError, KeyError) as e:
                     devices_results[device['serial-no']]['messages'] = device['details']
 
         success = True if job['result'] == "OK" and devices_success else False
