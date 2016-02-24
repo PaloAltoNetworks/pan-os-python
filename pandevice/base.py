@@ -868,12 +868,17 @@ class PanObject(object):
             return yesno(value)
 
     def _set_reference(self, reference_name, reference_type, reference_var, exclusive, refresh, update, running_config, *args, **kwargs):
+        """Used by helper methods to set references between objects
+
+        For example, set_zone() would set the zone for an interface by creating a reference from
+        the zone to the interface. If the desired reference already exists then nothing happens.
+        """
         pandevice = self.pandevice()
         if refresh:
             allobjects = reference_type.refresh_all_from_device(pandevice, running_config=running_config)
         else:
             allobjects = pandevice.findall(reference_type)
-        # Find any current references to self and remove them
+        # Find any current references to self and remove them, unless it is the desired reference
         if exclusive:
             for obj in allobjects:
                 references = getattr(obj, reference_var)
@@ -972,25 +977,22 @@ class VsysImportMixin(object):
         if vsys is None:
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
-            pandevice = self.pandevice().active()
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            pandevice.xapi.set(xpath_import, "<member>%s</member>" % self.name, retry_on_peer=True)
+            self.pandevice().xapi.set(xpath_import, "<member>%s</member>" % self.name, retry_on_peer=True)
 
     def delete_import(self, vsys=None):
         if vsys is None:
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
-            pandevice = self.pandevice().active()
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            pandevice.xapi.delete(xpath_import + "/member[text()='%s']" % self.name, retry_on_peer=True)
+            self.pandevice().xapi.delete(xpath_import + "/member[text()='%s']" % self.name, retry_on_peer=True)
 
     def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
         import device
         if refresh and running_config:
             raise ValueError("Can't refresh vsys from running config in set_vsys method")
         if refresh:
-            pandevice = self.pandevice().active()
-            all_vsys = device.Vsys.refresh_all_from_device(pandevice, name_only=True)
+            all_vsys = device.Vsys.refresh_all_from_device(self.pandevice(), name_only=True)
             for a_vsys in all_vsys:
                 a_vsys.refresh_variable(self.XPATH_IMPORT.split("/")[-1])
         return self._set_reference(vsys_id, device.Vsys, self.XPATH_IMPORT.split("/")[-1], True, refresh=False, update=update, running_config=running_config)
@@ -1178,12 +1180,12 @@ class PanDevice(PanObject):
                     # TODO: Should this be retry_on_peer, or should there be some way to remove failure status?
                     # TODO: Don't do this if retry on peer is false!
                     logger.debug("Current device is failed, starting with other device")
-                    result = getattr(self.pan_device.ha_peer.xapi, super_method_name)(retry_on_peer=True, *args, **kwargs)
+                    kwargs["retry_on_peer"] = True
+                    result = getattr(self.pan_device.ha_peer.xapi, super_method_name)(*args, **kwargs)
                 elif not self.pan_device.is_active() and self.pan_device.ha_peer is not None and retry_on_peer:
                     # I'm not active, call the peer
-                    logger.debug("super_method_name: " + str(super_method_name))
-                    logger.debug("ha_peer: " + str(self.pan_device.ha_peer))
-                    result = getattr(self.pan_device.ha_peer.xapi, super_method_name)(retry_on_peer=True, *args, **kwargs)
+                    kwargs["retry_on_peer"] = True
+                    result = getattr(self.pan_device.ha_peer.xapi, super_method_name)(*args, **kwargs)
                 else:
                     try:
                         # This device has not failed, or both have failed
