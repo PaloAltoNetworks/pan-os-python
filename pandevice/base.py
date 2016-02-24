@@ -1479,7 +1479,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope)
+            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=True)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is already held", str(e)):
                 raise
@@ -1501,7 +1501,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "admin")
             subel.text = admin
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope)
+            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=True)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is not currently held", str(e)):
                 raise
@@ -1523,7 +1523,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope)
+            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=True)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config for scope (shared|vsys\d) is currently locked", str(e)) and \
                     not re.match(r"You already own a config lock for scope", str(e)):
@@ -1543,7 +1543,7 @@ class PanDevice(PanObject):
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "remove")
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope)
+            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=True)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config is not currently locked for scope (shared|vsys\d)", str(e)):
                 raise
@@ -1561,12 +1561,12 @@ class PanDevice(PanObject):
         self.remove_commit_lock(scope=scope, exceptions=False)
 
     def check_commit_locks(self):
-        self.xapi.op("show commit-locks", cmd_xml=True)
+        self.xapi.op("show commit-locks", cmd_xml=True, retry_on_peer=True)
         response = self.xapi.element_result.find(".//entry")
         return True if response is not None else False
 
     def check_config_locks(self):
-        self.xapi.op("show config-locks", cmd_xml=True)
+        self.xapi.op("show config-locks", cmd_xml=True, retry_on_peer=True)
         response = self.xapi.element_result.find(".//entry")
         return True if response is not None else False
 
@@ -1574,7 +1574,7 @@ class PanDevice(PanObject):
         self._logger.debug("Revert to running configuration on device: %s" % (self.hostname,))
         self.xapi.op("<load><config><from>"
                      "running-config.xml"
-                     "</from></config></load>")
+                     "</from></config></load>", retry_on_peer=True)
 
     def restart(self):
         self._logger.debug("Requesting restart on device: %s" % (self.hostname,))
