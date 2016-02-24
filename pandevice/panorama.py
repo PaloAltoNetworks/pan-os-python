@@ -231,18 +231,16 @@ class Panorama(base.PanDevice):
         # Manipulate devices_xml so each vsys is a separate device
         if expand_vsys:
             original_devices_xml = deepcopy(devices_xml)
+            devices_xml = ET.Element("devices")
             for entry in original_devices_xml:
-                multi_vsys = yesno(entry.findtext("multi-vsys"))
-                if multi_vsys:
-                    serial = entry.findtext("serial")
-                    for vsys_entry in entry.findall("vsys/entry"):
-                        if vsys_entry.get("name") == "vsys1":
-                            continue
-                        new_vsys_device = deepcopy(entry)
-                        new_vsys_device.set("name", serial)
-                        ET.SubElement(new_vsys_device, "vsysid").text = vsys_entry.get("name")
-                        ET.SubElement(new_vsys_device, "vsysname").text = vsys_entry.findtext("display-name")
-                        devices_xml.append(new_vsys_device)
+                serial = entry.findtext("serial")
+                for vsys_entry in entry.findall("vsys/entry"):
+                    new_vsys_device = deepcopy(entry)
+                    new_vsys_device.set("name", serial)
+                    ET.SubElement(new_vsys_device, "vsysid").text = vsys_entry.get("name")
+                    ET.SubElement(new_vsys_device, "vsysname").text = vsys_entry.findtext("display-name")
+                    devices_xml.append(new_vsys_device)
+        print ET.tostring(devices_xml)
 
         # Create firewall instances
         firewall_instances = firewall.Firewall.refresh_all_from_xml(devices_xml, refresh_children=not expand_vsys)
