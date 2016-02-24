@@ -430,10 +430,11 @@ class AbstractSubinterface(object):
             if layered_subinterface is not None:
                 if layered_subinterface.tag != self.tag:
                     layered_subinterface.tag = self.tag
-                    if create: layered_subinterface.create()
             else:
-                layered_subinterface = self.parent.add(subintclass(self.name, tag=self.tag))
-                if create: layered_subinterface.create()
+                if create:
+                    layered_subinterface = self.parent.add(subintclass(self.name, tag=self.tag))
+                else:
+                    return
             return layered_subinterface
 
     def delete(self):
@@ -636,6 +637,7 @@ class VirtualRouter(VsysImportMixin, PanObject):
         StaticRoute,
         StaticRouteV6,
     )
+    XPATH_IMPORT = "/network/virtual-router"
 
     def __init__(self,
                  name="default",
