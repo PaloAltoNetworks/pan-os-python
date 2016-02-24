@@ -23,6 +23,7 @@ import xml.etree.ElementTree as ET
 import pandevice
 from base import PanObject, Root, MEMBER, ENTRY, VsysImportMixin
 from base import VarPath as Var
+from pandevice import device
 
 # import other parts of this pandevice package
 import errors as err
@@ -257,6 +258,42 @@ class Interface(PanObject):
             state = "unconfigured"
         self.state = state
         return self.state
+
+    def full_delete(self, refresh=False, delete_referencing_objects=False):
+        self.set_zone(None, refresh=refresh, update=True)
+        try:  # set_vlan doesn't exist for all interface types
+            self.set_vlan(None, refresh=refresh, update=True)
+        except AttributeError:
+            pass
+        self.set_virtual_router(None, refresh=refresh, update=True)
+        # Remove any references to the interface across all known
+        # children of this pan_device. This does not use 'refresh'.
+        # Only pre-refreshed objects are scanned for references.
+        for obj in self.pandevice().findall(PanObject, recursive=True):
+            if isinstance(obj, device.Vsys):
+                continue
+            try:
+                if str(self) == obj.interface or self == obj.interface:
+                    if delete_referencing_objects:
+                        obj.delete()
+                    else:
+                        obj.interface = None
+                        obj.update("interface")
+                elif str(self) in obj.interface:
+                    if delete_referencing_objects:
+                        obj.delete()
+                    else:
+                        obj.interface.remove(str(self))
+                        obj.update("interface")
+                elif "__iter__" in dir(obj.interface) and self in obj.interface:
+                    if delete_referencing_objects:
+                        obj.delete()
+                    else:
+                        obj.interface.remove(self)
+                        obj.update("interface")
+            except AttributeError:
+                pass
+        self.delete()
 
 
 class Arp(PanObject):
