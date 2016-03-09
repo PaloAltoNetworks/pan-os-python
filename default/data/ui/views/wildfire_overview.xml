@@ -121,7 +121,7 @@
       <title>Possible Malware Traffic</title>
       <search>
         <query>
-          | `pan_tstats` count(traffic) FROM `node(log.traffic)` $src_ip$ $dest_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.traffic.dest_ip_port log.dest_ip log.dest_port log.src_ip log.user log.app | rename log.traffic.dest_ip_port AS ip_port | join type=inner ip_port [ | `pan_tstats` count(wildfire_report) FROM datamodel="pan_wildfire_report" WHERE earliest=-1y latest=now nodename="wildfire_report" groupby wildfire_report.wildfire.id wildfire_report.tcp_ip_port | rename wildfire_report.tcp_ip_port AS ip_port ] | dedup 1 log.src_ip log.user ip_port log.app | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View WildFire Report" | table _time log.src_ip log.user log.dest_ip log.dest_port log.app wildfire_report.wildfire.id "Traffic Link" "WildFire Link" | rex mode=sed field=ip_port "s/,/:/" | rename log.src_ip AS Source | rename log.dest_ip AS "Dest IP" | rename log.dest_port AS "Dest Port" | rename log.user AS User | rename log.app AS Application | rename wildfire_report.wildfire.id AS "WildFire Report ID" | sort -_time
+          | `pan_tstats` count(traffic) FROM `node(log.traffic)` $src_ip$ $dest_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.traffic.dest_ip_port log.dest_ip log.dest_port log.src_ip log.user log.app | rename log.traffic.dest_ip_port AS ip_port | join type=inner ip_port [ | `pan_tstats` count(wildfire_report) FROM datamodel="pan_wildfire_report" WHERE earliest=-1y latest=now nodename="wildfire_report" groupby wildfire_report.wildfire.file_info.sha256 wildfire_report.tcp_ip_port | rename wildfire_report.tcp_ip_port AS ip_port ] | dedup 1 log.src_ip log.user ip_port log.app | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View WildFire Report" | table _time log.src_ip log.user log.dest_ip log.dest_port log.app wildfire_report.wildfire.file_info.sha256 "Traffic Link" "WildFire Link" | rex mode=sed field=ip_port "s/,/:/" | rename log.src_ip AS Source | rename log.dest_ip AS "Dest IP" | rename log.dest_port AS "Dest Port" | rename log.user AS User | rename log.app AS Application | rename wildfire_report.wildfire.file_info.sha256 AS "WildFire Report Hash" | sort -_time
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -175,14 +175,9 @@
             /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $row.Application$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
-        <link field="WildFire Report ID">
-          <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $row.WildFire Report ID$
-    ]]>
-        </link>
         <link field="WildFire Link">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` (sourcetype="pan:wildfire_report" (wildfire.id="$row.WildFire Report ID$" OR wildfire.report.id="$row.WildFire Report ID$")) OR (sourcetype="pan:threat" log_subtype="wildfire" report_id="$row.WildFire Report ID$")
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` (sourcetype="pan:wildfire_report" (wildfire.file_info.sha256="$row.WildFire Report Hash$" OR wildfire.file_info.sha256="$row.WildFire Report Hash$")) OR (sourcetype="pan:threat" log_subtype="wildfire" file_digest="$row.WildFire Report Hash$")
     ]]>
         </link>
         <link field="*">
@@ -192,6 +187,7 @@
         </link>
       </drilldown>
       <option name="rowNumbers">false</option>
+      <option name="fields">_time,Source,User,"Dest IP","Dest Port","Application","Traffic Link","WildFire Link"</option>
     </table>
   </row>
   <row>
