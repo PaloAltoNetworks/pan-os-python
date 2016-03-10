@@ -1176,23 +1176,21 @@ class PanDevice(PanObject):
         def make_method(cls, super_method_name, super_method):
             def method(self, *args, **kwargs):
                 retry_on_peer = kwargs.pop("retry_on_peer", True if super_method_name not in ('keygen', 'op', 'ad_hoc', 'export') else False)
-                if self.pan_device.ha_failed and self.pan_device.ha_peer is not None \
-                    and not self.pan_device.ha_peer.ha_failed and retry_on_peer:
+                elif self.pan_device.ha_failed and ha_peer is not None \
+                    and not ha_peer.ha_failed and retry_on_peer:
                     # This device is failed, use the other
-                    # TODO: Should this be retry_on_peer, or should there be some way to remove failure status?
-                    # TODO: Don't do this if retry on peer is false!
                     logger.debug("Current device is failed, starting with other device")
                     kwargs["retry_on_peer"] = True
-                    result = getattr(self.pan_device.ha_peer.xapi, super_method_name)(*args, **kwargs)
-                elif not self.pan_device.is_active() and self.pan_device.ha_peer is not None and retry_on_peer:
+                    result = getattr(ha_peer.xapi, super_method_name)(*args, **kwargs)
+                elif not self.pan_device.is_active() and ha_peer is not None and retry_on_peer:
                     # I'm not active, call the peer
                     kwargs["retry_on_peer"] = True
-                    result = getattr(self.pan_device.ha_peer.xapi, super_method_name)(*args, **kwargs)
+                    result = getattr(ha_peer.xapi, super_method_name)(*args, **kwargs)
                 else:
                     try:
                         # This device has not failed, or both have failed
                         # and this device is active
-                        # Frist get the superclass method
+                        # First get the superclass method
                         super_method(self, *args, **kwargs)
                         result = copy.deepcopy(self.element_root)
                     except pan.xapi.PanXapiError as e:
