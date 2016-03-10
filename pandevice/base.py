@@ -501,12 +501,14 @@ class PanObject(object):
         for section in sections:
             next_element = ET.SubElement(next_element, section)
         next_element.append(obj)
-        # Refresh each variable
+        # Refresh the requested variable
         variables, noninit_variables = type(self)._parse_xml(root)
         for var, value in variables.iteritems():
-            setattr(self, var, value)
+            if var == variable:
+                setattr(self, var, value)
         for var, value in noninit_variables.iteritems():
-            setattr(self, var, value)
+            if var == variable:
+                setattr(self, var, value)
         return getattr(self, variable, None)
 
     def refresh_children(self, running_config=False, xml=None):
