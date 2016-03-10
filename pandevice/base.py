@@ -1604,6 +1604,15 @@ class PanDevice(PanObject):
             self._ha_active = True
             self.ha_peer._ha_active = False
 
+    def ha_pair(self):
+        """List containing this firewall and its HA peer
+
+        Returns:
+            list: self and self.ha_peer in a list. If there is not ha_peer, then
+                a single item list containing only self is returned.
+        """
+        return [fw for fw in [self, self.ha_peer] if fw is not None]
+
     def active(self):
         if self._ha_active:
             return self
@@ -1640,6 +1649,28 @@ class PanDevice(PanObject):
         if self.ha_peer is not None:
             self.ha_peer.activate()
             return self.ha_peer
+
+    def map_ha(self, method_name, *args, **kwargs):
+        """Apply to both devices in HA Pair
+
+        Invoke a method of this class on both this instance and its HA peer
+
+        Args:
+            method_name: The name of the method in this class (or subclass) to invoke
+            *args: Arguments to pass to the method
+            **kwargs: Keyword arguments to pass to the method
+
+        Returns:
+            A tuple of the return values of invoking the method on each device. The
+            first item in the tuple is always from invoking the method on self, and
+            the second item is from invoking the method on the ha_peer. The second
+            item is None if there is no HA Peer.
+        """
+        result1 = getattr(self, method_name)(*args, **kwargs)
+        result2 = None
+        if self.ha_peer is not None:
+            result2 = getattr(self.ha_peer, method_name)(*args, **kwargs)
+        return result1, result2
 
     def show_highavailability_state(self):
         ha_state = self.active().op("show high-availability state")
