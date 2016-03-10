@@ -177,8 +177,8 @@ class Panorama(base.PanDevice):
                 )
                 device.devicegroup = devicegroup
 
-    def refresh_devices(self, devices=(), only_connected=False, expand_vsys=True, include_device_groups=True, add=False):
-        """Refresh device groups and devices using operational commands"""
+    def refresh_devices(self, devices=(), only_connected=False, expand_vsys=True, include_device_groups=True, add=False, running_config=False):
+        """Refresh device groups and devices using config and operational commands"""
         logger.debug(self.hostname + ": refresh_devices called")
         try:
             # Test if devices is iterable
@@ -240,7 +240,6 @@ class Panorama(base.PanDevice):
                     ET.SubElement(new_vsys_device, "vsysid").text = vsys_entry.get("name")
                     ET.SubElement(new_vsys_device, "vsysname").text = vsys_entry.findtext("display-name")
                     devices_xml.append(new_vsys_device)
-        print ET.tostring(devices_xml)
 
         # Create firewall instances
         firewall_instances = firewall.Firewall.refresh_all_from_xml(devices_xml, refresh_children=not expand_vsys)
@@ -253,40 +252,41 @@ class Panorama(base.PanDevice):
 
         # Create device-groups
 
-        # Get the list of device groups
-        devicegroup_xml = self.op("show devicegroups")
-        devicegroup_xml = devicegroup_xml.find("result/devicegroups")
+        # Get the list of device groups from configuration XML
+        api_action = self.xapi.show if running_config else self.xapi.get
+        devicegroup_configxml = api_action("/config/devices/entry[@name='localhost.localdomain']/device-group")
+        devicegroup_configxml = devicegroup_configxml.find("result/device-group")
 
-        devicegroup_instances = DeviceGroup.refresh_all_from_xml(devicegroup_xml, refresh_children=False)
+        # Get the list of device groups from operational commands
+        devicegroup_opxml = self.op("show devicegroups")
+        devicegroup_opxml = devicegroup_opxml.find("result/devicegroups")
+
+        # Combine the config XML and operational command XML to get a complete picture
+        # of the device groups
+        pandevice.xml_combine(devicegroup_opxml, devicegroup_configxml)
+
+        devicegroup_instances = DeviceGroup.refresh_all_from_xml(devicegroup_opxml, refresh_children=False)
 
         for dg in devicegroup_instances:
-            dg_serials = [entry.get("name") for entry in devicegroup_xml.findall("entry[@name='%s']/devices/entry" % dg.name)]
+            dg_serials = [entry.get("name") for entry in devicegroup_opxml.findall("entry[@name='%s']/devices/entry" % dg.name)]
             # Find firewall with each serial
             for dg_serial in dg_serials:
-                all_dg_vsys = [entry.get("name") for entry in devicegroup_xml.findall("entry[@name='%s']/devices/entry[@name='%s']"
-                                                                                  "/vsys/entry" % (dg.name, dg_serial))]
+                all_dg_vsys = [entry.get("name") for entry in devicegroup_opxml.findall(
+                    "entry[@name='%s']/devices/entry[@name='%s']/vsys/entry" % (dg.name, dg_serial))]
                 # Collect the firewall serial entry to get current status information
-                fw_entry = devicegroup_xml.find("entry[@name='%s']/devices/entry[@name='%s']" % (dg.name, dg_serial))
+                fw_entry = devicegroup_opxml.find("entry[@name='%s']/devices/entry[@name='%s']" % (dg.name, dg_serial))
                 if not all_dg_vsys:
-                    # This is a single-context firewall
-                    dg_vsys = "vsys1"
+                    # This is a single-context firewall, assume vsys1
+                    all_dg_vsys = ["vsys1"]
+                for dg_vsys in all_dg_vsys:
                     fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
                     if fw is None:
                         # It's possible for device-groups to reference a serial/vsys that doesn't exist
-                        continue
-                    # Move the firewall to the device-group
-                    dg.add(fw)
-                    firewall_instances.remove(fw)
-                    fw.state.connected = yesno(fw_entry.findtext("connected"))
-                    fw.state.unsupported_version = yesno(fw_entry.findtext("unsupported-version"))
-                    fw.state.set_shared_policy_synced(fw_entry.findtext("shared-policy-status"))
-                else:
-                    # This is a multi-context firewall
-                    for dg_vsys in all_dg_vsys:
-                        fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
-                        if fw is None:
-                            # It's possible for device-groups to reference a serial/vsys that doesn't exist
-                            continue
+                        # In this case, create the FW instance
+                        if not only_connected:
+                            fw = firewall.Firewall(serial=dg_serial, vsys=dg_vsys)
+                            dg.add(fw)
+                    else:
                         # Move the firewall to the device-group
                         dg.add(fw)
                         firewall_instances.remove(fw)
