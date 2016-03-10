@@ -61,7 +61,7 @@ class PanObject(object):
         self.children = []
 
     def __str__(self):
-        return str(self.name)
+        return str(getattr(self, self.NAME, None))
 
     @classmethod
     def vars(cls):
