@@ -255,7 +255,7 @@ class HighAvailabilityInterface(PanObject):
             self._port = value
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("port"),
             Var("ip-address"),
@@ -373,8 +373,8 @@ class HA1(HighAvailabilityInterface):
         self.monitor_hold_time=monitor_hold_time
 
     @classmethod
-    def vars(cls):
-        return super(HA1, HA1).vars() + (
+    def variables(cls):
+        return super(HA1, HA1).variables() + (
             Var("monitor-hold-time", vartype="int"),
         )
 
@@ -436,7 +436,7 @@ class HA3(HighAvailabilityInterface):
                                   )
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("port"),
         )
@@ -484,7 +484,7 @@ class HighAvailability(PanObject):
         self.ha2_keepalive_threshold = None
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             # Enabled flag
             Var("enabled", vartype="bool"),

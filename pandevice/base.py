@@ -64,7 +64,7 @@ class PanObject(object):
         return str(getattr(self, self.NAME, None))
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return ()
 
     @property
@@ -162,7 +162,7 @@ class PanObject(object):
 
     def element(self):
         root = self.root_element()
-        variables = self.vars()
+        variables = self.variables()
         for var in variables:
             missing_replacement = False
             if var.vartype == "none":
@@ -360,7 +360,7 @@ class PanObject(object):
         logger.debug(pandevice.hostname + ": update called on %s object \"%s\" and variable \"%s\"" %
                      (type(self), self.name, variable))
         pandevice.set_config_changed()
-        variables = type(self).vars()
+        variables = type(self).variables()
         value = getattr(self, variable)
         # Get the requested variable from the class' variables tuple
         var = next((x for x in variables if x.variable == variable), None)
@@ -458,7 +458,7 @@ class PanObject(object):
         Doesn't work for variables with replacements or selections in path
         """
         # Get the root of the xml to parse
-        variables = type(self).vars()
+        variables = type(self).variables()
         # Get the requested variable from the class' variables tuple
         var = next((x for x in variables if x.variable == variable), None)
         if var is None:
@@ -766,7 +766,7 @@ class PanObject(object):
             instance = cls(**init_variables)
             # Set values of no init variables
             for var, value in noinit_variables.iteritems():
-                vars(instance)[var] = value
+                variables(instance)[var] = value
             instances.append(instance)
             # Refresh the children of these instances
             if refresh_children:
@@ -785,7 +785,7 @@ class PanObject(object):
         if variables:
             vars = variables
         else:
-            vars = cls.vars()
+            vars = cls.variables()
         for var in vars:
             missing_replacement = False
             # Determine if variable is part of __init__ args
@@ -801,7 +801,7 @@ class PanObject(object):
             for match in matches:
                 regex = r'{{' + re.escape(match) + r'}}'
                 # Find the discovered replacement in the list of vars
-                matchedvar = next((x for x in cls.vars() if x.variable == match), None)
+                matchedvar = next((x for x in cls.variables() if x.variable == match), None)
                 try:
                     replacement = init_variables[match]
                 except KeyError:

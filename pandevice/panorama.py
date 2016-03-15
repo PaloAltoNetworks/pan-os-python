@@ -55,7 +55,7 @@ class DeviceGroup(PanObject):
         self.tag = pandevice.string_or_list(tag)
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("tag", vartype="entry"),
         )

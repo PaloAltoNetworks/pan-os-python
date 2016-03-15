@@ -61,7 +61,7 @@ class VsysResources(PanObject):
         self.max_concurrent_ssl_vpn_tunnels = max_concurrent_ssl_vpn_tunnels
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("max-security-rules", vartype="int"),
             Var("max-nat-rules", vartype="int"),
@@ -90,7 +90,7 @@ class Vsys(PanObject):
         self.interface = []
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("display-name"),
             Var("import/network/interface", vartype="member", init=False)
@@ -125,7 +125,7 @@ class NTPServer(PanObject):
         self.address = address
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("ntp-server-address", "address"),
         )
@@ -181,7 +181,7 @@ class SystemSettings(PanObject):
         self.update_server = kwargs.pop("update_server", None)
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("hostname"),
             Var("domain"),

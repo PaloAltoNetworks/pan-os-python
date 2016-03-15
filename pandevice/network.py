@@ -91,7 +91,7 @@ class Zone(PanObject):
         self.interface = pandevice.string_or_list(interface)
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("network/(tap|virtual-wire|layer2|layer3|external)", "mode"),
             Var("network/{{mode}}", "interface", vartype="member"),
@@ -111,7 +111,7 @@ class StaticMac(PanObject):
         self.interface = interface
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("interface"),
         )
@@ -145,7 +145,7 @@ class Vlan(VsysImportMixin, PanObject):
         self.virtual_interface = virtual_interface
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("interface", vartype="member"),
             Var("virtual-interface/interface", "virtual_interface"),
@@ -181,7 +181,7 @@ class IPv6Address(PanObject):
         self.auto_config_flag = auto_config_flag
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("enable-on-interface", vartype="bool"),
             Var("prefix", vartype="exist"),
@@ -307,7 +307,7 @@ class Arp(PanObject):
         self.hw_address = hw_address
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("hw-address"),
         )
@@ -340,7 +340,7 @@ class Layer3Parameters(object):
         self.netflow_profile = netflow_profile
 
     @classmethod
-    def _vars(cls):
+    def _variables(cls):
         return (
             Var("ip", vartype="entry"),
             Var("ipv6/enabled", "ipv6_enabled", vartype="bool"),
@@ -351,12 +351,12 @@ class Layer3Parameters(object):
         )
 
     @classmethod
-    def vars(cls):
-        return super(Layer3Parameters, cls).vars() + cls._vars()
+    def variables(cls):
+        return super(Layer3Parameters, cls).variables() + cls._variables()
 
     @classmethod
     def vars_with_mode(cls):
-        l3vars = Layer3Parameters._vars()
+        l3vars = Layer3Parameters._variables()
         for var in l3vars:
             var.path = "{{mode}}/" + var.path
             var.condition = "mode:layer3"
@@ -376,7 +376,7 @@ class Layer2Parameters(object):
         self.netflow_profile = netflow_profile
 
     @classmethod
-    def _vars(cls):
+    def _variables(cls):
         return (
             Var("lldp/enable", "lldp_enabled", vartype="bool"),
             Var("lldp/profile", "lldp_profile"),
@@ -384,12 +384,12 @@ class Layer2Parameters(object):
         )
 
     @classmethod
-    def vars(cls):
-        return super(Layer2Parameters, cls).vars() + cls._vars()
+    def variables(cls):
+        return super(Layer2Parameters, cls).variables() + cls._variables()
 
     @classmethod
     def vars_with_mode(cls):
-        l2vars = Layer2Parameters._vars()
+        l2vars = Layer2Parameters._variables()
         for var in l2vars:
             var.path = "{{mode}}/" + var.path
             var.condition = "mode:layer2"
@@ -415,8 +415,8 @@ class Subinterface(Interface):
         self.tag = tag
 
     @classmethod
-    def vars(cls):
-        return super(Subinterface, Subinterface).vars() + (
+    def variables(cls):
+        return super(Subinterface, Subinterface).variables() + (
             Var("tag", vartype="int"),
         )
 
@@ -512,8 +512,8 @@ class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
         self.mode = "layer2"
 
     @classmethod
-    def vars(cls):
-        return super(Layer2Subinterface, Layer2Subinterface).vars() + (
+    def variables(cls):
+        return super(Layer2Subinterface, Layer2Subinterface).variables() + (
             Var("comment"),
         )
 
@@ -545,14 +545,14 @@ class PhysicalInterface(Interface):
         return element
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("(layer3|layer2|virtual-wire|tap|ha|decrypt-mirror|aggregate-group)", "mode"),
-        ) + super(PhysicalInterface, PhysicalInterface).vars()
+        ) + super(PhysicalInterface, PhysicalInterface).variables()
 
     @staticmethod
     def vars_with_mode():
-        return PhysicalInterface.vars()
+        return PhysicalInterface.variables()
 
     def set_zone(self, zone_name, mode=None, refresh=False, update=False, running_config=False):
         if mode is None:
@@ -588,7 +588,7 @@ class EthernetInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, Phy
         self.aggregate_group = aggregate_group
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return super(EthernetInterface, cls).vars_with_mode() + (
             Var("link-speed"),
             Var("link-duplex"),
@@ -650,7 +650,7 @@ class StaticRoute(PanObject):
         self.metric = metric
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("destination"),
             Var("nexthop/(ip-address|discard)", "nexthop_type"),
@@ -684,7 +684,7 @@ class VirtualRouter(VsysImportMixin, PanObject):
         self.interface = pandevice.string_or_list(interface)
 
     @classmethod
-    def vars(cls):
+    def variables(cls):
         return (
             Var("interface", vartype="member"),
         )
