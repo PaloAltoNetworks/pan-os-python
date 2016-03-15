@@ -1176,6 +1176,38 @@ class PanDevice(PanObject):
         def make_method(cls, super_method_name, super_method):
             def method(self, *args, **kwargs):
                 retry_on_peer = kwargs.pop("retry_on_peer", True if super_method_name not in ('keygen', 'op', 'ad_hoc', 'export') else False)
+                apply_on_peer = kwargs.pop("apply_on_peer", False)
+                ha_peer = self.pan_device.ha_peer
+                # Check if apply to both devices
+                # Note: An exception will not be raised if one device could not be accessed
+                # An exception will be raised on other errors on either device, or if both
+                # devices could not be accessed.
+                if apply_on_peer:
+                    # Apply to peer first
+                    connection_failures = 0
+                    if ha_peer is not None and not ha_peer.ha_failed:
+                        try:
+                            kwargs["retry_on_peer"] = False
+                            result = getattr(ha_peer.xapi, super_method_name)(*args, **kwargs)
+                        except pan.xapi.PanXapiError as e:
+                            the_exception = self.classify_exception(e)
+                            if type(the_exception) in self.CONNECTION_EXCEPTIONS:
+                                # passive firewall connection failed
+                                connection_failures += 1
+                            else:
+                                raise the_exception
+                    if not self.pan_device.ha_failed:
+                        try:
+                            super_method(self, *args, **kwargs)
+                            result = copy.deepcopy(self.element_root)
+                        except pan.xapi.PanXapiError as e:
+                            the_exception = self.classify_exception(e)
+                            if type(the_exception) in self.CONNECTION_EXCEPTIONS:
+                                # passive firewall connection failed
+                                connection_failures += 1
+                            else:
+                                raise the_exception
+
                 elif self.pan_device.ha_failed and ha_peer is not None \
                     and not ha_peer.ha_failed and retry_on_peer:
                     # This device is failed, use the other
