@@ -81,19 +81,10 @@ class Zone(PanObject):
     ROOT = Root.VSYS
     SUFFIX = ENTRY
 
-    def __init__(self,
-                 name,
-                 mode="layer3",
-                 interface=(),
-                 ):
-        super(Zone, self).__init__(name=name)
-        self.mode = mode
-        self.interface = pandevice.string_or_list(interface)
-
     @classmethod
     def variables(cls):
         return (
-            Var("network/(tap|virtual-wire|layer2|layer3|external)", "mode"),
+            Var("network/(tap|virtual-wire|layer2|layer3|external)", "mode", default="layer3"),
             Var("network/{{mode}}", "interface", vartype="member"),
         )
 
@@ -102,27 +93,13 @@ class StaticMac(PanObject):
 
     XPATH = "/mac"
     SUFFIX = ENTRY
-
-    def __init__(self,
-                 mac,
-                 interface,
-                 ):
-        super(StaticMac, self).__init__(name=mac)
-        self.interface = interface
+    NAME = "mac"
 
     @classmethod
     def variables(cls):
         return (
             Var("interface"),
         )
-
-    @property
-    def mac(self):
-        return self.name
-
-    @mac.setter
-    def mac(self, value):
-        self.name = value
 
 
 class Vlan(VsysImportMixin, PanObject):
@@ -134,15 +111,6 @@ class Vlan(VsysImportMixin, PanObject):
         StaticMac,
     )
     XPATH_IMPORT = "/network/vlan"
-
-    def __init__(self,
-                 name,
-                 interface=(),
-                 virtual_interface=None
-                 ):
-        super(Vlan, self).__init__(name)
-        self.interface = pandevice.string_or_list(interface)
-        self.virtual_interface = virtual_interface
 
     @classmethod
     def variables(cls):
@@ -159,27 +127,6 @@ class IPv6Address(PanObject):
     SUFFIX = ENTRY
     NAME = "address"
 
-    def __init__(self,
-                 address,
-                 enable_on_interface=None,
-                 prefix=None,
-                 anycast=None,
-                 advertise_enabled=None,
-                 valid_lifetime=None,
-                 preferred_lifetime=None,
-                 onlink_flag=None,
-                 auto_config_flag=None,
-                 ):
-        super(IPv6Address, self).__init__(name=address)
-        self.enable_on_interface = enable_on_interface
-        self.prefix = prefix
-        self.anycast = anycast
-        self.advertise_enabled = advertise_enabled
-        self.valid_lifetime = valid_lifetime
-        self.preferred_lifetime = preferred_lifetime
-        self.onlink_flag = onlink_flag
-        self.auto_config_flag = auto_config_flag
-
     @classmethod
     def variables(cls):
         return (
@@ -193,14 +140,6 @@ class IPv6Address(PanObject):
             Var("advertise/auto-config-flag", vartype="bool"),
         )
 
-    @property
-    def address(self):
-        return self.name
-
-    @address.setter
-    def address(self, value):
-        self.name = value
-
 
 class Interface(PanObject):
     """Abstract base class for all interfaces"""
@@ -208,13 +147,10 @@ class Interface(PanObject):
     SUFFIX = ENTRY
     ROOT = Root.DEVICE
 
-    def __init__(self,
-                 name,
-                 ):
+    def __init__(self, *args, **kwargs):
         if type(self) == Interface:
             raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
-        super(Interface, self).__init__(name=name)
-        self.state = None
+        super(Interface, self).__init__(*args, **kwargs)
 
     def up(self):
         if self.state == "up":
@@ -299,12 +235,7 @@ class Interface(PanObject):
 class Arp(PanObject):
     """Static ARP Mapping"""
 
-    def __init__(self,
-                 ip,
-                 hw_address,
-                 ):
-        super(Arp, self).__init__(name=ip)
-        self.hw_address = hw_address
+    NAME = "ip"
 
     @classmethod
     def variables(cls):
@@ -312,32 +243,9 @@ class Arp(PanObject):
             Var("hw-address"),
         )
 
-    @property
-    def ip(self):
-        return self.name
-
-    @ip.setter
-    def ip(self, value):
-        self.name = value
-
 
 class Layer3Parameters(object):
     """L3 interfaces parameters mixin"""
-
-    def __init__(self, *args, **kwargs):
-        ip = kwargs.pop("ip", None)
-        ipv6_enabled = kwargs.pop("ipv6_enabled", None)
-        management_profile = kwargs.pop("management_profile", None)
-        mtu = kwargs.pop("mtu", None)
-        adjust_tcp_mss = kwargs.pop("adjust_tcp_mss", None)
-        netflow_profile = kwargs.pop("netflow_profile", None)
-        super(Layer3Parameters, self).__init__(*args, **kwargs)
-        self.ip = pandevice.string_or_list(ip)
-        self.ipv6_enabled = ipv6_enabled
-        self.management_profile = management_profile
-        self.mtu = mtu
-        self.adjust_tcp_mss = adjust_tcp_mss
-        self.netflow_profile = netflow_profile
 
     @classmethod
     def _variables(cls):
@@ -365,15 +273,6 @@ class Layer3Parameters(object):
 
 class Layer2Parameters(object):
     """L2 interfaces parameters mixing"""
-
-    def __init__(self, *args, **kwargs):
-        lldp_enabled = kwargs.pop("lldp_enabled", None)
-        lldp_profile = kwargs.pop("lldp_profile", None)
-        netflow_profile = kwargs.pop("netflow_profile", None)
-        super(Layer2Parameters, self).__init__(*args, **kwargs)
-        self.lldp_enabled = lldp_enabled
-        self.lldp_profile = lldp_profile
-        self.netflow_profile = netflow_profile
 
     @classmethod
     def _variables(cls):
@@ -408,11 +307,10 @@ class VirtualWireInterface(Interface):
 
 class Subinterface(Interface):
     """Subinterface"""
-    def __init__(self, name, tag):
+    def __init__(self, *args, **kwargs):
         if type(self) == Subinterface:
             raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
-        super(Subinterface, self).__init__(name)
-        self.tag = tag
+        super(Subinterface, self).__init__(*args, **kwargs)
 
     @classmethod
     def variables(cls):
@@ -491,10 +389,6 @@ class Layer3Subinterface(Layer3Parameters, VsysImportMixin, Subinterface):
         IPv6Address,
     )
 
-    def __init__(self, name, tag, *args, **kwargs):
-        super(Layer3Subinterface, self).__init__(name, tag, *args, **kwargs)
-        self.mode = "layer3"
-
     def set_zone(self, zone_name, mode="layer3", refresh=False, update=False, running_config=False):
         return self._set_reference(zone_name, Zone, "interface", True, refresh, update, running_config, mode=mode)
 
@@ -505,15 +399,13 @@ class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
     XPATH_IMPORT = "/network/interface"
     SUFFIX = ENTRY
 
-    def __init__(self, name, tag, *args, **kwargs):
-        comment = kwargs.pop("comment", None)
-        super(Layer2Subinterface, self).__init__(name, tag, *args, **kwargs)
-        self.comment = comment
-        self.mode = "layer2"
-
     @classmethod
     def variables(cls):
-        return super(Layer2Subinterface, Layer2Subinterface).variables() + (
+        variables = super(Layer3Subinterface, Layer3Subinterface).variables()
+        # Get the mode variable and change its default value to "layer3"
+        modevar = filter(lambda var: var.variable == "mode", variables)[0]
+        modevar.default = "layer2"
+        return variables + (
             Var("comment"),
         )
 
@@ -523,14 +415,10 @@ class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
 
 class PhysicalInterface(Interface):
     """Absract base class for Ethernet and Aggregate Ethernet Interfaces"""
-    def __init__(self,
-                 name,
-                 mode,
-                 ):
+    def __init__(self, *args, **kwargs):
         if type(self) == PhysicalInterface:
             raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
-        super(PhysicalInterface, self).__init__(name=name)
-        self.mode = mode
+        super(PhysicalInterface, self).__init__(*args, **kwargs)
 
     def element(self):
         mode = None
@@ -547,7 +435,7 @@ class PhysicalInterface(Interface):
     @classmethod
     def variables(cls):
         return (
-            Var("(layer3|layer2|virtual-wire|tap|ha|decrypt-mirror|aggregate-group)", "mode"),
+            Var("(layer3|layer2|virtual-wire|tap|ha|decrypt-mirror|aggregate-group)", "mode", default="layer3"),
         ) + super(PhysicalInterface, PhysicalInterface).variables()
 
     @staticmethod
@@ -570,23 +458,6 @@ class EthernetInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, Phy
         Layer2Subinterface,
     )
 
-    def __init__(self,
-                 name,
-                 mode="layer3",
-                 ip=(),
-                 link_speed=None,
-                 link_duplex=None,
-                 link_state=None,
-                 aggregate_group=None,
-                 *args,
-                 **kwargs
-                 ):
-        super(EthernetInterface, self).__init__(name, mode, ip=ip, *args, **kwargs)
-        self.link_speed = link_speed
-        self.link_duplex = link_duplex
-        self.link_state = link_state
-        self.aggregate_group = aggregate_group
-
     @classmethod
     def variables(cls):
         return super(EthernetInterface, cls).vars_with_mode() + (
@@ -606,14 +477,6 @@ class AggregateInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, Ph
         Layer2Subinterface,
     )
 
-    def __init__(self,
-                 name,
-                 mode="layer3",
-                 *args,
-                 **kwargs
-                 ):
-        super(AggregateInterface, self).__init__(name, mode, *args, **kwargs)
-
 
 class VlanInterface(Layer3Parameters, VsysImportMixin, Interface):
     XPATH = "/network/interface/vlan/units"
@@ -632,32 +495,15 @@ class StaticRoute(PanObject):
     XPATH = "/routing-table/ip/static-route"
     SUFFIX = ENTRY
 
-    def __init__(self,
-                 name,
-                 destination,
-                 nexthop=None,
-                 nexthop_type="ip-address",
-                 interface=None,
-                 admin_dist=None,
-                 metric=10,
-                 ):
-        super(StaticRoute, self).__init__(name=name)
-        self.destination = destination
-        self.nexthop = nexthop
-        self.nexthop_type = nexthop_type
-        self.interface = interface
-        self.admin_dist = admin_dist
-        self.metric = metric
-
     @classmethod
     def variables(cls):
         return (
             Var("destination"),
-            Var("nexthop/(ip-address|discard)", "nexthop_type"),
+            Var("nexthop/(ip-address|discard)", "nexthop_type", default="ip-address"),
             Var("nexthop/ip-address", "nexthop"),
             Var("interface"),
             Var("admin-dist"),
-            Var("metric", vartype="int", default=10),
+            Var("metric", vartype="int", default=10, xmldefault=10),
         )
 
 
@@ -676,12 +522,14 @@ class VirtualRouter(VsysImportMixin, PanObject):
     )
     XPATH_IMPORT = "/network/virtual-router"
 
-    def __init__(self,
-                 name="default",
-                 interface=()):
-        super(VirtualRouter, self).__init__(name=name)
-        # Save interface as a list, even if a string was given
-        self.interface = pandevice.string_or_list(interface)
+    def __init__(self, *args, **kwargs):
+        # If no router name was specified, set it to "default"
+        try:
+            name = args[0]
+        except IndexError:
+            if not "name" in kwargs:
+                args = ("default")
+        super(VirtualRouter, self).__init__(*args, **kwargs)
 
     @classmethod
     def variables(cls):

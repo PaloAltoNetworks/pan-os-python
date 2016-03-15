@@ -78,11 +78,15 @@ class Firewall(PanDevice):
                  port=443,
                  vsys='vsys1',  # vsys# or 'shared'
                  is_virtual=None,
+                 *args,
+                 **kwargs
                  ):
         """Initialize PanDevice"""
         super(Firewall, self).__init__(hostname, api_username, api_password, api_key,
                                        port=port,
                                        is_virtual=is_virtual,
+                                       *args,
+                                       **kwargs
                                        )
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
@@ -105,7 +109,9 @@ class Firewall(PanDevice):
 
     @property
     def vsys(self):
-        if self.shared:
+        # Check if attribute exists because this could be called during
+        # init of the object before 'shared' exists.
+        if hasattr(self, "shared") and self.shared:
             return "shared"
         else:
             return self._vsys
@@ -113,7 +119,9 @@ class Firewall(PanDevice):
     @vsys.setter
     def vsys(self, value):
         self._vsys = value
-        if self.ha_peer is not None:
+        # Check if attribute exists because this could be called during
+        # init of the object before _ha_peer exists.
+        if hasattr(self, "_ha_peer") and self.ha_peer is not None:
             self.ha_peer._vsys = value
 
     def xpath_vsys(self):
@@ -272,12 +280,12 @@ class Firewall(PanDevice):
         op_vars = (
             Var("serial"),
             Var("ip-address", "hostname"),
-            Var("ip-address", "management_ip", init=False),
-            Var("sw-version", "version", init=False),
-            Var("multi-vsys", vartype="bool", init=False),
+            Var("ip-address", "management_ip"),
+            Var("sw-version", "version"),
+            Var("multi-vsys", vartype="bool"),
             Var("vsysid", "vsys", default="vsys1"),
-            Var("vsysname", "vsys_name", init=False),
-            Var("ha/state/peer/serial", "serial_ha_peer", init=False),
+            Var("vsysname", "vsys_name"),
+            Var("ha/state/peer/serial", "serial_ha_peer"),
         )
         if len(xml[0]) > 1:
             # This is a 'show devices' op command

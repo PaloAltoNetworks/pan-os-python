@@ -223,23 +223,20 @@ class HighAvailabilityInterface(PanObject):
     HA_SYNC = False
 
     # TODO: Support encryption
-    def __init__(self,
-                 ip_address=None,
-                 netmask=None,
-                 port=None,
-                 gateway=None,
-                 link_speed=None,
-                 link_duplex=None,
-                 ):
+    def __init__(self, *args, **kwargs):
+        # Store the 'port' variable
+        # This is necessary because 'port' is a property
+        # so that self.old_port can work correctly
+        # XXX: better to remove the need for old_port in a future version
+        try:
+            args = list(args)
+            port = args.pop(2)
+        except IndexError:
+            port = kwargs.pop("port", None)
         if type(self) == HighAvailabilityInterface:
             raise AssertionError("Do not instantiate a HighAvailabilityInterface. Please use a subclass.")
-        super(HighAvailabilityInterface, self).__init__()
+        super(HighAvailabilityInterface, self).__init__(*args, **kwargs)
         self._port = port
-        self.ip_address = ip_address
-        self.netmask = netmask
-        self.gateway = gateway
-        self.link_speed = link_speed
-        self.link_duplex = link_duplex
 
         # This is used by setup_interface method to remove old interfaces
         self.old_port = None
@@ -257,9 +254,9 @@ class HighAvailabilityInterface(PanObject):
     @classmethod
     def variables(cls):
         return (
-            Var("port"),
             Var("ip-address"),
             Var("netmask"),
+            Var("port"),
             Var("gateway"),
             Var("link-speed"),
             Var("link-duplex"),
@@ -360,18 +357,6 @@ class HA1(HighAvailabilityInterface):
 
     XPATH = "/interface/ha1"
 
-    def __init__(self,
-                 ip_address=None,
-                 netmask=None,
-                 port=None,
-                 gateway=None,
-                 link_speed=None,
-                 link_duplex=None,
-                 monitor_hold_time=None,
-                 ):
-        super(HA1, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
-        self.monitor_hold_time=monitor_hold_time
-
     @classmethod
     def variables(cls):
         return super(HA1, HA1).variables() + (
@@ -382,58 +367,17 @@ class HA1(HighAvailabilityInterface):
 class HA1Backup(HighAvailabilityInterface):
     XPATH = "/interface/ha1-backup"
 
-    def __init__(self,
-                 ip_address=None,
-                 netmask=None,
-                 port=None,
-                 gateway=None,
-                 link_speed=None,
-                 link_duplex=None,
-                 ):
-        super(HA1Backup, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
-
 
 class HA2(HighAvailabilityInterface):
     XPATH = "/interface/ha2"
-
-    def __init__(self,
-                 ip_address=None,
-                 netmask=None,
-                 port=None,
-                 gateway=None,
-                 link_speed=None,
-                 link_duplex=None,
-                 ):
-        super(HA2, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
 
 
 class HA2Backup(HighAvailabilityInterface):
     XPATH = "/interface/ha2-backup"
 
-    def __init__(self,
-                 ip_address=None,
-                 netmask=None,
-                 port=None,
-                 gateway=None,
-                 link_speed=None,
-                 link_duplex=None,
-                 ):
-        super(HA2Backup, self).__init__(ip_address, netmask, port, gateway, link_speed, link_duplex)
-
 
 class HA3(HighAvailabilityInterface):
     XPATH = "/interface/ha3"
-
-    def __init__(self,
-                 port=None,
-                 ):
-        super(HA3, self).__init__(ip_address=None,
-                                  netmask=None,
-                                  port=port,
-                                  gateway=None,
-                                  link_speed=None,
-                                  link_duplex=None,
-                                  )
 
     @classmethod
     def variables(cls):
@@ -458,50 +402,25 @@ class HighAvailability(PanObject):
     ACTIVE_PASSIVE = "active-passive"
     ACTIVE_ACTIVE = "active-active"
 
-    def __init__(self,
-                 peer_ip=None,
-                 enabled=True,
-                 mode=ACTIVE_PASSIVE,
-                 config_sync=True,
-                 state_sync=False,
-                 ha2_keepalive=False,
-                 group_id=(1,),
-                 description=None,
-                 ):
-        super(HighAvailability, self).__init__()
-        self.peer_ip = peer_ip
-        self.enabled = enabled
-        self.mode = mode
-        self.config_sync = config_sync
-        self.state_sync = state_sync
-        self.ha2_keepalive = ha2_keepalive
-        self.group_id = list(group_id)
-        self.description = description
-
-        # Other settings that can be modified after instantiation
-        self.passive_link_state = None
-        self.ha2_keepalive_action = None
-        self.ha2_keepalive_threshold = None
-
     @classmethod
     def variables(cls):
         return (
             # Enabled flag
-            Var("enabled", vartype="bool"),
+            Var("enabled", vartype="bool", default=True),
             # Group
-            Var("group", "group_id", vartype="entry"),
+            Var("group", "group_id", vartype="entry", default=(1,)),
             Var("{{group_id}}/description"),
             Var("{{group_id}}/configuration-synchronization/enabled", "config_sync", vartype="bool"),
             Var("{{group_id}}/peer-ip"),
             # HA Mode (A/P, A/A)
-            Var("{{group_id}}/mode/(active-passive|active-active)", "mode"),
-            Var("{{group_id}}/mode/{{mode}}/passive-link-state", init=False),
+            Var("{{group_id}}/mode/(active-passive|active-active)", "mode", default="active-passive"),
+            Var("{{group_id}}/mode/{{mode}}/passive-link-state"),
             # State Synchronization
-            Var("{{group_id}}/state-synchronization/enabled", "state_sync", vartype="bool"),
+            Var("{{group_id}}/state-synchronization/enabled", "state_sync", vartype="bool", default=True),
             # HA2 Keep-alive
             Var("{{group_id}}/state-synchronization/ha2-keep-alive/enabled", "ha2_keepalive", vartype="bool"),
-            Var("{{group_id}}/state-synchronization/ha2-keep-alive/action", "ha2_keepalive_action", init=False),
-            Var("{{group_id}}/state-synchronization/ha2-keep-alive/threshold", "ha2_keepalive_threshold", vartype="int", init=False),
+            Var("{{group_id}}/state-synchronization/ha2-keep-alive/action", "ha2_keepalive_action"),
+            Var("{{group_id}}/state-synchronization/ha2-keep-alive/threshold", "ha2_keepalive_threshold", vartype="int"),
             Var("interface", vartype="none"),
             Var("interface/ha1", vartype="none"),
             Var("interface/ha1-backup", vartype="none"),

@@ -34,32 +34,6 @@ class VsysResources(PanObject):
     XPATH = "/import/resource"
     ROOT = Root.VSYS
 
-    def __init__(self,
-                 max_sessions=None,
-                 max_security_rules=None,
-                 max_nat_rules=None,
-                 max_ssl_decryption_rules=None,
-                 max_qos_rules=None,
-                 max_application_override_rules=None,
-                 max_pbf_rules=None,
-                 max_cp_rules=None,
-                 max_dos_rules=None,
-                 max_site_to_site_vpn_tunnels=None,
-                 max_concurrent_ssl_vpn_tunnels=None,
-                 ):
-        super(VsysResources, self).__init__(name=None)
-        self.max_sessions = max_sessions
-        self.max_security_rules = max_security_rules
-        self.max_nat_rules = max_nat_rules
-        self.max_ssl_decryption_rules = max_ssl_decryption_rules
-        self.max_qos_rules = max_qos_rules
-        self.max_application_override_rules = max_application_override_rules
-        self.max_pbf_rules = max_pbf_rules
-        self.max_cp_rules = max_cp_rules
-        self.max_dos_rules = max_dos_rules
-        self.max_site_to_site_vpn_tunnels = max_site_to_site_vpn_tunnels
-        self.max_concurrent_ssl_vpn_tunnels = max_concurrent_ssl_vpn_tunnels
-
     @classmethod
     def variables(cls):
         return (
@@ -84,16 +58,11 @@ class Vsys(PanObject):
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
-    def __init__(self, name, display_name=None):
-        super(Vsys, self).__init__(name)
-        self.display_name = display_name
-        self.interface = []
-
     @classmethod
     def variables(cls):
         return (
             Var("display-name"),
-            Var("import/network/interface", vartype="member", init=False)
+            Var("import/network/interface", vartype="member")
         )
 
     def xpath_vsys(self):
@@ -118,11 +87,10 @@ class NTPServer(PanObject):
 
     XPATH = "/ntp-servers/primary-ntp-server"
 
-    def __init__(self, address=None):
+    def __init__(self, *args, **kwargs):
         if type(self) == NTPServer:
             raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
-        super(NTPServer, self).__init__(name=None)
-        self.address = address
+        super(NTPServer, self).__init__(*args, **kwargs)
 
     @classmethod
     def variables(cls):
@@ -157,28 +125,12 @@ class SystemSettings(PanObject):
 
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/system"
+    NAME = "hostname"
     HA_SYNC = False
     CHILDTYPES = (
         NTPServerPrimary,
         NTPServerSecondary,
     )
-
-    def __init__(self, **kwargs):
-        super(SystemSettings, self).__init__()
-        self.hostname = kwargs.pop("hostname", None)
-        self.domain = kwargs.pop("domain", None)
-        self.ip_address = kwargs.pop("ip_address", None)
-        self.netmask = kwargs.pop("netmask", None)
-        self.default_gateway = kwargs.pop("default_gateway", None)
-        self.ipv6_address = kwargs.pop("ipv6_address", None)
-        self.ipv6_default_gateway = kwargs.pop("ipv6_default_gateway", None)
-        self.dns_primary = kwargs.pop("dns_primary", None)
-        self.dns_secondary = kwargs.pop("dns_secondary", None)
-        self.timezone = kwargs.pop("timezone", None)
-        self.panorama = kwargs.pop("panorama", None)
-        self.panorama2 = kwargs.pop("panorama2", None)
-        self.login_banner = kwargs.pop("login_banner", None)
-        self.update_server = kwargs.pop("update_server", None)
 
     @classmethod
     def variables(cls):

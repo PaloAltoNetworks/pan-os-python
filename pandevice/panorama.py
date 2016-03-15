@@ -50,10 +50,6 @@ class DeviceGroup(PanObject):
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
-    def __init__(self, name, tag=()):
-        super(DeviceGroup, self).__init__(name)
-        self.tag = pandevice.string_or_list(tag)
-
     @classmethod
     def variables(cls):
         return (
@@ -74,8 +70,10 @@ class Panorama(base.PanDevice):
                  api_password=None,
                  api_key=None,
                  port=443,
+                 *args,
+                 **kwargs
                  ):
-        super(Panorama, self).__init__(hostname, api_username, api_password, api_key, port)
+        super(Panorama, self).__init__(hostname, api_username, api_password, api_key, port, *args, **kwargs)
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 

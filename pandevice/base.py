@@ -55,10 +55,38 @@ class PanObject(object):
     CHILDMETHODS = ()
     HA_SYNC = True
 
-    def __init__(self, name=None):
-        self.name = name
+    def __init__(self, *args, **kwargs):
+        # Set the 'name' variable
+        try:
+            name = args[0]
+        except IndexError:
+            name = kwargs.pop(self.NAME, None)
+        setattr(self, self.NAME, name)
+        # Initialize other common variables
         self.parent = None
         self.children = []
+        # Gather all the variables from the 'variables' class method
+        # from the args/kwargs into instance variables.
+        variables = kwargs.pop("variables", None)
+        if variables is None:
+            variables = type(self).variables()
+        for idx, var in enumerate(variables):
+            varname = var.variable
+            try:
+                # Try to get the variables from 'args' first
+                varvalue = args[idx+1]
+            except IndexError:
+                # If it's not in args, get it from 'kwargs', or store a None in the variable
+                varvalue = kwargs.pop(varname, None)
+            # For member variables, store a list containing the value instead of the individual value
+            if var.vartype in ("member", "entry"):
+                varvalue = pandevice.string_or_list(varvalue)
+            # Store the value in the instance variable
+            setattr(self, varname, varvalue)
+            # If None was stored in the variable, check if
+            # there's a default value, and store that instead
+            if getattr(self, varname) is None:
+                setattr(self, varname, var.default)
 
     def __str__(self):
         return str(getattr(self, self.NAME, None))
@@ -267,10 +295,10 @@ class PanObject(object):
 
     def root_element(self):
         if self.SUFFIX == ENTRY:
-            return ET.Element("entry", {'name': self.name})
+            return ET.Element("entry", {'name': getattr(self, self.NAME)})
         elif self.SUFFIX == MEMBER:
             root = ET.Element("member")
-            root.text = self.name
+            root.text = getattr(self, self.NAME)
             return root
         elif self.SUFFIX is None:
             tag = self.XPATH.rsplit('/', 1)[-1] # Get right of last / in xpath
@@ -312,7 +340,7 @@ class PanObject(object):
 
     def apply(self):
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), self.name))
+        logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
         if self.HA_SYNC:
             pandevice.active().xapi.edit(self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC)
@@ -323,7 +351,7 @@ class PanObject(object):
 
     def create(self):
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": create called on %s object \"%s\"" % (type(self), self.name))
+        logger.debug(pandevice.hostname + ": create called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
         element = self.element_str()
         if self.HA_SYNC:
@@ -335,7 +363,7 @@ class PanObject(object):
 
     def delete(self):
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), self.name))
+        logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
         for child in self.children:
             child._check_child_methods("delete")
@@ -358,7 +386,7 @@ class PanObject(object):
         import ha
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": update called on %s object \"%s\" and variable \"%s\"" %
-                     (type(self), self.name, variable))
+                     (type(self), getattr(self, self.NAME), variable))
         pandevice.set_config_changed()
         variables = type(self).variables()
         value = getattr(self, variable)
@@ -415,7 +443,7 @@ class PanObject(object):
         # Get the root of the xml to parse
         if xml is None:
             pandevice = self.pandevice()
-            logger.debug(pandevice.hostname + ": refresh called on %s object \"%s\"" % (type(self), self.name))
+            logger.debug(pandevice.hostname + ": refresh called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
             if running_config:
                 api_action = pandevice.xapi.show
             else:
@@ -440,7 +468,7 @@ class PanObject(object):
                     return
         else:
             # Use the xml that was passed in
-            logger.debug("refresh called using xml on %s object \"%s\"" % (type(self), self.name))
+            logger.debug("refresh called using xml on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
             obj = xml
         # Refresh each variable
         variables, noninit_variables = type(self)._parse_xml(obj)
@@ -465,7 +493,7 @@ class PanObject(object):
             raise err.PanDeviceError("Variable %s does not exist in variable tuple" % variable)
         if xml is None:
             pandevice = self.pandevice()
-            logger.debug(pandevice.hostname + ": refresh_variable called on %s object \"%s\" with variable %s" % (type(self), self.name, variable))
+            logger.debug(pandevice.hostname + ": refresh_variable called on %s object \"%s\" with variable %s" % (type(self), getattr(self, self.NAME), variable))
             if running_config:
                 api_action = pandevice.xapi.show
             else:
@@ -492,7 +520,7 @@ class PanObject(object):
                     return
         else:
             # Use the xml that was passed in
-            logger.debug("refresh_variable called using xml on %s object \"%s\" with variable %s" % (type(self), self.name, variable))
+            logger.debug("refresh_variable called using xml on %s object \"%s\" with variable %s" % (type(self), getattr(self, self.NAME), variable))
             obj = xml
         # Rebuild the elements that are lost by refreshing the variable directly
         sections = var.path.split("/")[:-1]
@@ -502,11 +530,8 @@ class PanObject(object):
             next_element = ET.SubElement(next_element, section)
         next_element.append(obj)
         # Refresh the requested variable
-        variables, noninit_variables = type(self)._parse_xml(root)
+        variables = type(self)._parse_xml(root)
         for var, value in variables.iteritems():
-            if var == variable:
-                setattr(self, var, value)
-        for var, value in noninit_variables.iteritems():
             if var == variable:
                 setattr(self, var, value)
         return getattr(self, variable, None)
@@ -544,7 +569,7 @@ class PanObject(object):
     def refresh_xml(self, running_config=False, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": refresh_xml called on %s object \"%s\"" % (type(self), self.name))
+        logger.debug(pandevice.hostname + ": refresh_xml called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         if running_config:
             api_action = pandevice.xapi.show
         else:
@@ -757,16 +782,13 @@ class PanObject(object):
             objects = xml.findall(lasttag)
         # Refresh each object
         for obj in objects:
-            init_variables, noinit_variables = cls._parse_xml(obj, variables=variables)
+            objvars = cls._parse_xml(obj, variables=variables)
             if cls.SUFFIX is not None:
                 name = obj.get('name')
                 if name is not None:
-                    init_variables[cls.NAME] = name
+                    objvars[cls.NAME] = name
             # Create the object instance
-            instance = cls(**init_variables)
-            # Set values of no init variables
-            for var, value in noinit_variables.iteritems():
-                variables(instance)[var] = value
+            instance = cls(variables=variables, **objvars)
             instances.append(instance)
             # Refresh the children of these instances
             if refresh_children:
@@ -779,22 +801,17 @@ class PanObject(object):
 
     @classmethod
     def _parse_xml(cls, xml, variables=None):
-        init_variables = {}
-        noinit_variables = {}
+        vardict = {}
         # Parse each variable
         if variables:
-            vars = variables
+            allvars = variables
         else:
-            vars = cls.variables()
-        for var in vars:
+            allvars = cls.variables()
+        for var in allvars:
             missing_replacement = False
             # Determine if variable is part of __init__ args
             if var.vartype == "none":
                 continue
-            if var.init:
-                vardict = init_variables
-            else:
-                vardict = noinit_variables
             # Search for variable replacements in path
             path = var.path
             matches = re.findall(r'{{(.*?)}}', path)
@@ -802,10 +819,7 @@ class PanObject(object):
                 regex = r'{{' + re.escape(match) + r'}}'
                 # Find the discovered replacement in the list of vars
                 matchedvar = next((x for x in cls.variables() if x.variable == match), None)
-                try:
-                    replacement = init_variables[match]
-                except KeyError:
-                    replacement = noinit_variables[match]
+                replacement = vardict[match]
                 if replacement is None:
                     missing_replacement = True
                     break
@@ -856,7 +870,7 @@ class PanObject(object):
                     vardict[var.variable] = cls._convert_var(xml.findtext(path), var.vartype)
                 if var.default is not None and vardict[var.variable] is None:
                     vardict[var.variable] = var.default
-        return init_variables, noinit_variables
+        return vardict
 
     @classmethod
     def _convert_var(cls, value, vartype):
@@ -884,22 +898,36 @@ class PanObject(object):
         if exclusive:
             for obj in allobjects:
                 references = getattr(obj, reference_var)
-                if self in references:
+                if references is None:
+                    continue
+                elif hasattr(self, "__iter__") and self in references:
                     if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
                         continue
                     references.remove(self)
                     if update: obj.update(reference_var)
-                elif str(self) in references:
+                elif hasattr(self, "__iter__") and str(self) in references:
                     if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
                         continue
                     references.remove(str(self))
+                    if update: obj.update(reference_var)
+                elif references == self or references == str(self):
+                    if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
+                        continue
+                    references = None
                     if update: obj.update(reference_var)
         # Add new reference to self in requested object
         if reference_name is not None:
             obj = pandevice.find_or_create(reference_name, reference_type, *args, **kwargs)
             var = getattr(obj, reference_var)
-            if self not in var and str(self) not in var:
+            if var is None:
+                setattr(obj, reference_var, [self])
+                if update: obj.update(reference_var)
+            elif hasattr(var, "__iter__") and self not in var and str(self) not in var:
                 var.append(self)
+                setattr(obj, reference_var, var)
+                if update: obj.update(reference_var)
+            elif var != self and var != str(self):
+                setattr(obj, reference_var, self)
                 if update: obj.update(reference_var)
             return obj
 
@@ -910,14 +938,17 @@ class VarPath(object):
     Attributes:
         path (string): The relative xpath to the variable
         variable (string): The name of the instance variable in the class
-        vartype (string): The type of variable (None or 'member')
+        vartype (string): The type of variable (None, 'member', 'entry', 'bool', 'int', 'exist', 'none')
+        default (string): The default value if no value is specified during __init__ of the object
+        xmldefault (string): The default value if no value exists in the xml from a device
+        condition (string): In the format othervariable:value where this variable is only
+            considered if othervariable equals value
     """
-    def __init__(self, path, variable=None, vartype=None, default=None, init=True, condition=None):
+    def __init__(self, path, variable=None, vartype=None, default=None, xmldefault=None, condition=None):
         self.path = path
         self._variable = variable
         self.vartype = vartype
         self.default = default
-        self.init = init
         self.condition = condition
 
     @property
@@ -980,14 +1011,14 @@ class VsysImportMixin(object):
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            self.pandevice().xapi.set(xpath_import, "<member>%s</member>" % self.name, retry_on_peer=True)
+            self.pandevice().xapi.set(xpath_import, "<member>%s</member>" % getattr(self, self.NAME), retry_on_peer=True)
 
     def delete_import(self, vsys=None):
         if vsys is None:
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            self.pandevice().xapi.delete(xpath_import + "/member[text()='%s']" % self.name, retry_on_peer=True)
+            self.pandevice().xapi.delete(xpath_import + "/member[text()='%s']" % getattr(self, self.NAME), retry_on_peer=True)
 
     def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
         import device
@@ -1059,9 +1090,11 @@ class PanDevice(PanObject):
                  is_virtual=None,
                  timeout=1200,
                  interval=.5,
+                 *args,
+                 **kwargs
                  ):
         """Initialize PanDevice"""
-        super(PanDevice, self).__init__()
+        super(PanDevice, self).__init__(*args, **kwargs)
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
