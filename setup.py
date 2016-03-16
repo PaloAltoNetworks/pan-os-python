@@ -23,8 +23,8 @@ test_requirements = [
 setup(
     name='pandevice',
     version='0.2.0',
-    description='The Palo Alto Networks Device Framework is a way to interact with Palo Alto Networks devices (including Next-generation Firewalls and Panorama) using the device API that is conceptually similar to iinteraction with the device via GUI or CLI.',
-    long_description=readme + '\n\n' + history,
+    description='Framework for interacting with Palo Alto Networks devices via API',
+    long_description='The Palo Alto Networks Device Framework is a way to interact with Palo Alto Networks devices (including Next-generation Firewalls and Panorama) using the device API that is object oriented and conceptually similar to interaction with the device via the device GUI or CLI.',
     author='Brian Torres-Gil',
     author_email='btorres-gil@paloaltonetworks.com',
     url='https://github.com/PaloAltoNetworks/pandevice',
@@ -39,9 +39,9 @@ setup(
     zip_safe=False,
     keywords='pandevice',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: ISC License (ISCL)',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.7',
