@@ -39,17 +39,12 @@ import pan.commit
 from pan.config import PanConfig
 
 import pandevice
-from pandevice import panorama
 from pandevice import device
-from pandevice import objects
-from pandevice import network
 
 # import other parts of this pandevice package
 import errors as err
-from network import Interface
-from base import PanObject, PanDevice, Root, ENTRY
+from base import PanDevice, Root, ENTRY
 from base import VarPath as Var
-from updater import Updater
 import userid
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
