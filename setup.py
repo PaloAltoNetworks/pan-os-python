@@ -27,7 +27,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author='Brian Torres-Gil',
     author_email='btorres-gil@paloaltonetworks.com',
-    url='https://github.com/PaloAltoNetworks-BD/pandevice',
+    url='https://github.com/PaloAltoNetworks/pandevice',
     packages=[
         'pandevice',
     ],
