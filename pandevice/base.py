@@ -539,11 +539,11 @@ class PanObject(object):
     def refresh_children(self, running_config=False, xml=None):
         # Get the root of the xml to parse
         if xml is None:
-            pandevice = self.pandevice()
+            pan_device = self.pandevice()
             if running_config:
-                api_action = pandevice.xapi.show
+                api_action = pan_device.xapi.show
             else:
-                api_action = pandevice.xapi.get
+                api_action = pan_device.xapi.get
             root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
             # Determine the first element to look for in the XML
             if self.SUFFIX is None:
@@ -559,7 +559,9 @@ class PanObject(object):
         # Remove all the current child instances first
         self.removeall()
         # Check for children in the remaining XML
-        for childtype in self.CHILDTYPES:
+        for childtypestring in self.CHILDTYPES:
+            childtype = getattr(getattr(pandevice, childtypestring.split(".")[0]),
+                                childtypestring.split(".")[-1])
             childroot = obj.find(childtype.XPATH[1:])
             if childroot is not None:
                 l = childtype.refresh_all_from_xml(childroot)
@@ -792,7 +794,9 @@ class PanObject(object):
             instances.append(instance)
             # Refresh the children of these instances
             if refresh_children:
-                for childtype in cls.CHILDTYPES:
+                for childtypestring in cls.CHILDTYPES:
+                    childtype = getattr(getattr(pandevice, childtypestring.split(".")[0]),
+                                        childtypestring.split(".")[-1])
                     childroot = obj.find(childtype.XPATH[1:])
                     if childroot is not None:
                         l = childtype.refresh_all_from_xml(childroot)

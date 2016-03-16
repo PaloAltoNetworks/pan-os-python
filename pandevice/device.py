@@ -128,8 +128,8 @@ class SystemSettings(PanObject):
     NAME = "hostname"
     HA_SYNC = False
     CHILDTYPES = (
-        NTPServerPrimary,
-        NTPServerSecondary,
+        "device.NTPServerPrimary",
+        "device.NTPServerSecondary",
     )
 
     @classmethod

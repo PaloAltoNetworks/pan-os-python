@@ -64,9 +64,18 @@ class Firewall(PanDevice):
     SUFFIX = ENTRY
     NAME = "serial"
     CHILDTYPES = (
-        device.VsysResources,
-        objects.AddressObject,
-        network.VirtualRouter,
+        "device.Vsys",
+        "device.VsysResources",
+        "device.SystemSettings",
+        "ha.HighAvailability",
+        "objects.AddressObject",
+        "network.EthernetInterface",
+        "network.AggregateInterface",
+        "network.LoopbackInterface",
+        "network.TunnelInterface",
+        "network.VlanInterface",
+        "network.Vlan",
+        "network.VirtualRouter",
     )
 
     def __init__(self,

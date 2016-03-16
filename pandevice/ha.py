@@ -392,11 +392,11 @@ class HighAvailability(PanObject):
     XPATH = "/deviceconfig/high-availability"
     HA_SYNC = False
     CHILDTYPES = (
-        HA1,
-        HA1Backup,
-        HA2,
-        HA2Backup,
-        HA3,
+        "ha.HA1",
+        "ha.HA1Backup",
+        "ha.HA2",
+        "ha.HA2Backup",
+        "ha.HA3",
     )
 
     ACTIVE_PASSIVE = "active-passive"

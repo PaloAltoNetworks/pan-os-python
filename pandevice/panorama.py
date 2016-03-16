@@ -49,6 +49,9 @@ class DeviceGroup(PanObject):
     XPATH = "/device-group"
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
+    CHILDTYPES = (
+        "objects.AddressObject",
+    )
 
     @classmethod
     def variables(cls):
@@ -62,7 +65,10 @@ class DeviceGroup(PanObject):
 
 class Panorama(base.PanDevice):
 
-    CHILDTYPES = DeviceGroup
+    CHILDTYPES = (
+        "panorama.DeviceGroup",
+        "firewall.Firewall",
+    )
 
     def __init__(self,
                  hostname,

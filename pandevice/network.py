@@ -108,7 +108,7 @@ class Vlan(VsysImportMixin, PanObject):
     SUFFIX = ENTRY
     ROOT = Root.DEVICE
     CHILDTYPES = (
-        StaticMac,
+        "network.StaticMac",
     )
     XPATH_IMPORT = "/network/vlan"
 
@@ -386,7 +386,7 @@ class Layer3Subinterface(Layer3Parameters, VsysImportMixin, Subinterface):
     XPATH_IMPORT = "/network/interface"
     SUFFIX = ENTRY
     CHILDTYPES = (
-        IPv6Address,
+        "network.IPv6Address",
     )
 
     def set_zone(self, zone_name, mode="layer3", refresh=False, update=False, running_config=False):
@@ -454,8 +454,8 @@ class EthernetInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, Phy
     XPATH = "/network/interface/ethernet"
     XPATH_IMPORT = "/network/interface"
     CHILDTYPES = (
-        Layer3Subinterface,
-        Layer2Subinterface,
+        "network.Layer3Subinterface",
+        "network.Layer2Subinterface",
     )
 
     @classmethod
@@ -473,8 +473,8 @@ class AggregateInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, Ph
     XPATH = "/network/interface/aggregate-ethernet"
     XPATH_IMPORT = "/network/interface"
     CHILDTYPES = (
-        Layer3Subinterface,
-        Layer2Subinterface,
+        "network.Layer3Subinterface",
+        "network.Layer2Subinterface",
     )
 
 
@@ -517,8 +517,8 @@ class VirtualRouter(VsysImportMixin, PanObject):
     XPATH = "/network/virtual-router"
     SUFFIX = ENTRY
     CHILDTYPES = (
-        StaticRoute,
-        StaticRouteV6,
+        "network.StaticRoute",
+        "network.StaticRouteV6",
     )
     XPATH_IMPORT = "/network/virtual-router"
 
