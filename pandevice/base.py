@@ -1349,8 +1349,12 @@ class PanDevice(PanObject):
             self._xapi_private = self.generate_xapi()
         return self._xapi_private
 
-    def op(self, cmd=None, vsys=None, cmd_xml=True, extra_qs=None):
-        return self.xapi.op(cmd, vsys, cmd_xml, extra_qs)
+    def op(self, cmd=None, vsys=None, xml=False, cmd_xml=True, extra_qs=None, retry_on_peer=False):
+        element = self.xapi.op(cmd, vsys, cmd_xml, extra_qs, retry_on_peer=retry_on_peer)
+        if xml:
+            return ET.tostring(element)
+        else:
+            return element
 
     def update_connection_method(self):
         self._xapi_private = self.generate_xapi()

@@ -160,10 +160,10 @@ class Firewall(PanDevice):
                 parent_xpath = self.parent.xpath()
         return parent_xpath
 
-    def op(self, cmd=None, vsys=None, cmd_xml=True, extra_qs=None, retry_on_peer=False):
+    def op(self, cmd=None, vsys=None, xml=True, cmd_xml=True, extra_qs=None, retry_on_peer=False):
         if vsys is None:
             vsys = self.vsys
-        return self.xapi.op(cmd, vsys, cmd_xml, extra_qs, retry_on_peer=retry_on_peer)
+        return super(Firewall, self).op(cmd, vsys, xml, cmd_xml, extra_qs, retry_on_peer)
 
     def generate_xapi(self):
         """Override super class to connect to Panorama

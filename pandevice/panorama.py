@@ -83,9 +83,9 @@ class Panorama(base.PanDevice):
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
-    def op(self, cmd=None, vsys=None, cmd_xml=True, extra_qs=None, retry_on_peer=False):
+    def op(self, cmd=None, vsys=None, xml=False, cmd_xml=True, extra_qs=None, retry_on_peer=False):
         # TODO: Support device-group and template scope
-        return self.xapi.op(cmd, vsys=None, cmd_xml=cmd_xml, extra_qs=extra_qs, retry_on_peer=retry_on_peer)
+        return super(Panorama, self).op(cmd, vsys=None, xml=xml, cmd_xml=cmd_xml, extra_qs=extra_qs, retry_on_peer=retry_on_peer)
 
     def xpath_vsys(self):
         raise err.PanDeviceError("Attempt to modify vsys configuration on non-firewall device")
