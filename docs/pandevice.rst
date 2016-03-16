@@ -29,6 +29,3 @@ Helper methods
 --------------
 
 .. automodule:: pandevice
-   :members:
-   :undoc-members:
-   :show-inheritance:

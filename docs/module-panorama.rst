@@ -5,6 +5,3 @@ Module: panorama
    :parts: 1
 
 .. automodule:: pandevice.panorama
-   :members:
-   :undoc-members:
-   :show-inheritance:

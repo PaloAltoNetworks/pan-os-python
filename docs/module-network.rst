@@ -5,6 +5,3 @@ Module: network
    :parts: 1
 
 .. automodule:: pandevice.network
-   :members:
-   :undoc-members:
-   :show-inheritance:

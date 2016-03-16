@@ -5,6 +5,3 @@ Module: ha
    :parts: 1
 
 .. automodule:: pandevice.ha
-   :members:
-   :undoc-members:
-   :show-inheritance:

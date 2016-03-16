@@ -5,6 +5,3 @@ Module: device
    :parts: 1
 
 .. automodule:: pandevice.device
-   :members:
-   :undoc-members:
-   :show-inheritance:

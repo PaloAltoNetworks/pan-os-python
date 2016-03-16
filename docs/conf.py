@@ -294,6 +294,8 @@ graphviz_output_format = 'svg'
 
 # -- AutoDoc options ---------------------------------------------------
 
+autodoc_default_flags = ['members']
+
 def autodoc_skip_member(app, what, name, obj, skip, options):
     exclusions = ('XPATH', 'SUFFIX', 'ROOT', 'NAME',
                   'CHILDTYPES', 'CHILDMETHODS', 'HA_SYNC',
