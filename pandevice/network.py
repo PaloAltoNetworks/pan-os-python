@@ -401,7 +401,7 @@ class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
 
     @classmethod
     def variables(cls):
-        variables = super(Layer3Subinterface, Layer3Subinterface).variables()
+        variables = super(Layer2Subinterface, Layer2Subinterface).variables()
         # Get the mode variable and change its default value to "layer3"
         modevar = filter(lambda var: var.variable == "mode", variables)[0]
         modevar.default = "layer2"
