@@ -32,6 +32,20 @@ logger.addHandler(logging.NullHandler())
 
 
 class UserId(object):
+    """User-ID Subsystem of Firewall
+
+    A member of a firewall.Firewall object that has special methods for
+    interacting with the User-ID API. This includes login/logout of a user,
+    user/group mappings, and dynamic address group tags.
+
+    This class is typically not instantiated by anything but the
+    firewall.Firewall class itself. There is an instance of this UserId class
+    inside every instantiated firewall.Firewall class.
+
+    Args:
+        panfirewall (firewall.Firewall): The firewall this user-id subsystem leverages
+
+    """
 
     def __init__(self, panfirewall):
         # Create a class logger
@@ -58,10 +72,25 @@ class UserId(object):
             return root, payload
 
     def batch_start(self):
+        """Start creating an API call
+
+        The API call will not be sent to the firewall until batch_end() is
+        called. This allows multiple operations to be added to a single API
+        call.
+        """
         self._batch = True
         self._batch_uidmessage = deepcopy(self._uidmessage)
 
     def batch_end(self):
+        """End a batched API call and send it to the firewall
+
+        This method usually follows a batch_start() and several other
+        operations.
+
+        The API call will not be sent to the firewall until batch_end() is
+        called. This allows multiple operations to be added to a single API
+        call.
+        """
         uid_message, payload = self._create_uidmessage()
         self._batch = False
         if len(payload) > 0:
@@ -69,6 +98,15 @@ class UserId(object):
         self._batch_uidmessage = deepcopy(self._uidmessage)
 
     def send(self, uidmessage):
+        """Send a uidmessage to the User-ID API of a firewall
+
+        Used for adhoc User-ID API calls that are not supported by other
+        methods in this class. This method cannot be batched.
+
+        Args:
+            uidmessage (str): The UID Message in XML to send to the firewall
+
+        """
         if self._batch:
             return
         else:
@@ -85,6 +123,17 @@ class UserId(object):
                     raise e
 
     def login(self, user, ip):
+        """Login a single user
+
+        Maps a user to an IP address
+
+        This method can be batched with batch_start() and batch_end().
+
+        Args:
+            user (str): a username
+            ip (str): an ip address
+
+        """
         root, payload = self._create_uidmessage()
         login = payload.find("login")
         if login is None:
@@ -95,9 +144,12 @@ class UserId(object):
     def logins(self, users):
         """Login multiple users in the same API call
 
-        Arguments:
+        This method can be batched with batch_start() and batch_end().
+
+        Args:
             users: a list of sets of user/ip mappings
                    eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
+
         """
         root, payload = self._create_uidmessage()
         login = payload.find("login")
@@ -108,6 +160,17 @@ class UserId(object):
         self.send(root)
 
     def logout(self, user, ip):
+        """Logout a single user
+
+        Removes a mapping of a user to an IP address
+
+        This method can be batched with batch_start() and batch_end().
+
+        Args:
+            user (str): a username
+            ip (str): an ip address
+
+        """
         root, payload = self._create_uidmessage()
         logout = payload.find("logout")
         if logout is None:
@@ -118,9 +181,12 @@ class UserId(object):
     def logouts(self, users):
         """Logout multiple users in the same API call
 
+        This method can be batched with batch_start() and batch_end().
+
         Arguments:
             users: a list of sets of user/ip mappings
                    eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
+
         """
         root, payload = self._create_uidmessage()
         logout = payload.find("logout")
@@ -130,10 +196,16 @@ class UserId(object):
             et.SubElement(logout, "entry", {"name": user[0], "ip": user[1]})
         self.send(root)
 
-    def groups(self):
-        raise NotImplementedError
-
     def register(self, ip, tags):
+        """Register an ip tag for a Dynamic Address Group
+
+        This method can be batched with batch_start() and batch_end().
+
+        Args:
+            ip (str): IP address to tag
+            tags (str): The tag for the IP address
+
+        """
         root, payload = self._create_uidmessage()
         register = payload.find("register")
         if register is None:
@@ -150,6 +222,15 @@ class UserId(object):
         self.send(root)
 
     def unregister(self, ip, tags):
+        """Unregister an ip tag for a Dynamic Address Group
+
+        This method can be batched with batch_start() and batch_end().
+
+        Args:
+            ip (str): IP address with the tag to remove
+            tags (str): The tag to remove from the IP address
+
+        """
         root, payload = self._create_uidmessage()
         unregister = payload.find("unregister")
         if unregister is None:
@@ -168,8 +249,11 @@ class UserId(object):
     def get_all_registered_ip(self):
         """Return all registered/tagged addresses
 
-        Support:
-            PAN-OS 6.0 and higher
+        **Support:** PAN-OS 6.0 and higher
+
+        Returns:
+            dict: ip addresses as keys with tags as values
+
         """
         root = self.panfirewall.op(cmd='show object registered-ip all', vsys=self.panfirewall.vsys, cmd_xml=True)
         entries = root.findall("./result/entry")
@@ -189,11 +273,12 @@ class UserId(object):
         """Unregister all registered/tagged addresses
 
         Removes all registered addresses used by dynamic address groups.
-        WARNING: this will clear any batch without it being sent, and can't
-        be used as part of a batch.
 
-        Support:
-            PAN-OS 6.0 and higher
+        **Support:** PAN-OS 6.0 and higher
+
+        Warning:
+            This will clear any batch without it being sent, and can't be used as part of a batch.
+
         """
         addresses = self.get_all_registered_ip()
         self.batch_start()
