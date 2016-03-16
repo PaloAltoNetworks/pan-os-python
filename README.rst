@@ -21,3 +21,7 @@ Features
 --------
 
 * TODO
+
+.. image:: https://badges.gitter.im/PaloAltoNetworks/pandevice.svg
+   :alt: Join the chat at https://gitter.im/PaloAltoNetworks/pandevice
+   :target: https://gitter.im/PaloAltoNetworks/pandevice?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
