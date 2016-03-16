@@ -16,7 +16,27 @@
 
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
-"""Update User-ID by adding or removing a user-to-ip mapping on the firewall"""
+"""
+userid.py
+=========
+
+Update User-ID by adding or removing a user-to-ip mapping on the firewall
+
+**Usage**::
+
+    userid.py [-h] [-v] [-q] hostname username password action user ip
+
+**Examples**:
+
+Send a User-ID login event to a firewall at 10.0.0.1::
+
+    $ python userid.py 10.0.0.1 admin password login exampledomain/user1 4.4.4.4
+
+Send a User-ID logout event to a firewall at 172.16.4.4::
+
+    $ python userid.py 172.16.4.4 admin password logout user2 5.1.2.2
+
+"""
 
 __author__ = 'btorres-gil'
 

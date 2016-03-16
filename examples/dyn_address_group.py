@@ -16,7 +16,31 @@
 
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
-"""Tag/untag ip addresses for Dynamic Address Groups on a firewall"""
+"""
+dyn_address_group.py
+====================
+
+Tag/untag ip addresses for Dynamic Address Groups on a firewall
+
+**Usage**::
+
+    dyn_address_group.py [-h] [-v] [-q] [-u] [-c] hostname username password ip tags
+
+**Examples**:
+
+Tag the IP 3.3.3.3 with the tag 'linux' and 'apache'::
+
+    $ python dyn_address_group.py 10.0.0.1 admin password 3.3.3.3 linux,apache
+
+Remove the tag apache from the IP 3.3.3.3::
+
+    $ python dyn_address_group.py -u 10.0.0.1 admin password 3.3.3.3 linux
+
+Clear all tags from all IP's::
+
+    $ python dyn_address_group.py -c 10.0.0.1 admin password notused notused
+
+"""
 
 __author__ = 'btorres-gil'
 
