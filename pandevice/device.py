@@ -16,8 +16,9 @@
 
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
+"""Device module contains objects that exist in the 'Device' tab in the firewall GUI"""
+
 import logging
-import pandevice
 from base import PanObject, Root, MEMBER, ENTRY
 from base import VarPath as Var
 
@@ -30,6 +31,22 @@ logger.addHandler(logging.NullHandler())
 
 
 class VsysResources(PanObject):
+    """Resource constraints for a Vsys
+
+    Args:
+        max-security-rules (int): Maximum security rules
+        max-nat-rules (int): Maximum nat rules
+        max-ssl-decryption-rules (int): Maximum ssl decryption rules
+        max-qos-rules (int): Maximum QOS rules
+        max-application-override-rules (int): Maximum application override rules
+        max-pbf-rules (int): Maximum policy based forwarding rules
+        max-cp-rules (int): Maximum captive portal rules
+        max-dos-rules (int): Maximum DOS rules
+        max-site-to-site-vpn-tunnels (int): Maximum site-to-site VPN tunnels
+        max-concurrent-ssl-vpn-tunnels (int): Maximum ssl VPN tunnels
+        max-sessions (int): Maximum sessions
+
+    """
 
     XPATH = "/import/resource"
     ROOT = Root.VSYS
@@ -52,7 +69,27 @@ class VsysResources(PanObject):
 
 
 class Vsys(PanObject):
-    """Virtual System (VSYS)"""
+    """Virtual System (VSYS)
+
+    You can interact with virtual systems in two different ways:
+
+    **Method 1**. Use a :class:`pandevice.firewall.Firewall` object with the 'vsys'
+    variable set to a vsys identifier (eg. 'vsys2'). In this case,
+    you don't need to use this Vsys class. Add other PanObject instances
+    (like :class:`pandevice.objects.AddressObject`) to the Firewall instance
+
+    **Method 2**. Add an instance of this Vsys class to a :class:`pandevice.firewall.Firewall`
+    object. It is best practice to set the Firewall instance's 'shared'
+    variable to True when using this method. Add other PanObject instances
+    (like :class:`pandevice.objects.AddressObject`) to the Vsys instance.
+
+    Args:
+        name (str): Vsys identifier (eg. 'vsys1', 'vsys5', etc)
+        display_name (str): Friendly name of the vsys
+        interface (list): A list of strings with names of interfaces
+            or a list of :class:`pandevice.network.Interface` objects
+
+    """
 
     XPATH = "/vsys"
     ROOT = Root.DEVICE
@@ -81,7 +118,13 @@ class Vsys(PanObject):
 
 
 class NTPServer(PanObject):
-    """A primary or secondary NTP server"""
+    """A primary or secondary NTP server
+
+    This is an abstract base class, do not instantiate it.
+
+    Args:
+        address (str): The IP address of the NTP server
+    """
     # TODO: Add authentication
     # TODO: Add PAN-OS pre-7.0 support
 
@@ -102,10 +145,10 @@ class NTPServer(PanObject):
 class NTPServerPrimary(NTPServer):
     """A primary NTP server
 
-    Add to a SystemSettings object
+    Add to a :class:`pandevice.device.SystemSettings` object
 
-    Attributes:
-        address (str): IP address or hostname of DNS server
+    Args:
+        address (str): IP address or hostname of NTP server
     """
     XPATH = "/ntp-servers/primary-ntp-server"
 
@@ -113,15 +156,36 @@ class NTPServerPrimary(NTPServer):
 class NTPServerSecondary(NTPServer):
     """A secondary NTP server
 
-    Add to a SystemSettings object
+    Add to a :class:`pandevice.device.SystemSettings` object
 
-    Attributes:
-        address (str): IP address or hostname of DNS server
+    Args:
+        address (str): IP address or hostname of NTP server
     """
     XPATH = "/ntp-servers/secondary-ntp-server"
 
 
 class SystemSettings(PanObject):
+    """Firewall or Panorama device system settings
+
+    Add only one of these to a parent object.
+
+    Args:
+        hostname (str): The hostname of the device
+        domain (str): The domain of the device
+        ip-address (str): Management interface IP address
+        netmask (str): Management interface netmask
+        default_gateway (str): Management interface default gateway
+        ipv6_address (str): Management interface IPv6 address
+        ipv6_default_gateway (str): Management interface IPv6 default gateway
+        dns_primary (str): Primary DNS server IP address
+        dns_secondary (str): Secondary DNS server IP address
+        timezone (str): Device timezone
+        panorama (str): IP address of primary Panorama
+        panorama2 (str):  IP address of secondary Panorama
+        login-banner (str): Login banner text
+        update-server (str): IP or hostname of the update server
+
+    """
 
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/system"
