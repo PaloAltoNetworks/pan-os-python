@@ -16,6 +16,7 @@
 
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
+"""Exception classes used by pandevice package"""
 
 from pan.xapi import PanXapiError
 
