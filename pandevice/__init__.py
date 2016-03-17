@@ -16,6 +16,11 @@
 
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
+"""pandevice library is a framework for interacting with Palo Alto Networks devices
+
+Documentation available at http://pandevice.readthedocs.org
+
+"""
 
 __author__ = 'Brian Torres-Gil'
 __email__ = 'btorres-gil@paloaltonetworks.com'
@@ -113,7 +118,15 @@ def string_or_list(value):
 
 
 def convert_if_int(string):
-    """Convert a string to an int, only if it is an int"""
+    """Convert a string to an int, only if it is an int
+
+    Args:
+        string (str): The string to convert if it's an integer
+
+    Returns:
+        int or str of the original value, dependin if it could be converted to an int
+
+    """
     try:
         integer = int(string)
         return integer
@@ -131,6 +144,7 @@ def xml_combine(root, elements):
         root (Element): The Element that will contain the merger
         elements (Element or list): If an Element, merge all subelements of this element into root.
             If a list, merge all Elements in the list into root.
+
     """
     for element in elements:
         found_element = root.find(element.tag)
@@ -141,6 +155,15 @@ def xml_combine(root, elements):
 
 
 def yesno(value):
+    """Convert 'yes' or 'no' to True or False
+
+    Args:
+        value (str): The string containing 'yes' or 'no'
+
+    Returns:
+        bool: True if value is 'yes', False if value is 'no'
+
+    """
     if value is None:
         return
     convert = {
