@@ -16,6 +16,8 @@
 
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
+"""Objects module contains objects that exist in the 'Objects' tab in the firewall GUI"""
+
 # import modules
 import re
 import logging
@@ -33,6 +35,14 @@ logger.addHandler(logging.NullHandler())
 
 
 class AddressObject(PanObject):
+    """Address Object
+
+    Args:
+        type (str): The type of object: ip-netmask, ip-range, or fqdn (Default: ip-netmask)
+        value (str): The ip address or other value of the object
+        description (str): Description of this object
+
+    """
 
     ROOT = Root.VSYS
     XPATH = "/address"
