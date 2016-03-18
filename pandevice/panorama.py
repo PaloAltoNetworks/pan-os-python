@@ -17,10 +17,7 @@
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 
-"""Panorama object
-
-For functions specific to Panorama
-"""
+"""Panorama and all Panorama related objects"""
 
 
 # import modules
@@ -45,11 +42,25 @@ logger.addHandler(logging.NullHandler())
 
 
 class DeviceGroup(PanObject):
+    """Panorama Device-group
 
+    This class and the :class:`pandevice.panorama.Panorama` classes are the only objects that can
+    have a :class:`pandevice.firewall.Firewall` child object. In addition to a Firewall, a
+    DeviceGroup can have the same children objects as a :class:`pandevice.firewall.Firewall`
+    or :class:`pandevice.device.Vsys`.
+
+    See also :ref:`classtree`
+
+    Args:
+        name (str): Name of the device-group
+        tag (list): Tags as strings
+
+    """
     XPATH = "/device-group"
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
     CHILDTYPES = (
+        "firewall.Firewall",
         "objects.AddressObject",
     )
 
@@ -64,7 +75,21 @@ class DeviceGroup(PanObject):
 
 
 class Panorama(base.PanDevice):
+    """Panorama device
 
+    This is the only object in the configuration tree that cannot have a parent. If it is in the configuration
+    tree, then it is the root of the tree.
+
+    Args:
+        hostname: Hostname or IP of device for API connections
+        api_username: Username of administrator to access API
+        api_password: Password of administrator to access API
+        api_key: The API Key for connecting to the device's API
+        port: Port of device for API connections
+        timeout: The timeout for asynchronous jobs
+        interval: The interval to check asynchronous jobs
+
+    """
     CHILDTYPES = (
         "panorama.DeviceGroup",
         "firewall.Firewall",
@@ -84,6 +109,21 @@ class Panorama(base.PanDevice):
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
     def op(self, cmd=None, vsys=None, xml=False, cmd_xml=True, extra_qs=None, retry_on_peer=False):
+        """Perform operational command on this Panorama
+
+        Args:
+            cmd (str): The operational command to execute
+            vsys (str): Vsys id. Defaults to the vsys of the firewall or the Vsys object in the parent tree.
+            xml (bool): Return value should be a string (Default: False)
+            cmd_xml (bool): True: cmd is not XML, False: cmd is XML (Default: True)
+            extra_qs: Extra parameters for API call
+            retry_on_peer (bool): Try on active Firewall first, then try on passive Firewall
+
+        Returns:
+            xml.etree.ElementTree: The result of the operational command. May also return a string of XML if xml=True
+
+        """
+
         # TODO: Support device-group and template scope
         return super(Panorama, self).op(cmd, vsys=None, xml=xml, cmd_xml=cmd_xml, extra_qs=extra_qs, retry_on_peer=retry_on_peer)
 
@@ -97,6 +137,20 @@ class Panorama(base.PanDevice):
         return self
 
     def commit_all(self, sync=False, sync_all=True, exception=False, devicegroup=None, serials=(), cmd=None):
+        """Trigger a commit-all (commit to devices) on Panorama
+
+        Args:
+            sync (bool): Block until the Panorama commit is finished (Default: False)
+            sync_all (bool): Block until every Firewall commit is finished, requires sync=True (Default: False)
+            exception (bool): Create an exception on commit errors (Default: False)
+            devicegroup (str): Limit commit-all to a single device-group
+            serials (list): Limit commit-all to these serial numbers
+            cmd (str): Commit options in XML format
+
+        Returns:
+            dict: Commit results
+
+        """
         self._logger.debug("Commit-all initiated on device: %s" % (self.hostname,))
 
         if cmd is None:
@@ -123,66 +177,40 @@ class Panorama(base.PanDevice):
                               cmd=cmd)
         return result
 
-    # XXX: I don't think this method is even needed
-    def create_device_group(self, devicegroup, devices=None):
-        """ Create a device-group and optionally add devices to it
-
-        :param devicegroup: String, The device-group name
-        :param devices: PanDevice or List of PanDevices to add to the device-group
-        :return: None
-        """
-        self._logger.debug("Create device-group: %s" % (devicegroup,))
-        if devices is not None:
-            self.set_device_group(devicegroup, devices, exclusive=True)
-        else:
-            self.xapi.set(pandevice.XPATH_DEVICE_GROUPS + "/entry[@name='%s']" % (devicegroup,))
-
-    def set_device_group(self, devicegroup, devices, exclusive=False):
-        """ For Panorama, set the device group for a device
-
-        :param devicegroup: String, Device-group to set devices to
-        :param devices: PanDevice or List of PanDevices
-        :param exclusive: Device-group should contain ONLY these devices
-        :return: None
-        """
-        # TODO: Implement 'exclusive'
-        self._logger.debug("Set device-group to '%s'" % devicegroup)
-        if issubclass(devices.__class__, base.PanDevice):
-            devices = [devices]
-        device_refresh_needed = False
-        for device in devices:
-            if device.serial is None or device.devicegroup is None:
-                device_refresh_needed = True
-                break
-        if device_refresh_needed:
-            self.refresh_devices_from_panorama(devices)
-        # All devices have serial numbers now, so start setting devicegroup
-        for device in devices:
-            # If the device was in a group, and that group changed, pull it out of the current group
-            if device.devicegroup != devicegroup and \
-                            device.devicegroup is not None:
-                self._logger.debug("Moving device %s out of device-group %s" % (device.hostname, device.devicegroup))
-                self.set_config_changed()
-                self.xapi.delete(
-                    pandevice.XPATH_DEVICE_GROUPS +
-                    "/entry[@name='%s']/devices"
-                    "/entry[@name='%s']"
-                    % (device.devicegroup, device.serial)
-                )
-                device.devicegroup = None
-            # If assigning device to a new group
-            if devicegroup is not None:
-                self.set_config_changed()
-                self._logger.debug("Moving device %s into device-group %s" % (device.hostname, devicegroup))
-                self.xapi.set(
-                    pandevice.XPATH_DEVICE_GROUPS +
-                    "/entry[@name='%s']/devices" % (devicegroup,),
-                    "<entry name='%s'/>" % (device.serial,)
-                )
-                device.devicegroup = devicegroup
-
     def refresh_devices(self, devices=(), only_connected=False, expand_vsys=True, include_device_groups=True, add=False, running_config=False):
-        """Refresh device groups and devices using config and operational commands"""
+        """Refresh device groups and devices using config and operational commands
+
+        Uses operational command in addition to configuration to gather as much information
+        as possible about Panorama connected devices. The operational commands used are
+        'show devices all/connected' and 'show devicegroups'.
+
+        Information gathered about each device includes:
+
+        - management IP address (can be different from hostname)
+        - serial
+        - version
+        - high availability peer releationships
+        - panorama connection status
+        - device-group sync status
+
+        Args:
+            devices (list): Limit refresh to these serial numbers
+            only_connected (bool): Ignore devices that are not 'connected' to Panorama (Default: False)
+            expand_vsys (bool): Instantiate a Firewall object for every Vsys (Default: True)
+            include_device_groups (bool): Instantiate :class:`pandevice.panorama.DeviceGroup` objects with Firewall
+                objects added to them.
+            add (bool): Add the new tree of instantiated DeviceGroup and Firewall objects to the Panorama config tree.
+                Warning: This removes all current DeviceGroup and Firewall objects from the configuration tree, and all
+                their children, so it is typically done before building a configuration tree. (Default: False)
+            running_config (bool): Refresh devices from the running configuration (Default: False)
+
+        Returns:
+            list: If 'include_device_groups' is True, returns a list containing new DeviceGroup instances which
+            contain new Firewall instances. Any Firewall that is not in a device-group is in the list with the
+            DeviceGroup instances.
+            If 'include_device_groups' is False, returns a list containing new Firewall instances.
+
+        """
         logger.debug(self.hostname + ": refresh_devices called")
         try:
             # Test if devices is iterable
