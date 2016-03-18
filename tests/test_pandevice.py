@@ -91,26 +91,6 @@ class TestPandevice(unittest.TestCase):
                     }
         self.assertDictEqual(self.d.interfaces, expected, "Interfaces dictionary is incorrect\nExpected: %s\n     Got: %s" % (expected, self.d.interfaces))
 
-    def test_refresh_interfaces_mock(self):
-        self.xapi.op = mock.Mock()
-        self.xapi.element_root = expect.op_show_interfaces_all
-
-        self.d.refresh_interfaces()
-        expected = {'ethernet1/1': network.Interface(name="ethernet1/1",
-                                                     zone="untrust",
-                                                     router="default",
-                                                     subnets=["10.5.5.1/24"],
-                                                     state="up",
-                                                     ),
-                    'ethernet1/2': network.Interface(name="ethernet1/2",
-                                                     zone="trust",
-                                                     router="default",
-                                                     subnets=["10.6.6.1/24"],
-                                                     state="down",
-                                                     ),
-                    }
-        self.assertDictEqual(self.d.interfaces, expected, "Interfaces dictionary is incorrect\nExpected: %s\n     Got: %s" % (expected, self.d.interfaces))
-
     def test_static_routes(self):
         vr = network.VirtualRouter()
         self.d.add(vr)
