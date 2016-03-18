@@ -113,7 +113,7 @@ class Panorama(base.PanDevice):
 
         Args:
             cmd (str): The operational command to execute
-            vsys (str): Vsys id. Defaults to the vsys of the firewall or the Vsys object in the parent tree.
+            vsys (str): Ignored for Panorama
             xml (bool): Return value should be a string (Default: False)
             cmd_xml (bool): True: cmd is not XML, False: cmd is XML (Default: True)
             extra_qs: Extra parameters for API call
