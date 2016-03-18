@@ -379,9 +379,6 @@ class Layer3Parameters(object):
     Do not instantiate. This is a mixin class.
 
     """
-    CHILDTYPES = (
-        "network.Arp",
-    )
 
     @classmethod
     def _variables(cls):
@@ -593,6 +590,7 @@ class Layer3Subinterface(Layer3Parameters, VsysImportMixin, Subinterface):
     SUFFIX = ENTRY
     CHILDTYPES = (
         "network.IPv6Address",
+        "network.Arp",
     )
 
     def set_zone(self, zone_name, mode="layer3", refresh=False, update=False, running_config=False):
@@ -689,6 +687,8 @@ class EthernetInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, Phy
     CHILDTYPES = (
         "network.Layer3Subinterface",
         "network.Layer2Subinterface",
+        "network.IPv6Address",
+        "network.Arp",
     )
 
     @classmethod
@@ -720,6 +720,8 @@ class AggregateInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, Ph
     CHILDTYPES = (
         "network.Layer3Subinterface",
         "network.Layer2Subinterface",
+        "network.IPv6Address",
+        "network.Arp",
     )
 
 
@@ -736,6 +738,10 @@ class VlanInterface(Layer3Parameters, VsysImportMixin, Interface):
 
     """
     XPATH = "/network/interface/vlan/units"
+    CHILDTYPES = (
+        "network.IPv6Address",
+        "network.Arp",
+    )
 
 
 class LoopbackInterface(Layer3Parameters, VsysImportMixin, Interface):
@@ -751,6 +757,10 @@ class LoopbackInterface(Layer3Parameters, VsysImportMixin, Interface):
 
     """
     XPATH = "/network/interface/loopback/units"
+    CHILDTYPES = (
+        "network.IPv6Address",
+        "network.Arp",
+    )
 
 
 class TunnelInterface(Layer3Parameters, VsysImportMixin, Interface):
@@ -766,6 +776,10 @@ class TunnelInterface(Layer3Parameters, VsysImportMixin, Interface):
 
     """
     XPATH = "/network/interface/tunnel/units"
+    CHILDTYPES = (
+        "network.IPv6Address",
+        "network.Arp",
+    )
 
 
 class StaticRoute(PanObject):
