@@ -44,8 +44,8 @@ Upgrade to the latest version::
 
     pip install --upgrade pandevice
 
-Usage
------
+How to import
+-------------
 
 To use Palo Alto Networks Device Framework in a project::
 
@@ -86,7 +86,6 @@ Some operational commands have methods to refresh the variables in an object::
     # populates the version, serial, and model variables from the live device
     fw.refresh_system_info()
 
-More examples available in the :ref:`examples` section.
 
 .. _pan-python: http://github.com/kevinsteves/pan-python
 
