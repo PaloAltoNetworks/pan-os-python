@@ -380,7 +380,7 @@ class Layer3Parameters(object):
 
     """
     CHILDTYPES = (
-        "network.Arp"
+        "network.Arp",
     )
 
     @classmethod
