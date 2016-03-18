@@ -16,6 +16,8 @@
 
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
+"""High availability objects to configure HA for a firewall or Panorama"""
+
 # import modules
 import logging
 import inspect
@@ -36,10 +38,9 @@ logger.addHandler(logging.NullHandler())
 class HighAvailabilityInterface(PanObject):
     """Base class for high availability interface classes
 
-    Do not instantiate this class.  Use its subclasses
+    Do not instantiate this class.  Use its subclasses.
 
     """
-
     HA_SYNC = False
 
     # TODO: Support encryption
@@ -83,7 +84,13 @@ class HighAvailabilityInterface(PanObject):
         )
 
     def setup_interface(self):
-        """Setup the interface itself as an HA interface"""
+        """Setup the data interface as an HA interface
+
+        Use this method to automatically convert the data interface
+        to 'ha' mode. This must be done *before* this HA interface
+        is created on the firewall.
+
+        """
         pandevice = self.pandevice()
         if pandevice is None:
             return None
@@ -131,16 +138,23 @@ class HighAvailabilityInterface(PanObject):
             return interface
 
     def delete_old_interface(self):
+        """Delete the data interface previously used by this HA interface
+
+        Use this if the 'port' of an HA interface was changed and the old
+        interface needs to be cleaned up.
+
+        """
         if self.old_port is not None:
             self.delete_interface(self.old_port)
             self.old_port = None
 
     def delete_interface(self, interface=None, pan_device=None):
-        """Delete the HA interface from the list of interfaces
+        """Delete the data interface used by this HA interface
 
         Args:
             interface (HighAvailabilityInterface): The HA interface (HA1, HA2, etc)
             pan_device (PanDevice): The PanDevice object to apply the change
+
         """
         if pan_device is None:
             pan_device = self.pandevice()
@@ -169,12 +183,18 @@ class HighAvailabilityInterface(PanObject):
 
 
 class HA1(HighAvailabilityInterface):
-    """HA1 interface class
+    """HA1 interface
 
-    TODO: Encryption
+    Args:
+        ip-address (str): IP of the interface
+        netmask (str): Netmask of the interface
+        port (str): Interface to use for this HA interface (eg. ethernet1/5)
+        gateway (str): Default gateway of the interface
+        link_speed (str): Link speed
+        link_duplex (str): Link duplex
 
     """
-
+    # TODO: Encryption
     XPATH = "/interface/ha1"
 
     @classmethod
@@ -185,18 +205,57 @@ class HA1(HighAvailabilityInterface):
 
 
 class HA1Backup(HighAvailabilityInterface):
+    """HA1 Backup interface
+
+    Args:
+        ip-address (str): IP of the interface
+        netmask (str): Netmask of the interface
+        port (str): Interface to use for this HA interface (eg. ethernet1/5)
+        gateway (str): Default gateway of the interface
+        link_speed (str): Link speed
+        link_duplex (str): Link duplex
+
+    """
     XPATH = "/interface/ha1-backup"
 
 
 class HA2(HighAvailabilityInterface):
+    """HA2 interface
+
+    Args:
+        ip-address (str): IP of the interface
+        netmask (str): Netmask of the interface
+        port (str): Interface to use for this HA interface (eg. ethernet1/5)
+        gateway (str): Default gateway of the interface
+        link_speed (str): Link speed
+        link_duplex (str): Link duplex
+
+    """
     XPATH = "/interface/ha2"
 
 
 class HA2Backup(HighAvailabilityInterface):
+    """HA2 Backup interface
+
+    Args:
+        ip-address (str): IP of the interface
+        netmask (str): Netmask of the interface
+        port (str): Interface to use for this HA interface (eg. ethernet1/5)
+        gateway (str): Default gateway of the interface
+        link_speed (str): Link speed
+        link_duplex (str): Link duplex
+
+    """
     XPATH = "/interface/ha2-backup"
 
 
 class HA3(HighAvailabilityInterface):
+    """HA3 interface
+
+    Args:
+        port (str): Interface to use for this HA interface (eg. ethernet1/5)
+
+    """
     XPATH = "/interface/ha3"
 
     @classmethod
@@ -207,7 +266,24 @@ class HA3(HighAvailabilityInterface):
 
 
 class HighAvailability(PanObject):
+    """High availability configuration base object
 
+    All high availability configuration is in this object or is a child of this object
+
+    Args:
+        enabled (bool): Enable HA (Default: True)
+        group_id (int): The group identifier
+        description (str): Description for HA pairing
+        config_sync (bool): Enabled configuration synchronization (Default: True)
+        peer_ip (str): HA Peer's HA1 IP address
+        mode (str): Mode of HA: 'active-passive' or 'active-active' (Default: 'active-passive')
+        passive_link_state (str): Passive link state
+        state_sync (bool): Enabled state synchronization (Default: False)
+        ha2_keepalive (bool): Enable HA2 keepalives
+        ha2_keepalive_action (str): HA2 keepalive action
+        ha2_keepalive_threshold (int): HA2 keepalive threshold
+
+    """
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/high-availability"
     HA_SYNC = False
@@ -236,7 +312,7 @@ class HighAvailability(PanObject):
             Var("{{group_id}}/mode/(active-passive|active-active)", "mode", default="active-passive"),
             Var("{{group_id}}/mode/{{mode}}/passive-link-state"),
             # State Synchronization
-            Var("{{group_id}}/state-synchronization/enabled", "state_sync", vartype="bool", default=True),
+            Var("{{group_id}}/state-synchronization/enabled", "state_sync", vartype="bool", default=False),
             # HA2 Keep-alive
             Var("{{group_id}}/state-synchronization/ha2-keep-alive/enabled", "ha2_keepalive", vartype="bool"),
             Var("{{group_id}}/state-synchronization/ha2-keep-alive/action", "ha2_keepalive_action"),
