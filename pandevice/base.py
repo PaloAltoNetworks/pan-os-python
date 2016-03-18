@@ -1354,6 +1354,7 @@ class PanDevice(PanObject):
         self.is_virtual = is_virtual
         self.timeout = timeout
         self.interval = interval
+        self.serial = None
         self._xapi_private = None
         self.config_locked = False
         self.commit_locked = False
@@ -1755,17 +1756,19 @@ class PanDevice(PanObject):
 
         - version
         - platform
+        - serial
 
         Returns:
-            tuple: version, platform
+            tuple: version, platform, serial
 
         """
         system_info = self.show_system_info()
 
         self.version = system_info['system']['sw-version']
         self.platform = system_info['system']['model']
+        self.serial = system_info['system']['serial']
 
-        return self.version, self.platform
+        return self.version, self.platform, self.serial
 
     def refresh_version(self):
         """Refresh version of PAN-OS
