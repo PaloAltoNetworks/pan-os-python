@@ -16,7 +16,7 @@ Contents:
    contributing
    authors
    history
-   pandevice
+   reference
 
 Indices and tables
 ==================
