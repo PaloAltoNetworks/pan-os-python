@@ -89,7 +89,7 @@ release = pandevice.__version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '_diagrams']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -309,4 +309,4 @@ def autodoc_skip_member(app, what, name, obj, skip, options):
 def setup(app):
     app.connect('autodoc-skip-member', autodoc_skip_member)
 
-configtree.create_object_diagram("configtree.dot")
+configtree.create_object_diagram('_diagrams')

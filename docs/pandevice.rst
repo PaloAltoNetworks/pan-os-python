@@ -4,6 +4,12 @@ API Reference
 .. toctree::
    :maxdepth: 1
 
+   configtree
+
+
+.. toctree::
+   :maxdepth: 1
+
    module-base
    module-device
    module-errors
@@ -15,15 +21,7 @@ API Reference
    module-updater
    module-userid
 
-.. _classtree:
 
-Object tree diagram
--------------------
-
-This diagram illustrates the possible tree structures for a Firewall/Panorama
-configuration.
-
-.. graphviz:: configtree.dot
 
 Helper methods
 --------------
