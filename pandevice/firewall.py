@@ -167,7 +167,7 @@ class Firewall(PanDevice):
                 parent_xpath = self.parent.xpath()
         return parent_xpath
 
-    def op(self, cmd=None, vsys=None, xml=True, cmd_xml=True, extra_qs=None, retry_on_peer=False):
+    def op(self, cmd=None, vsys=None, xml=False, cmd_xml=True, extra_qs=None, retry_on_peer=False):
         """Perform operational command on this Firewall
 
         Args:
