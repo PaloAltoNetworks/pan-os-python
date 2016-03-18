@@ -35,6 +35,7 @@ project_root = os.path.dirname(cwd)
 # version is used.
 sys.path.insert(0, project_root)
 
+import configtree
 import pandevice
 
 # -- General configuration ---------------------------------------------
@@ -307,3 +308,5 @@ def autodoc_skip_member(app, what, name, obj, skip, options):
 
 def setup(app):
     app.connect('autodoc-skip-member', autodoc_skip_member)
+
+configtree.create_object_diagram("configtree.dot")
