@@ -47,6 +47,16 @@ MEMBER = "/member[text()='%s']"
 
 # PanObject type
 class PanObject(object):
+    """Base class for all package objects
+
+    This class defines an object that can be placed in a tree to generate configuration.
+
+    Args:
+        name (str): The name of this object
+
+    Attributes:
+        vsys (str): The vsys id for this object (eg. 'vsys2') or 'shared' if no vsys
+    """
     XPATH = ""
     SUFFIX = None
     ROOT = Root.DEVICE
@@ -93,10 +103,20 @@ class PanObject(object):
 
     @classmethod
     def variables(cls):
+        """Defines the variables that exist in this object. Override in each subclass."""
         return ()
 
     @property
     def vsys(self):
+        """Return the vsys for this object
+
+        Traverses the tree to determine the vsys from a :class:`pandevice.firewall.Firewall`
+        or :class:`pandevice.device.Vsys` instance somewhere before this node in the tree.
+
+        Returns:
+            str: The vsys id (eg. vsys2)
+
+        """
         if self.parent is not None:
             return self.parent.vsys
 
@@ -105,31 +125,83 @@ class PanObject(object):
         raise err.PanDeviceError("Cannot set vsys on non-vsys object")
 
     def add(self, child):
+        """Add a child node to this node
+
+        Args:
+            child (PanObject): Node to add as a child
+
+        Returns:
+            PanObject: Child node
+
+        """
         child.parent = self
         self.children.append(child)
         return child
 
     def extend(self, children):
+        """Add a list of child nodes to this node
+
+        Args:
+            children (list): List of PanObject instances
+
+        """
         for child in children:
             child.parent = self
         self.children.extend(children)
 
     def pop(self, index):
+        """Remove and return the object at an index
+
+        Args:
+            index (int): Index of the object to remove and return
+
+        Returns:
+            PanObject: The object removed from the children of this node
+
+        """
         child = self.children.pop(index)
         child.parent = None
         return child
 
     def remove(self, child):
+        """Remove the child from this node
+
+        Args:
+            child (PanObject): Child to remove
+
+        """
         self.children.remove(child)
         child.parent = None
 
     def remove_by_name(self, name, cls=None):
+        """Remove a child node by name
+
+        Args:
+            name (str): Name of the child node
+
+        Keyword Args:
+            cls (class): Restrict removal to instances of this class
+
+        Returns:
+            PanObject: The removed node
+
+        """
         index = PanObject.find_index(self.children, name, cls)
         if index is None:
             return None
         return self.pop(index)  # Just remove the first child that matches the name
 
     def removeall(self, cls=None):
+        """Remove all children of a type
+
+        Not recursive.
+
+        Args:
+            cls (class): The class of objects to remove
+
+        Returns:
+            list: List of PanObjects that were removed
+        """
         if not self.children:
             return
         if cls is not None:
@@ -148,13 +220,22 @@ class PanObject(object):
         """Return the full xpath for this object
 
         Xpath in the form: parent's xpath + this object's xpath + entry or member if applicable.
+
+        Returns:
+            str: The full xpath to this object
+
         """
         xpath = self._parent_xpath() + self.XPATH
         suffix = "" if self.SUFFIX is None else self.SUFFIX % getattr(self, self.NAME)
         return xpath + suffix
 
     def xpath_nosuffix(self):
-        """Return the xpath without the suffix"""
+        """Return the xpath without the suffix
+
+        Returns:
+            str: The xpath without entry or member on the end
+
+        """
         xpath = self._parent_xpath() + self.XPATH
         return xpath
 
@@ -162,6 +243,10 @@ class PanObject(object):
         """Return an xpath for this object without the final segment
 
         Xpath in the form: parent's xpath + this object's xpath.  Used for set API calls.
+
+        Returns:
+            str: The xpath without the final segment
+
         """
         xpath = self._parent_xpath() + self.XPATH
         if self.SUFFIX is None:
@@ -189,7 +274,13 @@ class PanObject(object):
             return self.parent.xpath_panorama()
 
     def element(self):
-        root = self.root_element()
+        """Construct an ElementTree for this PanObject and all its children
+
+        Returns:
+            xml.etree.ElementTree: An ElementTree instance representing the xml form of this object and its children
+
+        """
+        root = self._root_element()
         variables = self.variables()
         for var in variables:
             missing_replacement = False
@@ -287,13 +378,19 @@ class PanObject(object):
                 pass
             else:
                 nextelement.text = str(value)
-        pandevice.xml_combine(root, self.subelements())
+        pandevice.xml_combine(root, self._subelements())
         return root
 
     def element_str(self):
+        """The XML representation of this PanObject and all its children
+
+        Returns:
+            str: XML form of this object and its children
+
+        """
         return ET.tostring(self.element())
 
-    def root_element(self):
+    def _root_element(self):
         if self.SUFFIX == ENTRY:
             return ET.Element("entry", {'name': getattr(self, self.NAME)})
         elif self.SUFFIX == MEMBER:
@@ -304,7 +401,7 @@ class PanObject(object):
             tag = self.XPATH.rsplit('/', 1)[-1] # Get right of last / in xpath
             return ET.Element(tag)
 
-    def subelements(self):
+    def _subelements(self):
 
         def _next_xpath_level(child, element, xpath_sections):
             """Recursive nested method to handle long xpaths"""
@@ -339,6 +436,7 @@ class PanObject(object):
             child.check_child_methods(method)
 
     def apply(self):
+        """Apply this object to the device, replacing any existing object of the same name"""
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
@@ -350,6 +448,14 @@ class PanObject(object):
             child._check_child_methods("apply")
 
     def create(self):
+        """Create this object on the device
+
+        This method is nondestructive. If the object exists, the variables are added to the device
+        without changing existing variables on the device. If a variables already exists on the
+        device and this object has a different value, the value on the firewall is changed to
+        the value in this object.
+
+        """
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": create called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
@@ -362,6 +468,7 @@ class PanObject(object):
             child._check_child_methods("create")
 
     def delete(self):
+        """Delete this object from the firewall"""
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
@@ -381,7 +488,8 @@ class PanObject(object):
         If the variable's value is None, then a delete API call is attempted.
 
         Args:
-            variable (str): the name of an instance variable to update on the device
+            variable (str): The name of an instance variable to update on the device
+
         """
         import ha
         pandevice = self.pandevice()
@@ -440,6 +548,15 @@ class PanObject(object):
             pandevice.xapi.edit(xpath, ET.tostring(element), retry_on_peer=self.HA_SYNC)
 
     def refresh(self, running_config=False, xml=None, refresh_children=True, exceptions=True):
+        """Refresh all variables and child objects from the device
+
+        Args:
+            running_config (bool): Set to True to refresh from the running configuration (Default: False)
+            xml (str or xml.etree.ElementTree): XML from a configuration to use instead of refreshing from a live device
+            refresh_children (bool): Set to False to prevent refresh of child objects (Default: True)
+            exceptions (bool): Set to False to prevent exceptions on failure (Default: True)
+
+        """
         # Get the root of the xml to parse
         if xml is None:
             pandevice = self.pandevice()
@@ -478,12 +595,22 @@ class PanObject(object):
             setattr(self, var, value)
         # Refresh sub-objects
         if refresh_children:
-            self.refresh_children(xml=obj)
+            self._refresh_children(xml=obj)
 
     def refresh_variable(self, variable, running_config=False, xml=None, exceptions=False):
-        """Refresh a single variable in an object
+        """Refresh a single variable of an object
 
-        Doesn't work for variables with replacements or selections in path
+        Don't use for variables with replacements or selections in path
+
+        Args:
+            variable (str): Variables name to update
+            running_config (bool): Set to True to refresh from the running configuration (Default: False)
+            xml (str or xml.etree.ElementTree): XML from a configuration to use instead of refreshing from a live device
+            exceptions (bool): Set to False to prevent exceptions on failure (Default: True)
+
+        Returns:
+            New value of the refreshed variable
+
         """
         # Get the root of the xml to parse
         variables = type(self).variables()
@@ -536,7 +663,7 @@ class PanObject(object):
                 setattr(self, var, value)
         return getattr(self, variable, None)
 
-    def refresh_children(self, running_config=False, xml=None):
+    def _refresh_children(self, running_config=False, xml=None):
         # Get the root of the xml to parse
         if xml is None:
             pan_device = self.pandevice()
@@ -598,6 +725,17 @@ class PanObject(object):
         return obj
 
     def pandevice(self):
+        """The nearest :class:`pandevice.base.PanDevice` object
+
+        This method is used to determine the device to apply this object
+
+        Raises:
+            PanDeviceNotSet: There is no PanDevice object in the tree
+
+        Returns:
+            PanDevice: The PanDevice object closest to this object in the configuration tree
+
+        """
         if self.parent is not None:
             if isinstance(self.parent, PanDevice):
                 return self.parent
@@ -607,18 +745,49 @@ class PanObject(object):
             raise err.PanDeviceNotSet("No PanDevice set for object tree")
 
     def panorama(self):
+        """The nearest :class:`pandevice.panorama.Panorama` object
+
+        This method is used to determine the device to apply this object
+
+        Raises:
+            PanDeviceNotSet: There is no Panorama object in the tree
+
+        Returns:
+            Panorama: The Panorama object closest to this object in the configuration tree
+
+        """
         if self.parent is None:
             raise err.PanDeviceNotSet("No Panorama set for object tree")
         else:
             return self.parent.panorama()
 
     def devicegroup(self):
+        """The nearest :class:`pandevice.panorama.DeviceGroup` object
+
+        This method is used to determine the device to apply this object
+
+        Returns:
+            DeviceGroup: The DeviceGroup object closest to this object in the configuration tree,
+            or None if there is no DeviceGroup in the path to this node.
+
+        """
         if self.parent is None:
             return
         else:
             return self.parent.devicegroup()
 
     def find(self, name, class_type=None, recursive=False):
+        """Find an object in the configuration tree by name
+
+        Args:
+            name (str): Name of the object to find
+            class_type: Class to look for
+            recursive (bool): Find recursively (Default: False)
+
+        Returns:
+            PanObject: The object in the tree that fits the criteria, or None if no object is found
+
+        """
         if class_type is None:
             # Find the matching object or return None
             result = next((child for child in self.children if getattr(child, child.NAME) == name), None)
@@ -635,6 +804,16 @@ class PanObject(object):
         return result
 
     def findall(self, class_type, recursive=False):
+        """Find all objects of a class in configuration tree
+
+        Args:
+            class_type: Class to look for
+            recursive (bool): Find recursively (Default: False)
+
+        Returns:
+            list: List of 'class_type' objects
+
+        """
         result = [child for child in self.children if isinstance(child, class_type)]
         # Search recursively in children
         if recursive:
@@ -642,7 +821,21 @@ class PanObject(object):
                 result.extend(child.findall(class_type, recursive))
         return result
 
-    def find_or_create(self, name, class_type=None, *args, **kwargs):
+    def find_or_create(self, name, class_type, *args, **kwargs):
+        """Find an object in the configuration tree by name, and create it if it doesn't exist
+
+        If the object does not exist, it is created and added to the current object.
+
+        Args:
+            name (str): Name of the object to find
+            class_type: Class to look for or create
+            *args: Arguments to pass to the __init__ method of class_type
+            *kwargs: Keyworkd arguments to pass to the __init__ method of class_type
+
+        Returns:
+            PanObject: The object in the tree that fits the criteria, or None if no object is found
+
+        """
         result = self.find(name, class_type)
         if result is not None:
             return result
@@ -653,6 +846,19 @@ class PanObject(object):
                 return self.add(class_type(*args, **kwargs))
 
     def findall_or_create(self, class_type, *args, **kwargs):
+        """Find all object in the configuration tree by class, and create a new object if none exist
+
+        If no objects of this type exist, one is created and added to the current object.
+
+        Args:
+            class_type: Class to look for or create
+            *args: Arguments to pass to the __init__ method of class_type
+            *kwargs: Keyworkd arguments to pass to the __init__ method of class_type
+
+        Returns:
+            list: List of 'class_type' objects
+
+        """
         result = self.findall(class_type)
         if result:
             return result
@@ -692,10 +898,10 @@ class PanObject(object):
 
     @classmethod
     def refresh_all_from_device(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
-        """Factory method to instantiate class from firewall config
+        """Factory method to instantiate class from live device
 
         This method is a factory for the class. It takes an firewall or Panorama
-        and gets the xml config from the device. It generates instances of this
+        and gets the xml config from the live device. It generates instances of this
         class for each item this class represents in the xml config. For example,
         if the class is AddressObject and there are 5 address objects on the
         firewall, then this method will generate 5 instances of the class AddressObject.
@@ -711,6 +917,7 @@ class PanObject(object):
 
         Returns:
             list: created instances of class
+
         """
         if not running_config and exceptions:
             # This is because get api calls don't produce exceptions when the
@@ -939,13 +1146,13 @@ class PanObject(object):
 class VarPath(object):
     """Configuration variable within the object
 
-    Attributes:
-        path (string): The relative xpath to the variable
-        variable (string): The name of the instance variable in the class
-        vartype (string): The type of variable (None, 'member', 'entry', 'bool', 'int', 'exist', 'none')
-        default (string): The default value if no value is specified during __init__ of the object
-        xmldefault (string): The default value if no value exists in the xml from a device
-        condition (string): In the format othervariable:value where this variable is only
+    Args:
+        path (str): The relative xpath to the variable
+        variable (str): The name of the instance variable in the class
+        vartype (str): The type of variable (None, 'member', 'entry', 'bool', 'int', 'exist', 'none')
+        default: The default value if no value is specified during __init__ of the object
+        xmldefault (bool): The default value if no value exists in the xml from a device
+        condition (str): In the format othervariable:value where this variable is only
             considered if othervariable equals value
     """
     def __init__(self, path, variable=None, vartype=None, default=None, xmldefault=None, condition=None):
@@ -953,6 +1160,7 @@ class VarPath(object):
         self._variable = variable
         self.vartype = vartype
         self.default = default
+        self.xmldefault = xmldefault
         self.condition = condition
 
     @property
@@ -972,6 +1180,7 @@ class VsysImportMixin(object):
 
     This only applies to some object types, hence it is a Mixin,
     and not part of PanObject
+
     """
     XPATH_IMPORT = None
     CHILDMETHODS = ("apply", "create", "delete")
@@ -1011,6 +1220,12 @@ class VsysImportMixin(object):
         self.delete_import()
 
     def create_import(self, vsys=None):
+        """Create a vsys import for the object
+
+        Args:
+            vsys (str): Override the vsys
+
+        """
         if vsys is None:
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
@@ -1018,6 +1233,12 @@ class VsysImportMixin(object):
             self.pandevice().xapi.set(xpath_import, "<member>%s</member>" % getattr(self, self.NAME), retry_on_peer=True)
 
     def delete_import(self, vsys=None):
+        """Delete a vsys import for the object
+
+        Args:
+            vsys (str): Override the vsys
+
+        """
         if vsys is None:
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
@@ -1025,6 +1246,23 @@ class VsysImportMixin(object):
             self.pandevice().xapi.delete(xpath_import + "/member[text()='%s']" % getattr(self, self.NAME), retry_on_peer=True)
 
     def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
+        """Set the vsys for this interface
+
+        Creates a reference to this interface in the specified vsys and removes references
+        to this interface from all other vsys. The vsys will be created if it doesn't exist.
+
+        Args:
+            vsys_id (str): The vsys id to set for this object (eg. vsys2)
+            refresh (bool): Refresh the relevant current state of the device before taking action
+                (Default: False)
+            update (bool): Apply the changes to the device (Default: False)
+            running_config: If refresh is True, refresh from the running configuration
+                (Default: False)
+
+        Returns:
+            Vsys: The vsys for this interface after the operation completes
+
+        """
         import device
         if refresh and running_config:
             raise ValueError("Can't refresh vsys from running config in set_vsys method")
@@ -1073,16 +1311,22 @@ class PanDevice(PanObject):
     or panorama). The class handles common device functions that apply
     to all device types.
 
-    Attributes:
+    Usually this class is not instantiated directly. It is the base class for a
+    firewall.Firewall object or a panorama.Panorama object.
+
+    Args:
         hostname: Hostname or IP of device for API connections
-        port: Port of device for API connections
-        vsys: This device class represents a specific VSYS
-        devicegroup: This device class represents a specific Device-Group
-            in Panorama
-        xpath: The XPath for the root of this device, taking into account any
-            VSYS, Device-Group, or Panorama state
-        timeout: The timeout for API connections
+        api_username: Username of administrator to access API
+        api_password: Password of administrator to access API
         api_key: The API Key for connecting to the device's API
+        port: Port of device for API connections
+        is_virtual (bool): Physical or Virtual firewall
+        timeout: The timeout for asynchronous jobs
+        interval: The interval to check asynchronous jobs
+
+    Attributes:
+        ha_peer (PanDevice): The HA peer device of this PanDevice
+
     """
 
     def __init__(self,
@@ -1140,12 +1384,22 @@ class PanDevice(PanObject):
                            api_key=None,
                            port=443,
                            ):
-        """Create a Firewall or Panorama object from a live device
+        """Factory method to create a :class:`pandevice.firewall.Firewall`
+        or :class:`pandevice.panorama.Panorama` object from a live device
 
-        This method connects to the device and detects its type and current
-        state in order to create a PanDevice subclass.
+        Connects to the device and detects its type and current state
+        in order to create a PanDevice subclass.
 
-        :returns PanDevice subclass instance (Firewall or Panorama instance)
+        Args:
+            hostname: Hostname or IP of device for API connections
+            api_username: Username of administrator to access API
+            api_password: Password of administrator to access API
+            api_key: The API Key for connecting to the device's API
+            port: Port of device for API connections
+
+        Returns:
+            PanDevice: New subclass instance (Firewall or Panorama instance)
+
         """
         # Create generic PanDevice to connect and get information
         import firewall
@@ -1179,7 +1433,7 @@ class PanDevice(PanObject):
         return instance
 
     class XapiWrapper(pan.xapi.PanXapi):
-        """This is a confusing class used for catching exceptions and faults."""
+        #This is a confusing class used for catching exceptions and faults.
         # TODO: comment the hell out of it!
 
         CONNECTION_EXCEPTIONS = (err.PanConnectionTimeout, err.PanURLError, err.PanSessionTimedOut)
@@ -1350,6 +1604,20 @@ class PanDevice(PanObject):
         return self._xapi_private
 
     def op(self, cmd=None, vsys=None, xml=False, cmd_xml=True, extra_qs=None, retry_on_peer=False):
+        """Perform operational command on this device
+
+        Args:
+            cmd (str): The operational command to execute
+            vsys (str): Vsys id.
+            xml (bool): Return value should be a string (Default: False)
+            cmd_xml (bool): True: cmd is not XML, False: cmd is XML (Default: True)
+            extra_qs: Extra parameters for API call
+            retry_on_peer (bool): Try on active Firewall first, then try on passive Firewall
+
+        Returns:
+            xml.etree.ElementTree: The result of the operational command. May also return a string of XML if xml=True
+
+        """
         element = self.xapi.op(cmd, vsys, cmd_xml, extra_qs, retry_on_peer=retry_on_peer)
         if xml:
             return ET.tostring(element)
@@ -1357,6 +1625,19 @@ class PanDevice(PanObject):
             return element
 
     def update_connection_method(self):
+        """Regenerate the xapi object used to connect to the device
+
+        This is only necessary if the API key, password, hostname, or other
+        connectivity information in this object has changed. In this case,
+        the xapi object used to communicate with the firewall must be regenerated
+        to use the new connectivity information.
+
+        The new xapi is stored in the PanDevice object and returned.
+
+        Returns:
+            XapiWrapper: The xapi object which is also stored in self.xapi.
+
+        """
         self._xapi_private = self.generate_xapi()
         return self._xapi_private
 
@@ -1377,6 +1658,18 @@ class PanDevice(PanObject):
         return xapi_constructor(**kwargs)
 
     def set_config_changed(self, scope=None):
+        """Set flag that configuration of this device has changed
+
+        This is useful for checking if a commit is necessary by knowing
+        if the configuration was actually changed. This method is already
+        used by every pandevice package method that makes a configuration
+        change. But this method could also by run directly to force
+        a 'dirty' configuration state in a PanDevice object.
+
+        Args:
+            scope: vsys in which configuration was changed, or 'shared'
+
+        """
         # TODO: enhance to support device-group and template scope
         if scope is None:
             scope = getattr(self, "vsys", None)
@@ -1456,8 +1749,16 @@ class PanDevice(PanObject):
     def refresh_system_info(self):
         """Refresh system information variables
 
+        This method is overloaded by subclasses
+
+        Variables refreshed:
+
+        - version
+        - platform
+
         Returns:
-            system information like version, platform, etc.
+            tuple: version, platform
+
         """
         system_info = self.show_system_info()
 
@@ -1467,10 +1768,13 @@ class PanDevice(PanObject):
         return self.version, self.platform
 
     def refresh_version(self):
-        """Get version of PAN-OS
+        """Refresh version of PAN-OS
+
+        Version is stored in self.version and returned
 
         returns:
-            version of PAN-OS
+            str: version of PAN-OS
+
         """
         system_info = self.refresh_system_info()
         self.version = system_info[0]
@@ -1484,8 +1788,6 @@ class PanDevice(PanObject):
         Args:
             hostname (str): hostname to set (should never be None)
 
-        Raises:
-            ValueError: if hostname is None
         """
         if hostname is None:
             raise ValueError("hostname should not be None")
@@ -1505,6 +1807,7 @@ class PanDevice(PanObject):
         Args:
             primary (str): IP address of primary DNS server
             secondary (str): IP address of secondary DNS server
+
         """
         from pandevice import device
         self._logger.debug("Set dns-servers: primary:%s secondary:%s" % (primary, secondary))
@@ -1518,6 +1821,15 @@ class PanDevice(PanObject):
             system.update("dns_secondary")
 
     def set_ntp_servers(self, primary, secondary=None):
+        """Set the device NTP Servers
+
+        Convenience method to set the firewall or Panorama NTP servers
+
+        Args:
+            primary (str): IP address of primary DNS server
+            secondary (str): IP address of secondary DNS server
+
+        """
         from pandevice import device
         self._logger.debug("Set ntp-servers: primary:%s secondary:%s" % (primary, secondary))
         system = self.findall_or_create(device.SystemSettings)[0]
@@ -1541,6 +1853,15 @@ class PanDevice(PanObject):
                 ntp2.create()
 
     def pending_changes(self, retry_on_peer=True):
+        """Check if there are pending changes on the live device
+
+        Args:
+            retry_on_peer (bool): Try on active Firewall first, if connection error try on passive Firewall
+
+        Returns:
+            bool: True if pending changes, False if not
+
+        """
         self.xapi.op(cmd="check pending-changes", cmd_xml=True, retry_on_peer=retry_on_peer)
         pconf = PanConfig(self.xapi.element_result)
         response = pconf.python()
@@ -1667,6 +1988,12 @@ class PanDevice(PanObject):
         return self._ha_peer
 
     def set_ha_peers(self, pandevice):
+        """Establish an HA peer relationship between two PanDevice objects
+
+        Args:
+            pandevice: The HA peer device
+
+        """
         self._ha_peer = pandevice
         self.ha_peer._ha_peer = self
         # If both are active or both are passive,
@@ -1685,26 +2012,31 @@ class PanDevice(PanObject):
         return [fw for fw in [self, self.ha_peer] if fw is not None]
 
     def active(self):
+        """Return the active device in the HA Pair"""
         if self._ha_active:
             return self
         else:
             return self.ha_peer
 
     def passive(self):
+        """Return the passive device in the HA Pair"""
         if self._ha_active:
             return self.ha_peer
         else:
             return self
 
     def is_active(self):
+        """Return True if this device is active"""
         return self._ha_active
 
     def activate(self):
+        """Make this PanDevice active and the other passive"""
         self._ha_active = True
         if self.ha_peer is not None:
             self.ha_peer._ha_active = False
 
     def toggle_ha_active(self):
+        """Switch the active device in this HA Pair"""
         if self.ha_peer is not None:
             self._ha_active = not self._ha_active
             self.ha_peer._ha_active = not self.ha_peer._ha_active
@@ -1714,6 +2046,18 @@ class PanDevice(PanObject):
         raise NotImplementedError
 
     def set_failed(self):
+        """Set this PanDevice as a failed HA Peer
+
+        API calls will no longer be attempted to this device until one of
+        the following conditions:
+
+        1. self.ha_failed is set to False
+        2. self.ha_failed is set to True on the peer device
+
+        Returns:
+            PanDevice: The HA Peer device
+
+        """
         if self.ha_peer is None:
             return None
         self.ha_failed = True
@@ -1736,6 +2080,7 @@ class PanDevice(PanObject):
             first item in the tuple is always from invoking the method on self, and
             the second item is from invoking the method on the ha_peer. The second
             item is None if there is no HA Peer.
+
         """
         result1 = getattr(self, method_name)(*args, **kwargs)
         result2 = None
@@ -1752,6 +2097,12 @@ class PanDevice(PanObject):
             return ha_state.findtext("result/group/local-info/state"), ha_state
 
     def refresh_ha_active(self):
+        """Refresh which device is active using the live device
+
+        Returns:
+            str: Current HA state of this device
+
+        """
         logger.debug("Refreshing active firewall in HA Pair")
         if self.ha_peer is None:
             return
@@ -1771,6 +2122,8 @@ class PanDevice(PanObject):
                 return self_state
 
     def synchronize_config(self):
+        """Force configuration synchronization from this device to its HA peer"""
+        # TODO: Fix return value, too many types
         state = self.config_sync_state()
         if state is None:
             return
@@ -1792,6 +2145,13 @@ class PanDevice(PanObject):
             return True
 
     def config_sync_state(self):
+        """Get the current configuration synchronization state from the live device
+
+        Returns:
+            str: Current configuration sync state, or None if HA is not enabled
+
+        """
+        # TODO: What if HA is on, but HA config sync is off?
         logger.debug("Checking configuration sync state")
         ha_state = self.active().op("show high-availability state")
         enabled = ha_state.find("./result/enabled")
@@ -1812,6 +2172,12 @@ class PanDevice(PanObject):
                 return state.text
 
     def config_synced(self):
+        """Check if configuration is synchronized between HA peers
+
+        Returns:
+            bool: True if synchronized, False if not
+
+        """
         state = self.config_sync_state()
         if state is None:
             return False
@@ -1823,13 +2189,23 @@ class PanDevice(PanObject):
     # Commit methods
 
     def commit(self, sync=False, exception=False, cmd=None):
+        """Trigger a commit
+
+        Args:
+            sync (bool): Block until the commit is finished (Default: False)
+            exception (bool): Create an exception on commit errors (Default: False)
+            cmd (str): Commit options in XML format
+
+        Returns:
+            dict: Commit results
+
+        """
         self._logger.debug("Commit initiated on device: %s" % (self.hostname,))
         return self._commit(sync=sync, exception=exception, cmd=cmd)
 
     def _commit(self, cmd=None, exclude=None, commit_all=False,
                 sync=False, sync_all=False, exception=False):
         """Internal use commit helper method.
-        # TODO: Support per-vsys commit
 
         :param exclude:
             Can be:
@@ -1846,6 +2222,7 @@ class PanDevice(PanObject):
                 messages: list of warnings or errors
 
         """
+        # TODO: Support per-vsys commit
         if isinstance(cmd, pan.commit.PanCommit):
             cmd = cmd.cmd()
         elif isinstance(cmd, ET.Element):
@@ -1921,10 +2298,13 @@ class PanDevice(PanObject):
         """Block until job completes and return result
 
         Args:
-            job_id: int job ID, or response XML from job creation
+            job_id (int): job ID, or response XML from job creation
+            sync_all (bool): Wait for all devices to complete if commit all operation
+            interval (float): Interval in seconds to check if job is complete
 
         Returns:
-            Job result dict
+            dict: Job result
+
         """
         import httplib
         if interval is not None:
@@ -2130,7 +2510,19 @@ class PanDevice(PanObject):
         return result
 
     def watch_op(self, cmd, path, value, vsys=None, cmd_xml=True, interval=1.0):
-        """Watch an operational command for an expected value"""
+        """Watch an operational command for an expected value
+
+        Blocks script execution until the value exists or timeout expires
+
+        Args:
+            cmd (str): Operational command to run
+            path (str): XPath to the value to watch
+            value (str): The value expected before method completes
+            vsys (str): Vsys id for the operational command
+            cmd_xml (bool): True: cmd is not XML, False: cmd is XML (Default: True)
+            interval (float): Interval in seconds to check if the value exists
+
+        """
         if interval is not None:
             try:
                 interval = float(interval)
