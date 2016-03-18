@@ -26,19 +26,9 @@ For performing common tasks on Palo Alto Networks devices.
 # import modules
 import re
 import logging
-import inspect
 import xml.etree.ElementTree as ET
-import time
-from copy import deepcopy
 from decimal import Decimal
 
-# import Palo Alto Networks api modules
-# available at https://live.paloaltonetworks.com/docs/DOC-4762
-import pan.xapi
-import pan.commit
-from pan.config import PanConfig
-
-import pandevice
 from pandevice import device
 
 # import other parts of this pandevice package
@@ -53,7 +43,23 @@ logger.addHandler(logging.NullHandler())
 
 
 class Firewall(PanDevice):
+    """A Palo Alto Networks Firewall
 
+    This object can represent a firewall physical chassis, virtual firewall, or
+    individual vsys.
+
+    Args:
+        hostname: Hostname or IP of device for API connections
+        api_username: Username of administrator to access API
+        api_password: Password of administrator to access API
+        api_key: The API Key for connecting to the device's API
+        serial: The serial number of this firewall
+        port: Port of device for API connections
+        vsys: The vsys of this firewall (eg. "vsys1", "vsys2", etc.)
+        is_virtual (bool): Physical or Virtual firewall
+        timeout: The timeout for asynchronous jobs
+        interval: The interval to check asynchronous jobs
+    """
     XPATH = "/devices"
     ROOT = Root.MGTCONFIG
     SUFFIX = ENTRY
@@ -102,14 +108,19 @@ class Firewall(PanDevice):
         self.serial_ha_peer = None
         self.management_ip = None
 
-        # Set to True to act on the shared part of this firewall
         self.shared = False
+        """Set to True to act on the shared part of this firewall"""
 
-        # Panorama state variables
         self.state = FirewallState()
+        """Panorama state variables refreshed by Panorama"""
 
         # Create a User-ID subsystem
         self.userid = userid.UserId(self)
+        """User-ID subsystem
+
+        See Also: :class:`pandevice.userid`
+
+        """
 
     @property
     def vsys(self):
@@ -138,6 +149,7 @@ class Firewall(PanDevice):
         raise err.PanDeviceError("Attempt to modify Panorama configuration on non-Panorama device")
 
     def _parent_xpath(self):
+        from pandevice import panorama
         if self.parent is None:
             # self with no parent
             if self.vsys == "shared":
@@ -156,17 +168,30 @@ class Firewall(PanDevice):
         return parent_xpath
 
     def op(self, cmd=None, vsys=None, xml=True, cmd_xml=True, extra_qs=None, retry_on_peer=False):
+        """Perform operational command on this Firewall
+
+        Args:
+            cmd (str): The operational command to execute
+            vsys (str): Vsys id. Defaults to the vsys of the firewall or the Vsys object in the parent tree.
+            xml (bool): Return value should be a string (Default: False)
+            cmd_xml (bool): True: cmd is not XML, False: cmd is XML (Default: True)
+            extra_qs: Extra parameters for API call
+            retry_on_peer (bool): Try on active Firewall first, then try on passive Firewall
+
+        Returns:
+            xml.etree.ElementTree: The result of the operational command. May also return a string of XML if xml=True
+
+        """
         if vsys is None:
             vsys = self.vsys
         return super(Firewall, self).op(cmd, vsys, xml, cmd_xml, extra_qs, retry_on_peer)
 
     def generate_xapi(self):
-        """Override super class to connect to Panorama
-
-        Connect to this firewall via Panorama with 'target' argument set
-        to this firewall's serial number.  This happens when panorama and serial
-        variables are set in this firewall prior to the first connection.
-        """
+        # Override super class to connect to Panorama
+        #
+        # Connect to this firewall via Panorama with 'target' argument set
+        # to this firewall's serial number.  This happens when panorama and serial
+        # variables are set in this firewall prior to the first connection.
         try:
             self.panorama()
         except err.PanDeviceNotSet:
@@ -187,8 +212,15 @@ class Firewall(PanDevice):
     def refresh_system_info(self):
         """Refresh system information variables
 
+        Variables refreshed:
+
+        - version
+        - platform
+        - serial
+        - multi_vsys
+
         Returns:
-            system information like version, platform, etc.
+            tuple: version, platform, serial
         """
         system_info = self.show_system_info()
 
@@ -263,6 +295,7 @@ class Firewall(PanDevice):
             self.parent.remove_by_name(self.name, type(self))
 
     def create_vsys(self):
+        """Create the vsys on the live device that this Firewall object represents"""
         if self.vsys.startswith("vsys"):
             element = ET.Element("entry", {"name": self.vsys})
             if self.vsys_name is not None:
@@ -271,6 +304,7 @@ class Firewall(PanDevice):
             self.xapi.set(self.xpath_device() + "/vsys", ET.tostring(element), retry_on_peer=True)
 
     def delete_vsys(self):
+        """Delete the vsys on the live device that this Firewall object represents"""
         if self.vsys.startswith("vsys"):
             self.set_config_changed()
             self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys, retry_on_peer=True)
