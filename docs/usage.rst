@@ -249,7 +249,7 @@ instance represents a single context firewall, or 'vsys1' on a multi-vsys firewa
 
 When working with a firewall with multi-vsys mode enabled, there are two methods to work with vsys:
 
-**Method 1**: A different Firewall instance for each vsys
+**Method 1: A different Firewall instance for each vsys**
 
 Each Firewall object has a 'vsys' attribute which is assigned the vsys id.  For example::
 
@@ -265,7 +265,7 @@ To create or delete an entire vsys, use the create_vsys() and delete_vsys() meth
     fw_vsys2.create_vsys()
     fw_vsys3.delete_vsys()
 
-**Method 2**: A single Firewall instance with Vsys child instances
+**Method 2: A single Firewall instance with Vsys child instances**
 
 Create Vsys instances and add them to a 'shared' PanDevice::
 
