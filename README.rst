@@ -61,7 +61,8 @@ A few examples
 --------------
 
 For configuration tasks, create a tree structure using the classes in
-each module. Nodes hierarchy must follow the :ref:`classtree`.
+each module. Nodes hierarchy must follow the model in the
+[Configuration Tree](http://pandevice.readthedocs.org/en/latest/configtree.html).
 
 The following examples assume the modules were imported as such::
 
