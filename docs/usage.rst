@@ -142,6 +142,105 @@ It's also possible to refresh the variables of an existing object::
     >>> adserver.value
     "4.4.4.4"
 
+Connecting with Panorama
+------------------------
+
+Making changes to Panorama is always done the same way, with a connection to Panorama.
+But, there are a different methods to make local changes to a Firewall.
+
+**Method 1: Connect to the Firewall and Panorama directly**
+
+When making changes to Panorama, connect to Panorama.
+When making changes to the Firewall, connect directly to the Firewall.
+
+.. graphviz::
+
+   digraph directconnect {
+      graph [rankdir=LR, fontsize=10, margin=0.001];
+      node [shape=box, fontsize=10, height=0.001, margin=0.1, ordering=out];
+      "python script" -> "Panorama";
+      "python script" -> "Firewall";
+      Panorama [style=filled];
+      Firewall [style=filled];
+   }
+
+This method is best in the following cases:
+
+- Firewall managment IP is accessible to the script
+- The credentials for both devices are known
+- The permissions/role for the user are set on both devices
+- The serial of the firewall is unknown, but the management IP is known
+
+To use this method:
+
+1. Create a :class:`pandevice.firewall.Firewall` instance and a
+   :class:`pandevice.panorama.Panorama` instance.
+2. In both instances, set the 'hostname' attribute and either the
+   'api_key' or the 'api_username' and 'api_password' attributes.
+
+Example::
+
+    # Instantiate a Firewall with hostname and credentials
+    fw = firewall.Firewall("10.0.0.1", "admin", "mypassword")
+    # Instantiate a Panorama with hostname and credentials
+    pano = panorama.Panorama("10.0.0.5", "admin", "mypassword")
+    # Change to Firewall
+    fw.add(objects.AddressObject("Server", "2.2.2.2")).create()
+    # Change to Panorama
+    pano.add(panorama.DeviceGroup("CustomerA")).create()
+
+In this example, the address object is added to the Firewall directly, without
+any connection to Panorama. Then a device-group is created on Panorama directly,
+without any connection to the Firewall.
+
+**Method 2: Connect to Firewall via Panorama**
+
+When making changes to the Firewall, connect to Panorama which
+will proxy the connection to the Firewall. Meaning all connections
+are to Panorama.
+
+.. graphviz::
+
+   digraph directconnect {
+      graph [rankdir=LR, fontsize=10, margin=0.001];
+      node [shape=box, fontsize=10, height=0.001, margin=0.1, ordering=out];
+      "pandevice script" -> "Panorama" -> "Firewall";
+      Panorama [style=filled];
+      Firewall [style=filled];
+   }
+
+This method is best in the following cases:
+
+- The Firewall management IP is unknown or not rechable from the script
+- You only store one set of credentials (Panorama)
+- The serial of the firewall is known or can be determined from Panorama
+
+To use this method:
+
+1. Create a :class:`pandevice.firewall.Firewall` instance and a
+   :class:`pandevice.panorama.Panorama` instance.
+2. In the Panorama instance, set the 'hostname' attribute and either the
+   'api_key' or the 'api_username' and 'api_password' attributes.
+3. In the Firewall instance, set the 'serial' attribute.
+4. Add the Firewall as a child of Panorama, or as a child of a DeviceGroup under Panorama.
+
+Example::
+
+    # Instantiate a Firewall with serial
+    fw = firewall.Firewall(serial="0002487YR3880")
+    # Instantiate a Panorama with hostname and credentials
+    pano = panorama.Panorama("10.0.0.5", "admin", "mypassword")
+    # Add the Firewall as a child of Panorama
+    pano.add(fw)
+    # Change to Firewall via Panorama
+    fw.add(objects.AddressObject("Server", "2.2.2.2")).create()
+    # Change to Panorama directly
+    pano.add(panorama.DeviceGroup("CustomerA")).create()
+
+In this example, both changes are made with connections to Panorama. First, the
+address object is added to the Firewall by connecting to Panorama which proxies the
+API call to the Firewall. Then a device-group is created on Panorama directly.
+
 Working with virtual systems
 ----------------------------
 
