@@ -26,6 +26,15 @@ Features
 - Batch User-ID operations
 - Device API exception classification
 
+Status
+------
+
+Palo Alto Networks Device Framework is considered **alpha**. It is fully tested
+and used in many production environments, but it maintains alpha status because
+the API interface could change at any time without notification. Please be
+prepared to modify your scripts to work with each subsequent version of this
+package because backward compatibility is not guaranteed.
+
 Installation
 ------------
 
@@ -62,7 +71,7 @@ A few examples
 
 For configuration tasks, create a tree structure using the classes in
 each module. Nodes hierarchy must follow the model in the
-[Configuration Tree](http://pandevice.readthedocs.org/en/latest/configtree.html).
+`Configuration Tree`_.
 
 The following examples assume the modules were imported as such::
 
@@ -89,6 +98,7 @@ Some operational commands have methods to refresh the variables in an object::
 
 
 .. _pan-python: http://github.com/kevinsteves/pan-python
+.. _Configuration Tree: http://pandevice.readthedocs.org/en/latest/configtree.html
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pandevice.svg
     :target: https://pypi.python.org/pypi/pandevice
