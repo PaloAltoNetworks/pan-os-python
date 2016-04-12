@@ -453,7 +453,11 @@ class PanObject(object):
             child.check_child_methods(method)
 
     def apply(self):
-        """Apply this object to the device, replacing any existing object of the same name"""
+        """Apply this object to the device, replacing any existing object of the same name
+
+        **Modifies the live device**
+
+        """
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
@@ -466,6 +470,8 @@ class PanObject(object):
 
     def create(self):
         """Create this object on the device
+
+        **Modifies the live device**
 
         This method is nondestructive. If the object exists, the variables are added to the device
         without changing existing variables on the device. If a variables already exists on the
@@ -485,7 +491,11 @@ class PanObject(object):
             child._check_child_methods("create")
 
     def delete(self):
-        """Delete this object from the firewall"""
+        """Delete this object from the firewall
+
+        **Modifies the live device**
+
+        """
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
@@ -500,6 +510,8 @@ class PanObject(object):
 
     def update(self, variable):
         """Change the value of a variable
+
+        **Modifies the live device**
 
         Do not attempt this on an element variable (|) or variable with replacement {{}}
         If the variable's value is None, then a delete API call is attempted.
