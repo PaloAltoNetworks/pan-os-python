@@ -38,8 +38,9 @@ class AddressObject(PanObject):
     """Address Object
 
     Args:
-        type (str): The type of object: ip-netmask, ip-range, or fqdn (Default: ip-netmask)
-        value (str): The ip address or other value of the object
+        name (str): Name of the object
+        type (str): Type of object: ip-netmask, ip-range, or fqdn (Default: ip-netmask)
+        value (str): IP address or other value of the object
         description (str): Description of this object
 
     """
