@@ -128,7 +128,7 @@ class Panorama(base.PanDevice):
         return super(Panorama, self).op(cmd, vsys=None, xml=xml, cmd_xml=cmd_xml, extra_qs=extra_qs, retry_on_peer=retry_on_peer)
 
     def xpath_vsys(self):
-        raise err.PanDeviceError("Attempt to modify vsys configuration on non-firewall device")
+        return "/config/shared"
 
     def xpath_panorama(self):
         return "/config/panorama"
