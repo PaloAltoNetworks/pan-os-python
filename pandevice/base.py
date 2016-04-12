@@ -588,10 +588,8 @@ class PanObject(object):
             logger.debug("refresh called using xml on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
             obj = xml
         # Refresh each variable
-        variables, noninit_variables = type(self)._parse_xml(obj)
+        variables = type(self)._parse_xml(obj)
         for var, value in variables.iteritems():
-            setattr(self, var, value)
-        for var, value in noninit_variables.iteritems():
             setattr(self, var, value)
         # Refresh sub-objects
         if refresh_children:
