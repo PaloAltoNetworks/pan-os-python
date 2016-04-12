@@ -3,10 +3,34 @@
 History
 =======
 
+0.3.1
+-----
+
+Released: 2016-04-12
+
+Status: Alpha
+
+New objects:
+
+* policies.SecurityRule
+* objects.AddressGroup
+
+API changes:
+
+* Changed refresh_all to refreshall and apply_all to applyall
+* Added insert() method to PanObject base class
+
+Fixes:
+
+* Objects can now be added as children of Panorama which will make them 'shared'
+* Fixes for tracebacks
+* Minor fixes to documentation and docstrings
+
 0.3.0
 -----
 
 Released: 2016-03-30
+
 Status: Alpha
 
 * First release on pypi
@@ -17,6 +41,7 @@ Status: Alpha
 -----
 
 Released: 2014-09-17
+
 Status: Pre-alpha
 
 * First release on github

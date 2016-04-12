@@ -70,6 +70,8 @@ class Firewall(PanDevice):
         "device.SystemSettings",
         "ha.HighAvailability",
         "objects.AddressObject",
+        "objects.AddressGroup",
+        "policies.SecurityRule",
         "network.EthernetInterface",
         "network.AggregateInterface",
         "network.LoopbackInterface",
@@ -261,7 +263,7 @@ class Firewall(PanDevice):
             return
         # This is a firewall under a panorama or devicegroup
         panorama = self.panorama()
-        logger.debug(panorama.hostname + ": create called on %s object \"%s\"" % (type(self), self.name))
+        logger.debug(panorama.hostname + ": create called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         panorama.set_config_changed()
         element = self.element_str()
         panorama.xapi.set(self.xpath_short(), element)
@@ -292,7 +294,7 @@ class Firewall(PanDevice):
             panorama.set_config_changed()
             panorama.xapi.delete(self.xpath())
         if self.parent is not None:
-            self.parent.remove_by_name(self.name, type(self))
+            self.parent.remove_by_name(getattr(self, self.NAME), type(self))
 
     def create_vsys(self):
         """Create the vsys on the live device that this Firewall object represents"""
@@ -310,11 +312,11 @@ class Firewall(PanDevice):
             self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys, retry_on_peer=True)
 
     @classmethod
-    def refresh_all_from_xml(cls, xml, refresh_children=False, variables=None):
+    def refreshall_from_xml(cls, xml, refresh_children=False, variables=None):
         if len(xml) == 0:
             return []
         if variables is not None:
-            return super(Firewall, cls).refresh_all_from_xml(xml, refresh_children, variables)
+            return super(Firewall, cls).refreshall_from_xml(xml, refresh_children, variables)
         op_vars = (
             Var("serial"),
             Var("ip-address", "hostname"),
@@ -327,7 +329,7 @@ class Firewall(PanDevice):
         )
         if len(xml[0]) > 1:
             # This is a 'show devices' op command
-            firewall_instances = super(Firewall, cls).refresh_all_from_xml(xml, refresh_children=False, variables=op_vars)
+            firewall_instances = super(Firewall, cls).refreshall_from_xml(xml, refresh_children=False, variables=op_vars)
             # Add system settings to firewall instances
             for fw in firewall_instances:
                 entry = xml.find("entry[@name='%s']" % fw.serial)

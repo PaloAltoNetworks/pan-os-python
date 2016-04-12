@@ -36,6 +36,7 @@ tree_not_exists = [
     'base',
     'errors',
     'objects',
+    'policies',
     'updater',
     'userid',
 ]

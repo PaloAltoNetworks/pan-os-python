@@ -138,6 +138,23 @@ class PanObject(object):
         self.children.append(child)
         return child
 
+    def insert(self, index, child):
+        """Insert a child node at a specific index
+
+        This is useful for ordering or reordering security policy rules
+
+        Args:
+            index (int): The index where the child obj should be inserted
+            child (PanObject): Node to add as a child
+
+        Returns:
+            PanObject: Child node
+
+        """
+        child.parent = self
+        self.children.insert(index, child)
+        return child
+
     def extend(self, children):
         """Add a list of child nodes to this node
 
@@ -436,7 +453,11 @@ class PanObject(object):
             child.check_child_methods(method)
 
     def apply(self):
-        """Apply this object to the device, replacing any existing object of the same name"""
+        """Apply this object to the device, replacing any existing object of the same name
+
+        **Modifies the live device**
+
+        """
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
@@ -449,6 +470,8 @@ class PanObject(object):
 
     def create(self):
         """Create this object on the device
+
+        **Modifies the live device**
 
         This method is nondestructive. If the object exists, the variables are added to the device
         without changing existing variables on the device. If a variables already exists on the
@@ -468,7 +491,11 @@ class PanObject(object):
             child._check_child_methods("create")
 
     def delete(self):
-        """Delete this object from the firewall"""
+        """Delete this object from the firewall
+
+        **Modifies the live device**
+
+        """
         pandevice = self.pandevice()
         logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
@@ -483,6 +510,8 @@ class PanObject(object):
 
     def update(self, variable):
         """Change the value of a variable
+
+        **Modifies the live device**
 
         Do not attempt this on an element variable (|) or variable with replacement {{}}
         If the variable's value is None, then a delete API call is attempted.
@@ -588,10 +617,8 @@ class PanObject(object):
             logger.debug("refresh called using xml on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
             obj = xml
         # Refresh each variable
-        variables, noninit_variables = type(self)._parse_xml(obj)
+        variables = type(self)._parse_xml(obj)
         for var, value in variables.iteritems():
-            setattr(self, var, value)
-        for var, value in noninit_variables.iteritems():
             setattr(self, var, value)
         # Refresh sub-objects
         if refresh_children:
@@ -691,7 +718,7 @@ class PanObject(object):
                                 childtypestring.split(".")[-1])
             childroot = obj.find(childtype.XPATH[1:])
             if childroot is not None:
-                l = childtype.refresh_all_from_xml(childroot)
+                l = childtype.refreshall_from_xml(childroot)
                 self.extend(l)
         return self.children
 
@@ -876,9 +903,9 @@ class PanObject(object):
         return None
 
     @classmethod
-    def apply_all_to_device(cls, parent):
+    def applyall(cls, parent):
         pandevice = parent.pandevice()
-        logger.debug(pandevice.hostname + ": refresh_all_to_device called on %s type" % cls)
+        logger.debug(pandevice.hostname + ": applyall called on %s type" % cls)
         objects = parent.findall(cls)
         if not objects:
             return
@@ -897,7 +924,7 @@ class PanObject(object):
             obj._check_child_methods("apply")
 
     @classmethod
-    def refresh_all_from_device(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
+    def refreshall(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
         """Factory method to instantiate class from live device
 
         This method is a factory for the class. It takes an firewall or Panorama
@@ -933,7 +960,7 @@ class PanObject(object):
         else:
             pandevice = parent.pandevice()
             parent_xpath = parent.xpath()
-        logger.debug(pandevice.hostname + ": refresh_all_from_device called on %s type" % cls)
+        logger.debug(pandevice.hostname + ": refreshall called on %s type" % cls)
         if running_config:
             api_action = pandevice.xapi.show
         else:
@@ -958,7 +985,7 @@ class PanObject(object):
         if obj is None:
             return []
         # Refresh each object
-        instances = cls.refresh_all_from_xml(obj)
+        instances = cls.refreshall_from_xml(obj)
         if add:
             # Remove current children of this type from parent
             parent.removeall(cls=cls)
@@ -967,7 +994,7 @@ class PanObject(object):
         return instances
 
     @classmethod
-    def refresh_all_from_xml(cls, xml, refresh_children=True, variables=None):
+    def refreshall_from_xml(cls, xml, refresh_children=True, variables=None):
         """Factory method to instantiate class from firewall config
 
         This method is a factory for the class. It takes an xml config
@@ -1006,7 +1033,7 @@ class PanObject(object):
                                         childtypestring.split(".")[-1])
                     childroot = obj.find(childtype.XPATH[1:])
                     if childroot is not None:
-                        l = childtype.refresh_all_from_xml(childroot)
+                        l = childtype.refreshall_from_xml(childroot)
                         instance.extend(l)
         return instances
 
@@ -1102,7 +1129,7 @@ class PanObject(object):
         """
         pandevice = self.pandevice()
         if refresh:
-            allobjects = reference_type.refresh_all_from_device(pandevice, running_config=running_config)
+            allobjects = reference_type.refreshall(pandevice, running_config=running_config)
         else:
             allobjects = pandevice.findall(reference_type)
         # Find any current references to self and remove them, unless it is the desired reference
@@ -1267,14 +1294,14 @@ class VsysImportMixin(object):
         if refresh and running_config:
             raise ValueError("Can't refresh vsys from running config in set_vsys method")
         if refresh:
-            all_vsys = device.Vsys.refresh_all_from_device(self.pandevice(), name_only=True)
+            all_vsys = device.Vsys.refreshall(self.pandevice(), name_only=True)
             for a_vsys in all_vsys:
                 a_vsys.refresh_variable(self.XPATH_IMPORT.split("/")[-1])
         return self._set_reference(vsys_id, device.Vsys, self.XPATH_IMPORT.split("/")[-1], True, refresh=False, update=update, running_config=running_config)
 
     @classmethod
-    def refresh_all_from_device(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
-        instances = super(VsysImportMixin, cls).refresh_all_from_device(parent, running_config, add=False, exceptions=exceptions, name_only=name_only)
+    def refreshall(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
+        instances = super(VsysImportMixin, cls).refreshall(parent, running_config, add=False, exceptions=exceptions, name_only=name_only)
         # Filter out instances that are not in this vlan's imports
         pandevice = parent.pandevice()
         if running_config:

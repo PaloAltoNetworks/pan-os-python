@@ -62,6 +62,8 @@ class DeviceGroup(PanObject):
     CHILDTYPES = (
         "firewall.Firewall",
         "objects.AddressObject",
+        "objects.AddressGroup",
+        "policies.SecurityRule",
     )
 
     @classmethod
@@ -93,6 +95,9 @@ class Panorama(base.PanDevice):
     CHILDTYPES = (
         "panorama.DeviceGroup",
         "firewall.Firewall",
+        "objects.AddressObject",
+        "objects.AddressGroup",
+        "policies.SecurityRule",
     )
 
     def __init__(self,
@@ -128,7 +133,7 @@ class Panorama(base.PanDevice):
         return super(Panorama, self).op(cmd, vsys=None, xml=xml, cmd_xml=cmd_xml, extra_qs=extra_qs, retry_on_peer=retry_on_peer)
 
     def xpath_vsys(self):
-        raise err.PanDeviceError("Attempt to modify vsys configuration on non-firewall device")
+        return "/config/shared"
 
     def xpath_panorama(self):
         return "/config/panorama"
@@ -274,7 +279,7 @@ class Panorama(base.PanDevice):
                     devices_xml.append(new_vsys_device)
 
         # Create firewall instances
-        firewall_instances = firewall.Firewall.refresh_all_from_xml(devices_xml, refresh_children=not expand_vsys)
+        firewall_instances = firewall.Firewall.refreshall_from_xml(devices_xml, refresh_children=not expand_vsys)
 
         if not include_device_groups:
             if add:
@@ -297,7 +302,7 @@ class Panorama(base.PanDevice):
         # of the device groups
         pandevice.xml_combine(devicegroup_opxml, devicegroup_configxml)
 
-        devicegroup_instances = DeviceGroup.refresh_all_from_xml(devicegroup_opxml, refresh_children=False)
+        devicegroup_instances = DeviceGroup.refreshall_from_xml(devicegroup_opxml, refresh_children=False)
 
         for dg in devicegroup_instances:
             dg_serials = [entry.get("name") for entry in devicegroup_opxml.findall("entry[@name='%s']/devices/entry" % dg.name)]

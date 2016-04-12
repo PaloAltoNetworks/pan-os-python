@@ -38,8 +38,9 @@ class AddressObject(PanObject):
     """Address Object
 
     Args:
-        type (str): The type of object: ip-netmask, ip-range, or fqdn (Default: ip-netmask)
-        value (str): The ip address or other value of the object
+        name (str): Name of the object
+        type (str): Type of object: ip-netmask, ip-range, or fqdn (Default: ip-netmask)
+        value (str): IP address or other value of the object
         description (str): Description of this object
 
     """
@@ -53,5 +54,30 @@ class AddressObject(PanObject):
         return (
             Var("(ip-netmask|ip-range|fqdn)", "type", default="ip-netmask"),
             Var("{{type}}", "value"),
+            Var("description"),
+        )
+
+
+class AddressGroup(PanObject):
+    """Address Group
+
+    Args:
+        name (str): Name of the group
+        static_value (list): A static Address Group with a list of AddressObjects
+        dynamic_value (str): A dynamic Address Group with a tag string.
+            Example of tag string:  "'linux' and 'server' and 'apache'"
+        description (str): Description of this group
+
+    """
+
+    ROOT = Root.VSYS
+    XPATH = "/address-group"
+    SUFFIX = ENTRY
+
+    @classmethod
+    def variables(cls):
+        return (
+            Var("static", "static_value", vartype="member"),
+            Var("dynamic/filter", "dynamic_value"),
             Var("description"),
         )
