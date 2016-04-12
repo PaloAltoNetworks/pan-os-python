@@ -73,7 +73,7 @@ Build the configuration tree: ``add()``, ``remove()``, ``find()``, and ``findall
 Push changed configuration to the live device: ``apply()``, ``create()``,
 and ``delete()``
 
-Pull configuration from the live device: ``refresh()``, ``refresh_all_from_device()``
+Pull configuration from the live device: ``refresh()``, ``refreshall()``
 
 There are other useful methods besides these. See :class:`pandevice.base.PanObject` for
 more information.
@@ -126,7 +126,7 @@ device and add them into the configuration tree::
 
     >>> fw.children
     []
-    >>> objects.AddressObject.refresh_all_from_device(fw, add=True)
+    >>> objects.AddressObject.refreshall(fw, add=True)
     >>> fw.children
     [<pandevice.objects.AddressObject object at 0x108080e90>,
      <pandevice.objects.AddressObject object at 0x108080f50>,

@@ -312,11 +312,11 @@ class Firewall(PanDevice):
             self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys, retry_on_peer=True)
 
     @classmethod
-    def refresh_all_from_xml(cls, xml, refresh_children=False, variables=None):
+    def refreshall_from_xml(cls, xml, refresh_children=False, variables=None):
         if len(xml) == 0:
             return []
         if variables is not None:
-            return super(Firewall, cls).refresh_all_from_xml(xml, refresh_children, variables)
+            return super(Firewall, cls).refreshall_from_xml(xml, refresh_children, variables)
         op_vars = (
             Var("serial"),
             Var("ip-address", "hostname"),
@@ -329,7 +329,7 @@ class Firewall(PanDevice):
         )
         if len(xml[0]) > 1:
             # This is a 'show devices' op command
-            firewall_instances = super(Firewall, cls).refresh_all_from_xml(xml, refresh_children=False, variables=op_vars)
+            firewall_instances = super(Firewall, cls).refreshall_from_xml(xml, refresh_children=False, variables=op_vars)
             # Add system settings to firewall instances
             for fw in firewall_instances:
                 entry = xml.find("entry[@name='%s']" % fw.serial)
