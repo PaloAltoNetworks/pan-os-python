@@ -138,6 +138,23 @@ class PanObject(object):
         self.children.append(child)
         return child
 
+    def insert(self, index, child):
+        """Insert a child node at a specific index
+
+        This is useful for ordering or reordering security policy rules
+
+        Args:
+            index (int): The index where the child obj should be inserted
+            child (PanObject): Node to add as a child
+
+        Returns:
+            PanObject: Child node
+
+        """
+        child.parent = self
+        self.children.insert(index, child)
+        return child
+
     def extend(self, children):
         """Add a list of child nodes to this node
 
