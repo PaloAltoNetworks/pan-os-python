@@ -34,13 +34,14 @@ footer = "}\n"
 
 
 nodestyle = {
-    'Firewall':  '',
-    'Panorama':  '',
+    #'Firewall':  '',
+    #'Panorama':  '',
     'device':    'fillcolor=lightpink',
     'firewall':  'fillcolor=lightblue',
     'ha':        'fillcolor=lavender',
     'network':   'fillcolor=lightcyan',
     'objects':   'fillcolor=lemonchiffon',
+    'policies':  'fillcolor=lightsalmon',
     'panorama':  'fillcolor=lightgreen',
 }
 
