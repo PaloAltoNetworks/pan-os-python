@@ -16,9 +16,10 @@ apply for all the examples on this page::
     from pandevice import base
     from pandevice import firewall
     from pandevice import panorama
+    from pandevice import policies
+    from pandevice import objects
     from pandevice import network
     from pandevice import device
-    from pandevice import objects
 
 Create a PanDevice
 ------------------
