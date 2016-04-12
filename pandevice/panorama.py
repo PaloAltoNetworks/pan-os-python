@@ -62,6 +62,8 @@ class DeviceGroup(PanObject):
     CHILDTYPES = (
         "firewall.Firewall",
         "objects.AddressObject",
+        "objects.AddressGroup",
+        "policies.SecurityRule",
     )
 
     @classmethod
@@ -93,6 +95,9 @@ class Panorama(base.PanDevice):
     CHILDTYPES = (
         "panorama.DeviceGroup",
         "firewall.Firewall",
+        "objects.AddressObject",
+        "objects.AddressGroup",
+        "policies.SecurityRule",
     )
 
     def __init__(self,
