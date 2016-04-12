@@ -261,7 +261,7 @@ class Firewall(PanDevice):
             return
         # This is a firewall under a panorama or devicegroup
         panorama = self.panorama()
-        logger.debug(panorama.hostname + ": create called on %s object \"%s\"" % (type(self), self.name))
+        logger.debug(panorama.hostname + ": create called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         panorama.set_config_changed()
         element = self.element_str()
         panorama.xapi.set(self.xpath_short(), element)
@@ -292,7 +292,7 @@ class Firewall(PanDevice):
             panorama.set_config_changed()
             panorama.xapi.delete(self.xpath())
         if self.parent is not None:
-            self.parent.remove_by_name(self.name, type(self))
+            self.parent.remove_by_name(getattr(self, self.NAME), type(self))
 
     def create_vsys(self):
         """Create the vsys on the live device that this Firewall object represents"""
