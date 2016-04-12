@@ -68,9 +68,10 @@ class HighAvailabilityInterface(PanObject):
 
     @port.setter
     def port(self, value):
-        if value != self._port:
-            self.old_port = self._port
-            self._port = value
+        if hasattr(self, "_port"):
+            if value != self._port:
+                self.old_port = self._port
+        self._port = value
 
     @classmethod
     def variables(cls):
