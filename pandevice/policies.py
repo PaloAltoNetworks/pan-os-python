@@ -31,8 +31,42 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
+class Rulebase(PanObject):
+    """Rulebase for a Firewall
+
+    Firewall only.  For Panorama, use :class:`pandevice.policies.PreRulebase` or
+    :class:`pandevice.policies.PostRulebase`.
+
+    """
+    ROOT = Root.VSYS
+    XPATH = "/rulebase"
+    CHILDTYPES = (
+        "policies.SecurityRule",
+    )
+
+
+class PreRulebase(Rulebase):
+    """Pre-rulebase for a Panorama
+
+    Panorama only.  For Firewall, use :class:`pandevice.policies.Rulebase`.
+
+    """
+    XPATH = "/pre-rulebase"
+
+
+class PostRulebase(Rulebase):
+    """Pre-rulebase for a Panorama
+
+    Panorama only.  For Firewall, use :class:`pandevice.policies.Rulebase`.
+
+    """
+    XPATH = "/post-rulebase"
+
+
 class SecurityRule(PanObject):
     """Security Rule
+
+    Firewall only.  Use SecurityPreRule or SecurityPostRule with Panorama.
 
     Args:
         name (str): Name of the rule
@@ -66,9 +100,7 @@ class SecurityRule(PanObject):
         data-filtering (str): Data Filtering Security Profile
 
     """
-
-    ROOT = Root.VSYS
-    XPATH = "/rulebase/security/rules"
+    XPATH = "/security/rules"
     SUFFIX = ENTRY
 
     @classmethod
