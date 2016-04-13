@@ -3,6 +3,19 @@
 History
 =======
 
+0.3.2
+-----
+
+Released: 2016-04-13
+
+Status: Alpha
+
+New objects:
+
+* policies.Rulebase
+* policies.PreRulebase
+* policies.PostRulebase
+
 0.3.1
 -----
 

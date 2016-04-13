@@ -71,7 +71,7 @@ class Firewall(PanDevice):
         "ha.HighAvailability",
         "objects.AddressObject",
         "objects.AddressGroup",
-        "policies.SecurityRule",
+        "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",
         "network.LoopbackInterface",

@@ -63,7 +63,8 @@ class DeviceGroup(PanObject):
         "firewall.Firewall",
         "objects.AddressObject",
         "objects.AddressGroup",
-        "policies.SecurityRule",
+        "policies.PreRulebase",
+        "policies.PostRulebase",
     )
 
     @classmethod
@@ -97,7 +98,8 @@ class Panorama(base.PanDevice):
         "firewall.Firewall",
         "objects.AddressObject",
         "objects.AddressGroup",
-        "policies.SecurityRule",
+        "policies.PreRulebase",
+        "policies.PostRulebase",
     )
 
     def __init__(self,
