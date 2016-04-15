@@ -72,7 +72,6 @@ class AddressGroup(PanObject):
         tag (list): Administrative tags
 
     """
-
     ROOT = Root.VSYS
     XPATH = "/address-group"
     SUFFIX = ENTRY
