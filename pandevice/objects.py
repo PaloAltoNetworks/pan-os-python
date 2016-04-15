@@ -81,3 +81,58 @@ class AddressGroup(PanObject):
             Var("dynamic/filter", "dynamic_value"),
             Var("description"),
         )
+
+
+class Tag(PanObject):
+    """Administrative tag
+
+    Args:
+        name (str): Name of the tag
+        color (str): Color ID or name (eg. 'color1', 'color4', 'purple')
+        comments (str): Comments
+
+    """
+    ROOT = Root.VSYS
+    XPATH = "/tag"
+    SUFFIX = ENTRY
+
+    COLOR = {
+        "red":         1,
+        "green":       2,
+        "blue":        3,
+        "yello":       4,
+        "copper":      5,
+        "orange":      6,
+        "purple":      7,
+        "gray":        8,
+        "light green": 9,
+        "cyan":        10,
+        "light gray":  11,
+        "blue gray":   12,
+        "lime":        13,
+        "black":       14,
+        "gold":        15,
+        "brown":       16,
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(Tag, self).__init__(*args, **kwargs)
+        if not hasattr(self, "_color"):
+            self._color = None
+
+    @classmethod
+    def variables(cls):
+        return (
+            Var("color"),
+            Var("comments"),
+        )
+
+    @property
+    def color(self):
+        if self._color in self.COLOR:
+            return "color"+str(self.COLOR[self._color])
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        self._color = value
