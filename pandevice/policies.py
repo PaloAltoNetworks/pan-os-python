@@ -70,12 +70,12 @@ class SecurityRule(PanObject):
 
     Args:
         name (str): Name of the rule
-        from (list): From zones
-        to (list): To zones
+        fromzone (list): From zones
+        tozone (list): To zones
         source (list): Source addresses
         destination (list): Destination addresses
         application (list): Applications
-        service (list): Destination services (ports)
+        service (list): Destination services (ports) (Default: application-default)
         category (list): Destination URL Categories
         action (str): Action to take (deny, allow, drop, reset-client, reset-server, reset-both)
             Note: Not all options are available on all PAN-OS versions.
@@ -84,36 +84,38 @@ class SecurityRule(PanObject):
         log_end (bool): Log at session end
         description (str): Description of this rule
         type (str): 'universal', 'intrazone', or 'intrazone' (Default: universal)
+        tag (list): Administrative tags
         negate_source (bool): Match on the reverse of the 'source' attribute
         negate_destination (bool): Match on the reverse of the 'destination' attribute
         disabled (bool): Disable this rule
-        schedule (str): Schedule for this rule
-        icmp-unreachable (bool): Send ICMP Unreachable
+        schedule (str): Schedule Profile
+        icmp_unreachable (bool): Send ICMP Unreachable
         disable_server_response_inspection (bool): Disable server response inspection
         group (str): Security Profile Group
         virus (str): Antivirus Security Profile
         spyware (str): Anti-Spyware Security Profile
         vulnerability (str): Vulnerability Protection Security Profile
-        url-filtering (str): URL Filtering Security Profile
-        file-blocking (str): File Blocking Security Profile
-        wildfire-analysis (str): Wildfire Analysis Security Profile
-        data-filtering (str): Data Filtering Security Profile
+        url_filtering (str): URL Filtering Security Profile
+        file_blocking (str): File Blocking Security Profile
+        wildfire_analysis (str): Wildfire Analysis Security Profile
+        data_filtering (str): Data Filtering Security Profile
 
     """
+    # TODO: Add QoS variables
     XPATH = "/security/rules"
     SUFFIX = ENTRY
 
     @classmethod
     def variables(cls):
         return (
-            Var("from", vartype="member", default=("any",)),
-            Var("to", vartype="member", default=("any",)),
+            Var("from", "fromzone", vartype="member", default=("any",)),
+            Var("to", "tozone", vartype="member", default=("any",)),
             Var("source", vartype="member", default=("any",)),
             Var("source-user", vartype="member", default=("any",)),
             Var("hip-profiles", vartype="member", default=("any",)),
             Var("destination", vartype="member", default=("any",)),
             Var("application", vartype="member", default=("any",)),
-            Var("service", vartype="member", default=("any",)),
+            Var("service", vartype="member", default=("application-default",)),
             Var("category", vartype="member", default=("any",)),
             Var("action"),
             Var("log-setting"),
@@ -121,6 +123,7 @@ class SecurityRule(PanObject):
             Var("log-end", vartype="bool"),
             Var("description"),
             Var("rule-type", "type", default="universal"),
+            Var("tag", vartype="member"),
             Var("negate-source", vartype="bool"),
             Var("negate-destination", vartype="bool"),
             Var("disabled", vartype="bool"),
