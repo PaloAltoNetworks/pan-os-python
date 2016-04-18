@@ -3,6 +3,18 @@
 History
 =======
 
+0.3.4
+-----
+
+Released: 2016-04-18
+
+Status: Alpha
+
+Added tag variable to the following objects:
+
+* objects.AddressObject
+* objects.AddressGroup
+
 0.3.3
 -----
 
