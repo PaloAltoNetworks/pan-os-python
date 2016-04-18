@@ -42,6 +42,7 @@ class AddressObject(PanObject):
         type (str): Type of object: ip-netmask, ip-range, or fqdn (Default: ip-netmask)
         value (str): IP address or other value of the object
         description (str): Description of this object
+        tag (list): Administrative tags
 
     """
 
@@ -55,6 +56,7 @@ class AddressObject(PanObject):
             Var("(ip-netmask|ip-range|fqdn)", "type", default="ip-netmask"),
             Var("{{type}}", "value"),
             Var("description"),
+            Var("tag", vartype="member"),
         )
 
 
@@ -67,6 +69,7 @@ class AddressGroup(PanObject):
         dynamic_value (str): A dynamic Address Group with a tag string.
             Example of tag string:  "'linux' and 'server' and 'apache'"
         description (str): Description of this group
+        tag (list): Administrative tags
 
     """
 
@@ -80,6 +83,7 @@ class AddressGroup(PanObject):
             Var("static", "static_value", vartype="member"),
             Var("dynamic/filter", "dynamic_value"),
             Var("description"),
+            Var("tag", vartype="member"),
         )
 
 
