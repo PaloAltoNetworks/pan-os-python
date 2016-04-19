@@ -64,6 +64,8 @@ def main():
     parser.add_argument('-q', '--quiet', action='store_true', help="No output")
     parser.add_argument('-u', '--unregister', action='store_true', help="Remove the tags (default is register)")
     parser.add_argument('-c', '--clear', action='store_true', help="Clear all tags. ip and tags arguments are ignored")
+    parser.add_argument('-cat', '--clearalltags', action='store_true', help="Clear all tags from a give ip. Tag arguments is ignored")
+    parser.add_argument('-l', '--list', action='store_true', help="List all tags for a given IP. Tag arguments is ignored")
     # Palo Alto Networks related arguments
     fw_group = parser.add_argument_group('Palo Alto Networks Device')
     fw_group.add_argument('hostname', help="Hostname of Firewall")
@@ -103,7 +105,29 @@ def main():
         sys.exit(1)
 
     if args.clear:
-        device.userid.clear_all_registered_ip()
+        try:
+            device.userid.clear_all_registered_ip()
+        except AttributeError:
+            logging.warning('No registered addresses present')
+        sys.exit(0)
+
+    if args.list:
+        try:
+            tags = device.userid.get_all_tags_for_ip(args.ip)
+            for tag in tags:
+                logging.info(tag)
+            # device.userid.unregister(args.ip, )
+        except KeyError:
+            logging.info('Address %s has no tags', args.ip)
+        sys.exit(0)
+
+    if args.clearalltags:
+        try:
+            tags = device.userid.get_all_tags_for_ip(args.ip)
+            device.userid.unregister(args.ip, tags)
+            logging.info('Removed %s from %s', tags, args.ip)
+        except KeyError:
+            logging.info('Address %s has no tags', args.ip)
         sys.exit(0)
 
     if args.unregister:
