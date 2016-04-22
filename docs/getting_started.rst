@@ -9,7 +9,7 @@ Step 1: Install the App and Add-on
 * `Palo Alto Networks App <https://splunkbase.splunk.com/app/491>`_
 * `Palo Alto Networks Add-on <https://splunkbase.splunk.com/app/2757>`_
 
-First, if upgrading to App v4.1 or 5.0, read the :ref:`Upgrade Guide <upgrade>`.
+First, if upgrading to App 4.1 or 5.0, read the :ref:`Upgrade Guide <upgrade>`.
 
 The Palo Alto Networks Splunk App and Add-on are designed to work together,
 and with Splunk Enterprise Security if available. The Add-on can be used
@@ -18,23 +18,38 @@ without the App.
 .. note:: The Palo Alto Networks App and Add-on must be installed on all
    Searchheads, Indexers, and Heavy Forwarders.
 
-This table indicates when the Add-on (TA) is necessary:
+Compatibility between App and Add-on (TA):
 
 +---------------+--------------------------------------+
 | App           | Add-on (TA)                          |
 +===============+======================================+
-| Version 5.0   | Splunk_TA_paloalto v3.5.0 or higher  |
+| Version 5.1   | Splunk_TA_paloalto 3.6.0 or higher   |
 +---------------+--------------------------------------+
-| Version 4.x   | No TA required                       |
+| Version 5.0   | Splunk_TA_paloalto 3.5.0 or higher   |
 +---------------+--------------------------------------+
-| Version 3.x   | No TA required                       |
+| Version 4.x   | No Add-on required                   |
++---------------+--------------------------------------+
+| Version 3.x   | No Add-on required                   |
 +---------------+--------------------------------------+
 
 .. note:: The Add-on (TA) called TA_paloalto is deprecated and should be
    replaced with Splunk_TA_paloalto.
 
    The latest Add-on (TA) is installed automatically by the App, and does
-   **not** need to be installed separately.
+   not need to be installed separately. In some cluster environments, the
+   App and Add-on should still be installed separately.
+
+Advanced Endpoint Security (Traps) support:
+
++------------------------+--------------------------------------+
+| Traps                  | App / Add-on                         |
++========================+======================================+
+| Traps 3.3.2 and higher | Add-on 3.6.0 and higher              |
++------------------------+--------------------------------------+
+| Traps 3.3.0 and 3.3.1  | Not supported                        |
++------------------------+--------------------------------------+
+| Traps 3.2.x            | App 4.2 to 5.0 or Add-on 3.5.x       |
++------------------------+--------------------------------------+
 
 Install the Palo Alto Networks App by downloading it from the App homepage,
 or by installing it from within Splunk.
@@ -161,7 +176,7 @@ The Palo Alto Networks syslog documentation describes each option in detail:
 https://www.paloaltonetworks.com/documentation/70/pan-os/pan-os/monitoring/use-external-services-for-monitoring.html
 
 **Traps Endpoint Security Manager (ESM) syslog to Splunk:**
-https://www.paloaltonetworks.com/documentation/32/endpoint/endpoint-admin-guide/reports-and-logging/enable-external-reporting-using-the-esm-console.html
+https://www.paloaltonetworks.com/documentation/33/endpoint/endpoint-admin-guide/reports-and-logging/forward-logs-to-a-syslog-server
 
 .. _test:
 
