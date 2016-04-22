@@ -1,4 +1,4 @@
-Palo Alto Networks Add-on for Splunk version 3.5.2
+Palo Alto Networks Add-on for Splunk version 3.6.0
 
 Copyright (C) 2009-2015 Splunk Inc. All Rights Reserved.
  
