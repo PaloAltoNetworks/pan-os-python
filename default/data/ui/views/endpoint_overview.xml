@@ -8,10 +8,10 @@
         <latestTime>now</latestTime>
       </default>
     </input>
-    <input type="text" token="process">
+    <input type="text" token="file_name">
         <label>Process</label>
         <default/>
-        <prefix>log.ProcessName="</prefix>
+        <prefix>log.file_name="</prefix>
         <suffix>"</suffix>
     </input>
     <input type="text" token="user">
@@ -20,19 +20,19 @@
         <prefix>log.user="</prefix>
         <suffix>"</suffix>
     </input>
-    <input type="text" token="hostname">
+    <input type="text" token="src">
         <label>Hostname</label>
         <default/>
-        <prefix>log.dhost="</prefix>
+        <prefix>log.src="</prefix>
         <suffix>"</suffix>
     </input>
-    <input type="dropdown" token="epm">
+    <input type="dropdown" token="signature">
         <label>Endpoint Module</label>
         <default/>
-        <prefix>log.epm="</prefix>
+        <prefix>log.signature="</prefix>
         <suffix>"</suffix>
         <choice value="">ANY</choice>
-        <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_ep_dropdown(log.event, log.epm)`</populatingSearch>
+        <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_ep_dropdown(log.attacks, log.signature)`</populatingSearch>
     </input>
     <input type="dropdown" token="severity">
         <label>Severity</label>
@@ -45,16 +45,16 @@
     <input type="dropdown" token="action">
         <label>Action</label>
         <default/>
-        <prefix>log.PreventionMode="</prefix>
+        <prefix>log.log_subtype="</prefix>
         <suffix>"</suffix>
         <choice value="">ANY</choice>
-        <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_ep_dropdown(log.event, log.PreventionMode)`</populatingSearch>
+        <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_ep_dropdown(log.attacks, log.log_subtype)`</populatingSearch>
     </input>
   </fieldset>
   <row>
       <chart>
-        <title>Logs by Subtype</title>
-        <searchString>| `pan_tstats` count FROM `ep_node` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(_time log.log_subtype)` | timechart values(count) by log_subtype</searchString>
+        <title>Logs by Type</title>
+        <searchString>| `pan_tstats` count FROM `ep_node` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(_time log.type)` | timechart values(count) by type</searchString>
         <earliestTime>$earliest$</earliestTime>
         <latestTime>$latest$</latestTime>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -85,7 +85,7 @@
       </chart>
       <chart>
         <title>Logs by Severity</title>
-        <searchString>| `pan_tstats` count FROM `ep_node` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(_time log.severity)` | timechart values(count) by severity</searchString>
+        <searchString>| `pan_tstats` count FROM `ep_node` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(_time log.severity)` | timechart values(count) by severity</searchString>
         <earliestTime>$earliest$</earliestTime>
         <latestTime>$latest$</latestTime>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -118,7 +118,7 @@
   <row>
       <chart>
         <title>Targeted Applications</title>
-        <searchString>| `pan_tstats` count FROM `ep_node(log.event)` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(log.ProcessName)`</searchString>
+        <searchString>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.file_name)`</searchString>
         <earliestTime>$earliest$</earliestTime>
         <latestTime>$latest$</latestTime>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -149,7 +149,7 @@
       </chart>
       <chart>
         <title>Targeted Machines</title>
-        <searchString>| `pan_tstats` count FROM `ep_node(log.event)` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(log.dhost)`</searchString>
+        <searchString>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.src)`</searchString>
         <earliestTime>$earliest$</earliestTime>
         <latestTime>$latest$</latestTime>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -180,7 +180,7 @@
       </chart>
       <chart>
         <title>Targeted Users</title>
-        <searchString>| `pan_tstats` count FROM `ep_node(log.event)` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(log.user)`</searchString>
+        <searchString>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.user)`</searchString>
         <earliestTime>$earliest$</earliestTime>
         <latestTime>$latest$</latestTime>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -213,7 +213,7 @@
   <row>
       <chart>
         <title>Endpoint Module</title>
-        <searchString>| `pan_tstats` count FROM `ep_node(log.event)` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(log.epm)`</searchString>
+        <searchString>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.signature)`</searchString>
         <earliestTime>$earliest$</earliestTime>
         <latestTime>$latest$</latestTime>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -244,7 +244,7 @@
       </chart>
       <chart>
         <title>Action</title>
-        <searchString>| `pan_tstats` count FROM `ep_node(log.event)` $process$ $user$ $hostname$ $epm$ $severity$ $action$ `groupby(log.PreventionMode)`</searchString>
+        <searchString>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.log_subtype)`</searchString>
         <earliestTime>$earliest$</earliestTime>
         <latestTime>$latest$</latestTime>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -269,21 +269,6 @@
               <link>
                   <![CDATA[
               /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
-	        ]]>
-              </link>
-          </drilldown>
-      </chart>
-  </row>
-  <row>
-      <chart>
-        <title>Heartbeats by Endpoint Server</title>
-          <searchString>| `pan_tstats` count FROM `ep_node(log.heartbeat)` $hostname$ `groupby(_time log.dhost)` | timechart values(count) by dhost</searchString>
-        <earliestTime>-7d@h</earliestTime>
-        <latestTime>now</latestTime>
-          <drilldown>
-              <link>
-                  <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` log_subtyp="heartbeat" dhost="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
 	        ]]>
               </link>
           </drilldown>
