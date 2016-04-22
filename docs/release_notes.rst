@@ -8,20 +8,38 @@ Version 5.0.x is a major release that re-architects the Palo Alto Networks App b
 into an App and an Add-on. The `Palo Alto Networks Add-on`_ is included in the
 `Palo Alto Networks App`_ and is installed or upgraded automatically with the App.
 
-App v5.0.1
+App v5.1.0
 ==========
+
+* Datamodel updated to support new Traps 3.3.2 fields
+* Endpoint Dashboard updated to support new Traps 3.3.2 fields
+
+WARNING: Traps versions before 3.3.2 are no longer supported beginning with this App version
+
+Add-on v3.6.0
+=============
+
+* Support new Traps 3.3.2 log format
+
+WARNING: Traps versions before 3.3.2 are no longer supported beginning with this Add-on version
+
+
+Previous Versions
+=================
+
+App v5.0.1
+----------
 
 * Fix error when using pantag command with single firewall
 * Fix error when using pancontentpack command
 * Improved searchbar command logging
 
-Add-on v3.5.2
-=============
+
+Add-on v3.5.3
+-------------
 
 * Fix issue where endpoint logs would show up in CIM apps, but not Palo Alto Networks app
 
-Previous Versions
-=================
 
 App v5.0.0
 ----------
