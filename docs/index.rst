@@ -16,6 +16,7 @@ The latest documentation is available at http://pansplunk.readthedocs.org
    advanced
    userid
    commands
+   universal_forwarder
    faq
    troubleshoot
    support
