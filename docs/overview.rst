@@ -24,9 +24,14 @@ error-prone data mining can now be completed in a fraction of the time,
 saving not only manpower but also enabling key enterprise security
 resources to focus on critical, time-sensitive investigations.
 
-**App Author**: Brian Torres-Gil -- `email <mailto:btorres-gil@paloaltonetworks.com>`_ -
+**App Author**: 
+Brian Torres-Gil -- `email <mailto:btorres-gil@paloaltonetworks.com>`_ -
 `splunkbase <https://answers.splunk.com/users/183886/btorresgil.html>`_ -
 `github <https://github.com/btorresgil>`_
+
+Paul Nguyen -- `email <mailto:panguy@paloaltonetworks.com>`_ -
+`splunkbase <https://answers.splunk.com/users/408229/panguy.html?>`_ -
+`github <https://github.com/paulmnguyen>`_
 
 Splunk Version Compatibility
 ----------------------------

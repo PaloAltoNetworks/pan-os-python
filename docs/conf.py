@@ -55,9 +55,9 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = u'Splunk for Palo Alto Networks'
-copyright = u'2015, Brian Torres-Gil'
-author = u'Brian Torres-Gil'
+project = u'Palo Alto Networks App for Splunk'
+copyright = u'2015-2016, Palo Alto Networks, Inc.'
+author = u'Palo Alto Networks, Inc.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
