@@ -1,0 +1,86 @@
+/* CSS styles specific to this presentation */
+.pan-green {
+  color: #99b827; }
+
+.pan-blue {
+  color: #246D9A; }
+
+.reveal section img.noborder {
+  border: none;
+  background: none;
+  box-shadow: none; }
+
+.reveal section .svg-arrow {
+  fill: #dcfcff;
+  height: 30px;
+  width: 100px;
+  margin: auto 10px; }
+
+.reveal section .diagram {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center; }
+
+.reveal section .diagram img {
+  margin-top: 0;
+  margin-bottom: 0; }
+
+.reveal section .header {
+  margin-bottom: 0; }
+
+.reveal section img.server {
+  height: 100px;
+  margin: auto 0; }
+
+.reveal section .left {
+  text-align: left; }
+
+.reveal section .literal {
+  background: #555; }
+
+#instructions {
+  margin-top: 70px;
+  margin-left: 250px;
+  text-align: left;
+  font-size: 60%; }
+
+#connectivity .diagram {
+  margin-bottom: 30px; }
+
+#highavailability div {
+  position: relative; }
+
+#highavailability #ha-line {
+  position: absolute;
+  top: 100px;
+  z-index: -1; }
+
+#highavailability #ha-line-text {
+  position: absolute;
+  top: 83px;
+  left: 455px;
+  z-index: -1;
+  font-size: 40%;
+  color: #dcfcff; }
+
+#exceptions .diagram {
+  margin-top: 40px;
+  margin-bottom: 50px; }
+
+#moreinformation a {
+  color: #fff;
+  vertical-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: larger; }
+
+#moreinformation img {
+  height: 80px; }
+
+#moreinformation #clickhere {
+  margin-top: 80px;
+  margin-bottom: 10px; }
+
+#moreinformation #gitter {
+  margin-left: 25px; }

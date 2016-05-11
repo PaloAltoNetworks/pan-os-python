@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg:svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   version="1.1"
+   width="100"
+   height="30"
+   viewBox="0 0 1000 300"
+   xml:space="preserve">
+   
+   <svg:polygon
+           points="0,200 700,200 700,300 1000,150 700,0 700,100 0,100 0,200"/>
+   
+</svg:svg>

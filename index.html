@@ -4,13 +4,16 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Palo Alto Networks Device Framework</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+		<link rel="stylesheet" href="css/theme/league.css">
+		<link rel="stylesheet" href="css/custom.css">
 
 		<!-- Theme used for syntax highlighting of code -->
 		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<script src="lib/js/jquery-2.2.3.min.js"></script>
 
 		<!-- Printing and PDF exports -->
 		<script>
@@ -24,13 +27,311 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+
+
+				<section id="start">
+					<h1><span class="pan-blue">Palo Alto Networks</span>
+						<span class="pan-green">Device Framework</span></h1>
+					<!--Press <span style="background: #555">&lt;spacebar&gt;</span> to progress through the presentation-->
+					<div id="instructions">
+						<span style="font-weight: bold">Instructions:</span><br/>
+						<span class="literal">arrow keys</span> - navigate slides<br/>
+						<span class="literal">down arrow</span> - on a slide for code examples<br/>
+						<span class="literal">spacebar</span> - progress through all slides and code examples<br/>
+						<span class="literal">esc</span> - slide overview
+                    </div>
+				</section>
+
+
+				<section id="whatispandevice">
+					<h2>What is pandevice?</h2>
+
+					<span class="pan-green left">Palo Alto Networks Device Framework (pandevice)</span> is a python
+					library for interacting with a<br/>Next-generation Firewall or Panorama.
+
+					<pre><code class="python">python
+>>> import pandevice</code></pre>
+				</section>
+
+				<section id="advantages">
+					<h2>7 reasons you should use<br/><span class="pan-blue">PanDevice Framework</span><br/>for all your API calls</h2>
+
+				</section>
+
+				<section>
+                    <section id="connectivity">
+                        <h2>1. Easy <span class="pan-green">connectivity</span></h2>
+
+                        <div>
+                            <div class="header">Direct to Firewall</div>
+                            <div class="diagram">
+                                <img class="noborder server" src="img/server.png"/>
+                                <img class="noborder svg svg-arrow" src="img/arrow-east.svg"/>
+                                <img class="noborder" src="img/firewall-5k.png"/>
+                            </div>
+                        </div>
+						<div>
+							<div class="header">Direct to Panorama</div>
+							<div class="diagram">
+								<img class="noborder server" src="img/server.png"/>
+								<img class="noborder svg svg-arrow" src="img/arrow-east.svg"/>
+								<img class="noborder" src="img/panorama.png"/>
+							</div>
+						</div>
+                        <div>
+                            <div class="header">Panorama as proxy</div>
+                            <div class="diagram">
+                                <img class="noborder server" src="img/server.png"/>
+                                <img class="noborder svg svg-arrow" src="img/arrow-east.svg"/>
+                                <img class="noborder" src="img/panorama.png"/>
+                                <img class="noborder svg svg-arrow" src="img/arrow-east.svg"/>
+                                <img class="noborder" src="img/firewall-5k.png"/>
+                            </div>
+                        </div>
+                    </section>
+					<section id="connectivity-code">
+						Direct to Firewall
+						<pre><code class="python"># Instantiate a Firewall with hostname and credentials
+fw = Firewall("10.0.0.1", "admin", "mypassword")</code></pre>
+						Direct to Panorama
+						<pre><code class="python"># Instantiate a Panorama with hostname and credentials
+pano = Panorama("10.0.0.5", "admin", "mypassword")</code></pre>
+						Panorama as proxy
+						<pre><code class="python"># Instantiate a Panorama with hostname and credentials
+pano = Panorama("10.0.0.5", "admin", "mypassword")
+# Instantiate a Firewall with serial
+fw = Firewall(serial="0002487YR3880")
+# Add the Firewall as a child of Panorama
+pano.add(fw)</code></pre>
+					</section>
+                </section>
+
+				<section>
+                    <section id="objectmodel" data-background="img/objectmodel.png">
+                        <h2>2. Config <span class="pan-green">Object Model</span></h2>
+
+                        <ul>
+                            <li>Structure device configuration with objects</li>
+                            <li>Pull objects from live firewalls or Panorama</li>
+                            <li>Easily compare configuration</li>
+                        </ul>
+                    </section>
+
+					<section id="objectmodel-code" data-background="img/objectmodel.png">
+						Create an address object
+						<pre><code class="python"># Instantiate a Firewall with hostname and credentials
+fw = Firewall('10.0.0.1', 'admin', 'mypassword')
+# Create an address object
+webserver = AddressObject("Apache-webserver", "5.5.5.5")
+# Add the address object as a child of the firewall object
+fw.add(webserver)
+# Create the address object on the live firewall device
+webserver.create()</code></pre>
+					</section>
+				</section>
+
+
+				<section>
+                    <section id="vsys">
+                        <h2>3. <span class="pan-green">VSYS</span> aware</h2>
+
+                        <div>
+                            <img class="noborder" style="margin-right: 50px;" src="img/vsys1.png"/>
+                            <img class="noborder" src="img/vsys2.png"/>
+                        </div>
+
+                        <ul>
+                            <li>Each firewall object represents a VSYS</li>
+                            <li>Objects under a Firewall are scoped to that VSYS</li>
+                            <li>Native separation of administrative domains for tenants</li>
+                        </ul>
+                    </section>
+					<section id="vsys-code">
+						Working with VSYS
+						<pre><code class="python"># Instantiate a Firewall object that represents vsys2
+fw_vsys2 = Firewall("10.0.0.1", "admin", "mypassword", vsys="vsys2")
+# Instantiate a Firewall object that represents vsys3
+fw_vsys3 = Firewall("10.0.0.1", "admin", "mypassword", vsys="vsys3")
+# Add an address object to vsys3
+fw_vsys3.add(AddressObject("MyIP", "2.2.2.2")).create()</code></pre>
+					</section>
+                </section>
+
+
+				<section>
+                    <section id="highavailability">
+                        <h2>4. <span class="pan-green">High Availability</span> Aware</h2>
+
+                        <div>
+                            <svg id="ha-line" height="10" width="200">
+                                <line x1="0" y1="0" x2="200" y2="0" style="stroke:#dcfcff;stroke-width:8"></line>
+                            </svg>
+                            <div id="ha-line-text">HA link</div>
+                            <img class="noborder" style="margin-right: 50px;" src="img/firewall-7k.png"/>
+                            <img class="noborder" src="img/firewall-7k.png"/>
+                        </div>
+
+                        <ul>
+                            <li>Failed API calls automatically retry on the HA unit</li>
+                            <li>Each config object knows it applies to one or both devices</li>
+							<li>Firewall and Panorama High Availability</li>
+                        </ul>
+
+                    </section>
+					<section id="highavailability-code">
+						Working with Firewall HA Pairs
+						<pre><code class="python"># Instantiate two firewall objects
+fw_1 = Firewall("10.0.0.1", "admin", "mypassword")
+fw_2 = Firewall("10.0.0.2", "admin", "mypassword")
+# Set as HA pair
+fw_1.set_ha_peer(fw_2)
+fw1.refresh_active()
+# Create an address object
+# (performed on active unit, not necessarily fw_1)
+fw_1.add(AddressObject("MyIP", "2.2.2.2")).create()
+# Commit on active unit syncs address object to passive unit
+fw_1.commit()</code></pre>
+					</section>
+                </section>
+
+
+				<section>
+                    <section id="exceptions">
+                        <h2>5. Exception <span class="pan-green">classification</span></h2>
+
+                        <div class="diagram">
+                            <img class="noborder" src="img/classify_errors.png">
+                        </div>
+
+                        Find and handle specific exceptions
+                    </section>
+					<section id="exceptions-code">
+						Ignore one exception and handle another
+						<pre><code class="python"># Instantiate a firewall object
+fw = Firewall("10.0.0.1", "admin", "mypassword")
+try:
+    # Issue a commit that throws exceptions on error
+    fw.commit(sync=True, exceptions=True)
+except PanCommitNotNeeded:
+    # Ignore
+    pass
+except PanCommitFailed as e:
+    # Display the error and continue
+    print "Error while committing: %s" % str(e)</code></pre>
+                    </section>
+				</section>
+
+
+				<section>
+                    <section id="userid">
+                        <h2>6. Batch <span class="pan-green">User-ID</span> changes</h2>
+
+						<div>
+							<img class="noborder" src="img/userid.png">
+						</div>
+
+                        <ul>
+                            <li>Push multiple dynamic changes in a single API call</li>
+                            <li>Propagate dynamic changes to all firewalls</li>
+                        </ul>
+
+                    </section>
+					<section id="userid-code">
+						Combine User-ID events into one API call
+						<pre><code class="python"># Instantiate a Firewall object
+fw = Firewall("10.0.0.1", "admin", "mypassword")
+# Begin a batch User-ID operation
+fw.userid.batch_start()
+# Add two login events to the batch
+fw.userid.logins([("user1", "4.4.4.4"), ("user2", "5.5.5.5")])
+# Add a logout event to the batch
+fw.userid.logout("user3", "3.3.3.3")
+# Register an IP with 4 tags added to the batch
+fw.userid.register("2.2.2.2", ("linux", "server", "apache", "web"))
+# Close the batch and send in a single API call to the live device
+fw.userid.batch_end()</code></pre>
+					</section>
+				</section>
+
+
+				<section>
+                    <section id="pan-python">
+                        <h2>7. Enhances <span class="pan-green">pan-python</span></h2>
+
+                        Pan-python is under the hood.<br/>Use pandevice the same places you use pan-python...
+
+                        <div style="margin-top: 30px;">
+                            ...with all the pandevice benefits:
+                            <div style="margin-top: 30px;">
+                                <ul>
+                                    <li>Easy connectivity</li>
+                                    <li>VSYS</li>
+                                    <li>High Availability</li>
+                                    <li>etc</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+					<section id="pan-python-code">
+						<pre><code class="python"># 'show clock' with pan-python
+apikey = PanXapi(None, "admin", "mypassword", None, "10.0.1.1").keygen()
+xapi = PanXapi(hostname="10.0.1.1", api_key=apikey)
+xapi.op("show clock", cmd_xml=False)
+
+# 'show clock' with pandevice
+fw = Firewall("10.0.0.1", "admin", "mypassword")
+fw.xapi.op("show clock", cmd_xml=False)</code></pre>
+					</section>
+				</section>
+
+				<section id="moreinformation">
+					<h2>What are you waiting for?</h2>
+
+					<div id="clickhere">Click the <span class="pan-green">logos</span> for more information:</div>
+					<div><a href="https://github.com/PaloAltoNetworks/pandevice"><img id="github" class="noborder" src="img/github.png" alt="GitHub"></a></div>
+					<div><a href="http://pandevice.readthedocs.io/"><img id="readthedocs" class="noborder" src="img/readthedocs.png" alt="Read the docs"></a></div>
+					<div><a href="https://gitter.im/PaloAltoNetworks/pandevice">Chat on <img id="gitter" class="noborder" src="img/gitter.png" alt="Gitter"></a></div>
+				</section>
+
 			</div>
 		</div>
 
 		<script src="lib/js/head.min.js"></script>
 		<script src="js/reveal.js"></script>
+
+		<script>
+			/*
+			 * Replace all SVG images with inline SVG
+			 */
+			jQuery('img.svg').each(function(){
+				var $img = jQuery(this);
+				var imgID = $img.attr('id');
+				var imgClass = $img.attr('class');
+				var imgURL = $img.attr('src');
+
+				jQuery.get(imgURL, function(data) {
+					// Get the SVG tag, ignore the rest
+					var $svg = jQuery(data).find('svg');
+
+					// Add replaced image's ID to the new SVG
+					if(typeof imgID !== 'undefined') {
+						$svg = $svg.attr('id', imgID);
+					}
+					// Add replaced image's classes to the new SVG
+					if(typeof imgClass !== 'undefined') {
+						$svg = $svg.attr('class', imgClass+' replaced-svg');
+					}
+
+					// Remove any invalid XML tags as per http://validator.w3.org
+					$svg = $svg.removeAttr('xmlns:a');
+
+					// Replace image with new SVG
+					$img.replaceWith($svg);
+
+				}, 'xml');
+
+			});
+		</script>
 
 		<script>
 			// More info https://github.com/hakimel/reveal.js#configuration
