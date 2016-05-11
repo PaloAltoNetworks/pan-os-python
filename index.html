@@ -274,8 +274,8 @@ fw.userid.batch_end()</code></pre>
                     </section>
 					<section id="pan-python-code">
 						<pre><code class="python"># 'show clock' with pan-python
-apikey = PanXapi(None, "admin", "mypassword", None, "10.0.1.1").keygen()
-xapi = PanXapi(hostname="10.0.1.1", api_key=apikey)
+key = PanXapi(None, "admin", "mypassword", None, "10.0.1.1").keygen()
+xapi = PanXapi(hostname="10.0.1.1", api_key=key)
 xapi.op("show clock", cmd_xml=False)
 
 # 'show clock' with pandevice
