@@ -43,7 +43,7 @@
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.traffic.end, log.action)`</populatingSearch>
     </input>
   </fieldset>
-  <searchTemplate>| `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.app:category log.app:subcategory log.user log.bytes)`</searchTemplate>
+  <search>| `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.app:category log.app:subcategory log.user log.bytes)`</search>
   <row>
     <single>
       <searchPostProcess>stats dc(app)</searchPostProcess>

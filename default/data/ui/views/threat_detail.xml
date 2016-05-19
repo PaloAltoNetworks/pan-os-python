@@ -32,10 +32,10 @@
       <suffix>"</suffix>
     </input>
   </fieldset>
-  <searchTemplate>| `pan_tstats` values(sourcetype) as sourcetype values(log.threat_name) as threat_name sum(log.bytes) as bytes sum(log.duration) as duration
+  <search>| `pan_tstats` values(sourcetype) as sourcetype values(log.threat_name) as threat_name sum(log.bytes) as bytes sum(log.duration) as duration
         FROM datamodel="pan_firewall" WHERE (nodename="log.traffic" OR (nodename="log.threat" $threat_name$)) $user$ $app$ $location$
         `groupby(log.session_id log.user log.server_ip log.app log.server_location)`
-        | search sourcetype="pan:threat" bytes!="" server_location!="" user!="" | eval KB=bytes/1024</searchTemplate>
+        | search sourcetype="pan:threat" bytes!="" server_location!="" user!="" | eval KB=bytes/1024</search>
   <earliestTime>$earliest$</earliestTime>
   <latestTime>$latest$</latestTime>
   <row>

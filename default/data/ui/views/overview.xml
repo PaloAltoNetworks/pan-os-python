@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><dashboard>
   <label>Overview</label>
   <description/>
-  <searchTemplate>`pan_logs` | fillnull value="" | stats count by host sourcetype log_subtype action category</searchTemplate>
+  <search>`pan_logs` | fillnull value="" | stats count by host sourcetype log_subtype action category</search>
   <earliestTime>rt-5m</earliestTime>
   <latestTime>rt</latestTime>
   <row>
