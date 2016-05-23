@@ -5,8 +5,8 @@
     <query>
       `pan_logs` | fillnull value="" | stats count by host sourcetype log_subtype action category
     </query>
-    <earliestTime>rt-5m</earliestTime>
-    <latestTime>rt</latestTime>
+    <earliest>rt-5m</earliest>
+    <latest>rt</latest>
   </search>
   <row>
     <single>
@@ -14,8 +14,8 @@
         <query>
           stats dc(host)
         </query>
-        <earliestTime>rt-5m</earliestTime>
-        <latestTime>rt</latestTime>
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
       </search>
       <option name="underLabel">PAN Reporting</option>
     </single>
@@ -24,8 +24,8 @@
         <query>
           stats sum(count) as sum count(count) | eval sum=if(isnull(sum),0,sum)
         </query>
-        <earliestTime>rt-5m</earliestTime>
-        <latestTime>rt</latestTime>
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
       </search>
       <option name="underLabel">Total Events</option>
     </single>
@@ -34,8 +34,8 @@
         <query>
           search action=block* OR action=deny | stats sum(count) as sum count(count) | eval sum=if(isnull(sum),0,sum)
         </query>
-        <earliestTime>rt-5m</earliestTime>
-        <latestTime>rt</latestTime>
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
       </search>
       <option name="underLabel">Total Blocks</option>
     </single>
@@ -45,8 +45,8 @@
           search sourcetype="pan:traffic" category!="any" category!="private-ip-addresses" category!="not-resolved"  | sort -count | head 1 | stats values(category) as category count(category) | eval category=if(isnull(category),"---",category)
         </query
         >
-        <earliestTime>rt-5m</earliestTime>
-        <latestTime>rt</latestTime>
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
       </search>
       <option name="underLabel">Top URL Category</option>
     </single>
@@ -58,8 +58,8 @@
         <query>
           `pan_logs` sourcetype="pan:*" log_subtype="*" | timechart span=10s count by log_subtype
         </query>
-        <earliestTime>rt-5m</earliestTime>
-        <latestTime>rt</latestTime>
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
       </search>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
@@ -104,8 +104,8 @@
       <search>
         <query>`pan_traffic` | stats sparkline sum(bytes) AS sbytes by app vsys src_zone | sort -sbytes | head 8 | eval Application=upper(app) | eval "Vol in MB"=round(sbytes/1024/1024) |rename sparkline AS Distribution | rename vsys AS VSYS| rename src_zone AS "Src Zone" | table Application VSYS "Src Zone" "Vol in MB" Distribution
         </query>
-        <earliestTime>rt-5m</earliestTime>
-        <latestTime>rt</latestTime>
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
       </search>
       <option name="afterLabel">Total Events</option>
       <option name="dataOverlayMode">none</option>
@@ -129,8 +129,8 @@
         <query>
           eventtype="pan_newapps" | dedup app{@name} sortby +_time | sort -_time | table _time app{@name} app.technology app.category app.subcategory app.risk | convert timeformat="%m/%d/%y" ctime(_time) | rename _time AS "Date added" | rename app{@name} AS Name | rename app.technology AS Technology | rename app.category AS Category | rename app.subcategory AS Subcategory | rename app.risk AS Risk
         </query>
-        <earliestTime>-2w@w</earliestTime>
-        <latestTime>now</latestTime>
+        <earliest>-2w@w</earliest>
+        <latest>now</latest>
       </search>
       <option name="list.drilldown">full</option>
       <option name="list.wrap">1</option>
@@ -153,8 +153,8 @@
         <query>
           `pan_traffic` | iplocation "dest_ip" | geostats count by app
         </query>
-        <earliestTime>rt-5m</earliestTime>
-        <latestTime>rt</latestTime>
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
       </search>
     </map>
   </row>
