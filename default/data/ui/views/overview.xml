@@ -101,7 +101,6 @@
         <earliest>rt-5m</earliest>
         <latest>rt</latest>
       </search>
-      <option name="afterLabel">Total Events</option>
       <option name="dataOverlayMode">none</option>
       <option name="displayRowNumbers">true</option>
       <option name="drilldown">cell</option>
