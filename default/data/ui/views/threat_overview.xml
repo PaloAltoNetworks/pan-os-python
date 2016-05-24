@@ -3,8 +3,8 @@
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m</earliestTime>
-        <latestTime>now</latestTime>
+        <earliest>-60m</earliest>
+        <latest>now</latest>
       </default>
     </input>
     <input type="text" token="src_ip">
@@ -53,9 +53,13 @@
   <row>
     <chart>
       <title>Threat Subtypes</title>
-      <searchString>| `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(_time log.log_subtype)` | timechart values(count) by log_subtype</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(_time log.log_subtype)` | timechart values(count) by log_subtype
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">collapsed</option>
       <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
@@ -73,15 +77,19 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/threat_overview?form.log_subtype=$click.name2$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Severity</title>
-      <searchString>| `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(_time log.severity)` | timechart values(count) by severity</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(_time log.severity)` | timechart values(count) by severity
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">collapsed</option>
       <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
@@ -99,7 +107,7 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/search?q=`pan_threat` severity="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </chart>
@@ -107,9 +115,13 @@
   <row>
     <chart>
       <title>Threats</title>
-      <searchString>| `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.threat_name)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.threat_name)`
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -127,15 +139,19 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/threat_detail?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Threats by App</title>
-      <searchString>| `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.app)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.app)`
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -153,15 +169,19 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/threat_detail?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Threats by User</title>
-      <searchString>| `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.user)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.user)`
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -179,7 +199,7 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/threat_detail?form.$click.name$=$click.value$&earliest=$earliest$&latest=$latest$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </chart>
@@ -187,9 +207,13 @@
   <row>
     <chart>
       <title>Source IP</title>
-      <searchString>| `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.src_ip)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.src_ip)`
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -207,15 +231,19 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/search?q=`pan_threat` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Threats by Severity</title>
-      <searchString>| `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.severity)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.severity)`
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -233,15 +261,19 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/search?q=`pan_threat` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Destination IP</title>
-      <searchString>| `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.dest_ip)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.threat)` $src_ip$ $dest_ip$ $log_subtype$ $threat_name$ $vsys$ $app$ `groupby(log.dest_ip)`
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -259,7 +291,7 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/search?q=`pan_threat` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </chart>

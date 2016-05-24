@@ -4,8 +4,8 @@
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m</earliestTime>
-        <latestTime>now</latestTime>
+        <earliest>-60m</earliest>
+        <latest>now</latest>
       </default>
     </input>
     <input type="text" token="src_ip">
@@ -47,6 +47,8 @@
     <query>
       | `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.app:category log.app:subcategory log.user log.bytes)`
     </query>
+    <earliest>$earliest$</earliest>
+    <latest>$latest$</latest>
   </search>
   <row>
     <single>
@@ -54,8 +56,6 @@
         <query>
           stats dc(app)
         </query>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
       </search>
       <option name="drilldown">none</option>
       <option name="underLabel">SaaS Applications</option>
@@ -65,8 +65,6 @@
         <query>
           stats dc(user)
         </query>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
       </search>
       <option name="drilldown">none</option>
       <option name="underLabel">Users</option>
@@ -76,8 +74,6 @@
         <query>
           stats sum(bytes) AS sbytes | sort -sbytes | eval "Vol in MB"=round(sbytes/1024/1024) | table "Vol in MB"
         </query>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
       </search>
       <option name="drilldown">none</option>
       <option name="underLabel">Megabytes</option>
@@ -101,8 +97,6 @@
           <query>
             timechart count by app
           </query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
         </search>
         <option name="charting.chart">area</option>
         <option name="charting.axisY2.enabled">false</option>
@@ -141,8 +135,6 @@
           <query>
             stats sparkline count sum(bytes) AS sbytes by app app:category app:subcategory | sort -sbytes | head 8 | eval "Vol in MB"=round(sbytes/1024/1024) | rename sparkline AS distribution | rename vsys AS VSYS | rename count as Sessions | table app app:category app:subcategory Sessions "Vol in MB" distribution
           </query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
         </search>
         <option name="wrap">true</option>
         <option name="rowNumbers">false</option>
@@ -190,8 +182,6 @@
           <query>
             stats count by app:is_sanctioned_saas | replace no with Non-sanctioned in app:is_sanctioned_saas | replace yes with Sanctioned in app:is_sanctioned_saas | sort -count
           </query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
         </search>
         <option name="charting.chart">pie</option>
         <option name="charting.axisY2.enabled">false</option>
@@ -228,8 +218,6 @@
           <query>
             stats sum(bytes) AS sbytes count as Sessions dc(user) as Users by app:is_sanctioned_saas | replace no with Non-sanctioned in app:is_sanctioned_saas | replace yes with Sanctioned in app:is_sanctioned_saas | sort -sbytes | eval "Megabytes"=round(sbytes/1024/1024) | rename app:is_sanctioned_saas as SaaS | table SaaS Users Megabytes Sessions
           </query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
         </search>
         <option name="wrap">true</option>
         <option name="rowNumbers">false</option>
@@ -252,8 +240,6 @@
           <query>
             search app:is_sanctioned_saas="yes" | top limit=100 app
           </query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
         </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
@@ -290,8 +276,6 @@
           <query>
             search app:is_sanctioned_saas="no" | top limit=100 app
           </query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
         </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
@@ -330,8 +314,6 @@
           <query>
             search app:is_sanctioned_saas="yes" | top limit=5 app:subcategory
           </query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
         </search>
         <option name="charting.chart">bar</option>
         <option name="charting.axisY2.enabled">false</option>
@@ -368,8 +350,6 @@
           <query>
             search app:is_sanctioned_saas="no" | top limit=5 app:subcategory
           </query>
-          <earliest>$earliest$</earliest>
-          <latest>$latest$</latest>
         </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>

@@ -14,8 +14,6 @@
         <query>
           stats dc(host)
         </query>
-        <earliest>rt-5m</earliest>
-        <latest>rt</latest>
       </search>
       <option name="underLabel">PAN Reporting</option>
     </single>
@@ -24,8 +22,6 @@
         <query>
           stats sum(count) as sum count(count) | eval sum=if(isnull(sum),0,sum)
         </query>
-        <earliest>rt-5m</earliest>
-        <latest>rt</latest>
       </search>
       <option name="underLabel">Total Events</option>
     </single>
@@ -34,8 +30,6 @@
         <query>
           search action=block* OR action=deny | stats sum(count) as sum count(count) | eval sum=if(isnull(sum),0,sum)
         </query>
-        <earliest>rt-5m</earliest>
-        <latest>rt</latest>
       </search>
       <option name="underLabel">Total Blocks</option>
     </single>

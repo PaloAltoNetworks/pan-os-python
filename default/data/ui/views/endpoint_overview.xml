@@ -4,8 +4,8 @@
     <input type="time" searchWhenChanged="true">
       <label>Time Range</label>
       <default>
-        <earliestTime>-60m</earliestTime>
-        <latestTime>now</latestTime>
+        <earliest>-60m</earliest>
+        <latest>now</latest>
       </default>
     </input>
     <input type="text" token="file_name">
@@ -54,9 +54,13 @@
   <row>
       <chart>
         <title>Logs by Type</title>
-        <searchString>| `pan_tstats` count FROM `ep_node` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(_time log.type)` | timechart values(count) by type</searchString>
-        <earliestTime>$earliest$</earliestTime>
-        <latestTime>$latest$</latestTime>
+        <search>
+          <query>
+            | `pan_tstats` count FROM `ep_node` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(_time log.type)` | timechart values(count) by type
+          </query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -79,15 +83,19 @@
           <link>
             <![CDATA[
               /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` log_subtype="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
-	        ]]>
+          ]]>
           </link>
         </drilldown>
       </chart>
       <chart>
         <title>Logs by Severity</title>
-        <searchString>| `pan_tstats` count FROM `ep_node` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(_time log.severity)` | timechart values(count) by severity</searchString>
-        <earliestTime>$earliest$</earliestTime>
-        <latestTime>$latest$</latestTime>
+        <search>
+          <query>
+            | `pan_tstats` count FROM `ep_node` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(_time log.severity)` | timechart values(count) by severity
+          </query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -110,7 +118,7 @@
           <link>
             <![CDATA[
               /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` severity="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
-	        ]]>
+          ]]>
           </link>
         </drilldown>
       </chart>
@@ -118,9 +126,13 @@
   <row>
       <chart>
         <title>Targeted Applications</title>
-        <searchString>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.file_name)`</searchString>
-        <earliestTime>$earliest$</earliestTime>
-        <latestTime>$latest$</latestTime>
+        <search>
+          <query>
+            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.file_name)`
+          </query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">visible</option>
@@ -143,15 +155,19 @@
           <link>
             <![CDATA[
               /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
-	        ]]>
+          ]]>
           </link>
         </drilldown>
       </chart>
       <chart>
         <title>Targeted Machines</title>
-        <searchString>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.src)`</searchString>
-        <earliestTime>$earliest$</earliestTime>
-        <latestTime>$latest$</latestTime>
+        <search>
+          <query>
+            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.src)`
+          </query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">visible</option>
@@ -174,15 +190,19 @@
               <link>
                   <![CDATA[
               /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
-	        ]]>
+          ]]>
               </link>
           </drilldown>
       </chart>
       <chart>
         <title>Targeted Users</title>
-        <searchString>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.user)`</searchString>
-        <earliestTime>$earliest$</earliestTime>
-        <latestTime>$latest$</latestTime>
+        <search>
+          <query>
+            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.user)`
+          </query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">visible</option>
@@ -205,7 +225,7 @@
               <link>
                   <![CDATA[
               /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
-	        ]]>
+          ]]>
               </link>
           </drilldown>
       </chart>
@@ -213,9 +233,13 @@
   <row>
       <chart>
         <title>Endpoint Module</title>
-        <searchString>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.signature)`</searchString>
-        <earliestTime>$earliest$</earliestTime>
-        <latestTime>$latest$</latestTime>
+        <search>
+          <query>
+            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.signature)`
+          </query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">visible</option>
@@ -238,15 +262,19 @@
               <link>
                   <![CDATA[
               /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
-	        ]]>
+          ]]>
               </link>
           </drilldown>
       </chart>
       <chart>
         <title>Action</title>
-        <searchString>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.log_subtype)`</searchString>
-        <earliestTime>$earliest$</earliestTime>
-        <latestTime>$latest$</latestTime>
+        <search>
+          <query>
+            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.log_subtype)`
+          </query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">visible</option>
@@ -269,7 +297,7 @@
               <link>
                   <![CDATA[
               /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
-	        ]]>
+          ]]>
               </link>
           </drilldown>
       </chart>
