@@ -2492,7 +2492,11 @@ class PanDevice(PanObject):
         if get_devices:
             messages = []
         else:
-            messages = job['details']['line']
+            try:
+                messages = job['details']['line']
+            except KeyError:
+                logger.error("Unable to get messages from commit job xml: %s" % str(job))
+                raise err.PanDeviceError("Unable to get messages from commit job xml")
         if issubclass(messages.__class__, basestring):
             messages = [messages]
         # Create the results dict
