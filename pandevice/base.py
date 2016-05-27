@@ -1266,12 +1266,12 @@ class PanObject(object):
                 references = getattr(obj, reference_var)
                 if references is None:
                     continue
-                elif hasattr(self, "__iter__") and self in references:
+                elif hasattr(references, "__iter__") and self in references:
                     if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
                     references.remove(self)
                     if update: obj.update(reference_var)
-                elif hasattr(self, "__iter__") and str(self) in references:
+                elif hasattr(references, "__iter__") and str(self) in references:
                     if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
                     references.remove(str(self))
@@ -1290,7 +1290,6 @@ class PanObject(object):
                 if update: obj.update(reference_var)
             elif hasattr(var, "__iter__") and self not in var and str(self) not in var:
                 var.append(self)
-                setattr(obj, reference_var, var)
                 if update: obj.update(reference_var)
             elif hasattr(var, "__iter__"):
                 # The reference already exists so do nothing
