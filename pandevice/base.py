@@ -257,7 +257,6 @@ class PanDevice(PanObject):
         """This is a confusing class used for catching exceptions and
         faults.
         """
-        # TODO: comment the hell out of it!
 
         def __init__(self, *args, **kwargs):
             self.pan_device = kwargs.pop('pan_device', None)
