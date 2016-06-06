@@ -1257,7 +1257,7 @@ ul.appBarNav li a {
     background-color: #CCC;
 }
 .TitleBar h2 em {
-    font-style:normal; /* wtf? */
+    font-style:normal; 
 }
 .TitleBar .splPipe {
     font-size:12px; 
