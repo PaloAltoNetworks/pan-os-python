@@ -82,6 +82,45 @@ designed to work together, and with Splunk Enterprise Security when available.
 .. _Traps Endpoint Security:
    https://www.paloaltonetworks.com/products/endpoint-security.html
 
+.. _requirements:
+
+Requirements
+------------
+
+The Palo Alto Networks App and Add-on for Splunk has varying system
+requirements depending on the number of logs sent to Splunk. The firewall
+administrator has granular control over the quantity of logs sent. The more
+logs sent to Splunk, the more visibility is available into the traffic on the
+network.
+
+If the compute resources of the servers are oversubscribed, the firewall
+administrator can reduce the volume of logs sent from the firewall by turning
+off unnecessary logs. Common high-volume low-value candidates are traffic
+start logs, non-container URL logs, benign WildFire logs, and logs from policy
+rules that pass a lot of traffic that is not highly relevant (eg. local SAN
+traffic).
+
+App:
+  The Palo Alto Networks App for Splunk contains a datamodel and dashboards.
+  The dashboards use the datamodel to pull logs quickly for visualization.
+  The dashboards don't require a lot of compute resources or memory, and
+  neither does the datamodel once it is built.  However, the process of
+  building the datamodel is very CPU intensive, and is an ongoing process
+  as new logs are indexed and need to be added to the datamodel summary index.
+  By building the datamodel and spending the compute resources to summarize
+  the data when logs are indexed, it allows the dashboards and visualizations
+  to pull the data quickly without intensive compute.
+
+  Care should be taken to ensure the datamodel summary indexing has enough
+  compute resources available to keep up with the flow of logs to the index.
+  If there aren't enough compute resources available, the dashboards may lag
+  behind the data in the index.
+
+Add-on:
+  The Palo Alto Networks Add-on for Splunk handles the parsing of the logs
+  into the index. It is highly optimized, but can require significant compute
+  resources for high volumes of logs.
+
 Install from Github
 -------------------
 
