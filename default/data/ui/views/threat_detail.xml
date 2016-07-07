@@ -3,8 +3,8 @@
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m@m</earliestTime>
-        <latestTime>now</latestTime>
+        <earliest>-60m@m</earliest>
+        <latest>now</latest>
       </default>
     </input>
     <input type="text" token="threat_name">
@@ -32,19 +32,19 @@
       <suffix>"</suffix>
     </input>
   </fieldset>
-  <searchTemplate>| `pan_tstats` values(sourcetype) as sourcetype values(log.threat_name) as threat_name sum(log.bytes) as bytes sum(log.duration) as duration
-        FROM datamodel="pan_firewall" WHERE (nodename="log.traffic" OR (nodename="log.threat" $threat_name$)) $user$ $app$ $location$
-        `groupby(log.session_id log.user log.server_ip log.app log.server_location)`
-        | search sourcetype="pan:threat" bytes!="" server_location!="" user!="" | eval KB=bytes/1024</searchTemplate>
-  <earliestTime>$earliest$</earliestTime>
-  <latestTime>$latest$</latestTime>
-  <row>
+  <search id="baseSearch">
+    <query>
+      | `pan_tstats` values(sourcetype) as sourcetype values(log.threat_name) as threat_name sum(log.bytes) as bytes sum(log.duration) as duration FROM datamodel="pan_firewall" WHERE (nodename="log.traffic" OR (nodename="log.threat" $threat_name$)) $user$ $app$ $location$ `groupby(log.session_id log.user log.server_ip log.app log.server_location)` | search sourcetype="pan:threat" bytes!="" server_location!="" user!="" | eval KB=bytes/1024
+    </query>
+  </search>
+    <row>
     <chart>
       <title>Locations by Kilobytes</title>
-      <searchPostProcess>stats sum(KB) as "Total Bytes (KB)" by server_location
-        | rename server_location AS "Server Location" | sort -"Total Bytes (KB)"</searchPostProcess>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search base="baseSearch">
+        <query>
+          stats sum(KB) as "Total Bytes (KB)" by server_location | rename server_location AS "Server Location" | sort -"Total Bytes (KB)"
+        </query>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -67,15 +67,17 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/threat_detail?form.location=$click.value$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </chart>
     <chart>
       <title>Users by Kilobytes</title>
-      <searchPostProcess>| stats sum(KB) as "Transferred (KB)" by user | sort -"Transferred (KB)"</searchPostProcess>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search base="baseSearch">
+        <query>
+          | stats sum(KB) as "Transferred (KB)" by user | sort -"Transferred (KB)"
+        </query>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -93,7 +95,7 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/threat_detail?form.$click.name$=$click.value$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
       <option name="wrap">true</option>
@@ -106,9 +108,11 @@
   <row>
     <table>
       <title>Bytes Transferred Duration by Users</title>
-      <searchPostProcess>stats sum(KB) as "Transfer (KB)" sum(duration) as "Total Duration" by user app server_location</searchPostProcess>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search base="baseSearch">
+        <query>
+          stats sum(KB) as "Transfer (KB)" sum(duration) as "Total Duration" by user app server_location
+        </query>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -133,9 +137,11 @@
   <row>
     <table>
       <title>Threats by Bytes Transferred and Sessions</title>
-      <searchPostProcess>stats sum(KB) as "Transfer (KB)" count(session_id) as "Total Sessions" by threat_name</searchPostProcess>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search base="baseSearch">
+        <query>
+          stats sum(KB) as "Transfer (KB)" count(session_id) as "Total Sessions" by threat_name
+        </query>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -158,7 +164,7 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/threat_detail?form.threat_name=$click.value$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
       <option name="rowNumbers">true</option>
