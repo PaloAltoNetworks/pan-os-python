@@ -8,24 +8,42 @@ Version 5.0.x is a major release that re-architects the Palo Alto Networks App b
 into an App and an Add-on. The `Palo Alto Networks Add-on`_ is included in the
 `Palo Alto Networks App`_ and is installed or upgraded automatically with the App.
 
+App
+===
+
+v5.2.0
+  * Certified by Splunk
+  * Removed deprecated commands (**panblock** and **panupdate**) as a
+    requirement for certification.
+
+.. note:: If you currently use **panblock** or **panupdate** commands,
+   please update your usage of the App to leverage :ref:`pantag` and
+   :ref:`panuserupdate` instead.
+
+Add-on
+======
+
+v3.6.0
+  * Support new Traps 3.3.2 log format
+
+v3.6.1
+  * Certified by Splunk
+  * Add logo files for Splunkbase
+
+.. note:: Traps versions before 3.3.2 are no longer supported beginning with
+   Add-on 3.6.0 and App 5.1.0.
+
+
+Previous Versions
+=================
+
 App v5.1.0
-==========
+----------
 
 * Datamodel updated to support new Traps 3.3.2 fields
 * Endpoint Dashboard updated to support new Traps 3.3.2 fields
 
 WARNING: Traps versions before 3.3.2 are no longer supported beginning with this App version
-
-Add-on v3.6.0
-=============
-
-* Support new Traps 3.3.2 log format
-
-WARNING: Traps versions before 3.3.2 are no longer supported beginning with this Add-on version
-
-
-Previous Versions
-=================
 
 App v5.0.1
 ----------

@@ -3,8 +3,8 @@
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m</earliestTime>
-        <latestTime>now</latestTime>
+        <earliest>-60m</earliest>
+        <latest>now</latest>
       </default>
     </input>
     <input type="dropdown" token="log_subtype">
@@ -49,9 +49,12 @@
   <row>
     <table>
       <title>Latest Events</title>
-      <searchString>| `pan_tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ `table(_time log.serial_number log.description log.log_subtype log.severity log.event_id)` | sort -_time</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>| `pan_tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ `table(_time log.serial_number log.description log.log_subtype log.severity log.event_id)` | sort -_time
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -108,9 +111,13 @@
   <row>
     <chart>
       <title>System Events Over Time</title>
-      <searchString>| `pan_tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log.log_subtype | timechart values(count) by log.log_subtype</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log.log_subtype | timechart values(count) by log.log_subtype
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">collapsed</option>
       <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
@@ -134,9 +141,13 @@
     </chart>
     <chart>
       <title>Severity</title>
-      <searchString>| `pan_tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log.severity | timechart values(count) by log.severity</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.system)` $serial_number$ $description$ $log_subtype$ $severity$ $event_id$ groupby _time log.severity | timechart values(count) by log.severity
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">collapsed</option>
       <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>

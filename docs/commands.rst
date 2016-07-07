@@ -166,6 +166,8 @@ panblock
 
 Deprecated in App version 4.1. Use :ref:`pantag` instead.
 
+Removed in App version 5.2.
+
 Modify the configuration of the firewall address groups to include IP
 addresses from events in Splunk.  This is similar to tagging IP addresses
 and works the same way, but is much less dynamic than tagging because it is
@@ -180,6 +182,8 @@ panupdate
 ~~~~~~~~~
 
 Deprecated in App version 5.0. Use :ref:`panuserupdate` instead.
+
+Removed in App version 5.2.
 
 The Palo Alto Networks firewall will inform Splunk of the user generating
 each connection via the syslogs it sends to Splunk.  This assumes that the

@@ -1,49 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?><dashboard>
   <label>Overview</label>
   <description/>
-  <searchTemplate>`pan_logs` | fillnull value="" | stats count by host sourcetype log_subtype action category</searchTemplate>
-  <earliestTime>rt-5m</earliestTime>
-  <latestTime>rt</latestTime>
+  <search id="baseSearch">
+    <query>
+      `pan_logs` | fillnull value="" | stats count by host sourcetype log_subtype action category
+    </query>
+    <earliest>rt-5m</earliest>
+    <latest>rt</latest>
+  </search>
   <row>
     <single>
-      <searchPostProcess>stats dc(host)</searchPostProcess>
-      <earliestTime>rt-5m</earliestTime>
-      <latestTime>rt</latestTime>
-      <option name="classField">None</option>
+      <search base="baseSearch">
+        <query>
+          stats dc(host)
+        </query>
+      </search>
       <option name="underLabel">PAN Reporting</option>
-      <option name="linkView">search</option>
     </single>
     <single>
-      <searchPostProcess>stats sum(count) as sum count(count) | eval sum=if(isnull(sum),0,sum)</searchPostProcess>
-      <earliestTime>rt-5m</earliestTime>
-      <latestTime>rt</latestTime>
-      <option name="classField">None</option>
+      <search base="baseSearch">
+        <query>
+          stats sum(count) as sum count(count) | eval sum=if(isnull(sum),0,sum)
+        </query>
+      </search>
       <option name="underLabel">Total Events</option>
-      <option name="linkView">search</option>
     </single>
     <single>
-      <searchPostProcess>search action=block* OR action=deny | stats sum(count) as sum count(count) | eval sum=if(isnull(sum),0,sum)</searchPostProcess>
-      <earliestTime>rt-5m</earliestTime>
-      <latestTime>rt</latestTime>
-      <option name="classField">None</option>
+      <search base="baseSearch">
+        <query>
+          search action=block* OR action=deny | stats sum(count) as sum count(count) | eval sum=if(isnull(sum),0,sum)
+        </query>
+      </search>
       <option name="underLabel">Total Blocks</option>
-      <option name="linkView">search</option>
     </single>
     <single>
-      <searchPostProcess>search sourcetype="pan:traffic" category!="any" category!="private-ip-addresses" category!="not-resolved"  | sort -count | head 1 | stats values(category) as category count(category) | eval category=if(isnull(category),"---",category)</searchPostProcess>
-      <earliestTime>rt-5m</earliestTime>
-      <latestTime>rt</latestTime>
-      <option name="classField">None</option>
+      <search>
+        <query>
+          search sourcetype="pan:traffic" category!="any" category!="private-ip-addresses" category!="not-resolved"  | sort -count | head 1 | stats values(category) as category count(category) | eval category=if(isnull(category),"---",category)
+        </query
+        >
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
+      </search>
       <option name="underLabel">Top URL Category</option>
-      <option name="linkView">search</option>
     </single>
   </row>
   <row>
     <chart>
       <title>Event Types</title>
-      <searchString>`pan_logs` sourcetype="pan:*" log_subtype="*" | timechart span=10s count by log_subtype</searchString>
-      <earliestTime>rt-5m</earliestTime>
-      <latestTime>rt</latestTime>
+      <search>
+        <query>
+          `pan_logs` sourcetype="pan:*" log_subtype="*" | timechart span=10s count by log_subtype
+        </query>
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
+      </search>
       <option name="charting.axisX.scale">linear</option>
       <option name="charting.axisY.scale">linear</option>
       <option name="charting.chart">area</option>
@@ -55,7 +66,6 @@
       <option name="charting.gaugeAutoRanges">1</option>
       <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
       <option name="charting.legend.placement">right</option>
-      <option name="classField">None</option>
       <option name="dataOverlayMode">none</option>
       <option name="displayRowNumbers">false</option>
       <option name="drilldown">cell</option>
@@ -85,11 +95,12 @@
     </chart>
     <table>
       <title>Top Applications</title>
-      <searchString>`pan_traffic` | stats sparkline sum(bytes) AS sbytes by app vsys src_zone | sort -sbytes | head 8 | eval Application=upper(app) | eval "Vol in MB"=round(sbytes/1024/1024) |rename sparkline AS Distribution | rename vsys AS VSYS| rename src_zone AS "Src Zone" | table Application VSYS "Src Zone" "Vol in MB" Distribution</searchString>
-      <earliestTime>rt-5m</earliestTime>
-      <latestTime>rt</latestTime>
-      <option name="afterLabel">Total Events</option>
-      <option name="classField">None</option>
+      <search>
+        <query>`pan_traffic` | stats sparkline sum(bytes) AS sbytes by app vsys src_zone | sort -sbytes | head 8 | eval Application=upper(app) | eval "Vol in MB"=round(sbytes/1024/1024) |rename sparkline AS Distribution | rename vsys AS VSYS| rename src_zone AS "Src Zone" | table Application VSYS "Src Zone" "Vol in MB" Distribution
+        </query>
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
+      </search>
       <option name="dataOverlayMode">none</option>
       <option name="displayRowNumbers">true</option>
       <option name="drilldown">cell</option>
@@ -107,9 +118,13 @@
   <row>
     <table>
       <title>Recently Added to Applipedia</title>
-      <searchString>eventtype="pan_newapps" | dedup app{@name} sortby +_time | sort -_time | table _time app{@name} app.technology app.category app.subcategory app.risk | convert timeformat="%m/%d/%y" ctime(_time) | rename _time AS "Date added" | rename app{@name} AS Name | rename app.technology AS Technology | rename app.category AS Category | rename app.subcategory AS Subcategory | rename app.risk AS Risk</searchString>
-      <earliestTime>-2w@w</earliestTime>
-      <latestTime>now</latestTime>
+      <search>
+        <query>
+          eventtype="pan_newapps" | dedup app{@name} sortby +_time | sort -_time | table _time app{@name} app.technology app.category app.subcategory app.risk | convert timeformat="%m/%d/%y" ctime(_time) | rename _time AS "Date added" | rename app{@name} AS Name | rename app.technology AS Technology | rename app.category AS Category | rename app.subcategory AS Subcategory | rename app.risk AS Risk
+        </query>
+        <earliest>-2w@w</earliest>
+        <latest>now</latest>
+      </search>
       <option name="list.drilldown">full</option>
       <option name="list.wrap">1</option>
       <option name="maxLines">5</option>
@@ -127,10 +142,13 @@
   <row>
     <map>
       <title>Applications by Destination IP Location</title>
-      <searchString>`pan_traffic` | iplocation "dest_ip" | geostats count by
-        app</searchString>
-      <earliestTime>rt-5m</earliestTime>
-      <latestTime>rt</latestTime>
+      <search>
+        <query>
+          `pan_traffic` | iplocation "dest_ip" | geostats count by app
+        </query>
+        <earliest>rt-5m</earliest>
+        <latest>rt</latest>
+      </search>
     </map>
   </row>
 </dashboard>

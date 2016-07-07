@@ -3,8 +3,8 @@
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m</earliestTime>
-        <latestTime>now</latestTime>
+        <earliest>-60m</earliest>
+        <latest>now</latest>
       </default>
     </input>
     <input type="text" token="src_ip">
@@ -53,9 +53,13 @@
   <row>
     <chart>
       <title>Data Events</title>
-      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">collapsed</option>
       <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
@@ -79,9 +83,13 @@
     </chart>
     <chart>
       <title>Application</title>
-      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app
+        </query>
+         <earliest>$earliest$</earliest>
+         <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">collapsed</option>
       <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
@@ -99,7 +107,7 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$click.name2$"  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </chart>
@@ -107,9 +115,13 @@
   <row>
     <table>
       <title>Data Filter Events by Application</title>
-      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.threat_name log.action log.src_ip log.app, count)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.threat_name log.action log.src_ip log.app, count)`
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -141,15 +153,19 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` threat_name="$row.threat_name$" action="$row.action$" src_ip="$row.src_ip$" app="$row.app$"&earliest=$earliest$&latest=$latest$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
     </table>
     <table>
       <title>Data Filter Events by Destination</title>
-      <searchString>| `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dest_ip log.dest_location, count)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dest_ip log.dest_location, count)`
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">visible</option>
       <option name="charting.axisTitleY.visibility">visible</option>
       <option name="charting.axisX.scale">linear</option>
@@ -172,7 +188,7 @@
         <link>
           <![CDATA[
             /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_ip="$row.Destination$" dest_location="$row.Location$" src_ip="$row.Source$"&earliest=$earliest$&latest=$latest$
-	  ]]>
+    ]]>
         </link>
       </drilldown>
       <option name="rowNumbers">false</option>

@@ -3,8 +3,8 @@
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m</earliestTime>
-        <latestTime>now</latestTime>
+        <earliest>-60m</earliest>
+        <latest>now</latest>
       </default>
     </input>
     <input type="text" token="src_ip">
@@ -55,9 +55,13 @@
   <row>
     <chart>
       <title>Major Content Types</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ groupby _time log.major_content_type | timechart values(count) by log.major_content_type</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ groupby _time log.major_content_type | timechart values(count) by log.major_content_type
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">collapsed</option>
       <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
@@ -81,9 +85,13 @@
     </chart>
     <chart>
       <title>Full Content Types</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ groupby _time log.content_type | timechart values(count) by log.content_type</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
+      <search>
+        <query>
+          | `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ groupby _time log.content_type | timechart values(count) by log.content_type
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="charting.axisTitleX.visibility">collapsed</option>
       <option name="charting.axisTitleY.visibility">collapsed</option>
       <option name="charting.axisX.scale">linear</option>
@@ -109,107 +117,118 @@
   <row>
     <table>
       <title>Content Types and Apps</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ `table(log.app log.content_type, count)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
-      <option name="charting.axisX.scale">linear</option>
-      <option name="charting.axisY.scale">linear</option>
-      <option name="charting.chart">pie</option>
-      <option name="charting.chart.nullValueMode">gaps</option>
-      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-      <option name="charting.chart.stackMode">default</option>
-      <option name="charting.chart.style">shiny</option>
-      <option name="charting.drilldown">all</option>
-      <option name="charting.layout.splitSeries">0</option>
-      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
-      <option name="charting.legend.placement">right</option>
-      <option name="list.drilldown">full</option>
-      <option name="list.wrap">1</option>
-      <option name="maxLines">5</option>
-      <option name="raw.drilldown">full</option>
-      <option name="rowNumbers">false</option>
-      <option name="table.drilldown">1</option>
-      <option name="table.sortDirection">asc</option>
-      <option name="table.wrap">1</option>
-      <option name="type">list</option>
-      <option name="wrap">true</option>
-      <option name="displayRowNumbers">true</option>
-      <option name="dataOverlayMode">none</option>
-      <option name="drilldown">row</option>
-      <option name="count">10</option>
-      <drilldown>
-        <link>
-          <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
-      ]]>
-        </link>
-      </drilldown>
-    </table>
-    <table>
-      <title>Non-Web Browsing Content Types</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ log.app:technology!="browser-based" `table(log.app log.content_type, count)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
-      <option name="charting.axisX.scale">linear</option>
-      <option name="charting.axisY.scale">linear</option>
-      <option name="charting.chart">pie</option>
-      <option name="charting.chart.nullValueMode">gaps</option>
-      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-      <option name="charting.chart.stackMode">default</option>
-      <option name="charting.chart.style">shiny</option>
-      <option name="charting.drilldown">all</option>
-      <option name="charting.layout.splitSeries">0</option>
-      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
-      <option name="charting.legend.placement">right</option>
-      <option name="wrap">true</option>
-      <option name="displayRowNumbers">true</option>
-      <option name="dataOverlayMode">none</option>
-      <option name="drilldown">row</option>
-      <option name="count">10</option>
-      <drilldown>
-        <link>
-          <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
-	  ]]>
-        </link>
-      </drilldown>
-      <option name="rowNumbers">true</option>
-    </table>
-    <table>
-      <title>Content Types and Web Categories</title>
-      <searchString>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ `table(log.category log.content_type, count)`</searchString>
-      <earliestTime>$earliest$</earliestTime>
-      <latestTime>$latest$</latestTime>
-      <option name="charting.axisTitleX.visibility">visible</option>
-      <option name="charting.axisTitleY.visibility">visible</option>
-      <option name="charting.axisX.scale">linear</option>
-      <option name="charting.axisY.scale">linear</option>
-      <option name="charting.chart">pie</option>
-      <option name="charting.chart.nullValueMode">gaps</option>
-      <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-      <option name="charting.chart.stackMode">default</option>
-      <option name="charting.chart.style">shiny</option>
-      <option name="charting.drilldown">all</option>
-      <option name="charting.layout.splitSeries">0</option>
-      <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
-      <option name="charting.legend.placement">right</option>
-      <option name="wrap">true</option>
-      <option name="displayRowNumbers">true</option>
-      <option name="dataOverlayMode">none</option>
-      <option name="drilldown">row</option>
-      <option name="count">10</option>
-      <drilldown>
-        <link>
-          <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" category="$row.category$"&earliest=$earliest$&latest=$latest$
-	  ]]>
-        </link>
-      </drilldown>
-      <option name="rowNumbers">true</option>
-    </table>
-  </row>
+    <search>
+      <query>| `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ `table(log.app log.content_type, count)`
+      </query>
+      <earliest>$earliest$</earliest>
+      <latest>$latest$</latest>
+    </search>
+    <option name="charting.axisTitleX.visibility">visible</option>
+    <option name="charting.axisTitleY.visibility">visible</option>
+    <option name="charting.axisX.scale">linear</option>
+    <option name="charting.axisY.scale">linear</option>
+    <option name="charting.chart">pie</option>
+    <option name="charting.chart.nullValueMode">gaps</option>
+    <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+    <option name="charting.chart.stackMode">default</option>
+    <option name="charting.chart.style">shiny</option>
+    <option name="charting.drilldown">all</option>
+    <option name="charting.layout.splitSeries">0</option>
+    <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+    <option name="charting.legend.placement">right</option>
+    <option name="list.drilldown">full</option>
+    <option name="list.wrap">1</option>
+    <option name="maxLines">5</option>
+    <option name="raw.drilldown">full</option>
+    <option name="rowNumbers">false</option>
+    <option name="table.drilldown">1</option>
+    <option name="table.sortDirection">asc</option>
+    <option name="table.wrap">1</option>
+    <option name="type">list</option>
+    <option name="wrap">true</option>
+    <option name="displayRowNumbers">true</option>
+    <option name="dataOverlayMode">none</option>
+    <option name="drilldown">row</option>
+    <option name="count">10</option>
+    <drilldown>
+      <link>
+        <![CDATA[
+          /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+    ]]>
+      </link>
+    </drilldown>
+  </table>
+  <table>
+    <title>Non-Web Browsing Content Types</title>
+    <search>
+      <query>
+        | `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ log.app:technology!="browser-based" `table(log.app log.content_type, count)`
+      </query>
+      <earliest>$earliest$</earliest>
+      <latest>$latest$</latest>
+    </search>
+    <option name="charting.axisTitleX.visibility">visible</option>
+    <option name="charting.axisTitleY.visibility">visible</option>
+    <option name="charting.axisX.scale">linear</option>
+    <option name="charting.axisY.scale">linear</option>
+    <option name="charting.chart">pie</option>
+    <option name="charting.chart.nullValueMode">gaps</option>
+    <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+    <option name="charting.chart.stackMode">default</option>
+    <option name="charting.chart.style">shiny</option>
+    <option name="charting.drilldown">all</option>
+    <option name="charting.layout.splitSeries">0</option>
+    <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+    <option name="charting.legend.placement">right</option>
+    <option name="wrap">true</option>
+    <option name="displayRowNumbers">true</option>
+    <option name="dataOverlayMode">none</option>
+    <option name="drilldown">row</option>
+    <option name="count">10</option>
+    <drilldown>
+      <link>
+        <![CDATA[
+        /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+        ]]>
+      </link>
+    </drilldown>
+    <option name="rowNumbers">true</option>
+  </table>
+  <table>
+    <title>Content Types and Web Categories</title>
+    <search>
+      <query>
+        | `pan_tstats` count FROM `node(log.url)` $vsys$ $app$ $category$ $dest_ip$ $src_ip$ $content_type$ `table(log.category log.content_type, count)`
+      </query>
+      <earliest>$earliest$</earliest>
+      <latest>$latest$</latest>
+    </search>
+    <option name="charting.axisTitleX.visibility">visible</option>
+    <option name="charting.axisTitleY.visibility">visible</option>
+    <option name="charting.axisX.scale">linear</option>
+    <option name="charting.axisY.scale">linear</option>
+    <option name="charting.chart">pie</option>
+    <option name="charting.chart.nullValueMode">gaps</option>
+    <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+    <option name="charting.chart.stackMode">default</option>
+    <option name="charting.chart.style">shiny</option>
+    <option name="charting.drilldown">all</option>
+    <option name="charting.layout.splitSeries">0</option>
+    <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+    <option name="charting.legend.placement">right</option>
+    <option name="wrap">true</option>
+    <option name="displayRowNumbers">true</option>
+    <option name="dataOverlayMode">none</option>
+    <option name="drilldown">row</option>
+    <option name="count">10</option>
+    <drilldown>
+      <link>
+        <![CDATA[
+        /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" category="$row.category$"&earliest=$earliest$&latest=$latest$
+        ]]>
+      </link>
+    </drilldown>
+    <option name="rowNumbers">true</option>
+  </table>
+</row>
 </form>

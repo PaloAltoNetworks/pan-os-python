@@ -4,8 +4,8 @@
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="true">
       <default>
-        <earliestTime>-60m</earliestTime>
-        <latestTime>now</latestTime>
+        <earliest>-60m</earliest>
+        <latest>now</latest>
       </default>
     </input>
     <input type="text" token="src_ip">
@@ -43,47 +43,61 @@
       <populatingSearch fieldForValue="field" fieldForLabel="field_with_count">| `_pan_dropdown(log.traffic.end, log.action)`</populatingSearch>
     </input>
   </fieldset>
-  <searchTemplate>| `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.app:category log.app:subcategory log.user log.bytes)`</searchTemplate>
+  <search id="baseSearch">
+    <query>
+      | `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.app:category log.app:subcategory log.user log.bytes)`
+    </query>
+    <earliest>$earliest$</earliest>
+    <latest>$latest$</latest>
+  </search>
   <row>
     <single>
-      <searchPostProcess>stats dc(app)</searchPostProcess>
-      <earliest>$earliest$</earliest>
-      <latest>$latest$</latest>
+      <search base="baseSearch">
+        <query>
+          stats dc(app)
+        </query>
+      </search>
       <option name="drilldown">none</option>
-      <option name="linkView">search</option>
       <option name="underLabel">SaaS Applications</option>
     </single>
     <single>
-      <searchPostProcess>stats dc(user)</searchPostProcess>
-      <earliest>$earliest$</earliest>
-      <latest>$latest$</latest>
+      <search base="baseSearch">
+        <query>
+          stats dc(user)
+        </query>
+      </search>
       <option name="drilldown">none</option>
-      <option name="linkView">search</option>
       <option name="underLabel">Users</option>
     </single>
     <single>
-      <searchPostProcess>stats sum(bytes) AS sbytes | sort -sbytes | eval "Vol in MB"=round(sbytes/1024/1024) | table "Vol in MB"</searchPostProcess>
-      <earliest>$earliest$</earliest>
-      <latest>$latest$</latest>
+      <search base="baseSearch">
+        <query>
+          stats sum(bytes) AS sbytes | sort -sbytes | eval "Vol in MB"=round(sbytes/1024/1024) | table "Vol in MB"
+        </query>
+      </search>
       <option name="drilldown">none</option>
-      <option name="linkView">search</option>
       <option name="underLabel">Megabytes</option>
     </single>
     <single>
-      <searchString>| `pan_tstats` count from `node(log.threat)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$</searchString>
-      <earliest>$earliest$</earliest>
-      <latest>$latest$</latest>
+      <search>
+        <query>
+          | `pan_tstats` count from `node(log.threat)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$
+        </query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
       <option name="drilldown">none</option>
-      <option name="linkView">search</option>
       <option name="underLabel">Threats</option>
     </single>
   </row>
   <row>
       <chart>
         <title>SaaS Usage</title>
-        <searchPostProcess>timechart count by app</searchPostProcess>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
+        <search base="baseSearch">
+          <query>
+            timechart count by app
+          </query>
+        </search>
         <option name="charting.chart">area</option>
         <option name="charting.axisY2.enabled">false</option>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -117,9 +131,11 @@
   <row>
       <table>
         <title>SaaS Distribution</title>
-        <searchPostProcess>stats sparkline count sum(bytes) AS sbytes by app app:category app:subcategory | sort -sbytes | head 8 | eval "Vol in MB"=round(sbytes/1024/1024) | rename sparkline AS distribution | rename vsys AS VSYS | rename count as Sessions | table app app:category app:subcategory Sessions "Vol in MB" distribution</searchPostProcess>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
+        <search base="baseSearch">
+          <query>
+            stats sparkline count sum(bytes) AS sbytes by app app:category app:subcategory | sort -sbytes | head 8 | eval "Vol in MB"=round(sbytes/1024/1024) | rename sparkline AS distribution | rename vsys AS VSYS | rename count as Sessions | table app app:category app:subcategory Sessions "Vol in MB" distribution
+          </query>
+        </search>
         <option name="wrap">true</option>
         <option name="rowNumbers">false</option>
         <option name="drilldown">cell</option>
@@ -162,9 +178,11 @@
   <row>
       <chart>
         <title>% SaaS Distribution</title>
-        <searchPostProcess>stats count by app:is_sanctioned_saas | replace no with Non-sanctioned in app:is_sanctioned_saas | replace yes with Sanctioned in app:is_sanctioned_saas | sort -count</searchPostProcess>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
+        <search base="baseSearch">
+          <query>
+            stats count by app:is_sanctioned_saas | replace no with Non-sanctioned in app:is_sanctioned_saas | replace yes with Sanctioned in app:is_sanctioned_saas | sort -count
+          </query>
+        </search>
         <option name="charting.chart">pie</option>
         <option name="charting.axisY2.enabled">false</option>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -196,9 +214,11 @@
       </chart>
       <table>
         <title>SaaS Statistics</title>
-        <searchPostProcess>stats sum(bytes) AS sbytes count as Sessions dc(user) as Users by app:is_sanctioned_saas | replace no with Non-sanctioned in app:is_sanctioned_saas | replace yes with Sanctioned in app:is_sanctioned_saas | sort -sbytes | eval "Megabytes"=round(sbytes/1024/1024) | rename app:is_sanctioned_saas as SaaS | table SaaS Users Megabytes Sessions</searchPostProcess>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
+        <search base="baseSearch">
+          <query>
+            stats sum(bytes) AS sbytes count as Sessions dc(user) as Users by app:is_sanctioned_saas | replace no with Non-sanctioned in app:is_sanctioned_saas | replace yes with Sanctioned in app:is_sanctioned_saas | sort -sbytes | eval "Megabytes"=round(sbytes/1024/1024) | rename app:is_sanctioned_saas as SaaS | table SaaS Users Megabytes Sessions
+          </query>
+        </search>
         <option name="wrap">true</option>
         <option name="rowNumbers">false</option>
         <option name="drilldown">cell</option>
@@ -216,9 +236,11 @@
   <row>
       <chart>
         <title>Sanctioned SaaS Applications</title>
-        <searchPostProcess>search app:is_sanctioned_saas="yes" | top limit=100 app</searchPostProcess>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
+        <search base="baseSearch">
+          <query>
+            search app:is_sanctioned_saas="yes" | top limit=100 app
+          </query>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">visible</option>
@@ -250,9 +272,11 @@
       </chart>
       <chart>
         <title>Non-Sanctioned SaaS Applications</title>
-        <searchPostProcess>search app:is_sanctioned_saas="no" | top limit=100 app</searchPostProcess>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
+        <search base="baseSearch">
+          <query>
+            search app:is_sanctioned_saas="no" | top limit=100 app
+          </query>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">visible</option>
@@ -286,9 +310,11 @@
   <row>
       <chart>
         <title>Top Categories - Sanctioned</title>
-        <searchPostProcess>search app:is_sanctioned_saas="yes" | top limit=5 app:subcategory</searchPostProcess>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
+        <search base="baseSearch">
+          <query>
+            search app:is_sanctioned_saas="yes" | top limit=5 app:subcategory
+          </query>
+        </search>
         <option name="charting.chart">bar</option>
         <option name="charting.axisY2.enabled">false</option>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -320,9 +346,11 @@
       </chart>
       <chart>
         <title>Top Categories - Non-Sanctioned</title>
-        <searchPostProcess>search app:is_sanctioned_saas="no" | top limit=5 app:subcategory</searchPostProcess>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
+        <search base="baseSearch">
+          <query>
+            search app:is_sanctioned_saas="no" | top limit=5 app:subcategory
+          </query>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -356,9 +384,13 @@
   <row>
       <table>
         <title>Top File Sharing SaaS Apps</title>
-        <searchString>| `pan_tstats` count dc(log.user) as Users FROM `node(log.file)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$  `groupby(log.app log.app:risk)` | sort -count | rename app as Application | rename count as "Uploads/Downloads" | rename app:risk as Risk</searchString>
-        <earliest>$earliest$</earliest>
-        <latest>$latest$</latest>
+        <search>
+          <query>
+            | `pan_tstats` count dc(log.user) as Users FROM `node(log.file)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$  `groupby(log.app log.app:risk)` | sort -count | rename app as Application | rename count as "Uploads/Downloads" | rename app:risk as Risk
+          </query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
         <option name="charting.chart">pie</option>
         <option name="charting.axisY2.enabled">false</option>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
