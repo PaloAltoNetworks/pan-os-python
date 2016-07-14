@@ -338,7 +338,7 @@ class Interface(PanObject):
                     else:
                         obj.interface = None
                         obj.update("interface")
-                elif str(self) in obj.interface:
+                elif "__iter__" in dir(obj.interface) and str(self) in obj.interface:
                     if delete_referencing_objects:
                         obj.delete()
                     else:
@@ -613,9 +613,6 @@ class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
     @classmethod
     def variables(cls):
         variables = super(Layer2Subinterface, Layer2Subinterface).variables()
-        # Get the mode variable and change its default value to "layer3"
-        modevar = filter(lambda var: var.variable == "mode", variables)[0]
-        modevar.default = "layer2"
         return variables + (
             Var("comment"),
         )
