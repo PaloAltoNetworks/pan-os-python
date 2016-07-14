@@ -75,7 +75,7 @@
       <title>Users by Kilobytes</title>
       <search base="baseSearch">
         <query>
-          | stats sum(KB) as "Transferred (KB)" by user | sort -"Transferred (KB)"
+          stats sum(KB) as "Transferred (KB)" by user | sort -"Transferred (KB)"
         </query>
       </search>
       <option name="charting.axisTitleX.visibility">visible</option>
