@@ -370,7 +370,7 @@ class PanObject(object):
                 continue
             # Create an element containing the value in the instance variable
             if var.vartype == "member":
-                for member in value:
+                for member in pandevice.string_or_list(value):
                     ET.SubElement(nextelement, 'member').text = str(member)
             elif var.vartype == "entry":
                 try:
@@ -520,11 +520,10 @@ class PanObject(object):
             variable (str): The name of an instance variable to update on the device
 
         """
-        import ha
-        pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": update called on %s object \"%s\" and variable \"%s\"" %
+        pan_device = self.pandevice()
+        logger.debug(pan_device.hostname + ": update called on %s object \"%s\" and variable \"%s\"" %
                      (type(self), getattr(self, self.NAME), variable))
-        pandevice.set_config_changed()
+        pan_device.set_config_changed()
         variables = type(self).variables()
         value = getattr(self, variable)
         # Get the requested variable from the class' variables tuple
@@ -562,19 +561,19 @@ class PanObject(object):
                 # Not an 'entry' variable
                 varpath = re.sub(regex, getattr(self, matchedvar.variable), varpath)
         if value is None:
-            pandevice.xapi.delete(self.xpath() + "/" + varpath, retry_on_peer=self.HA_SYNC)
+            pan_device.xapi.delete(self.xpath() + "/" + varpath, retry_on_peer=self.HA_SYNC)
         else:
             element_tag = varpath.split("/")[-1]
             element = ET.Element(element_tag)
             if var.vartype == "member":
-                for member in value:
+                for member in pandevice.string_or_list(value):
                     ET.SubElement(element, 'member').text = str(member)
                 xpath = self.xpath() + "/" + varpath
             else:
                 # Regular text variables
                 element.text = value
                 xpath = self.xpath() + "/" + varpath
-            pandevice.xapi.edit(xpath, ET.tostring(element), retry_on_peer=self.HA_SYNC)
+            pan_device.xapi.edit(xpath, ET.tostring(element), retry_on_peer=self.HA_SYNC)
 
     def refresh(self, running_config=False, xml=None, refresh_children=True, exceptions=True):
         """Refresh all variables and child objects from the device
@@ -2442,7 +2441,7 @@ class PanDevice(PanObject):
                 # Connection errors (URLError) are ok
                 # Invalid cred errors are ok because FW auth system takes longer to start up
                 # Other errors should be raised
-                if not e.msg.startswith("URLError:") and not e.msg.startswith("Invalid credentials."):
+                if not str(e).startswith("URLError:") and not str(e).startswith("Invalid credentials."):
                     # Error not related to connection issue.  Raise it.
                     raise e
                 else:
