@@ -464,7 +464,7 @@ class PanObject(object):
 
         """
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+        logger.debug(pandevice.id + ": apply called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
         if self.HA_SYNC:
             pandevice.active().xapi.edit(self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC)
@@ -485,7 +485,7 @@ class PanObject(object):
 
         """
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": create called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+        logger.debug(pandevice.id + ": create called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
         element = self.element_str()
         if self.HA_SYNC:
@@ -502,7 +502,7 @@ class PanObject(object):
 
         """
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+        logger.debug(pandevice.id + ": delete called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
         for child in self.children:
             child._check_child_methods("delete")
@@ -526,7 +526,7 @@ class PanObject(object):
 
         """
         pan_device = self.pandevice()
-        logger.debug(pan_device.hostname + ": update called on %s object \"%s\" and variable \"%s\"" %
+        logger.debug(pan_device.id + ": update called on %s object \"%s\" and variable \"%s\"" %
                      (type(self), getattr(self, self.NAME), variable))
         pan_device.set_config_changed()
         variables = type(self).variables()
@@ -593,7 +593,7 @@ class PanObject(object):
         # Get the root of the xml to parse
         if xml is None:
             pandevice = self.pandevice()
-            logger.debug(pandevice.hostname + ": refresh called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+            logger.debug(pandevice.id + ": refresh called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
             if running_config:
                 api_action = pandevice.xapi.show
             else:
@@ -651,7 +651,7 @@ class PanObject(object):
             raise err.PanDeviceError("Variable %s does not exist in variable tuple" % variable)
         if xml is None:
             pandevice = self.pandevice()
-            logger.debug(pandevice.hostname + ": refresh_variable called on %s object \"%s\" with variable %s" % (type(self), getattr(self, self.NAME), variable))
+            logger.debug(pandevice.id + ": refresh_variable called on %s object \"%s\" with variable %s" % (type(self), getattr(self, self.NAME), variable))
             if running_config:
                 api_action = pandevice.xapi.show
             else:
@@ -729,7 +729,7 @@ class PanObject(object):
     def refresh_xml(self, running_config=False, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": refresh_xml called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+        logger.debug(pandevice.id + ": refresh_xml called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         if running_config:
             api_action = pandevice.xapi.show
         else:
@@ -909,7 +909,7 @@ class PanObject(object):
     @classmethod
     def applyall(cls, parent):
         pandevice = parent.pandevice()
-        logger.debug(pandevice.hostname + ": applyall called on %s type" % cls)
+        logger.debug(pandevice.id + ": applyall called on %s type" % cls)
         objects = parent.findall(cls)
         if not objects:
             return
@@ -964,7 +964,7 @@ class PanObject(object):
         else:
             pandevice = parent.pandevice()
             parent_xpath = parent.xpath()
-        logger.debug(pandevice.hostname + ": refreshall called on %s type" % cls)
+        logger.debug(pandevice.id + ": refreshall called on %s type" % cls)
         if running_config:
             api_action = pandevice.xapi.show
         else:
@@ -1562,7 +1562,7 @@ class PanDevice(PanObject):
                             new_active = self.pan_device.set_failed()
                             if retry_on_peer and new_active is not None:
                                 logger.debug("Connection to device '%s' failed, using HA peer '%s'" %
-                                             (self.pan_device.hostname, new_active.hostname))
+                                             (self.pan_device.id, new_active.hostname))
                                 # The active failed, apply on passive (which is now active)
                                 kwargs["retry_on_peer"] = False
                                 getattr(new_active.xapi, super_method_name)(*args, **kwargs)
@@ -1629,6 +1629,10 @@ class PanDevice(PanObject):
                                              pan_device=self.pan_device)
 
     # Properties
+
+    @property
+    def id(self):
+        return getattr(self, self.NAME, '<no-id>')
 
     @property
     def api_key(self):

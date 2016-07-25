@@ -45,19 +45,19 @@ class Updater(object):
 class SoftwareUpdater(Updater):
 
     def info(self):
-        self._logger.debug("Device %s software updater: info" % self.pandevice.hostname)
+        self._logger.debug("Device %s software updater: info" % self.pandevice.id)
         response = self._op('request system software info')
         self.pandevice.version = self._parse_current_version(response)
         self.versions = self._parse_version_list(response)
 
     def check(self):
-        self._logger.debug("Device %s software updater: check for new versions" % self.pandevice.hostname)
+        self._logger.debug("Device %s software updater: check for new versions" % self.pandevice.id)
         response = self._op('request system software check')
         self.pandevice.version = self._parse_current_version(response)
         self.versions = self._parse_version_list(response)
 
     def download(self, version, sync_to_peer=True, sync=False):
-        self._logger.info("Device %s downloading version: %s" % (self.pandevice.hostname, version))
+        self._logger.info("Device %s downloading version: %s" % (self.pandevice.id, version))
         response = self._op('request system software download sync-to-peer "%s" version "%s"' %
                             ("yes" if sync_to_peer else "no",
                              version))
@@ -65,13 +65,13 @@ class SoftwareUpdater(Updater):
             result = self.pandevice.syncjob(response)
             if not result['success']:
                 raise err.PanDeviceError("Device %s attempt to download version %s failed: %s" %
-                                         (self.pandevice.hostname, version, result['messages']))
+                                         (self.pandevice.id, version, result['messages']))
             return result
         else:
             return True
 
     def install(self, version, load_config=None, sync=False):
-        self._logger.info("Device %s installing version: %s" % (self.pandevice.hostname, version))
+        self._logger.info("Device %s installing version: %s" % (self.pandevice.id, version))
         response = self._op('request system software install%s version "%s"' %
                             (" load-config " + load_config if load_config is not None else "",
                              version))
@@ -79,7 +79,7 @@ class SoftwareUpdater(Updater):
             result = self.pandevice.syncjob(response)
             if not result['success']:
                 raise err.PanDeviceError("Device %s attempt to install version %s failed: %s" %
-                                         (self.pandevice.hostname, version, result['messages']))
+                                         (self.pandevice.id, version, result['messages']))
             return result
         else:
             return True
@@ -115,7 +115,7 @@ class SoftwareUpdater(Updater):
         # Check if already on the target version
         if current_version == target_version:
             raise err.PanDeviceError("Requested upgrade to version %s which is already running on device %s" %
-                                     (target_version, self.pandevice.hostname))
+                                     (target_version, self.pandevice.id))
 
         # Download the software upgrade
         if not self.versions[str(target_version)]['downloaded']:
@@ -135,7 +135,7 @@ class SoftwareUpdater(Updater):
             if version != new_version:
                 raise err.PanDeviceError("Attempt to upgrade to version %s failed."
                                          "Device %s is on version %s after reboot." %
-                                         (version, self.pandevice.hostname, new_version))
+                                         (version, self.pandevice.id, new_version))
             self.pandevice.version = new_version
             return new_version
         else:
@@ -169,7 +169,7 @@ class SoftwareUpdater(Updater):
         # Check that this is an upgrade, not a downgrade
         if current_version > target_version:
             raise err.PanDeviceError("Device %s upgrade failed: Can't upgrade from %s to %s." %
-                                     (self.pandevice.hostname, self.pandevice.version, target_version))
+                                     (self.pandevice.id, self.pandevice.version, target_version))
 
         # Determine the next version to upgrade to
         if target_version == "latest":
@@ -183,17 +183,17 @@ class SoftwareUpdater(Updater):
 
         if next_version not in available_versions and not dryrun:
             self._logger.info("Device %s upgrading to %s, currently on %s. Checking for newer versions." %
-                               (self.pandevice.hostname, target_version, self.pandevice.version))
+                               (self.pandevice.id, target_version, self.pandevice.version))
             self.check()
             available_versions = map(PanOSVersion, self.versions.keys())
             latest_version = max(available_versions)
 
         # Check if done upgrading
         if current_version == target_version:
-            self._logger.info("Device %s is running target version: %s" % (self.pandevice.hostname, target_version))
+            self._logger.info("Device %s is running target version: %s" % (self.pandevice.id, target_version))
             return True
         elif target_version == "latest" and current_version == latest_version:
-            self._logger.info("Device %s is running latest version: %s" % (self.pandevice.hostname, latest_version))
+            self._logger.info("Device %s is running latest version: %s" % (self.pandevice.id, latest_version))
             if dryrun:
                 self._logger.info("NOTE: dryrun with 'latest' does not show all upgrades,")
                 self._logger.info("as new versions are learned through the upgrade process,")
@@ -204,7 +204,7 @@ class SoftwareUpdater(Updater):
         self.pandevice.content.download_and_install_latest(sync=True)
 
         # Upgrade to the next version
-        self._logger.info("Device %s will be upgraded to version: %s" % (self.pandevice.hostname, next_version))
+        self._logger.info("Device %s will be upgraded to version: %s" % (self.pandevice.id, next_version))
         if dryrun:
             self.pandevice.version = str(next_version)
         else:
@@ -307,14 +307,14 @@ class ContentUpdater(Updater):
         latest_version = max(available_versions)
         if self.versions[str(latest_version)]['downloaded']:
             return
-        self._logger.info("Device %s downloading content version: %s" % (self.pandevice.hostname, version))
+        self._logger.info("Device %s downloading content version: %s" % (self.pandevice.id, version))
         response = self._op('request content upgrade download latest sync-to-peer "%s"' %
                             "yes" if sync_to_peer else "no")
         if sync:
             result = self.pandevice.syncjob(response)
             if not result['success']:
                 raise err.PanDeviceError("Device %s attempt to download content version %s failed: %s" %
-                                         (self.pandevice.hostname, version, result['messages']))
+                                         (self.pandevice.id, version, result['messages']))
             return result
         else:
             return True
@@ -326,7 +326,7 @@ class ContentUpdater(Updater):
         latest_version = max(available_versions)
         if self.versions[str(latest_version)]['current']:
             return
-        self._logger.info("Device %s installing content version: %s" % (self.pandevice.hostname, version))
+        self._logger.info("Device %s installing content version: %s" % (self.pandevice.id, version))
         op = ('request content upgrade install commit "%s" sync-to-peer "%s" version "%s"' %
               ("no" if skip_commit else "yes",
                "yes" if sync_to_peer else "no",
@@ -336,7 +336,7 @@ class ContentUpdater(Updater):
             result = self.pandevice.syncjob(response)
             if not result['success']:
                 raise err.PanDeviceError("Device %s attempt to install content version %s failed: %s" %
-                                         (self.pandevice.hostname, version, result['messages']))
+                                         (self.pandevice.id, version, result['messages']))
             return result
         else:
             return True

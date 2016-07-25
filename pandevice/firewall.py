@@ -129,8 +129,12 @@ class Firewall(PanDevice):
         """
 
     def __repr__(self):
-        name = self.serial if self.serial is not None else self.hostname
-        return "<%s %s %s at 0x%x>" % (type(self).__name__, repr(name), repr(self.vsys), id(self))
+        return "<%s %s %s at 0x%x>" % (type(self).__name__, repr(self.id), repr(self.vsys), id(self))
+
+    @property
+    def id(self):
+        id = self.serial if self.serial is not None else self.hostname
+        return id if id is not None else '<no-id>'
 
     @property
     def vsys(self):
