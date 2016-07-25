@@ -103,6 +103,9 @@ class PanObject(object):
     def __str__(self):
         return str(getattr(self, self.NAME, None))
 
+    def __repr__(self):
+        return "<%s %s at 0x%x>" % (type(self).__name__, repr(getattr(self, self.NAME, None)), id(self))
+
     @classmethod
     def variables(cls):
         """Defines the variables that exist in this object. Override in each subclass."""
@@ -1194,6 +1197,9 @@ class VarPath(object):
         self.xmldefault = xmldefault
         self.condition = condition
         self.order = order
+
+    def __repr__(self):
+        return "<%s %s at 0x%x>" % (type(self).__name__, repr(self.variable), id(self))
 
     @property
     def variable(self):
