@@ -39,8 +39,8 @@ class AddressObject(PanObject):
 
     Args:
         name (str): Name of the object
-        type (str): Type of object: ip-netmask, ip-range, or fqdn (Default: ip-netmask)
         value (str): IP address or other value of the object
+        type (str): Type of object: ip-netmask, ip-range, or fqdn (Default: ip-netmask)
         description (str): Description of this object
         tag (list): Administrative tags
 
@@ -54,7 +54,7 @@ class AddressObject(PanObject):
     def variables(cls):
         return (
             Var("(ip-netmask|ip-range|fqdn)", "type", default="ip-netmask"),
-            Var("{{type}}", "value"),
+            Var("{{type}}", "value", order=99),
             Var("description"),
             Var("tag", vartype="member"),
         )

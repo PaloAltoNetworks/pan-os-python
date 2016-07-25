@@ -80,6 +80,8 @@ class PanObject(object):
         variables = kwargs.pop("variables", None)
         if variables is None:
             variables = type(self).variables()
+        # Sort the variables by order
+        variables = sorted(variables, key=lambda x: x.order)
         for idx, var in enumerate(variables):
             varname = var.variable
             try:
@@ -1180,14 +1182,18 @@ class VarPath(object):
         xmldefault (bool): The default value if no value exists in the xml from a device
         condition (str): In the format othervariable:value where this variable is only
             considered if othervariable equals value
+        order (int): The order of this variable relative to other variables in this constructor of the
+            class that contains this variables. Defaults to 100, set variable order to less than or
+            greater than 100 to alter the order of the variables.
     """
-    def __init__(self, path, variable=None, vartype=None, default=None, xmldefault=None, condition=None):
+    def __init__(self, path, variable=None, vartype=None, default=None, xmldefault=None, condition=None, order=100):
         self.path = path
         self._variable = variable
         self.vartype = vartype
         self.default = default
         self.xmldefault = xmldefault
         self.condition = condition
+        self.order = order
 
     @property
     def variable(self):
