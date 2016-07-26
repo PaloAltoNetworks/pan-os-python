@@ -80,6 +80,8 @@ class PanObject(object):
         variables = kwargs.pop("variables", None)
         if variables is None:
             variables = type(self).variables()
+        # Sort the variables by order
+        variables = sorted(variables, key=lambda x: x.order)
         for idx, var in enumerate(variables):
             varname = var.variable
             try:
@@ -100,6 +102,9 @@ class PanObject(object):
 
     def __str__(self):
         return str(getattr(self, self.NAME, None))
+
+    def __repr__(self):
+        return "<%s %s at 0x%x>" % (type(self).__name__, repr(getattr(self, self.NAME, None)), id(self))
 
     @classmethod
     def variables(cls):
@@ -370,7 +375,7 @@ class PanObject(object):
                 continue
             # Create an element containing the value in the instance variable
             if var.vartype == "member":
-                for member in value:
+                for member in pandevice.string_or_list(value):
                     ET.SubElement(nextelement, 'member').text = str(member)
             elif var.vartype == "entry":
                 try:
@@ -459,7 +464,7 @@ class PanObject(object):
 
         """
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": apply called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+        logger.debug(pandevice.id + ": apply called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
         if self.HA_SYNC:
             pandevice.active().xapi.edit(self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC)
@@ -480,7 +485,7 @@ class PanObject(object):
 
         """
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": create called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+        logger.debug(pandevice.id + ": create called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
         element = self.element_str()
         if self.HA_SYNC:
@@ -497,7 +502,7 @@ class PanObject(object):
 
         """
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": delete called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+        logger.debug(pandevice.id + ": delete called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         pandevice.set_config_changed()
         for child in self.children:
             child._check_child_methods("delete")
@@ -520,11 +525,10 @@ class PanObject(object):
             variable (str): The name of an instance variable to update on the device
 
         """
-        import ha
-        pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": update called on %s object \"%s\" and variable \"%s\"" %
+        pan_device = self.pandevice()
+        logger.debug(pan_device.id + ": update called on %s object \"%s\" and variable \"%s\"" %
                      (type(self), getattr(self, self.NAME), variable))
-        pandevice.set_config_changed()
+        pan_device.set_config_changed()
         variables = type(self).variables()
         value = getattr(self, variable)
         # Get the requested variable from the class' variables tuple
@@ -562,19 +566,19 @@ class PanObject(object):
                 # Not an 'entry' variable
                 varpath = re.sub(regex, getattr(self, matchedvar.variable), varpath)
         if value is None:
-            pandevice.xapi.delete(self.xpath() + "/" + varpath, retry_on_peer=self.HA_SYNC)
+            pan_device.xapi.delete(self.xpath() + "/" + varpath, retry_on_peer=self.HA_SYNC)
         else:
             element_tag = varpath.split("/")[-1]
             element = ET.Element(element_tag)
             if var.vartype == "member":
-                for member in value:
+                for member in pandevice.string_or_list(value):
                     ET.SubElement(element, 'member').text = str(member)
                 xpath = self.xpath() + "/" + varpath
             else:
                 # Regular text variables
                 element.text = value
                 xpath = self.xpath() + "/" + varpath
-            pandevice.xapi.edit(xpath, ET.tostring(element), retry_on_peer=self.HA_SYNC)
+            pan_device.xapi.edit(xpath, ET.tostring(element), retry_on_peer=self.HA_SYNC)
 
     def refresh(self, running_config=False, xml=None, refresh_children=True, exceptions=True):
         """Refresh all variables and child objects from the device
@@ -589,7 +593,7 @@ class PanObject(object):
         # Get the root of the xml to parse
         if xml is None:
             pandevice = self.pandevice()
-            logger.debug(pandevice.hostname + ": refresh called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+            logger.debug(pandevice.id + ": refresh called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
             if running_config:
                 api_action = pandevice.xapi.show
             else:
@@ -647,7 +651,7 @@ class PanObject(object):
             raise err.PanDeviceError("Variable %s does not exist in variable tuple" % variable)
         if xml is None:
             pandevice = self.pandevice()
-            logger.debug(pandevice.hostname + ": refresh_variable called on %s object \"%s\" with variable %s" % (type(self), getattr(self, self.NAME), variable))
+            logger.debug(pandevice.id + ": refresh_variable called on %s object \"%s\" with variable %s" % (type(self), getattr(self, self.NAME), variable))
             if running_config:
                 api_action = pandevice.xapi.show
             else:
@@ -725,7 +729,7 @@ class PanObject(object):
     def refresh_xml(self, running_config=False, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse
         pandevice = self.pandevice()
-        logger.debug(pandevice.hostname + ": refresh_xml called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+        logger.debug(pandevice.id + ": refresh_xml called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
         if running_config:
             api_action = pandevice.xapi.show
         else:
@@ -905,7 +909,7 @@ class PanObject(object):
     @classmethod
     def applyall(cls, parent):
         pandevice = parent.pandevice()
-        logger.debug(pandevice.hostname + ": applyall called on %s type" % cls)
+        logger.debug(pandevice.id + ": applyall called on %s type" % cls)
         objects = parent.findall(cls)
         if not objects:
             return
@@ -960,7 +964,7 @@ class PanObject(object):
         else:
             pandevice = parent.pandevice()
             parent_xpath = parent.xpath()
-        logger.debug(pandevice.hostname + ": refreshall called on %s type" % cls)
+        logger.debug(pandevice.id + ": refreshall called on %s type" % cls)
         if running_config:
             api_action = pandevice.xapi.show
         else:
@@ -1181,14 +1185,21 @@ class VarPath(object):
         xmldefault (bool): The default value if no value exists in the xml from a device
         condition (str): In the format othervariable:value where this variable is only
             considered if othervariable equals value
+        order (int): The order of this variable relative to other variables in this constructor of the
+            class that contains this variables. Defaults to 100, set variable order to less than or
+            greater than 100 to alter the order of the variables.
     """
-    def __init__(self, path, variable=None, vartype=None, default=None, xmldefault=None, condition=None):
+    def __init__(self, path, variable=None, vartype=None, default=None, xmldefault=None, condition=None, order=100):
         self.path = path
         self._variable = variable
         self.vartype = vartype
         self.default = default
         self.xmldefault = xmldefault
         self.condition = condition
+        self.order = order
+
+    def __repr__(self):
+        return "<%s %s at 0x%x>" % (type(self).__name__, repr(self.variable), id(self))
 
     @property
     def variable(self):
@@ -1551,7 +1562,7 @@ class PanDevice(PanObject):
                             new_active = self.pan_device.set_failed()
                             if retry_on_peer and new_active is not None:
                                 logger.debug("Connection to device '%s' failed, using HA peer '%s'" %
-                                             (self.pan_device.hostname, new_active.hostname))
+                                             (self.pan_device.id, new_active.hostname))
                                 # The active failed, apply on passive (which is now active)
                                 kwargs["retry_on_peer"] = False
                                 getattr(new_active.xapi, super_method_name)(*args, **kwargs)
@@ -1618,6 +1629,10 @@ class PanDevice(PanObject):
                                              pan_device=self.pan_device)
 
     # Properties
+
+    @property
+    def id(self):
+        return getattr(self, self.NAME, '<no-id>')
 
     @property
     def api_key(self):
@@ -2442,7 +2457,7 @@ class PanDevice(PanObject):
                 # Connection errors (URLError) are ok
                 # Invalid cred errors are ok because FW auth system takes longer to start up
                 # Other errors should be raised
-                if not e.msg.startswith("URLError:") and not e.msg.startswith("Invalid credentials."):
+                if not str(e).startswith("URLError:") and not str(e).startswith("Invalid credentials."):
                     # Error not related to connection issue.  Raise it.
                     raise e
                 else:

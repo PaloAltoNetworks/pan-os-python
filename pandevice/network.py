@@ -338,7 +338,7 @@ class Interface(PanObject):
                     else:
                         obj.interface = None
                         obj.update("interface")
-                elif str(self) in obj.interface:
+                elif "__iter__" in dir(obj.interface) and str(self) in obj.interface:
                     if delete_referencing_objects:
                         obj.delete()
                     else:
@@ -393,7 +393,7 @@ class Layer3Parameters(object):
 
     @classmethod
     def variables(cls):
-        return super(Layer3Parameters, cls).variables() + cls._variables()
+        return super(Layer3Parameters, cls).variables() + Layer3Parameters._variables()
 
     @classmethod
     def vars_with_mode(cls):
@@ -415,12 +415,12 @@ class Layer2Parameters(object):
         return (
             Var("lldp/enable", "lldp_enabled", vartype="bool"),
             Var("lldp/profile", "lldp_profile"),
-            Var("netflow-profile"),
+            Var("netflow-profile", "netflow_profile_l2"),
         )
 
     @classmethod
     def variables(cls):
-        return super(Layer2Parameters, cls).variables() + cls._variables()
+        return super(Layer2Parameters, cls).variables() + Layer2Parameters._variables()
 
     @classmethod
     def vars_with_mode(cls):
@@ -581,8 +581,8 @@ class Layer3Subinterface(Layer3Parameters, VsysImportMixin, Subinterface):
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
-        adjust-tcp-mss (bool): Adjust TCP MSS
-        netflow-profile (NetflowProfile): Netflow profile
+        adjust_tcp_mss (bool): Adjust TCP MSS
+        netflow_profile (NetflowProfile): Netflow profile
 
     """
     XPATH = "/layer3/units"
@@ -603,7 +603,7 @@ class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
     Args:
         lldp_enabled (bool): Enable LLDP
         lldp_profile (str): Reference to an lldp profile
-        netflow_profile (str): Reference to a netflow profile
+        netflow_profile_l2 (NetflowProfile): Reference to a netflow profile
 
     """
     XPATH = "/layer2/units"
@@ -613,9 +613,6 @@ class Layer2Subinterface(Layer2Parameters, VsysImportMixin, Subinterface):
     @classmethod
     def variables(cls):
         variables = super(Layer2Subinterface, Layer2Subinterface).variables()
-        # Get the mode variable and change its default value to "layer3"
-        modevar = filter(lambda var: var.variable == "mode", variables)[0]
-        modevar.default = "layer2"
         return variables + (
             Var("comment"),
         )
@@ -664,24 +661,28 @@ class PhysicalInterface(Interface):
 
 
 
-class EthernetInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, PhysicalInterface):
+class EthernetInterface(Layer2Parameters, Layer3Parameters, VsysImportMixin, PhysicalInterface):
     """Ethernet interface (eg. 'ethernet1/1')
 
     Args:
-        link_speed (str): Link speed: eg. auto, 10, 100, 1000
-        link_duplex (str): Link duplex: eg. auto, full, half
-        link_state (str): Link state: eg. auto, up, down
+        name (str): Name of interface (eg. 'ethernet1/1')
+        mode (str): Mode of the interface: layer3|layer2|virtual-wire|tap|ha|decrypt-mirror|aggregate-group
+            Not all modes apply to all interface types (Default: layer3)
         ip (tuple): Layer3: Interface IPv4 addresses
         ipv6_enabled (bool): Layer3: IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Layer3: Interface Management Profile
         mtu(int): Layer3: MTU for interface
-        adjust-tcp-mss (bool): Layer3: Adjust TCP MSS
+        adjust_tcp_mss (bool): Layer3: Adjust TCP MSS
+        netflow_profile (NetflowProfile): Netflow profile
         lldp_enabled (bool): Layer2: Enable LLDP
         lldp_profile (str): Layer2: Reference to an lldp profile
-        netflow-profile (NetflowProfile): Netflow profile
+        netflow_profile_l2 (NetflowProfile): Netflow profile
+        link_speed (str): Link speed: eg. auto, 10, 100, 1000
+        link_duplex (str): Link duplex: eg. auto, full, half
+        link_state (str): Link state: eg. auto, up, down
+        aggregate_group (str): Aggregate interface (eg. ae1)
 
     """
-    #TODO: verify order of args in docstring above
     XPATH = "/network/interface/ethernet"
     XPATH_IMPORT = "/network/interface"
     CHILDTYPES = (
@@ -701,18 +702,22 @@ class EthernetInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, Phy
         )
 
 
-class AggregateInterface(Layer3Parameters, Layer2Parameters, VsysImportMixin, PhysicalInterface):
+class AggregateInterface(Layer2Parameters, Layer3Parameters, VsysImportMixin, PhysicalInterface):
     """Aggregate interface (eg. 'ae1')
 
     Args:
+        name (str): Name of interface (eg. 'ae1')
+        mode (str): Mode of the interface: layer3|layer2|virtual-wire|ha|decrypt-mirror
+            Not all modes apply to all interface types (Default: layer3)
         ip (tuple): Layer3: Interface IPv4 addresses
         ipv6_enabled (bool): Layer3: IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Layer3: Interface Management Profile
         mtu(int): Layer3: MTU for interface
-        adjust-tcp-mss (bool): Layer3: Adjust TCP MSS
+        adjust_tcp_mss (bool): Layer3: Adjust TCP MSS
+        netflow_profile (NetflowProfile): Netflow profile
         lldp_enabled (bool): Layer2: Enable LLDP
         lldp_profile (str): Layer2: Reference to an lldp profile
-        netflow-profile (NetflowProfile): Netflow profile
+        netflow_profile_l2 (NetflowProfile): Netflow profile
 
     """
     XPATH = "/network/interface/aggregate-ethernet"
@@ -733,8 +738,8 @@ class VlanInterface(Layer3Parameters, VsysImportMixin, Interface):
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
-        adjust-tcp-mss (bool): Adjust TCP MSS
-        netflow-profile (NetflowProfile): Netflow profile
+        adjust_tcp_mss (bool): Adjust TCP MSS
+        netflow_profile (NetflowProfile): Netflow profile
 
     """
     XPATH = "/network/interface/vlan/units"
@@ -752,8 +757,8 @@ class LoopbackInterface(Layer3Parameters, VsysImportMixin, Interface):
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
-        adjust-tcp-mss (bool): Adjust TCP MSS
-        netflow-profile (NetflowProfile): Netflow profile
+        adjust_tcp_mss (bool): Adjust TCP MSS
+        netflow_profile (NetflowProfile): Netflow profile
 
     """
     XPATH = "/network/interface/loopback/units"
@@ -771,8 +776,8 @@ class TunnelInterface(Layer3Parameters, VsysImportMixin, Interface):
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
-        adjust-tcp-mss (bool): Adjust TCP MSS
-        netflow-profile (NetflowProfile): Netflow profile
+        adjust_tcp_mss (bool): Adjust TCP MSS
+        netflow_profile (NetflowProfile): Netflow profile
 
     """
     XPATH = "/network/interface/tunnel/units"

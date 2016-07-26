@@ -93,6 +93,8 @@ class Panorama(base.PanDevice):
         interval: The interval to check asynchronous jobs
 
     """
+
+    NAME = "hostname"
     CHILDTYPES = (
         "panorama.DeviceGroup",
         "firewall.Firewall",

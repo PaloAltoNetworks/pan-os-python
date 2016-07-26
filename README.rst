@@ -8,7 +8,7 @@ device API that is object oriented and conceptually similar to interaction
 with the device via the GUI or CLI.
 
 * Free software: ISC License
-* Documentation: http://pandevice.readthedocs.org.
+* Documentation: http://pandevice.readthedocs.org
 
 -----
 

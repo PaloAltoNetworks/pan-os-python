@@ -90,10 +90,14 @@ class Firewall(PanDevice):
                  port=443,
                  vsys='vsys1',  # vsys# or 'shared'
                  is_virtual=None,
+                 multi_vsys=None,
                  *args,
                  **kwargs
                  ):
         """Initialize PanDevice"""
+        vsys_name = kwargs.pop('vsys_name', None)
+        serial_ha_peer = kwargs.pop('serial_ha_peer', None)
+        management_ip = kwargs.pop('management_ip', None)
         super(Firewall, self).__init__(hostname, api_username, api_password, api_key,
                                        port=port,
                                        is_virtual=is_virtual,
@@ -105,10 +109,10 @@ class Firewall(PanDevice):
 
         self.serial = serial
         self._vsys = vsys
-        self.vsys_name = None
-        self.multi_vsys = None
-        self.serial_ha_peer = None
-        self.management_ip = None
+        self.vsys_name = vsys_name
+        self.multi_vsys = multi_vsys
+        self.serial_ha_peer = serial_ha_peer
+        self.management_ip = management_ip
 
         self.shared = False
         """Set to True to act on the shared part of this firewall"""
@@ -123,6 +127,14 @@ class Firewall(PanDevice):
         See Also: :class:`pandevice.userid`
 
         """
+
+    def __repr__(self):
+        return "<%s %s %s at 0x%x>" % (type(self).__name__, repr(self.id), repr(self.vsys), id(self))
+
+    @property
+    def id(self):
+        id = self.serial if self.serial is not None else self.hostname
+        return id if id is not None else '<no-id>'
 
     @property
     def vsys(self):
