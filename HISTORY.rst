@@ -3,6 +3,15 @@
 History
 =======
 
+0.3.5
+-----
+
+Released: 2016-07-25
+
+Status: Alpha
+
+Bug fixes and documentation updates
+
 0.3.4
 -----
 
