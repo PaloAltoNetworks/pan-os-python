@@ -1366,6 +1366,7 @@ class PanDevice(PanObject):
         ha_peer (PanDevice): The HA peer device of this PanDevice
 
     """
+    NAME = "hostname"
 
     def __init__(self,
                  hostname,
