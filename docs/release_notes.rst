@@ -15,10 +15,13 @@ v5.2.0
   * Certified by Splunk
   * Removed deprecated commands (**panblock** and **panupdate**) as a
     requirement for certification.
+  * Removes support for Splunk 6.1 and ealier as a requirement for
+    certification.
 
-.. note:: If you currently use **panblock** or **panupdate** commands,
-   please update your usage of the App to leverage :ref:`pantag` and
-   :ref:`panuserupdate` instead.
+.. note:: If you are using Splunk 6.1 or earlier, you must upgrade to Splunk
+   6.2 or later before upgrading to App v5.2.0. If you currently use
+   **panblock** or **panupdate** commands, please update your usage of the
+   App to leverage :ref:`pantag` and :ref:`panuserupdate` instead.
 
 Add-on
 ======
