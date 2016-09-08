@@ -267,8 +267,6 @@ class UserId(object):
             command = 'show object registered-ip all'
         root = self.panfirewall.op(cmd=command, vsys=self.panfirewall.vsys, cmd_xml=True)
         entries = root.findall("./result/entry")
-        if not entries:
-            return None
         addresses = {}
         for entry in entries:
             ip = entry.get("ip")
