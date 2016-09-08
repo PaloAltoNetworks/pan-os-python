@@ -281,6 +281,8 @@ class UserId(object):
 
         """
         addresses = self.get_all_registered_ip()
+        if addresses is None:
+            return
         self.batch_start()
         for ip, tags in addresses.iteritems():
             self.unregister(ip, tags)
