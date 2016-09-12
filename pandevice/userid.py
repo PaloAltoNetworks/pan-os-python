@@ -25,6 +25,7 @@ from copy import deepcopy
 import pandevice.errors as err
 from pandevice import string_or_list
 from pan.xapi import PanXapiError
+from pandevice.updater import PanOSVersion
 
 
 logger = logging.getLogger(__name__)
@@ -255,10 +256,16 @@ class UserId(object):
             dict: ip addresses as keys with tags as values
 
         """
-        if self.panfirewall.version < 6.1:
-            root = self.panfirewall.op(cmd='show object registered-address all', vsys=self.panfirewall.vsys, cmd_xml=True)
+        # Simple check to determine which command to use
+        if self.panfirewall.version is not None:
+            current_version = PanOSVersion(str(self.panfirewall.version))
+            if current_version < PanOSVersion("6.1.0"):
+                command = 'show object registered-address all'
+            else:
+                command = 'show object registered-ip all'
         else:
-            root = self.panfirewall.op(cmd='show object registered-ip all', vsys=self.panfirewall.vsys, cmd_xml=True)
+            command = 'show object registered-ip all'
+        root = self.panfirewall.op(cmd=command, vsys=self.panfirewall.vsys, cmd_xml=True)
         entries = root.findall("./result/entry")
         if not entries:
             return None
