@@ -293,3 +293,12 @@ class UserId(object):
         for ip, tags in addresses.iteritems():
             self.unregister(ip, tags)
         self.batch_end()
+
+    def get_all_tags_for_ip(self, ip):
+        """Return all tags belonging to given IP
+
+        """
+        addresses = self.get_all_registered_ip()
+        tags = addresses[ip]
+
+        return tags
