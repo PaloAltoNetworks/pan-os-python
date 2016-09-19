@@ -1142,12 +1142,12 @@ class PanObject(object):
                 references = getattr(obj, reference_var)
                 if references is None:
                     continue
-                elif hasattr(self, "__iter__") and self in references:
+                elif hasattr(references, "__iter__") and self in references:
                     if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
                         continue
                     references.remove(self)
                     if update: obj.update(reference_var)
-                elif hasattr(self, "__iter__") and str(self) in references:
+                elif hasattr(references, "__iter__") and str(self) in references:
                     if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
                         continue
                     references.remove(str(self))
@@ -1164,12 +1164,11 @@ class PanObject(object):
             if var is None:
                 setattr(obj, reference_var, [self])
                 if update: obj.update(reference_var)
-            elif hasattr(var, "__iter__") and self not in var and str(self) not in var:
+            elif hasattr(var, "__iter__") and not (self in var or str(self) in var):
                 var.append(self)
-                setattr(obj, reference_var, var)
                 if update: obj.update(reference_var)
-            elif var != self and var != str(self):
-                setattr(obj, reference_var, self)
+            elif not hasattr(var, "__iter__") and (var != self or var != str(self)):
+                setattr(obj, reference_var, [self])
                 if update: obj.update(reference_var)
             return obj
 
@@ -2537,7 +2536,11 @@ class PanDevice(PanObject):
         if get_devices:
             messages = []
         else:
-            messages = job['details']['line']
+            try:
+                messages = job['details']['line']
+            except KeyError:
+                logger.error("Unable to get messages from commit job xml: %s" % str(job))
+                raise err.PanDeviceError("Unable to get messages from commit job xml")
         if issubclass(messages.__class__, basestring):
             messages = [messages]
         # Create the results dict

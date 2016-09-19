@@ -146,6 +146,11 @@ def xml_combine(root, elements):
             If a list, merge all Elements in the list into root.
 
     """
+    # If one of the args is None, return the other as-is
+    if root is None:
+        return elements
+    elif elements is None:
+        return root
     for element in elements:
         found_element = root.find(element.tag)
         if found_element is None:

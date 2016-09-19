@@ -549,12 +549,15 @@ class AbstractSubinterface(object):
                 subintclass = Layer2Subinterface
             else:
                 raise err.PanDeviceError("Unknown layer passed to subinterface factory: %s" % mode)
+            # Check if the subinterface exists already
             layered_subinterface = self.parent.find(self.name, subintclass)
             # Verify tag is correct
             if layered_subinterface is not None:
+                # The subinterface exists already, so verify its tag
                 if layered_subinterface.tag != self.tag:
                     layered_subinterface.tag = self.tag
             else:
+                # The subinterface does not exist yet
                 if add:
                     layered_subinterface = self.parent.add(subintclass(self.name, tag=self.tag))
                 else:
