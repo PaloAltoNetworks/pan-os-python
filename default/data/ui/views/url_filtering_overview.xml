@@ -97,7 +97,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` app="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` app=$click.name2|s$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
@@ -139,7 +139,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` user="$row.user$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` user=$row.user|s$ app=$row.app|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -170,12 +170,12 @@
       <drilldown>
         <link field="dest_hostname">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` dest_hostname="$row.dest_hostname$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` dest_hostname=$row.dest_hostname|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="category">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` category="$row.category$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` category=$row.category|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>

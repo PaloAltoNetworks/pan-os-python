@@ -70,7 +70,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` category="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` category=$click.name2|s$ earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
 	  ]]>
         </link>
       </drilldown>
@@ -101,7 +101,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_ip="$row.Destination IP$" misc="$row.Filename$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_ip=$row.Destination IP|s$ misc=$row.Filename|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -170,12 +170,12 @@
         </link>
         <link field="WildFire Link">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` (sourcetype="pan:wildfire_report" (wildfire.id="$row.WildFire Report ID$" OR wildfire.report.id="$row.WildFire Report ID$")) OR (sourcetype="pan:threat" log_subtype="wildfire" report_id="$row.WildFire Report ID$")
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` (sourcetype="pan:wildfire_report" (wildfire.id=$row.WildFire Report ID|s$ OR wildfire.report.id=$row.WildFire Report ID|s$)) OR (sourcetype="pan:threat" log_subtype="wildfire" report_id=$row.WildFire Report ID|s$)
 	  ]]>
         </link>
         <link field="*">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` src_ip="$row.Source$" dest_ip="$row.Dest IP$" dest_port="$row.Dest Port$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` src_ip=$row.Source|s$ dest_ip=$row.Dest IP|s$ dest_port=$row.Dest Port|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -310,7 +310,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` action="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` action=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>

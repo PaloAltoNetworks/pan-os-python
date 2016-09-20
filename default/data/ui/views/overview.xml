@@ -78,7 +78,7 @@
       <drilldown>
         <link>
           <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` sourcetype="pan:*" log_subtype="$click.name2$"&earliest=-5m&latest=now
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` sourcetype="pan:*" log_subtype=$click.name2|s$&earliest=-5m&latest=now
               ]]>
         </link>
       </drilldown>
@@ -98,7 +98,7 @@
       <drilldown>
         <link>
           <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` sourcetype="pan:traffic" app="$click.value$"&earliest=-5m&latest=now
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` sourcetype="pan:traffic" app=$click.value|s$&earliest=-5m&latest=now
               ]]>
         </link>
       </drilldown>
