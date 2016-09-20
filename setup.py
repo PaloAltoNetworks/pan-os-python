@@ -29,7 +29,7 @@ with open('README.txt') as file:
 setup(name='pan-python',
       version=version,
       description='Multi-tool set for Palo Alto Networks' +
-      ' PAN-OS, Panorama and WildFire',
+      ' PAN-OS, Panorama, WildFire and AutoFocus',
       long_description=long_description,
       author='Kevin Steves',
       author_email='kevin.steves@pobox.com',
@@ -51,6 +51,11 @@ setup(name='pan-python',
       ],
 
       package_dir={'': 'lib'},
-      packages=['pan'],
-      scripts=['bin/panxapi.py', 'bin/panconf.py', 'bin/panwfapi.py']
+      packages=['pan', 'pan/afapi'],
+      scripts=[
+          'bin/panxapi.py',
+          'bin/panconf.py',
+          'bin/panwfapi.py',
+          'bin/panafapi.py',
+      ],
       )

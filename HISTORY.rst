@@ -1,6 +1,117 @@
 Release History
 ===============
 
+0.10.0 (2016-07-23)
+-------------------
+
+- pan.http: Use email.message_from_string() for the headers attribute,
+  which is now an email.message.Message object:
+
+    https://docs.python.org/2/library/email.message.html
+
+  encoding attribute now set with Message get_content_charset()
+  method.
+
+  Add content_type attribute using Message get_content_type() method.
+
+  NOTE: this *may* introduce an incompatibility depending on how you
+  were using pan.afapi.PanAFapiRequest http_headers.
+
+- pan.http: If using urllib and no content-type header urlencode data
+  so application/x-www-form-urlencoded request works.
+
+- panxapi.rst: Add link to "PAN-OS XML API Labs with pan-python".
+
+- Updated documentation links to PAN-OS 7.1.
+
+- pan.xapi, pan.wfapi: Sanitize secrets in debug output.
+
+- pan.wfapi, bin/panwfapi.py: Deprecate the use of
+  pan.wfapi.cloud_ssl_context() for SSL server certificate
+  verification.
+
+  NOTE: Changes are backwards compatible however use of
+  cloud_ssl_context() is not recommended.
+
+  If your operating system certificate store is insufficient you can
+  install certifi (https://pypi.python.org/pypi/certifi) and its CA
+  bundle will now be used for SSL server certificate verification when
+  ssl_context is None.
+
+- pan.xapi: Allow Python 2.6 as a one-off while still using
+  sys.version_info.major named attribute.
+
+- pan.xapi, panxapi.py: Support for type=report API request.  Joint
+  effort with Andrew Stanton.
+
+0.9.1 (2016-03-09)
+------------------
+
+- panrc.rst: AutoFocus API uses .panrc also.
+
+- pan.rc: Sanitize secrets in debug output.
+
+- pan.http: Handle ssl.CertificateError exception.
+
+- panxapi.py: api_password now optional for -l; when not specified the
+  user is prompted for the password (using getpass.getpass()).
+
+0.9.0 (2016-01-27)
+------------------
+
+- AutoFocus API support.
+
+- panwfapi.py: Add hash length to hash invalid length message.
+
+- pan.wfapi: Use email package for HTTP header retrieval and parsing;
+  also fixes potential issue with not handling a quoted filename in
+  content-disposition header.
+
+      content-disposition: attachment; filename="sample"
+
+0.8.0 (2015-10-17)
+------------------
+
+- Don't override default Exception class __init__() and __str__()
+  methods since we don't change anything.
+
+- pan.wfapi: Restore behaviour of allowing non-2XX response codes to
+  fall through urlopen() that was erroneously removed in previous SSL
+  handling/PEP 476 changes.
+
+- pan.xapi: For commit sync=True, sleep at the top of the loop so we
+  don't poll immediately after commit.
+
+- pan.wfapi: Mention WildFire appliance in the module docstring.
+
+- pan.wfapi, panwfapi.py: Rework SSL handling to use SSL context and
+  recognize PEP 476 changes in Python 2.7.9 and 3.4.3.  Greatly
+  simplifies SSL certificate verification.
+
+  NOTE INCOMPATIBLE CHANGES:
+
+  pan.wfapi.PanWFapi(): cacloud, cafile, capath removed.
+  ssl_context added.
+
+  panwfapi.py: --cacloud removed.  --ssl added.
+
+- panxapi.py: If a .panrc tagname is specified with -k the output will
+  be hostname and api_key varname values for use in a .panrc file.
+
+- panwfapi.rst: hostname can also specify a WildFire appliance.
+
+- panwfapi.py: Allow --date to be specified as -days or 0 for today.
+
+- Use 7.0 links to documentation.
+
+- reStructuredText blank line cleanup.
+
+- pan.wfapi, panwfapi.py: Add support for /publicapi/submit/link(s)
+  requests.
+
+- pan.wfapi, panwfapi.py: Add support for WildFire API
+  /publicapi/submit/change-request request.
+
 0.7.0 (2015-05-25)
 ------------------
 

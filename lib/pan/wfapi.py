@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2015 Kevin Steves <kevin.steves@pobox.com>
+# Copyright (c) 2013-2016 Kevin Steves <kevin.steves@pobox.com>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -14,10 +14,11 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 
-"""Interface to the WildFire  API
+"""Interface to the WildFire API
 
 The pan.wfapi module implements the PanWFapi class.  It provides an
-interface to the WildFire API on Palo Alto Networks' WildFire Cloud.
+interface to the WildFire API on Palo Alto Networks' WildFire Cloud
+and WildFire appliance.
 """
 
 # XXX Using the requests module which uses urllib3 and has support
@@ -27,26 +28,26 @@ interface to the WildFire API on Palo Alto Networks' WildFire Cloud.
 # to be revisited as some parts of this are not clean.
 
 from __future__ import print_function
+import socket
 import sys
-import re
 import os
-from tempfile import NamedTemporaryFile
 from io import BytesIO
+import email
+import email.errors
 import email.utils
 import logging
 try:
     # 3.2
-    from urllib.request import Request, urlopen, \
-        build_opener, install_opener, HTTPErrorProcessor
-    from urllib.request import HTTPSHandler, OpenerDirector
+    from urllib.request import Request, \
+        build_opener, HTTPErrorProcessor, HTTPSHandler
     from urllib.error import URLError
     from urllib.parse import urlencode
     from http.client import responses
     _legacy_urllib = False
 except ImportError:
     # 2.7
-    from urllib2 import Request, urlopen, URLError, \
-        build_opener, install_opener, HTTPErrorProcessor
+    from urllib2 import Request, URLError, \
+        build_opener, HTTPErrorProcessor, HTTPSHandler
     from urllib import urlencode
     from httplib import responses
     _legacy_urllib = True
@@ -55,18 +56,16 @@ import xml.etree.ElementTree as etree
 from . import __version__, DEBUG1, DEBUG2, DEBUG3
 import pan.rc
 
-import socket
 try:
     import ssl
 except ImportError:
     raise ValueError('SSL support not available')
 
 try:
-    ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-except AttributeError:
-    _have_sslcontext = False
-else:
-    _have_sslcontext = True
+    import certifi
+    _have_certifi = True
+except ImportError:
+    _have_certifi = False
 
 _cloud_server = 'wildfire.paloaltonetworks.com'
 _encoding = 'utf-8'
@@ -117,13 +116,7 @@ def _isbytes(s):
 
 
 class PanWFapiError(Exception):
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        if self.msg is None:
-            return ''
-        return self.msg
+    pass
 
 
 class PanWFapi:
@@ -133,28 +126,17 @@ class PanWFapi:
                  api_key=None,
                  timeout=None,
                  http=False,
-                 cacloud=True,
-                 cafile=None,
-                 capath=None):
+                 ssl_context=None):
         self._log = logging.getLogger(__name__).log
         self.tag = tag
         self.hostname = hostname
         self.api_key = None
         self.timeout = timeout
-        self.cafile = cafile
-        self.capath = capath
+        self.ssl_context = ssl_context
 
         self._log(DEBUG3, 'Python version: %s', sys.version)
         self._log(DEBUG3, 'xml.etree.ElementTree version: %s', etree.VERSION)
         self._log(DEBUG3, 'pan-python version: %s', __version__)
-
-        if ((cacloud and sys.hexversion >= 0x03020000) and
-                (self.cafile is None and self.capath is None)):
-            tempfile = self.__cacloud()
-            if tempfile is None:
-                raise PanWFapiError(self._msg)
-            self.cacloud_tempfile = tempfile
-            self.cafile = self.cacloud_tempfile.name
 
         if self.timeout is not None:
             try:
@@ -163,6 +145,14 @@ class PanWFapi:
                     raise ValueError
             except ValueError:
                 raise PanWFapiError('Invalid timeout: %s' % self.timeout)
+
+        if self.ssl_context is not None:
+            try:
+                ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+            except AttributeError:
+                raise PanXapiError('SSL module has no SSLContext()')
+        elif _have_certifi:
+            self.ssl_context = self._certifi_ssl_context()
 
         init_panrc = {}  # .panrc args from constructor
         if hostname is not None:
@@ -195,8 +185,12 @@ class PanWFapi:
             self._log(DEBUG2, 'using legacy urllib')
 
     def __str__(self):
-        return '\n'.join((': '.join((k, str(self.__dict__[k]))))
-                         for k in sorted(self.__dict__))
+        x = self.__dict__.copy()
+        for k in x:
+            if k in ['api_key'] and x[k] is not None:
+                x[k] = '*' * 6
+        return '\n'.join((': '.join((k, str(x[k]))))
+                         for k in sorted(x))
 
     def __clear_response(self):
         # XXX naming
@@ -208,51 +202,24 @@ class PanWFapi:
         self.xml_element_root = None
         self.attachment = None
 
-    def __get_header(self, response, name):
-        """use getheader() method depending or urllib in use"""
-
-        s = None
-        body = set()
-
-        if hasattr(response, 'getheader'):
-            # 3.2, http.client.HTTPResponse
-            s = response.getheader(name)
-        elif hasattr(response.info(), 'getheader'):
-            # 2.7, httplib.HTTPResponse
-            s = response.info().getheader(name)
-        else:
-            raise PanWFapiError('no getheader() method found in ' +
-                                'urllib response')
-
-        if s is not None:
-            body = [x.lower() for x in s.split(';')]
-            body = [x.lstrip() for x in body]
-            body = [x.rstrip() for x in body]
-            body = set(body)
-
-        self._log(DEBUG3, '__get_header(%s): %s', name, s)
-        self._log(DEBUG3, '__get_header: %s', body)
-
-        return body
-
     def __set_response(self, response):
         message_body = response.read()
 
-        content_type = self.__get_header(response, 'content-type')
+        content_type = self._message.get_content_type()
         if not content_type:
             if self._msg is None:
                 self._msg = 'no content-type response header'
             return False
 
-        if 'application/octet-stream' in content_type:
+        if content_type == 'application/octet-stream':
             return self.__set_stream_response(response, message_body)
 
         # XXX text/xml RFC 3023
-        elif ('application/xml' in content_type or
-              'text/xml' in content_type):
+        elif (content_type == 'application/xml' or
+              content_type == 'text/xml'):
             return self.__set_xml_response(message_body)
 
-        elif 'text/html' in content_type:
+        elif content_type == 'text/html':
             return self.__set_html_response(message_body)
 
         else:
@@ -261,24 +228,10 @@ class PanWFapi:
             return False
 
     def __set_stream_response(self, response, message_body):
-        content_disposition = self.__get_header(response,
-                                                'content-disposition')
-        if not content_disposition:
+        filename = self._message.get_filename()
+        if not filename:
             self._msg = 'no content-disposition response header'
             return False
-
-        if 'attachment' not in content_disposition:
-            msg = 'no handler for content-disposition: %s' % \
-                content_disposition
-            self._msg = msg
-            return False
-
-        filename = None
-        for type in content_disposition:
-            result = re.search(r'^filename=([-\w\.]+)$', type)
-            if result:
-                filename = result.group(1)
-                break
 
         attachment = {}
         attachment['filename'] = filename
@@ -343,32 +296,6 @@ class PanWFapi:
         self._log(DEBUG3, 'xml_root.decode(): %s', type(s.decode(_encoding)))
         return s.decode(_encoding)
 
-    # see http://bugs.python.org/issue18543
-    # this is a modified urllib.request.urlopen()
-    @staticmethod
-    def _urlopen(url, data=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-                 cafile=None, capath=None, cadefault=False):
-
-        def http_response(request, response):
-            return response
-
-        http_error_processor = HTTPErrorProcessor()
-        http_error_processor.https_response = http_response
-
-        if _have_sslcontext and (cafile or capath or cadefault):
-            context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-            context.options |= ssl.OP_NO_SSLv2
-            context.verify_mode = ssl.CERT_REQUIRED
-            if cafile or capath:
-                context.load_verify_locations(cafile, capath)
-            else:
-                context.set_default_verify_paths()
-            https_handler = HTTPSHandler(context=context, check_hostname=True)
-            opener = build_opener(https_handler, http_error_processor)
-        else:
-            opener = build_opener(http_error_processor)
-        return opener.open(url, data, timeout)
-
 # XXX Unicode notes
 # 2.7
 # decode() str (bytes) -> unicode
@@ -384,40 +311,31 @@ class PanWFapi:
         url = self.uri
         url += request_uri
 
-        self._log(DEBUG1, 'URL: %s', url)
-        self._log(DEBUG1, 'headers: %s', headers)
-
         # body must by type 'bytes' for 3.x
         if _isunicode(body):
             body = body.encode()
 
-        self._log(DEBUG3, 'body: %s', repr(body))
-
         request = Request(url, body, headers)
 
+        self._log(DEBUG1, 'URL: %s', url)
         self._log(DEBUG1, 'method: %s', request.get_method())
         self._log(DEBUG1, 'headers: %s', request.header_items())
+
+        # XXX leaks apikey
+#        self._log(DEBUG3, 'body: %s', repr(body))
 
         kwargs = {
             'url': request,
             }
-        # Changed in version 3.2: cafile and capath were added.
-        if sys.hexversion >= 0x03020000:
-            kwargs['cafile'] = self.cafile
-            kwargs['capath'] = self.capath
-        # Changed in version 3.3: cadefault added
-        if sys.hexversion >= 0x03030000:
-            pass
-#            kwargs['cadefault'] = True
+
+        if self.ssl_context is not None:
+            kwargs['context'] = self.ssl_context
 
         if self.timeout is not None:
             kwargs['timeout'] = self.timeout
 
         try:
-
-            response = PanWFapi._urlopen(**kwargs)
-
-        # invalid cafile, capath
+            response = self._urlopen(**kwargs)
         except (URLError, IOError) as e:
             self._log(DEBUG2, 'urlopen() exception: %s', sys.exc_info())
             self._msg = str(e)
@@ -437,10 +355,15 @@ class PanWFapi:
             elif self.http_code in responses:
                 self.http_reason = responses[self.http_code]
 
+        try:
+            self._message = email.message_from_string(str(response.info()))
+        except (TypeError, email.errors.MessageError) as e:
+            raise PanWFapiError('email.message_from_string() %s' % e)
+
         self._log(DEBUG2, 'HTTP response code: %s', self.http_code)
         self._log(DEBUG2, 'HTTP response reason: %s', self.http_reason)
         self._log(DEBUG2, 'HTTP response headers:')
-        self._log(DEBUG2, '%s', response.info())
+        self._log(DEBUG2, '%s', self._message)
 
         if not (200 <= self.http_code < 300):
             self._msg = 'HTTP Error %s: %s' % (self.http_code,
@@ -644,12 +567,17 @@ class PanWFapi:
             form.add_field('url', url)
 
         if links is not None:
-            magic = 'panlnk\r\n'  # XXX remove in future
             if len(links) == 1:
                 form.add_field('link', links[0])
             elif len(links) > 1:
+                magic = 'panlnk'  # XXX should be optional in future
                 # XXX requires filename in Content-Disposition header
-                form.add_file(filename='pan', body=magic + '\n'.join(links))
+                if links[0] == magic:
+                    form.add_file(filename='pan',
+                                  body='\n'.join(links))
+                else:
+                    form.add_file(filename='pan',
+                                  body=magic + '\n' + '\n'.join(links))
 
         headers = form.http_headers()
         body = form.http_body()
@@ -693,15 +621,58 @@ class PanWFapi:
         if not self.__set_response(response):
             raise PanWFapiError(self._msg)
 
-    def __cacloud(self):
-        # WildFire cloud cafile:
-        #   https://certs.godaddy.com/anonymous/repository.pki
-        #   Go Daddy Class 2 Certification Authority Root Certificate
-        # use:
-        #   $ openssl x509 -in wfapi.py -text
-        # to view text form.
+    # allow non-2XX error codes
+    # see http://bugs.python.org/issue18543 for why we can't just
+    # install a new HTTPErrorProcessor()
+    @staticmethod
+    def _urlopen(url, data=None,
+                 timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+                 cafile=None, capath=None, cadefault=False,
+                 context=None):
 
-        gd_class2_root_crt = b'''
+        def http_response(request, response):
+            return response
+
+        http_error_processor = HTTPErrorProcessor()
+        http_error_processor.https_response = http_response
+
+        if context:
+            https_handler = HTTPSHandler(context=context)
+            opener = build_opener(https_handler, http_error_processor)
+        else:
+            opener = build_opener(http_error_processor)
+
+        return opener.open(url, data, timeout)
+
+    def _certifi_ssl_context(self):
+        if (sys.version_info.major == 2 and sys.hexversion >= 0x02070900 or
+           sys.version_info.major == 3 and sys.hexversion >= 0x03040300):
+            where = certifi.where()
+            self._log(DEBUG1, 'certifi %s: %s', certifi.__version__, where)
+            return ssl.create_default_context(
+                purpose=ssl.Purpose.SERVER_AUTH,
+                cafile=where)
+        else:
+            return None
+
+
+#
+# XXX USE OF cloud_ssl_context() IS DEPRECATED!
+#
+# If your operating system certificate store is out of date you can
+# install certifi (https://pypi.python.org/pypi/certifi) and its CA
+# bundle will be used for SSL server certificate verification when
+# ssl_context is None.
+#
+def cloud_ssl_context():
+    # WildFire cloud cafile:
+    #   https://certs.godaddy.com/anonymous/repository.pki
+    #   Go Daddy Class 2 Certification Authority Root Certificate
+    # use:
+    #   $ openssl x509 -in wfapi.py -text
+    # to view text form.
+
+    gd_class2_root_crt = b'''
 -----BEGIN CERTIFICATE-----
 MIIEADCCAuigAwIBAgIBADANBgkqhkiG9w0BAQUFADBjMQswCQYDVQQGEwJVUzEh
 MB8GA1UEChMYVGhlIEdvIERhZGR5IEdyb3VwLCBJbmMuMTEwLwYDVQQLEyhHbyBE
@@ -728,17 +699,15 @@ ReYNnyicsbkqWletNw+vHX/bvZ8=
 -----END CERTIFICATE-----
 '''
 
-        try:
-            tf = NamedTemporaryFile(suffix='.crt')
-            tf.write(gd_class2_root_crt)
-            tf.flush()
-        except (OSError, IOError) as e:
-            self._msg = "Can't create cloud cafile: %s" % e
-            return None
-
-        self._log(DEBUG2, '__cacloud: %s', tf.name)
-
-        return tf
+    if (sys.version_info.major == 2 and sys.hexversion >= 0x02070900 or
+            sys.version_info.major == 3 and sys.hexversion >= 0x03040300):
+        # XXX python >= 2.7.9 needs catada as Unicode, or we get:
+        # 'ssl.SSLError: nested asn1 error'
+        return ssl.create_default_context(
+            purpose=ssl.Purpose.SERVER_AUTH,
+            cadata=gd_class2_root_crt.decode())
+    else:
+        return None
 
 
 # Minimal RFC 2388 implementation
