@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2014 Kevin Steves <kevin.steves@pobox.com>
+# Copyright (c) 2013-2016 Kevin Steves <kevin.steves@pobox.com>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -33,16 +33,16 @@ _valid_varnames = set([
     'api_password',
     'api_key',
     ])
+_sanitize_varnames = set([
+    'api_password',
+    'api_key',
+    ])
 
 _indent = 2
 
 
 class PanRcError(Exception):
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
+    pass
 
 
 class PanRc:
@@ -64,7 +64,7 @@ class PanRc:
                 raise PanRcError('tag must match regexp "%s"' % regexp)
 
         self.__parse_path()
-        s = pprint.pformat(self.panrc, indent=_indent)
+        s = pprint.pformat(self.__sanitize_obj(self.panrc), indent=_indent)
         self._log(DEBUG1, 'panrc: %s', s)
 
     def __parse_path(self):
@@ -73,7 +73,7 @@ class PanRc:
         for basename in self.search_path:
             if basename == '__init__()':
                 if self.init_panrc:
-                    s = pprint.pformat(self.init_panrc,
+                    s = pprint.pformat(self.__sanitize_obj(self.init_panrc),
                                        indent=_indent)
                     self._log(DEBUG2, '__parse_path: __init__(): %s', s)
                     panrcs.append(self.init_panrc)
@@ -83,7 +83,7 @@ class PanRc:
                 path = os.path.join(path, self.filename)
                 d = self.__parse_file(path)
                 if d:
-                    s = pprint.pformat(d, indent=_indent)
+                    s = pprint.pformat(self.__sanitize_obj(d), indent=_indent)
                     self._log(DEBUG2, '__parse_path: %s: %s', path, s)
                     panrcs.append(d)
 
@@ -118,12 +118,28 @@ class PanRc:
 
     def __merge_panrcs(self, panrcs):
         panrcs.reverse()
-        s = pprint.pformat(panrcs, indent=_indent)
+        s = pprint.pformat(self.__sanitize_obj(panrcs), indent=_indent)
         self._log(DEBUG2, 'panrcs: %s', s)
 
         for panrc in panrcs:
             for key in panrc.keys():
                 self.panrc[key] = panrc[key]
+
+    def __sanitize_obj(self, obj):
+        if isinstance(obj, list):
+            return [self.__sanitize_dict(x) for x in obj]
+        else:
+            return self.__sanitize_dict(obj)
+
+    @staticmethod
+    def __sanitize_dict(obj):
+        assert isinstance(obj, dict), 'expect type dict, got %s' % type(obj)
+        o = obj.copy()
+        for k in o:
+            if k in _sanitize_varnames:
+                o[k] = '*' * 6
+
+        return o
 
 if __name__ == '__main__':
     # python rc.py [tag]

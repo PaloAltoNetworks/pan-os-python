@@ -1,5 +1,5 @@
 ..
- Copyright (c) 2014-2015 Kevin Steves <kevin.steves@pobox.com>
+ Copyright (c) 2014-2016 Kevin Steves <kevin.steves@pobox.com>
 
  Permission to use, copy, modify, and distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
@@ -106,9 +106,7 @@ class pan.wfapi.PanWFapi()
                            api_key=None,
                            timeout=None,
                            http=False,
-                           cacloud=True,
-                           cafile=None,
-                           capath=None)
+                           ssl_context=None)
 
  **tag**
   .panrc tagname.
@@ -133,27 +131,22 @@ class pan.wfapi.PanWFapi()
   Use *http* URL scheme for API requests.  This can be used with the
   ``testfile()`` method to get a malware test file over HTTP.
 
- **cacloud**
-  By default SSL server certificate verification is performed using
-  the Go Daddy Class 2 Certification Authority Root Certificate which
-  is used by the WildFire cloud and is stored in the PanWFapi class.
-  ``cacloud=False`` can be used to disable verification for test clouds
-  or if the cloud CA changes.
+ **ssl_context**
+  An ssl.SSLContext() to use for HTTPS requests.  An SSL context holds
+  data such as SSL configuration options and certificates.
 
-  urlopen() only supports SSL server certificate verification in
-  Python version 3.2 and greater.  
+  This can be used to specify the ``cafile``, ``capath`` and other SSL
+  configuration options.
 
- **cafile**
-  The ``cafile`` value for urlopen().  ``cafile`` is a file containing
-  CA certificates to be used for SSL server certificate
-  verification. By default the SSL server certificate is not verified.
-  ``cafile`` is only supported in Python version 3.2 and greater.
+  When ``ssl_context`` is *None*, if the **certifi** package is
+  installed its Certificate Authority (CA) bundle is used for SSL
+  server certificate verification, otherwise no changes are made to
+  the default **ssl** module settings.
 
- **capath**
-  The ``capath`` value for urlopen().  ``capath`` is a directory of
-  hashed certificate files to be used for SSL server certificate
-  verification. By default the SSL server certificate is not verified.
-  ``capath`` is only supported in Python version 3.2 and greater.
+  The default is *None*.
+
+  SSL contexts are supported starting in Python versions 2.7.9
+  and 3.2.
 
 exception pan.wfapi.PanWFapiError
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -385,10 +378,10 @@ SEE ALSO
  panwfapi.py
 
  WildFire Administrator's Guide
-  https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin.html
+  https://www.paloaltonetworks.com/documentation/71/wildfire/wf_admin
 
  WildFire API
-  https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin/use-the-wildfire-api.html
+  https://www.paloaltonetworks.com/documentation/71/wildfire/wf_api
 
 AUTHORS
 =======

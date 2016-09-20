@@ -34,8 +34,8 @@ DESCRIPTION
 
  .panrc files can contain hostname, port, serial number, username,
  password and API key variables for the PAN-OS XML API; and hostname
- and API key variables for the WildFire API.  .panrc is used by
- the PanXapi and PanWFapi classes.
+ and API key variables for the WildFire and AutoFocus APIs.  .panrc is
+ used by the PanXapi, PanWFapi and PanAFapi classes.
 
  A .panrc file consists of lines with the format:
  ::
@@ -83,16 +83,16 @@ Recognized varname Values
 
  The following *varname* values are recognized:
 
- ================   ======  ========
- *varname*          PAN-OS  WildFire
- ================   ======  ========
- **hostname**       X       X
+ ================   ======  ========  =========
+ *varname*          PAN-OS  WildFire  AutoFocus
+ ================   ======  ========  =========
+ **hostname**       X       X         X
  **port**           X
  **serial**         X
  **api_username**   X
  **api_password**   X
- **api_key**        X       X
- ================   ======  ========
+ **api_key**        X       X         X
+ ================   ======  ========  =========
 
 .panrc File Permissions
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,7 +117,7 @@ Recognized varname Values
 SEE ALSO
 ========
 
- panxapi.py, pan.xapi, panwfapi.py, pan.wfapi
+ panxapi.py, pan.xapi, panwfapi.py, pan.wfapi, panafapi.py, pan.afapi
 
 AUTHORS
 =======

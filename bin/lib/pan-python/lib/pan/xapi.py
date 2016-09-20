@@ -59,13 +59,7 @@ _job_query_interval = 0.5
 
 
 class PanXapiError(Exception):
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        if self.msg is None:
-            return ''
-        return self.msg
+    pass
 
 
 class PanXapi:
@@ -191,8 +185,12 @@ class PanXapi:
             self._log(DEBUG2, 'using legacy urllib')
 
     def __str__(self):
-        return '\n'.join((': '.join((k, str(self.__dict__[k]))))
-                         for k in sorted(self.__dict__))
+        x = self.__dict__.copy()
+        for k in x:
+            if k in ['api_key', 'api_password'] and x[k] is not None:
+                x[k] = '*' * 6
+        return '\n'.join((': '.join((k, str(x[k]))))
+                         for k in sorted(x))
 
     def __clear_response(self):
         # XXX naming
@@ -314,7 +312,11 @@ class PanXapi:
             # type=report
             self.element_result = self.element_root.find('report/result')
 
-        self._log(DEBUG3, 'xml_document: %s', self.xml_document)
+        if self.element_root.find('./result/key') is None:
+            self._log(DEBUG3, 'xml_document: %s', self.xml_document)
+        else:
+            self._log(DEBUG3, 'xml_document: %s',
+                      '<type=keygen response not shown>')
         self._log(DEBUG3, 'message_body: %s', type(message_body))
         self._log(DEBUG3, 'message_body.decode(): %s', type(self.xml_document))
 
@@ -462,7 +464,24 @@ class PanXapi:
 
         return s.decode(_encoding)
 
+    def __debug_request(self, query):
+        x = query.copy()
+        qstring = ''
+
+        for k in x:
+            if not qstring == '':
+                qstring += '&'
+            if k in ['key', 'password']:
+                x[k] = '*' * 6
+            data = '%s=%s' % (k, x[k])
+            qstring += data
+
+        uri = self.uri + '?' + qstring
+        self._log(DEBUG1, 'query: %s', x)
+        self._log(DEBUG1, 'URI: %s', uri)
+
     def __api_request(self, query):
+        self.__debug_request(query)
         # type=keygen request will urlencode key if needed so don't
         # double encode
         if 'key' in query:
@@ -474,7 +493,6 @@ class PanXapi:
         else:
             data = urlencode(query)
 
-        self._log(DEBUG3, 'query: %s', query)
         self._log(DEBUG3, 'data: %s', type(data))
         self._log(DEBUG3, 'data.encode(): %s', type(data.encode()))
 
@@ -486,15 +504,17 @@ class PanXapi:
             # data must by type 'bytes' for 3.x
             request = Request(url, data.encode())
 
-        self._log(DEBUG1, 'URL: %s', url)
         self._log(DEBUG1, 'method: %s', request.get_method())
-        self._log(DEBUG1, 'data: %s', data)
 
         kwargs = {
             'url': request,
             }
 
-        if (sys.version_info.major == 2 and sys.hexversion >= 0x02070900 or
+        if (sys.hexversion & 0xffff0000 == 0x02060000):
+            # XXX allow 2.6 as a one-off while still using .major
+            # named attribute
+            pass
+        elif (sys.version_info.major == 2 and sys.hexversion >= 0x02070900 or
                 sys.version_info.major == 3 and sys.hexversion >= 0x03040300):
             # see PEP 476; urlopen() has context
             if self.ssl_context is None:
@@ -533,7 +553,7 @@ class PanXapi:
     def __set_api_key(self):
         if self.api_key is None:
             self.keygen()
-            self._log(DEBUG1, 'autoset api_key: "%s"', self.api_key)
+            self._log(DEBUG1, 'autoset api_key')
 
     def cmd_xml(self, cmd):
         def _cmd_xml(args, obj):
@@ -834,6 +854,11 @@ class PanXapi:
         start_time = time.time()
 
         while True:
+            # sleep at the top of the loop so we don't poll
+            # immediately after commit
+            self._log(DEBUG2, 'sleep %.2f seconds', interval)
+            time.sleep(interval)
+
             try:
                 self.op(cmd=cmd, cmd_xml=True)
             except PanXapiError as msg:
@@ -854,9 +879,6 @@ class PanXapi:
                     time.time() > start_time + timeout):
                 raise PanXapiError('timeout waiting for ' +
                                    'job %s completion' % job.text)
-
-            self._log(DEBUG2, 'sleep %.2f seconds', interval)
-            time.sleep(interval)
 
     def op(self, cmd=None, vsys=None, cmd_xml=False, extra_qs=None):
         if cmd is not None and cmd_xml:
@@ -1016,6 +1038,100 @@ class PanXapi:
             if status is None:
                 raise PanXapiError('no status element in ' +
                                    'type=log&action=get response')
+            if status.text == 'FIN':
+                return
+
+            self._log(DEBUG2, 'job %s status %s', job.text, status.text)
+
+            if (timeout is not None and timeout != 0 and
+                    time.time() > start_time + timeout):
+                raise PanXapiError('timeout waiting for ' +
+                                   'job %s completion' % job.text)
+
+            self._log(DEBUG2, 'sleep %.2f seconds', interval)
+            time.sleep(interval)
+
+    def report(self, reporttype=None, reportname=None, vsys=None,
+               interval=None, timeout=None, extra_qs=None):
+        self.__set_api_key()
+        self.__clear_response()
+
+        if interval is None:
+            interval = _job_query_interval
+
+        try:
+            interval = float(interval)
+            if interval < 0:
+                raise ValueError
+        except ValueError:
+            raise PanXapiError('Invalid interval: %s' % interval)
+
+        if timeout is not None:
+            try:
+                timeout = int(timeout)
+                if timeout < 0:
+                    raise ValueError
+            except ValueError:
+                raise PanXapiError('Invalid timeout: %s' % timeout)
+
+        query = {}
+        query['type'] = 'report'
+        query['key'] = self.api_key
+        if reporttype is not None:
+            query['reporttype'] = reporttype
+        if reportname is not None:
+            query['reportname'] = reportname
+        if vsys is not None:
+            query['vsys'] = vsys
+        if extra_qs is not None:
+            query = self.__merge_extra_qs(query, extra_qs)
+
+        response = self.__api_request(query)
+        if not response:
+            raise PanXapiError(self.status_detail)
+
+        if not self.__set_response(response):
+            raise PanXapiError(self.status_detail)
+
+        # XXX 7.1 returns last job status in response; check for
+        # report first.
+        # response can be:
+        #   custom: <response><report><result>
+        #   predefined: <report><result>
+        #   dynamic: <response><report>
+        #   custom dynamic <7.1: <response><report><result>
+        #   custom dynamic 7.1: <response><report>
+
+        if self.element_root.tag == 'report' or \
+           self.element_root.find('./report') is not None:
+            return
+
+        job = self.element_root.find('./result/job')
+        if job is None:
+            raise PanXapiError('no job or report element in ' +
+                               'type=report response')
+
+        query = {}
+        query['type'] = 'report'
+        query['action'] = 'get'
+        query['key'] = self.api_key
+        query['job-id'] = job.text
+        self._log(DEBUG2, 'report job: %s', job.text)
+
+        start_time = time.time()
+
+        while True:
+            response = self.__api_request(query)
+            if not response:
+                raise PanXapiError(self.status_detail)
+
+            if not self.__set_response(response):
+                raise PanXapiError(self.status_detail)
+
+            status = self.element_root.find('./result/job/status')
+            if status is None:
+                raise PanXapiError('no status element in ' +
+                                   'type=report&action=get response')
             if status.text == 'FIN':
                 return
 

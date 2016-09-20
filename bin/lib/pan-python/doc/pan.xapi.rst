@@ -69,6 +69,7 @@ DESCRIPTION
  - export file: ``type=export``
  - dynamic object update: ``type=user-id``
  - log retrieval: ``type=log``
+ - report retrieval: ``type=report``
 
 pan.xapi Constants
 ------------------
@@ -340,7 +341,7 @@ op(cmd=None, vsys=None, cmd_xml=False)
  request with the **cmd** argument and optional **vsys** argument.
  **cmd** is an XML document which represents the command to be executed.
  Commands and command options are XML elements, and command arguments
- are XML data.  **vsys** can be to to target the command to a specific
+ are XML data.  **vsys** can be used to target the command to a specific
  Virtual System.
 
  When **cmd_xml** is *True* a CLI-style **cmd** argument is converted to
@@ -453,6 +454,39 @@ log(self, log_type=None, nlogs=None, skip=None, filter=None, interval=None, time
  will then periodically perform an API request to determine if the
  job ID returned in the initial request is complete and receive the log
  data.  Additional arguments to control the polling include:
+
+ - **interval**
+
+  A floating point number specifying the query interval in seconds
+  between each non-finished job status response.
+
+  The default is 0.5 seconds.
+
+ - **timeout**
+
+  The maximum number of seconds to wait for the job to finish.
+
+  The default is to try forever (**timeout** is set to *None* or 0).
+
+report(self, reporttype=None, reportname=None, vsys=None, interval=None, timeout=None)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ The report() method performs the ``type=report`` retrieve report API
+ request with the **reporttype** and **reportname** arguments.
+ **vsys** can be used to target the report to a specific Virtual
+ System.
+
+ **reporttype** specifies the type of report to retrieve and can be:
+
+ - dynamic
+ - predefined
+ - custom
+
+ In some report requests, the XML API schedules a job to generate the
+ report data; the report() method will then periodically perform an
+ API request to determine if the job ID returned in the initial
+ request is complete and receive the report data. Additional arguments
+ to control the polling include:
 
  - **interval**
 
@@ -621,8 +655,8 @@ SEE ALSO
 
  panxapi.py
 
- PAN-OS 7.0 XML API Reference
-  https://www.paloaltonetworks.com/documentation/70/pan-os.html
+ PAN-OS XML API Reference
+  https://www.paloaltonetworks.com/documentation/71/pan-os/xml-api
 
 AUTHORS
 =======

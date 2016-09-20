@@ -1,5 +1,5 @@
 ..
- Copyright (c) 2013, 2014 Kevin Steves <kevin.steves@pobox.com>
+ Copyright (c) 2013-2016 Kevin Steves <kevin.steves@pobox.com>
 
  Permission to use, copy, modify, and distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
@@ -58,7 +58,7 @@ SYNOPSIS
     -t tag                .panrc tagname
     -T seconds            urlopen() timeout
     --http                use http URL scheme (default https)
-    --nocacloud           disable default cloud CA certificate verification
+    --ssl opt             SSL verify option: default|noverify
     --cafile path         file containing CA certificates
     --capath path         directory of hashed certificate files
     --version             display version
@@ -226,31 +226,33 @@ DESCRIPTION
   Use *http* URL scheme for API requests.  This can be used with the
   ``--testfile`` option to get a malware test file over HTTP.
 
- ``--nocacloud``
-  Disable default cloud CA SSL server certificate verification.
+ ``--ssl`` *opt*
+  Specify the type of SSL server certificate verification to be
+  performed.
 
-  By default SSL server certificate verification is performed using
-  the Go Daddy Class 2 Certification Authority Root Certificate which
-  is used by the WildFire cloud and is stored in the PanWFapi class.
-  ``--nocacloud`` can be used to disable verification for test clouds
-  or if the cloud CA changes.
+  ``noverify``
+   Disable SSL server certificate verification.
 
-  urlopen() only supports SSL server certificate verification in
-  Python version 3.2 and greater.
+  ``default``
+   If the **certifi** package is installed its Certificate Authority
+   (CA) bundle is used for SSL server certificate verification,
+   otherwise no changes are made to the default **ssl** module
+   settings.
+
+   This is the default.
+
+  SSL server certificate verification is only performed in Python
+  version 2.7.9 and 3.4.3 and greater.
+
+  ``--ssl`` is ignored if ``--cafile`` or ``--capath`` are specified.
 
  ``--cafile`` *path*
-  Specify the ``cafile`` value for urlopen().  ``cafile`` is a file
-  containing CA certificates to be used for SSL server certificate
-  verification.
-  ``--cafile`` disables default cloud certificate verification.
-  ``--cafile`` is only supported in Python version 3.2 and greater.
+  A file containing CA certificates to be used for SSL
+  server certificate verification.
 
  ``--capath`` *path*
-  Specify the ``capath`` value for urlopen().  ``capath`` is a
-  directory of hashed certificate files to be used for SSL server
-  certificate verification.
-  ``--capath`` disables default cloud certificate verification.
-  ``--capath`` is only supported in Python version 3.2 and greater.
+  A directory of hashed certificate files to be used for
+  SSL server certificate verification.
 
  ``--version``
   Display version.
@@ -347,10 +349,10 @@ SEE ALSO
  pan.wfapi
 
  WildFire Administrator's Guide
-  https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin.html
+  https://www.paloaltonetworks.com/documentation/71/wildfire/wf_admin
 
  WildFire API
-  https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin/use-the-wildfire-api.html
+  https://www.paloaltonetworks.com/documentation/71/wildfire/wf_api
 
 AUTHORS
 =======

@@ -25,11 +25,7 @@ _tags_forcelist = set(['entry', 'member'])
 
 
 class PanConfigError(Exception):
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
+    pass
 
 
 class PanConfig:
