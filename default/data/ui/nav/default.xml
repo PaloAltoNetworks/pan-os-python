@@ -15,6 +15,7 @@
     <divider />
     <a href="/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">Configuration</a>
     <divider />
+    <a href="http://pansplunk.readthedocs.io" target="_blank">Documentation</a>
     <a href="http://answers.splunk.com/ask/?appid=491" target="_blank">Send Feedback</a>
   </collection>
   
