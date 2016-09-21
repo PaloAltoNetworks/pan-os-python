@@ -1,5 +1,5 @@
 <form>
-  <label>Endpoint Security Overview</label>
+  <label>Endpoint Security Dashboard</label>
   <fieldset submitButton="true" autoRun="true">
     <input type="time" searchWhenChanged="true">
       <label>Time Range</label>
