@@ -52,6 +52,8 @@ SYNOPSIS
     -o cmd                execute operational command
     --export category     export files
     --log log-type        retrieve log files
+    --report report-type  retrieve reports (dynamic|predefined|custom)
+    --name report-name    report name
     --src src             clone source node xpath
                           export source file/path/directory
     --dst dst             move/clone destination node name
@@ -62,8 +64,8 @@ SYNOPSIS
     --clone               clone object at xpath, src xpath
     --override element    override template object at xpath
     --vsys vsys           VSYS for dynamic update/partial commit/
-                          operational command
-    -l api_username:api_password
+                          operational command/report
+    -l api_username[:api_password]
     -h hostname
     -P port               URL port number
     --serial number       serial number for Panorama redirection/
@@ -73,8 +75,8 @@ SYNOPSIS
     --nlogs num           retrieve num logs
     --skip num            skip num logs
     --filter filter       log selection filter
-    --interval seconds    log/commit job query interval
-    --timeout seconds     log/commit job query timeout
+    --interval seconds    log/commit/report job query interval
+    --timeout seconds     log/commit/report job query timeout
     --stime time          search time for threat-pcap
     --pcapid id           threat-pcap ID
     -K api_key
@@ -95,6 +97,7 @@ SYNOPSIS
     --capath path         directory of hashed certificate files
     --version             display version
     --help                display usage
+
 
 DESCRIPTION
 ===========
@@ -128,6 +131,9 @@ DESCRIPTION
   **api_username** and **api_password** arguments.  This is
   used to generate an API key for the **-K** argument or a
   .panrc file.
+
+  If a .panrc tagname is specified the output will be **hostname**
+  and **api_key** *varname* values for use in a .panrc file.
 
  ``-s``
   Perform the ``action=show`` device configuration API request with
@@ -267,6 +273,28 @@ DESCRIPTION
 
   Also see the **--nlogs**, **--skip** and **--filter** options.
 
+ ``--report`` *report-type*
+  Perform the ``type=report`` retrieve report API request with the
+  **report-type** argument.
+
+  **report-type** (``reporttype=`` argument) specifies the type of
+  report to retrieve and can be:
+
+  - dynamic
+  - predefined
+  - custom
+
+ ``--name`` *report-name*
+  Specify the report name (``reportname=`` argument).  This can also
+  be **custom-dynamic-report** to specify a custom dynamic report.
+
+  The **--ad-hoc** option is used to specify additional report
+  arguments, for example:
+
+  - cmd
+  - topn
+  - period
+
  ``--src`` *src*
   Specify the source file, path or directory for **--export** and
   the source XPath for **--clone**.
@@ -335,9 +363,12 @@ DESCRIPTION
   Multiple virtual systems can be specified by using multiple
   **--vsys** options or separating each *vsys* with comma (,).
 
- ``-l`` *api_username:api_password*
+ ``-l`` *api_username[:api_password]*
   Specify the **api_username** and **api_password** which are used
   to generate the **api_key** used in API requests.
+
+  **api_password** is optional and when not specified the password is
+  read from *stdin*.
 
  ``-h`` *hostname*
   Specify the **hostname** which is used to generate the URI
@@ -690,8 +721,11 @@ SEE ALSO
 
  pan.xapi, panconf.py
 
- PAN-OS 7.0 XML API Reference
-  https://www.paloaltonetworks.com/documentation/70/pan-os.html
+ PAN-OS XML API Reference
+  https://www.paloaltonetworks.com/documentation/71/pan-os/xml-api
+
+ PAN-OS XML API Labs with pan-python
+  http://api-lab.paloaltonetworks.com/
 
 AUTHORS
 =======

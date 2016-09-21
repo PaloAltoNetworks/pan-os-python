@@ -29,8 +29,6 @@ HTTP_PROXY = {}
 
 import sys
 import os
-import urllib  # for urllib.urlencode()
-import urllib2  # make http requests to PAN firewall
 import traceback
 import argparse
 
@@ -38,6 +36,7 @@ libpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(libpath, 'lib')]
 import common
 import environment
+import pan.wfapi
 
 logger = common.logging.getLogger().getChild('retrieveWildFireReport')
 #logger.setLevel(common.logging.INFO)
@@ -62,39 +61,15 @@ def get_cli_args():
     parser = argparse.ArgumentParser(description="Download a Wildfire Report using the Wildfire API")
     #parser.add_argument('-v', '--verbose', action='store_true', help="Verbose")
     parser.add_argument('apikey', help="API Key from https://wildfire.paloaltonetworks.com")
-    parser.add_argument('serial', help="Serial number of the device which produced the WildFire syslog")
-    parser.add_argument('reportid', help="ID of the report in the WildFire cloud")
+    parser.add_argument('file_digest', help="Hash of the file for the report")
     options = parser.parse_args()
     return options
 
-def createOpener():
-    """Create a generic opener for http
 
-    This is particularly helpful when there is a proxy server in line
-    """
-    # Thanks to: http://www.decalage.info/en/python/urllib2noproxy
-    proxy_handler = urllib2.ProxyHandler(HTTP_PROXY)
-    opener = urllib2.build_opener(proxy_handler)
-    urllib2.install_opener(opener)
-    return opener
-
-
-def retrieveWildFireData(apikey, serial, reportid):
-    # Create a urllib2 opener
-    opener = createOpener()
-    # URL for WildFire cloud API
-    wfUrl = 'https://wildfire.paloaltonetworks.com/publicapi/report'
-    # Prepare the variables as POST data
-    post_data = urllib.urlencode({
-        'apikey': apikey,
-        'device_id': serial,
-        'report_id': reportid,
-    })
-    # Create a request object
-    wfReq = urllib2.Request(wfUrl)
-    # Make the request to the WildFire cloud
-    result = opener.open(wfReq, post_data)
-    return result
+def retrieveWildFireData(apikey, file_digest):
+    wfapi = pan.wfapi.PanWFapi(api_key=apikey)
+    wfapi.report(file_digest)
+    return wfapi.response_body
 
 
 def main_cli():
@@ -107,9 +82,9 @@ def main_cli():
     #    logger.setLevel(common.logging.DEBUG)
     #    logger.info("Verbose logging enabled")
     # Grab WildFire data
-    data = retrieveWildFireData(options.apikey, options.serial, options.reportid)
+    data = retrieveWildFireData(options.apikey, options.file_digest)
     # Parse XML for fields
-    print data.read()
+    print data
     sys.exit(0)
 
 
@@ -144,17 +119,14 @@ def main_splunk():
     logger.debug("Getting Wildfire reports for %s search results" % len(results))
     for idx, result in enumerate(results):
         # Check to see if the result has the necessary fields
-        if 'serial_number' in result and 'report_id' in result:
-            logger.debug("Getting Wildfire report for result # %s with report_id: %s" % (idx, result['report_id']))
+        if 'file_digest' in result:
+            logger.debug("Getting Wildfire report for result # %s with file_digest: %s" % (idx, result['file_digest']))
             try:
                 # Get the report
-                wfReportXml = retrieveWildFireData(wf_apikey, result['serial_number'],
-                                                   result['report_id']).read().strip()
-                # Add the report id to the XML for correlation to the original WildFire log from the firewall
-                wfReportXml = wfReportXml.replace("</version>", "</version>\n<id>" + result['report_id'] + "</id>", 1)
+                wfReportXml = retrieveWildFireData(wf_apikey, result['file_digest']).strip()
                 result['wildfire_report'] = wfReportXml
             except:
-                logger.warn("Error retrieving WildFire report for report id: %s" % result['report_id'])
+                logger.warn("Error retrieving WildFire report for file_digest: %s" % result['file_digest'])
                 # Log the result row in case of an exception
                 logger.info("Log with error: %s" % result)
                 stack = traceback.format_exc()
@@ -162,7 +134,7 @@ def main_splunk():
                 logger.warn(stack)
         else:
             logger.debug("Required fields missing from result # %s."
-                         "Expected the following fields: serial_number, report_id" % idx)
+                         "Expected the following fields: file_digest" % idx)
     # output the complete results sent back to splunk
     splunk.Intersplunk.outputResults(results)
 
