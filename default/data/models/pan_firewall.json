@@ -1121,7 +1121,7 @@
             "calculations": [],
             "constraints": [
                 {
-                    "search": "eventtype=\"pan_traffic\" OR eventtype=\"pan_threat\" OR eventtype=\"pan_config\" OR eventtype=\"pan_system\"",
+                    "search": "eventtype=\"pan\"",
                     "owner": "log"
                 }
             ],
@@ -3382,7 +3382,7 @@
             "calculations": [],
             "constraints": [
                 {
-                    "search": "log_subtype=\"start\"",
+                    "search": "eventtype=\"pan_traffic_start\"",
                     "owner": "log.traffic.start"
                 }
             ],
@@ -4501,7 +4501,7 @@
             "calculations": [],
             "constraints": [
                 {
-                    "search": "log_subtype=\"end\"",
+                    "search": "eventtype=\"pan_traffic_end\"",
                     "owner": "log.traffic.end"
                 }
             ],
@@ -5620,7 +5620,7 @@
             "calculations": [],
             "constraints": [
                 {
-                    "search": "eventtype=\"pan_threat\" (log_subtype=\"vulnerability\" OR log_subtype=\"virus\" OR log_subtype=\"spyware\")",
+                    "search": "eventtype=\"pan_threat\"",
                     "owner": "log.threat"
                 }
             ],
@@ -10084,7 +10084,7 @@
             "calculations": [],
             "constraints": [
                 {
-                    "search": "eventtype=\"pan_threat\" log_subtype=\"url\"",
+                    "search": "eventtype=\"pan_url\"",
                     "owner": "log.url"
                 }
             ],
@@ -11203,7 +11203,7 @@
             "calculations": [],
             "constraints": [
                 {
-                    "search": "eventtype=\"pan_threat\" log_subtype=\"file\"",
+                    "search": "eventtype=\"pan_file\"",
                     "owner": "log.file"
                 }
             ],
@@ -12322,7 +12322,7 @@
             "calculations": [],
             "constraints": [
                 {
-                    "search": "eventtype=\"pan_threat\" log_subtype=\"data\"",
+                    "search": "eventtype=\"pan_data\"",
                     "owner": "log.data"
                 }
             ],
@@ -13441,7 +13441,7 @@
             "calculations": [],
             "constraints": [
                 {
-                    "search": "eventtype=\"pan_threat\" log_subtype=\"wildfire\"",
+                    "search": "eventtype=\"pan_wildfire\"",
                     "owner": "log.wildfire"
                 }
             ],
