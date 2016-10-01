@@ -53,7 +53,7 @@
       <title>All WildFire Events by Category</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.wildfire)` $src_ip$ $dest_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.category | timechart values(count) by log.category
+          | `pan_tstats` count FROM `node(log.wildfire)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby _time log.category | timechart values(count) by log.category
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -83,7 +83,7 @@
       <title>Recent Malware Download Attempts</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.dest_ip log.user log.misc | table _time log.dest_ip log.user log.misc | sort -_time | rename log.user AS "Destination User" | rename log.dest_ip AS "Destination IP" | rename log.action AS Action | rename log.misc AS Filename
+          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby _time log.dest_ip log.user log.misc | table _time log.dest_ip log.user log.misc | sort -_time | rename log.user AS "Destination User" | rename log.dest_ip AS "Destination IP" | rename log.action AS Action | rename log.misc AS Filename
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -121,7 +121,7 @@
       <title>Possible Malware Traffic</title>
       <search>
         <query>
-          | `pan_tstats` count(traffic) FROM `node(log.traffic)` $src_ip$ $dest_ip$ $user$ $misc$ $vsys$ $app$ groupby _time log.traffic.dest_ip_port log.dest_ip log.dest_port log.src_ip log.user log.app | rename log.traffic.dest_ip_port AS ip_port | join type=inner ip_port [ | `pan_tstats` count(wildfire_report) FROM datamodel="pan_wildfire_report" WHERE earliest=-1y latest=now nodename="wildfire_report" groupby wildfire_report.wildfire.file_info.sha256 wildfire_report.tcp_ip_port | rename wildfire_report.tcp_ip_port AS ip_port ] | dedup 1 log.src_ip log.user ip_port log.app | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View WildFire Report" | table _time log.src_ip log.user log.dest_ip log.dest_port log.app wildfire_report.wildfire.file_info.sha256 "Traffic Link" "WildFire Link" | rex mode=sed field=ip_port "s/,/:/" | rename log.src_ip AS Source | rename log.dest_ip AS "Dest IP" | rename log.dest_port AS "Dest Port" | rename log.user AS User | rename log.app AS Application | rename wildfire_report.wildfire.file_info.sha256 AS "WildFire Report Hash" | sort -_time
+          | `pan_tstats` count(traffic) FROM `node(log.traffic)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby _time log.traffic.dest_ip_port log.dest_ip log.dest_port log.src_ip log.user log.app | rename log.traffic.dest_ip_port AS ip_port | join type=inner ip_port [ | `pan_tstats` count(wildfire_report) FROM datamodel="pan_wildfire_report" WHERE earliest=-1y latest=now nodename="wildfire_report" groupby wildfire_report.wildfire.file_info.sha256 wildfire_report.tcp_ip_port | rename wildfire_report.tcp_ip_port AS ip_port ] | dedup 1 log.src_ip log.user ip_port log.app | eval "Traffic Link" = "View Traffic Logs" | eval "WildFire Link" = "View WildFire Report" | table _time log.src_ip log.user log.dest_ip log.dest_port log.app wildfire_report.wildfire.file_info.sha256 "Traffic Link" "WildFire Link" | rex mode=sed field=ip_port "s/,/:/" | rename log.src_ip AS Source | rename log.dest_ip AS "Dest IP" | rename log.dest_port AS "Dest Port" | rename log.user AS User | rename log.app AS Application | rename wildfire_report.wildfire.file_info.sha256 AS "WildFire Report Hash" | sort -_time
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -195,7 +195,7 @@
       <title>Top Malware</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ $user$ $misc$ $vsys$ $app$ groupby log.misc
+          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby log.misc
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -225,7 +225,7 @@
       <title>Malware Downloads by Application</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ $user$ $misc$ $vsys$ $app$ groupby log.app
+          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby log.app
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -255,7 +255,7 @@
       <title>Malware Downloaders by User</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ $user$ $misc$ $vsys$ $app$ groupby log.user
+          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby log.user
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -287,7 +287,7 @@
       <title>Malware Sources</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ $user$ $misc$ $vsys$ $app$ groupby log.src_ip
+          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby log.src_ip
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -346,7 +346,7 @@
       <title>Malware Downloaders by IP</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ $user$ $misc$ $vsys$ $app$ groupby log.dest_ip
+          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby log.dest_ip
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>

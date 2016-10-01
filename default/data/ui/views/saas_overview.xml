@@ -45,7 +45,7 @@
   </fieldset>
   <search id="baseSearch">
     <query>
-      | `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.app:category log.app:subcategory log.user log.bytes)`
+      | `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ "$user|s$" $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.app:category log.app:subcategory log.user log.bytes)`
     </query>
     <earliest>$earliest$</earliest>
     <latest>$latest$</latest>
@@ -81,7 +81,7 @@
     <single>
       <search>
         <query>
-          | `pan_tstats` count from `node(log.threat)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$
+          | `pan_tstats` count from `node(log.threat)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ "$user|s$" $app$
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -386,7 +386,7 @@
         <title>Top File Sharing SaaS Apps</title>
         <search>
           <query>
-            | `pan_tstats` count dc(log.user) as Users FROM `node(log.file)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$  `groupby(log.app log.app:risk)` | sort -count | rename app as Application | rename count as "Uploads/Downloads" | rename app:risk as Risk
+            | `pan_tstats` count dc(log.user) as Users FROM `node(log.file)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ "$user|s$" $app$  `groupby(log.app log.app:risk)` | sort -count | rename app as Application | rename count as "Uploads/Downloads" | rename app:risk as Risk
           </query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>

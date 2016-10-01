@@ -39,7 +39,7 @@
       <title>Web Hits</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dest_hostname$ $user$ `table(log.dest_hostname, count)`
+          | `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dest_hostname$ "$user|s$" `table(log.dest_hostname, count)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -74,7 +74,7 @@
       <title>Categories</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dest_hostname$ $user$ `table(log.category, count)`
+          | `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dest_hostname$ "$user|s$" `table(log.category, count)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -104,7 +104,7 @@
       <title>Applications</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dest_hostname$ $user$ `table(log.app, count)`
+          | `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dest_hostname$ "$user|s$" `table(log.app, count)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -136,7 +136,7 @@
       <title>Web Activity Summary</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dest_hostname$ $user$ `table(log.action log.category log.dest_hostname, count)`
+          | `pan_tstats` count FROM `node(log.url)` $vsys$ $src_ip$ $dest_hostname$ "$user|s$" `table(log.action log.category log.dest_hostname, count)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>

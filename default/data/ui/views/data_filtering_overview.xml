@@ -55,7 +55,7 @@
       <title>Data Events</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action
+          | `pan_tstats` count FROM `node(log.data)` "$user|s$" $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -85,7 +85,7 @@
       <title>Application</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app
+          | `pan_tstats` count FROM `node(log.data)` "$user|s$" $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app
         </query>
          <earliest>$earliest$</earliest>
          <latest>$latest$</latest>
@@ -117,7 +117,7 @@
       <title>Data Filter Events by Application</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.threat_name log.action log.src_ip log.app, count)`
+          | `pan_tstats` count FROM `node(log.data)` "$user|s$" $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.threat_name log.action log.src_ip log.app, count)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -161,7 +161,7 @@
       <title>Data Filter Events by Destination</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dest_ip log.dest_location, count)`
+          | `pan_tstats` count FROM `node(log.data)` "$user|s$" $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dest_ip log.dest_location, count)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
