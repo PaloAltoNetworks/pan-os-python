@@ -83,7 +83,7 @@
       <title>Recent Malware Download Attempts</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby _time log.dest_ip log.user log.misc | table _time log.dest_ip log.user log.misc | sort -_time | rename log.user AS "Destination User" | rename log.dest_ip AS "Destination IP" | rename log.action AS Action | rename log.misc AS Filename
+          | `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby _time log.dest_ip log.user log.misc | table _time log.dest_ip log.user log.misc | sort -_time | rename log.user AS "Destination User" | rename log.dest_ip AS "Destination IP" | rename log.misc AS Filename
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -314,9 +314,9 @@
       </drilldown>
     </chart>
     <chart>
-      <title>Previously Analyzed Malware</title>
+      <title>Malware by Filetype</title>
       <search>
-        <query>| `pan_tstats` count FROM `node(log.wildfire.malicious)` groupby log.action | replace alert with wildfire-upload-skip in log.action | replace wildfire-upload-success with "New Malware" in log.action | replace alert with "Known Malware" in log.action | replace wildfire-upload-skip with "Known Malware" in log.action | stats sum(count) by log.action
+        <query>| `pan_tstats` count FROM `node(log.wildfire.malicious)` $src_ip$ $dest_ip$ "$user|s$" $misc$ $vsys$ $app$ groupby log.filetype
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -337,7 +337,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` action=$click.value|s$&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` filetype=$click.value|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>
