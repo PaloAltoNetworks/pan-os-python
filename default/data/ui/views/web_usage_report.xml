@@ -65,7 +65,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_hostname="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_hostname=$click.value|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>
@@ -95,7 +95,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>
@@ -125,7 +125,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>
@@ -162,17 +162,17 @@
       <drilldown>
         <link field="Action">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` action="$row.action$" category="$row.category$" dest_hostname="$row.dest_hostname$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` action=$row.action|s$ category=$row.category|s$ dest_hostname=$row.dest_hostname|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
         <link field="Category">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` category="$row.category$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` category=$row.category|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
         <link field="Hostname">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` dest_hostname="$row.dest_hostname$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_web_activity` dest_hostname=$row.dest_hostname|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>

@@ -82,7 +82,7 @@
         <drilldown>
           <link>
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` log_subtype="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` log_subtype=$click.name2|s$ earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
           ]]>
           </link>
         </drilldown>
@@ -117,7 +117,7 @@
         <drilldown>
           <link>
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` severity="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` severity=$click.name2|s$ earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
           ]]>
           </link>
         </drilldown>
@@ -154,7 +154,7 @@
         <drilldown>
           <link>
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
           ]]>
           </link>
         </drilldown>
@@ -189,7 +189,7 @@
           <drilldown>
               <link>
                   <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
           ]]>
               </link>
           </drilldown>
@@ -224,7 +224,7 @@
           <drilldown>
               <link>
                   <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
           ]]>
               </link>
           </drilldown>
@@ -261,7 +261,7 @@
           <drilldown>
               <link>
                   <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
           ]]>
               </link>
           </drilldown>
@@ -296,7 +296,7 @@
           <drilldown>
               <link>
                   <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
           ]]>
               </link>
           </drilldown>

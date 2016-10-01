@@ -76,7 +76,7 @@
       <drilldown>
         <link>
           <![CDATA[
-          /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` action="$click.name2$"  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+          /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` action=$click.name2|s$  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
       ]]>
         </link>
       </drilldown>
@@ -106,7 +106,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$click.name2$"  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app=$click.name2|s$  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
     ]]>
         </link>
       </drilldown>
@@ -152,7 +152,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` threat_name="$row.threat_name$" action="$row.action$" src_ip="$row.src_ip$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` threat_name=$row.threat_name|s$ action=$row.action|s$ src_ip=$row.src_ip|s$ app=$row.app|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>
@@ -187,7 +187,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_ip="$row.Destination$" dest_location="$row.Location$" src_ip="$row.Source$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_ip=$row.Destination|s$ dest_location=$row.Location|s$ src_ip=$row.Source|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>

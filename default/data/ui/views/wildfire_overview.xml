@@ -74,7 +74,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` category="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` category=$click.name2|s$ earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
     ]]>
         </link>
       </drilldown>
@@ -109,7 +109,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_ip="$row.Destination IP$" misc="$row.Filename$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_ip=$row.Destination IP|s$ misc=$row.Filename|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>
@@ -177,12 +177,12 @@
         </link>
         <link field="WildFire Link">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` (sourcetype="pan:wildfire_report" (wildfire.file_info.sha256="$row.WildFire Report Hash$" OR wildfire.file_info.sha256="$row.WildFire Report Hash$")) OR (sourcetype="pan:threat" log_subtype="wildfire" file_digest="$row.WildFire Report Hash$")
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` (sourcetype="pan:wildfire_report" (wildfire.file_info.sha256=$row.WildFire Report Hash|s$ OR wildfire.file_info.sha256=$row.WildFire Report Hash|s$)) OR (sourcetype="pan:threat" log_subtype="wildfire" file_digest=$row.WildFire Report Hash|s$)
     ]]>
         </link>
         <link field="*">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` src_ip="$row.Source$" dest_ip="$row.Dest IP$" dest_port="$row.Dest Port$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` src_ip=$row.Source|s$ dest_ip=$row.Dest IP|s$ dest_port=$row.Dest Port|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>
@@ -337,7 +337,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` action="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_wildfire` action=$click.value|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>
