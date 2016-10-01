@@ -34,7 +34,7 @@
   </fieldset>
   <search id="baseSearch">
     <query>
-      | `pan_tstats` values(sourcetype) as sourcetype values(log.threat_name) as threat_name sum(log.bytes) as bytes sum(log.duration) as duration FROM datamodel="pan_firewall" WHERE (nodename="log.traffic" OR (nodename="log.threat" $threat_name$)) "$user|s$" $app$ $location$ `groupby(log.session_id log.user log.server_ip log.app log.server_location)` | search sourcetype="pan:threat" bytes!="" server_location!="" user!="" | eval KB=bytes/1024
+      | `pan_tstats` values(log.user) as user values(log.server_ip) as server_ip values(log.app) as app values(log.server_location) as server_location values(sourcetype) as sourcetype values(log.threat_name) as threat_name sum(log.bytes) as bytes sum(log.duration) as duration FROM datamodel="pan_firewall" WHERE (nodename="log.traffic" OR (nodename="log.threat" $threat_name$)) "$user|s$" $app$ $location$ `groupby(log.session_id)` | search sourcetype="pan:threat" | eval KB=bytes/1024
     </query>
   </search>
     <row>
