@@ -193,6 +193,8 @@ https://www.paloaltonetworks.com/documentation/70/pan-os/pan-os/monitoring/use-e
 **Traps Endpoint Security Manager (ESM) syslog to Splunk:**
 https://www.paloaltonetworks.com/documentation/33/endpoint/endpoint-admin-guide/reports-and-logging/forward-logs-to-a-syslog-server
 
+.. note:: Traps logs must be in CEF format (CEF is the default on ESM)
+
 .. _test:
 
 Step 5: Test the configuration
