@@ -4,14 +4,48 @@
 Release Notes
 =============
 
-Version 5.0.x is a major release that re-architects the Palo Alto Networks App by splitting it
-into an App and an Add-on. The `Palo Alto Networks Add-on`_ is included in the
-`Palo Alto Networks App`_ and is installed or upgraded automatically with the App.
-
 App
 ===
 
-v5.2.0
+v5.3.0
+  * GlobalProtect Dashboard
+  * Other updates are in the Add-on (see below)
+
+Important App Upgrade Notes
+  * App 5.3.x requires Add-on 3.7.x
+  * The App setup screen has moved to the Add-on. If you has previous set firewall credentials
+    or a WildFire API key in the App setup screen, you'll need to set them in the Add-on
+    setup screen.  See :ref:`initialsetup` in the :ref:`gettingstarted` Guide.
+  * Datamodel acceleration might rebuild itself after installation due to updated constraints
+  * Eventtype pan_threat no longer includes these log_subtypes: url, data, file, and wildfire.
+    You might need to update custom searches or panels you created that leverage
+    the pan_threat eventtype. There are new eventtypes for each of the removed log_subtypes:
+    pan_url, pan_data, pan_file, and pan_wildfire.
+
+
+Add-on
+======
+
+v3.7.0
+  * Integration with new Splunk Adaptive Response
+  * Tag to dynamic address group using modular actions and Adaptive Response
+  * Submit URL’s from any log in Splunk to WildFire
+  * Logs with malware hashes have a new event action that links directly to that hash in Autofocus
+  * Improved tagging for Splunk Enterprise Security, based on customer feedback
+  * New parser for GlobalProtect logs
+
+Important Add-on Upgrade Notes
+  * Eventtype pan_threat no longer includes these log_subtypes: url, data, file, and wildfire.
+    You might need to update custom searches or panels you created that leverage
+    the pan_threat eventtype. There are new eventtypes for each of the removed log_subtypes:
+    pan_url, pan_data, pan_file, and pan_wildfire.
+
+Previous Versions
+=================
+
+App v5.2
+--------
+
   * Certified by Splunk
   * Removed deprecated commands (**panblock** and **panupdate**) as a
     requirement for certification.
@@ -23,22 +57,18 @@ v5.2.0
    **panblock** or **panupdate** commands, please update your usage of the
    App to leverage :ref:`pantag` and :ref:`panuserupdate` instead.
 
-Add-on
-======
-
-v3.6.0
-  * Support new Traps 3.3.2 log format
+Add-on v3.6
+-----------
 
 v3.6.1
   * Certified by Splunk
   * Add logo files for Splunkbase
 
+v3.6.0
+  * Support new Traps 3.3.2 log format
+
 .. note:: Traps versions before 3.3.2 are no longer supported beginning with
-   Add-on 3.6.0 and App 5.1.0.
-
-
-Previous Versions
-=================
+Add-on 3.6.0 and App 5.1.0.
 
 App v5.1.0
 ----------
