@@ -149,6 +149,8 @@ Example 4:
    Dynamic Address Group in the security policy.  This delay is intentional to
    prevent accidental DoS scenarios.
 
+.. _pancontentpack:
+
 pancontentpack
 --------------
 
@@ -160,6 +162,8 @@ For usage instructions, see :ref:`contentpack`.
 
 Legacy commands
 ---------------
+
+.. _panblock:
 
 panblock
 ~~~~~~~~

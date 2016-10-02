@@ -9,23 +9,28 @@ Step 1: Install the App and Add-on
 * `Palo Alto Networks App <https://splunkbase.splunk.com/app/491>`_
 * `Palo Alto Networks Add-on <https://splunkbase.splunk.com/app/2757>`_
 
-First, if upgrading to App 4.1 or 5.0, read the :ref:`Upgrade Guide <upgrade>`.
+If upgrading to App 4.1 or 5.0, read the :ref:`Upgrade Guide <upgrade>`.
 
 The Palo Alto Networks Splunk App and Add-on are designed to work together,
 and with Splunk Enterprise Security if available. The Add-on can be used
-without the App.
+with or without the App.
 
 .. note:: The Palo Alto Networks App and Add-on must be installed on all
-   Searchheads, Indexers, and Heavy Forwarders.
+   Searchheads, Indexers, and Heavy Forwarders. Do not install on
+   Universal Forwarders.
 
 Compatibility between App and Add-on (TA):
 
 +---------------+--------------------------------------+
 | App           | Add-on (TA)                          |
 +===============+======================================+
-| Version 5.1   | Splunk_TA_paloalto 3.6.0 or higher   |
+| Version 5.3   | Splunk_TA_paloalto 3.7.0 or higher   |
 +---------------+--------------------------------------+
-| Version 5.0   | Splunk_TA_paloalto 3.5.0 or higher   |
+| Version 5.2   | Splunk_TA_paloalto 3.6.x             |
++---------------+--------------------------------------+
+| Version 5.1   | Splunk_TA_paloalto 3.6.x             |
++---------------+--------------------------------------+
+| Version 5.0   | Splunk_TA_paloalto 3.5.x or 3.6.x    |
 +---------------+--------------------------------------+
 | Version 4.x   | No Add-on required                   |
 +---------------+--------------------------------------+
@@ -34,10 +39,6 @@ Compatibility between App and Add-on (TA):
 
 .. note:: The Add-on (TA) called TA_paloalto is deprecated and should be
    replaced with Splunk_TA_paloalto.
-
-   The latest Add-on (TA) is installed automatically by the App, and does
-   not need to be installed separately. In some cluster environments, the
-   App and Add-on should still be installed separately.
 
 Advanced Endpoint Security (Traps) support:
 
@@ -48,7 +49,7 @@ Advanced Endpoint Security (Traps) support:
 +------------------------+--------------------------------------+
 | Traps 3.3.0 and 3.3.1  | Not supported                        |
 +------------------------+--------------------------------------+
-| Traps 3.2.x            | App 4.2 to 5.0 or Add-on 3.5.x       |
+| Traps 3.2.x            | App 4.2 or Add-on 3.5.x with App 5.0 |
 +------------------------+--------------------------------------+
 
 Install the Palo Alto Networks App by downloading it from the App homepage,
@@ -56,21 +57,31 @@ or by installing it from within Splunk.
 
 .. figure:: _static/download_app.png
 
-   Downloading the App from within Splunk Enterprise. You don't need to
-   download the Add-on; it comes bundled with the App.
+   Downloading the App and Add-on from within Splunk Enterprise.
+
+.. note:: In a **single node** environment, the latest Add-on (TA) is installed
+   automatically by the App, and does not need to be installed
+   separately. In **clustered** environments, the App and Add-on should
+   be installed separately. Both can be installed by a deployment server.
 
 .. _initialsetup:
 
 Step 2: Initial Setup
 ---------------------
 
-.. note:: Skip this step if using the Add-on without the App
+To use Adaptive Response, modular alerts/actions, or the custom searchbar commands,
+please configure the Add-on using the set up screen.
 
-.. figure:: _static/setup_start.png
-   :figwidth: 70%
 
-   The first time you run the App, you are prompted to complete the initial
-   setup.
+To configure when the App is installed, navigate to the App, click the
+**Palo Alto Networks** menu in the top left of the App, and
+click **Configuration**.
+
+To configure when the App is not installed, navigate to the Splunk App Manager.
+Find the Add-on (Palo Alto Networks Add-on for Splunk) in the list and on the
+right side click **Set up**.
+
+.. image:: _static/to_setup.png
 
 .. image:: _static/setup.png
 
@@ -85,8 +96,11 @@ following features:
 * :ref:`contentpack`
 
 Optionally, you can create a user for Splunk on the firewall or Panorama,
-and reduce the user's role to just what is required. The App needs
-**User-ID Agent** permissions in the **XML API** tab.
+and reduce the user's role to just what is required. To use :ref:`pantag`,
+:ref:`panuserupdate`, or any the Dynamic Address Group Adaptive Response action,
+the firewall admin must have **User-ID Agent** permissions in the **XML API** tab.
+To use :ref:`pancontentpack`, the firewall admin must have **Configuration**
+permissions in the **XML API** tab.
 
 .. figure:: _static/admin_role.png
    :figwidth: 75%
@@ -116,25 +130,26 @@ Step 3: Create the Splunk data input
 
 Syslogs are sent to Splunk using the following protocols:
 
-========================   ================
-Product                    Syslog Protocols
-========================   ================
-Next generation Firewall   UDP, TCP, or SSL
-Panorama                   UDP, TCP, or SSL
-Traps Endpoint Security    UDP
-========================   ================
+==============================  ================
+Product                         Syslog Protocols
+==============================  ================
+Next generation Firewall        UDP, TCP, or SSL
+Panorama                        UDP, TCP, or SSL
+Traps Endpoint Security >= 3.3  UDP, TCP, or SSL
+Traps Endpoint Security 3.2     UDP
+==============================  ================
 
 Use the GUI to create a Data Input, or create it in inputs.conf. This
 document will explain how to create the Data Input using inputs.conf.
 
 First, create the inputs.conf in the correct directory for your version:
 
-=========== =====================================================================
-App version inputs.conf location
-=========== =====================================================================
-5.x         $SPLUNK_HOME/etc/apps/Splunk_TA_paloalto/local/inputs.conf
-3.x or 4.x  $SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/inputs.conf
-=========== =====================================================================
+=============  =====================================================================
+App version    inputs.conf location
+=============  =====================================================================
+5.x w/ Add-on  $SPLUNK_HOME/etc/apps/Splunk_TA_paloalto/local/inputs.conf
+3.x or 4.x     $SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/inputs.conf
+=============  =====================================================================
 
 .. note:: The ``local`` directory is not created during installation, so you
    may need to create it.
