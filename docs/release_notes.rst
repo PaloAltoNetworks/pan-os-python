@@ -84,7 +84,7 @@ following new features:
 * Both commands now support Panorama and VSYS targets, and are more efficient and scalable
 * Better command documentation
 * Changed from CC license to ISC license
-* All new documentation website at http://pansplunk.readthedocs.org
+* All new documentation website at http://pansplunk.readthedocs.io
 
 .. _Palo Alto Networks Add-on: https://splunkbase.splunk.com/app/2757
 .. _Palo Alto Networks App: https://splunkbase.splunk.com/app/491
