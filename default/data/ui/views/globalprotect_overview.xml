@@ -29,15 +29,19 @@
     </input>
   </fieldset>
   <row>
+    <panel>
       <chart>
         <title>Login/Logout Events</title>
-        <searchString>|`pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ log.event_id="globalprotectgateway-logout-succ" OR log.event_id="globalprotectgateway-regist-succ" groupby _time log.event_id | timechart values(count) by log.event_id | rename globalprotectgateway-regist-succ AS "Login" | rename globalprotectgateway-logout-succ AS Logout</searchString>
+        <search>
+          <query>|`pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ log.event_id="globalprotectgateway-logout-succ" OR log.event_id="globalprotectgateway-regist-succ" groupby _time log.event_id | timechart values(count) by log.event_id | eval event=log.event_id | rename globalprotectgateway-regist-succ AS "Login" | rename globalprotectgateway-logout-succ AS Logout</query>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
         <option name="charting.axisTitleY.visibility">collapsed</option>
         <option name="charting.axisTitleY2.visibility">visible</option>
         <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.minimumNumber">1</option>
         <option name="charting.axisY.scale">linear</option>
         <option name="charting.axisY2.enabled">0</option>
         <option name="charting.axisY2.scale">inherit</option>
@@ -50,22 +54,25 @@
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
         <option name="charting.chart.stackMode">stacked</option>
         <option name="charting.chart.style">shiny</option>
-        <option name="charting.drilldown">none</option>
+        <option name="charting.drilldown">all</option>
         <option name="charting.layout.splitSeries">0</option>
         <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">right</option>
-        <option name="wrap">true</option>
-        <option name="rowNumbers">false</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="charting.axisY.minimumNumber">1</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+          /app/SplunkforPaloAltoNetworks/search?q=`pan_globalprotect` (event_id="globalprotectgateway-logout-succ" OR event_id="globalprotectgateway-regist-succ") earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest] | where ($click.name2|s$=="Login" AND event_id=="globalprotectgateway-regist-succ") OR ($click.name2|s$=="Logout" AND event_id=="globalprotectgateway-logout-succ")
+      ]]>
+          </link>
+        </drilldown>
       </chart>
+    </panel>
+    <panel>
       <chart>
         <title>Events by User</title>
-        <searchString>| `pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.src_ip != "192.*" AND  log.src_ip != "10.*" groupby _time log.user | timechart values(count) by log.user</searchString>
         <search>
-        <earliest>-60m</earliest>
-        <latest>now</latest>
+          <query>| `pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.src_ip != "192.*" AND  log.src_ip != "10.*" groupby _time log.user | timechart values(count) by log.user</query>
         </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
@@ -90,12 +97,23 @@
         <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">right</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_globalprotect` user=$click.name2|s$ earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+          ]]>
+          </link>
+        </drilldown>
       </chart>
+    </panel>
   </row>
   <row>
+    <panel>
       <chart>
         <title>Events by Source IP</title>
-        <searchString>| `pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.src_ip != "192.*" AND  log.src_ip != "10.*" groupby log.src_ip</searchString>
+        <search>
+          <query>| `pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.src_ip != "192.*" AND  log.src_ip != "10.*" groupby log.src_ip</query>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">visible</option>
@@ -119,10 +137,21 @@
         <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">right</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_globalprotect` src_ip=$click.value|s$&earliest=$earliest$&latest=$latest$
+          ]]>
+          </link>
+        </drilldown>
       </chart>
+    </panel>
+    <panel>
       <chart>
         <title>Failed Login by User</title>
-        <searchString>| `pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.event_id="*fail*" groupby log.user</searchString>
+        <search>
+          <query>| `pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ log.event_id="*fail*" groupby log.user</query>
+        </search>
         <option name="wrap">true</option>
         <option name="rowNumbers">false</option>
         <option name="dataOverlayMode">none</option>
@@ -150,10 +179,21 @@
         <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">right</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_globalprotect` event_id="*fail*" user=$click.value|s$&earliest=$earliest$&latest=$latest$
+          ]]>
+          </link>
+        </drilldown>
       </chart>
+    </panel>
+    <panel>
       <chart>
         <title>Disabled Client's</title>
-        <searchString>| `pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.event_id="globalprotectgateway-agent-msg" AND log.agent_message="Agent Disable" groupby log.user| `top(20)`</searchString>
+        <search>
+          <query>| `pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ log.event_id="globalprotectgateway-agent-msg" log.agent_message="Agent Disable" groupby log.user| `top(20)`</query>
+        </search>
         <option name="wrap">true</option>
         <option name="rowNumbers">false</option>
         <option name="dataOverlayMode">none</option>
@@ -190,12 +230,23 @@
         <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
         <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
         <option name="charting.legend.placement">right</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_globalprotect` event_id="globalprotectgateway-agent-msg" agent_message="Agent Disable" user=$click.value|s$&earliest=$earliest$&latest=$latest$
+          ]]>
+          </link>
+        </drilldown>
       </chart>
+    </panel>
   </row>
   <row>
+    <panel>
       <chart>
         <title>Logins by User</title>
-        <searchString>| `pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.event_id="globalprotectgateway-auth-succ" groupby log.user | `top(20)`</searchString>
+        <search>
+          <query>| `pan_tstats` count FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ log.event_id="globalprotectgateway-auth-succ" groupby log.user | `top(20)`</query>
+        </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
@@ -222,46 +273,75 @@
         <option name="wrap">true</option>
         <option name="rowNumbers">false</option>
         <option name="dataOverlayMode">none</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_globalprotect` event_id="globalprotectgateway-auth-succ" user=$click.value|s$&earliest=$earliest$&latest=$latest$
+          ]]>
+          </link>
+        </drilldown>
       </chart>
+    </panel>
+    <panel>
       <single>
         <title>Total Users Logged In</title>
-        <searchString>| `pan_tstats` latest(log.event_id) FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.event_id="globalprotectgateway-regist-succ" OR log.event_id="globalprotectgateway-logout-succ" groupby log.user | stats dc(log.user)</searchString>
+        <search>
+          <query>| `pan_tstats` latest(log.event_id) AS latest_event FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ (log.event_id="globalprotectgateway-regist-succ" OR log.event_id="globalprotectgateway-logout-succ") groupby log.user | search latest_event="globalprotectgateway-regist-succ" | stats dc(log.user)</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
         <option name="colorBy">value</option>
         <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="linkView">search</option>
         <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x65a637","0x6db7c6","0xf7bc38","0xf58f39","0xd93f3c"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
         <option name="showSparkline">1</option>
         <option name="showTrendIndicator">1</option>
         <option name="trendColorInterpretation">standard</option>
         <option name="trendDisplayMode">absolute</option>
-        <option name="useColors">0</option>
-        <option name="useThousandSeparators">1</option>
-        <option name="linkView">search</option>
-        <option name="drilldown">none</option>
-        <option name="rangeColors">["0x65a637","0x6db7c6","0xf7bc38","0xf58f39","0xd93f3c"]</option>
-        <option name="rangeValues">[0,30,70,100]</option>
         <option name="trendInterval">auto</option>
         <option name="underLabel">Users</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
       </single>
+    </panel>
+    <panel>
       <table>
         <title>Users Logged In</title>
-        <searchString>| `pan_tstats` latest(log.event_id) FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.event_id="globalprotectgateway-regist-succ" OR log.event_id="globalprotectgateway-logout-succ" `table(log.user)` | fields user</searchString>
-        <option name="wrap">true</option>
-        <option name="rowNumbers">false</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">cell</option>
-        <option name="count">10</option>
-
+        <search>
+          <query>| `pan_tstats` latest(log.event_id) AS latest_event FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$  (log.event_id="globalprotectgateway-regist-succ" OR log.event_id="globalprotectgateway-logout-succ") `groupby(log.user)` | search latest_event="globalprotectgateway-regist-succ" | table user</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
         <html tokens="true">
           <div class="footnote">
             <small>*Based on login events without a logout event for each user within the timeframe</small>
           </div>
         </html>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="rowNumbers">false</option>
+        <option name="wrap">true</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_globalprotect` user=$click.value|s$&earliest=$earliest$&latest=$latest$
+          ]]>
+          </link>
+        </drilldown>
       </table>
+    </panel>
   </row>
   <row>
+    <panel>
       <map>
         <title>User Location by Source IP</title>
-        <searchString>| `pan_tstats` latest(log.event_id) FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.event_id="globalprotectgateway-regist-succ" OR log.event_id="globalprotectgateway-logout-succ" groupby log.src_ip | iplocation log.src_ip | geostats count by log.src_ip</searchString>
+        <search>
+          <query>| `pan_tstats` latest(log.event_id) FROM `node(log.system.globalprotect)` $src_ip$ "$user|s$" $object$ AND log.event_id="globalprotectgateway-regist-succ" OR log.event_id="globalprotectgateway-logout-succ" groupby log.src_ip | iplocation log.src_ip | geostats count by log.src_ip</query>
+        </search>
         <option name="mapping.choroplethLayer.colorBins">5</option>
         <option name="mapping.choroplethLayer.colorMode">auto</option>
         <option name="mapping.choroplethLayer.maximumColor">0xDB5800</option>
@@ -284,6 +364,14 @@
         <option name="mapping.tileLayer.tileOpacity">1</option>
         <option name="mapping.type">marker</option>
         <option name="drilldown">all</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_globalprotect` src_ip=$click.name$&earliest=$earliest$&latest=$latest$
+          ]]>
+          </link>
+        </drilldown>
       </map>
+    </panel>
   </row>
 </form>
