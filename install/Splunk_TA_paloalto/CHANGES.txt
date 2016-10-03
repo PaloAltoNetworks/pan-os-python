@@ -1,1 +1,1 @@
-Changelog available at http://pansplunk.readthedocs.org/en/latest/release_notes.html
+Changelog available at http://pansplunk.readthedocs.io/en/latest/release_notes.html

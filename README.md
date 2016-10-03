@@ -10,17 +10,17 @@ Note: The TA is included with this App, and does **not** have to be installed se
 
 ### Documentation ###
 
-http://pansplunk.readthedocs.org/
+http://pansplunk.readthedocs.io/
 
 
 ### Release Notes: ###
 
-http://pansplunk.readthedocs.org/en/latest/release_notes.html
+http://pansplunk.readthedocs.io/en/latest/release_notes.html
 
 
 ### Support ###
 
-http://pansplunk.readthedocs.org/en/latest/support.html
+http://pansplunk.readthedocs.io/en/latest/support.html
 
 ### Install from Git ###
 

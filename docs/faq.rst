@@ -102,7 +102,7 @@ My question isn't answered here, how do I get answers?
 ------------------------------------------------------
 Here are a few ways to get your questions answered. Search for answers in this order:
 
-* Check the App Documentation at http://splunkforpaloaltonetworks.readthedocs.io
+* Check the App Documentation at http://pansplunk.readthedocs.io
 * Search on `Splunk Answers`_
 * If you can't find an answer or need support, ask a question using the
   instructions on the :ref:`getsupport` page.
