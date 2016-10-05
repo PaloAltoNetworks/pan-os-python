@@ -1,0 +1,52 @@
+<setup>
+    <block title="Add new credentials for PAN devices" endpoint="admin/passwords" entity="_new">
+    	<text> These are the credentials that will be used to communicate with your Palo Alto Networks Firewall or Panorama. 
+    	</text>
+            <input field="name">
+                    <label>Username</label>
+                    <type>text</type>
+            </input>
+            <input field="password">
+                    <label>Password</label>
+                    <type>password</type>
+            </input>
+    </block>
+  <block title="WildFire Cloud API Key" endpoint="storage/passwords" entity="_new">
+    <text> Used to retrieve reports from the WildFire Cloud.  An API Key is available from the WildFire Portal (<![CDATA[<a href="https://wildfire.paloaltonetworks.com" target="_blank">https://wildfire.paloaltonetworks.com</a>)]]>.
+    </text>
+          <input field="name">
+                  <label>API Key Username</label>
+                  <type>text</type>
+          </input>
+          <input field="password">
+                  <label>WildFire API Key</label>
+                  <type>text</type>
+          </input>
+  </block>
+  <block title="">
+        <text><![CDATA[
+        <script>
+        $(document).ready(function()
+        {
+          $(function(){
+               var username_div = $('#item-\\/storage\\/passwords\\/_new\\/name');
+                username_div.hide();
+
+                var username_input = $('#\\/storage\\/passwords\\/_new\\/name_id');
+                var apikey_input = $('#\\/storage\\/passwords\\/_new\\/password_id');
+
+                apikey_input.change(function() {
+                    if(apikey_input.val().length === 0) {
+                        username_input.val('')
+                    } else {
+                        username_input.val('wildfire_api_key');
+                    }
+                });
+          });
+        });
+        </script>
+        ]]></text>
+    <text> Note: To change the Credentials or WildFire API Key later, first remove the entry from app.conf or passwords.conf in SPLUNK_HOME/etc/apps/Splunk_TA_paloalto/local/ and restart Splunk.
+    </text>
+  </block>
+</setup>

@@ -1,0 +1,4 @@
+.panrc
+*.py[co]
+__pycache__
+*.html
