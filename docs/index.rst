@@ -3,7 +3,7 @@ Splunk for Palo Alto Networks
 
 .. image:: _static/logos.png
 
-The latest documentation is available at http://pansplunk.readthedocs.org
+The latest documentation is available at http://pansplunk.readthedocs.io
 
 .. #:titlesonly: # Commented out for now
 .. toctree::
