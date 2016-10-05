@@ -1,5 +1,5 @@
 <form>
-  <label>Endpoint Security Overview</label>
+  <label>Endpoint Security Dashboard</label>
   <fieldset submitButton="true" autoRun="true">
     <input type="time" searchWhenChanged="true">
       <label>Time Range</label>
@@ -56,7 +56,7 @@
         <title>Logs by Type</title>
         <search>
           <query>
-            | `pan_tstats` count FROM `ep_node` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(_time log.type)` | timechart values(count) by type
+            | `pan_tstats` count FROM `ep_node` $file_name$ "$user|s$" $src$ $signature$ $severity$ $action$ `groupby(_time log.type)` | timechart values(count) by type
           </query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
@@ -82,7 +82,7 @@
         <drilldown>
           <link>
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` log_subtype="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` log_subtype=$click.name2|s$ earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
           ]]>
           </link>
         </drilldown>
@@ -91,7 +91,7 @@
         <title>Logs by Severity</title>
         <search>
           <query>
-            | `pan_tstats` count FROM `ep_node` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(_time log.severity)` | timechart values(count) by severity
+            | `pan_tstats` count FROM `ep_node` $file_name$ "$user|s$" $src$ $signature$ $severity$ $action$ `groupby(_time log.severity)` | timechart values(count) by severity
           </query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
@@ -117,7 +117,7 @@
         <drilldown>
           <link>
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` severity="$click.name2$" earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` severity=$click.name2|s$ earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
           ]]>
           </link>
         </drilldown>
@@ -128,7 +128,7 @@
         <title>Targeted Applications</title>
         <search>
           <query>
-            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.file_name)`
+            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ "$user|s$" $src$ $signature$ $severity$ $action$ `groupby(log.file_name)`
           </query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
@@ -154,7 +154,7 @@
         <drilldown>
           <link>
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
           ]]>
           </link>
         </drilldown>
@@ -163,7 +163,7 @@
         <title>Targeted Machines</title>
         <search>
           <query>
-            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.src)`
+            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ "$user|s$" $src$ $signature$ $severity$ $action$ `groupby(log.src)`
           </query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
@@ -189,7 +189,7 @@
           <drilldown>
               <link>
                   <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
           ]]>
               </link>
           </drilldown>
@@ -198,7 +198,7 @@
         <title>Targeted Users</title>
         <search>
           <query>
-            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.user)`
+            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ "$user|s$" $src$ $signature$ $severity$ $action$ `groupby(log.user)`
           </query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
@@ -224,7 +224,7 @@
           <drilldown>
               <link>
                   <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
           ]]>
               </link>
           </drilldown>
@@ -235,7 +235,7 @@
         <title>Endpoint Module</title>
         <search>
           <query>
-            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.signature)`
+            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ "$user|s$" $src$ $signature$ $severity$ $action$ `groupby(log.signature)`
           </query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
@@ -261,7 +261,7 @@
           <drilldown>
               <link>
                   <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
           ]]>
               </link>
           </drilldown>
@@ -270,7 +270,7 @@
         <title>Action</title>
         <search>
           <query>
-            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user$ $src$ $signature$ $severity$ $action$ `groupby(log.log_subtype)`
+            | `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ "$user|s$" $src$ $signature$ $severity$ $action$ `groupby(log.log_subtype)`
           </query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
@@ -296,7 +296,7 @@
           <drilldown>
               <link>
                   <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
           ]]>
               </link>
           </drilldown>

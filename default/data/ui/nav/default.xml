@@ -13,8 +13,9 @@
       <a href="search?q=%60pan_system%60">System Logs</a>
     </collection>
     <divider />
-    <a href="/manager/SplunkforPaloAltoNetworks/apps/local/SplunkforPaloAltoNetworks/setup?action=edit">Configuration</a>
+    <a href="/manager/Splunk_TA_paloalto/apps/local/Splunk_TA_paloalto/setup?action=edit">Configuration</a>
     <divider />
+    <a href="http://pansplunk.readthedocs.io" target="_blank">Documentation</a>
     <a href="http://answers.splunk.com/ask/?appid=491" target="_blank">Send Feedback</a>
   </collection>
   
@@ -73,6 +74,15 @@
       <a href="search?q=search%20%60pan_endpoint%60">Search Endpoint Log Data</a>
       <divider />
       <saved source="all" match="PAN - Endpoint" view="search" />
+    </collection>
+  </collection>
+
+  <collection label="GlobalProtect">
+    <view name="globalprotect_overview" />
+    <collection label="Searches &amp; Reports">
+      <a href="search?q=search%20%60pan_globalprotect%60">Search GlobalProtect Log Data</a>
+      <divider />
+      <saved source="all" match="PAN - GlobalProtect" view="search" />
     </collection>
   </collection>
 

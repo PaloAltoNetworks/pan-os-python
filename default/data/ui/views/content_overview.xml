@@ -108,7 +108,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type=$click.name2|s$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
@@ -153,7 +153,7 @@
     <drilldown>
       <link>
         <![CDATA[
-          /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+          /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type=$row.content_type|s$ app=$row.app|s$&earliest=$earliest$&latest=$latest$
     ]]>
       </link>
     </drilldown>
@@ -188,7 +188,7 @@
     <drilldown>
       <link>
         <![CDATA[
-        /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+        /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type=$row.content_type|s$ app=$row.app|s$&earliest=$earliest$&latest=$latest$
         ]]>
       </link>
     </drilldown>
@@ -224,7 +224,7 @@
     <drilldown>
       <link>
         <![CDATA[
-        /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type="$row.content_type$" category="$row.category$"&earliest=$earliest$&latest=$latest$
+        /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` content_type=$row.content_type|s$ category=$row.category|s$&earliest=$earliest$&latest=$latest$
         ]]>
       </link>
     </drilldown>

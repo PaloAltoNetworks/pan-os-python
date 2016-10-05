@@ -46,7 +46,7 @@
         });
         </script>
         ]]></text>
-    <text> Note: To change the Credentials or WildFire API Key later, first remove the entry from SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/app.conf and restart Splunk.
+    <text> Note: To change the Credentials or WildFire API Key later, first remove the entry from app.conf or passwords.conf in SPLUNK_HOME/etc/apps/Splunk_TA_paloalto/local/ and restart Splunk.
     </text>
   </block>
 </setup>

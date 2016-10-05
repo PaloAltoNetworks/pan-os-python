@@ -55,7 +55,7 @@
       <title>Data Events</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action
+          | `pan_tstats` count FROM `node(log.data)` "$user|s$" $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.action | timechart values(count) by log.action
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -76,7 +76,7 @@
       <drilldown>
         <link>
           <![CDATA[
-          /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` action="$click.name2$"  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+          /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` action=$click.name2|s$  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
       ]]>
         </link>
       </drilldown>
@@ -85,7 +85,7 @@
       <title>Application</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app
+          | `pan_tstats` count FROM `node(log.data)` "$user|s$" $src_ip$ $dest_ip$ $app$ $action$ $vsys$ groupby _time log.app | timechart values(count) by log.app
         </query>
          <earliest>$earliest$</earliest>
          <latest>$latest$</latest>
@@ -106,7 +106,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$click.name2$"  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app=$click.name2|s$  earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
     ]]>
         </link>
       </drilldown>
@@ -117,7 +117,7 @@
       <title>Data Filter Events by Application</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.threat_name log.action log.src_ip log.app, count)`
+          | `pan_tstats` count FROM `node(log.data)` "$user|s$" $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.threat_name log.action log.src_ip log.app, count)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -152,7 +152,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` threat_name="$row.threat_name$" action="$row.action$" src_ip="$row.src_ip$" app="$row.app$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` threat_name=$row.threat_name|s$ action=$row.action|s$ src_ip=$row.src_ip|s$ app=$row.app|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>
@@ -161,7 +161,7 @@
       <title>Data Filter Events by Destination</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.data)` $user$ $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dest_ip log.dest_location, count)`
+          | `pan_tstats` count FROM `node(log.data)` "$user|s$" $src_ip$ $dest_ip$ $app$ $action$ $vsys$ `table(log.action log.src_ip log.dest_ip log.dest_location, count)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -187,7 +187,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_ip="$row.Destination$" dest_location="$row.Location$" src_ip="$row.Source$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` dest_ip=$row.Destination|s$ dest_location=$row.Location|s$ src_ip=$row.Source|s$&earliest=$earliest$&latest=$latest$
     ]]>
         </link>
       </drilldown>

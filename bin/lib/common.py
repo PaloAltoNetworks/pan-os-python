@@ -60,8 +60,8 @@ except Exception as e:
     sys.exit(4)
 
 
-# This is the folder name for the app and not the app's common name (ie. "SplunkforPaloAltoNetworks")
-APPNAME = 'SplunkforPaloAltoNetworks'
+# This is the folder name for the app and not the app's common name (ie. "Splunk_TA_paloalto")
+APPNAME = 'Splunk_TA_paloalto'
 
 
 class NoCredentialsFound(Exception):

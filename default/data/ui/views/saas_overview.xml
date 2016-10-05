@@ -45,7 +45,7 @@
   </fieldset>
   <search id="baseSearch">
     <query>
-      | `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.app:category log.app:subcategory log.user log.bytes)`
+      | `pan_tstats` count from `node(log.traffic.end)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ "$user|s$" $app$ `groupby(_time log.app log.app:is_sanctioned_saas log.app:category log.app:subcategory log.user log.bytes)`
     </query>
     <earliest>$earliest$</earliest>
     <latest>$latest$</latest>
@@ -81,7 +81,7 @@
     <single>
       <search>
         <query>
-          | `pan_tstats` count from `node(log.threat)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$
+          | `pan_tstats` count from `node(log.threat)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ "$user|s$" $app$
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -122,7 +122,7 @@
         <drilldown>
           <link>
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=$click.name2|s$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	    ]]>
           </link>
         </drilldown>
@@ -144,32 +144,32 @@
         <drilldown>
           <link field="app">
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$row.app$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app=$row.app|s$&earliest=$earliest$&latest=$latest$
           ]]>
           </link>
           <link field="app:category">
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app:category="$row.app:category$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app:category=$row.app:category|s$&earliest=$earliest$&latest=$latest$
             ]]>
           </link>
           <link field="app:subcategory">
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app:subcategory="$row.app:subcategory$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app:subcategory=$row.app:subcategory|s$&earliest=$earliest$&latest=$latest$
             ]]>
           </link>
           <link field="Sessions">
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$row.app$" app:category="$row.app:category$" app:subcategory="$row.app:subcategory$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app=$row.app|s$ app:category=$row.app:category|s$ app:subcategory=$row.app:subcategory|s$&earliest=$earliest$&latest=$latest$
             ]]>
           </link>
           <link field="Vol in MB">
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$row.app$" app:category="$row.app:category$" app:subcategory="$row.app:subcategory$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app=$row.app|s$ app:category=$row.app:category|s$ app:subcategory=$row.app:subcategory|s$&earliest=$earliest$&latest=$latest$
 	    ]]>
           </link>
           <link field="distribution">
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app="$row.app$" app:category="$row.app:category$" app:subcategory="$row.app:subcategory$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` app=$row.app|s$ app:category=$row.app:category|s$ app:subcategory=$row.app:subcategory|s$&earliest=$earliest$&latest=$latest$
 	    ]]>
           </link>
         </drilldown>
@@ -207,7 +207,7 @@
         <drilldown>
           <link>
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=end app:is_saas="yes" | where $app:is_sanctioned_saas$=if("Sanctioned"="$click.value$","yes","no")&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=end app:is_saas="yes" | where $app:is_sanctioned_saas$=if("Sanctioned"=$click.value|s$,"yes","no")&earliest=$earliest$&latest=$latest$
 	      ]]>
           </link>
         </drilldown>
@@ -227,7 +227,7 @@
         <drilldown>
           <link>
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=end app:is_saas="yes" | where $app:is_sanctioned_saas$=if("Sanctioned"="$row.SaaS$","yes","no")&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` log_subtype=end app:is_saas="yes" | where $app:is_sanctioned_saas$=if("Sanctioned"=$row.SaaS|s$,"yes","no")&earliest=$earliest$&latest=$latest$
 	        ]]>
           </link>
         </drilldown>
@@ -386,7 +386,7 @@
         <title>Top File Sharing SaaS Apps</title>
         <search>
           <query>
-            | `pan_tstats` count dc(log.user) as Users FROM `node(log.file)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ $user$ $app$  `groupby(log.app log.app:risk)` | sort -count | rename app as Application | rename count as "Uploads/Downloads" | rename app:risk as Risk
+            | `pan_tstats` count dc(log.user) as Users FROM `node(log.file)` log.app:is_saas="yes" $action$ $src_ip$ $dst_ip$ "$user|s$" $app$  `groupby(log.app log.app:risk)` | sort -count | rename app as Application | rename count as "Uploads/Downloads" | rename app:risk as Risk
           </query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
@@ -420,7 +420,7 @@
         <drilldown>
           <link>
             <![CDATA[
-              /app/SplunkforPaloAltoNetworks/search?q=`pan_file` app="$row.Application$"&earliest=$earliest$&latest=$latest$
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_file` app=$row.Application|s$&earliest=$earliest$&latest=$latest$
           ]]>
           </link>
         </drilldown>

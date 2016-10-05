@@ -2,9 +2,10 @@ vendor_action,action
 alert,allowed
 allow,allowed
 block,blocked
+block-ip,blocked
 block-url,blocked
 deny,blocked
-drop,blocked
+drop,dropped
 Failed,failure
 forward,unknown
 reset-both,blocked

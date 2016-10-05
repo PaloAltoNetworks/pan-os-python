@@ -110,7 +110,7 @@ def main_splunk():
     action = kwargs['action'] if 'action' in kwargs else "login"
     vsys = kwargs['vsys'] if 'vsys' in kwargs else "vsys1"
     ip_field = kwargs['ip_field'] if 'ip_field' in kwargs else "src_ip"
-    user_field = kwargs['tag_field'] if 'tag_field' in kwargs else "user"
+    user_field = kwargs['user_field'] if 'user_field' in kwargs else "user"
 
     # Determine if device hostname or serial was provided as argument or should be pulled from entries
     log(debug, "Determining how firewalls should be contacted based on arguments")
@@ -153,10 +153,10 @@ def main_splunk():
         firewall = Firewall(hostname, api_key=apikey, vsys=vsys)
         firewall.userid.batch_start()
 
-    # Collect all the ip addresses and tags into firewall batch requests
+    # Collect all the ip addresses and users into firewall batch requests
     for result in results:
 
-        ## Find the tag (if a tag_field was specified)
+        ## Find the user (if a user_field was specified)
 
         try:
             this_user = result[user_field]

@@ -29,7 +29,7 @@ SPLUNK_HOST = 'localhost'
 SPLUNK_PORT = '8000'
 SPLUNK_ROOT_ENDPOINT = '/'
 DEPENDENCY_TA = 'Splunk_TA_paloalto'
-DEPENDENCY_VERSION = '3.5.0 build 8'
+DEPENDENCY_VERSION = '3.7.0 build 3700'
 TA_RELOAD_URI = 'services/apps/local/splunk_ta_paloalto/_reload'
 
 

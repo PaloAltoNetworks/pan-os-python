@@ -260,9 +260,13 @@ Ensure you set the credentials for this device in the
 tables every Saturday at 12:05 AM for apps and 12:10 AM for threats.
 Change the cron_schedule to your desired update schedule.
 
-.. note:: The Palo Alto Networks App version 5.0 must be installed for the
+.. note:: The Palo Alto Networks App version 5.0 or higher must be installed for the
    lookup table update to work. But the saved searches must be created in
    the TA, not the App.
+
+   If using a custom admin role on the firewall, it must have **Configuration**
+   permissions for the **XML API**.  See :ref:`initialsetup` in the :ref:`gettingstarted`
+   Guide.
 
 .. rubric:: Footnotes
 

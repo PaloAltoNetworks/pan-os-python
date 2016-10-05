@@ -29,8 +29,7 @@
     <input type="text" token="user">
       <label>Source User</label>
       <default/>
-      <prefix>log.user="</prefix>
-      <suffix>"</suffix>
+      <prefix>log.user=</prefix>
     </input>
     <input type="dropdown" token="app">
       <label>Application</label>
@@ -54,7 +53,7 @@
       <title>Bytes Transfered Over Time</title>
       <search>
         <query>
-          | `pan_tstats` sum(log.bytes_out) AS sumSent sum(log.bytes_in) AS sumReceived FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ $user$ $app$ groupby _time span=5m | timechart span=5m values("sumReceived") AS "Bytes Received" values("sumSent") AS "Bytes Sent"
+          | `pan_tstats` sum(log.bytes_out) AS sumSent sum(log.bytes_in) AS sumReceived FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ "$user|s$" $app$ groupby _time span=5m | timechart span=5m values("sumReceived") AS "Bytes Received" values("sumSent") AS "Bytes Sent"
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -84,7 +83,7 @@
       <title>Protocols Over Time</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ $user$ $app$ groupby _time log.protocol span=5m | timechart span=5m values(count) by log.protocol
+          | `pan_tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ "$user|s$" $app$ groupby _time log.protocol span=5m | timechart span=5m values(count) by log.protocol
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -105,7 +104,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` protocol="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` protocol=$click.name2|s$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
@@ -116,7 +115,7 @@
       <title>Applications by Bytes Transfered</title>
       <search>
         <query>
-          | `pan_tstats` sum(log.bytes_in) AS sbr sum(log.bytes_out) AS sbs FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ $user$ $app$ groupby log.app | eval sumBytes = sbr + sbs | stats values(sumBytes) AS Bytes by log.app | sort -Bytes | head 50
+          | `pan_tstats` sum(log.bytes_in) AS sbr sum(log.bytes_out) AS sbs FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ "$user|s$" $app$ groupby log.app | eval sumBytes = sbr + sbs | stats values(sumBytes) AS Bytes by log.app | sort -Bytes | head 50
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -137,7 +136,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` app="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` app=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -146,7 +145,7 @@
       <title>Applications by Request</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ $user$ $app$ groupby log.app | stats values(count) AS Application by log.app | `top(50)`
+          | `pan_tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ "$user|s$" $app$ groupby log.app | stats values(count) AS Application by log.app | `top(50)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -167,7 +166,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` app="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` app=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -176,7 +175,7 @@
       <title>Source IP</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.traffic.end)` $src_ip$ $user$ $dest_ip$ $dest_port$ $app$ $action$ groupby log.src_ip | `top(50)`
+          | `pan_tstats` count FROM `node(log.traffic.end)` $src_ip$ "$user|s$" $dest_ip$ $dest_port$ $app$ $action$ groupby log.src_ip | `top(50)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -197,7 +196,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` src_ip="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` src_ip=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -207,7 +206,7 @@
     <chart>
       <title>Destination Port</title>
       <search>
-        <query>| `pan_tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ $user$ $app$ groupby log.dest_port | `top(50)`
+        <query>| `pan_tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ "$user|s$" $app$ groupby log.dest_port | `top(50)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -228,7 +227,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` dest_port="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` dest_port=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -237,7 +236,7 @@
       <title>Destination IP</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ $user$ $app$ groupby log.dest_ip | `top(50)`
+          | `pan_tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ "$user|s$" $app$ groupby log.dest_ip | `top(50)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -258,7 +257,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` dest_ip="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` dest_ip=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -267,7 +266,7 @@
       <title>Source User</title>
       <search>
         <query>
-          | `pan_tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ $user$ $app$ groupby log.user | `top(50)`
+          | `pan_tstats` count FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ "$user|s$" $app$ groupby log.user | `top(50)`
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -288,7 +287,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` user="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` user=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -299,7 +298,7 @@
       <title>Traffic Transmitted by Interface</title>
       <search>
         <query>
-          | `pan_tstats` sum(log.bytes) As sb FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ $user$ $app$ groupby log.dest_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.dest_interface | rename log.dest_interface AS "Egress Interface"
+          | `pan_tstats` sum(log.bytes) As sb FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ "$user|s$" $app$ groupby log.dest_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.dest_interface | rename log.dest_interface AS "Egress Interface"
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -320,7 +319,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` dest_interface="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` dest_interface=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -328,7 +327,7 @@
     <chart>
       <title>Traffic Received by Interface</title>
       <search>
-        <query>| `pan_tstats` sum(log.bytes) As sb FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ $user$ $app$ groupby log.src_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.src_interface | rename log.src_interface AS "Ingress Interface"
+        <query>| `pan_tstats` sum(log.bytes) As sb FROM `node(log.traffic.end)` $action$ $src_ip$ $dest_ip$ $dest_port$ "$user|s$" $app$ groupby log.src_interface | eval sumBytes = sb/(1024*1024) | stats values(sumBytes) AS MegaBytes by log.src_interface | rename log.src_interface AS "Ingress Interface"
         </query>
         <earliest>$earliest$</earliest>
         <latest>$latest$</latest>
@@ -349,7 +348,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` src_interface="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_traffic` src_interface=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>

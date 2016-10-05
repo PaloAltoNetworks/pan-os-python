@@ -83,42 +83,42 @@
       <drilldown>
         <link field="_time">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` _time="$row._time$"
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` _time=$row._time|s$
         ]]>
         </link>
         <link field="result">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` result="$row.result$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` result=$row.result|s$&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="serial_number">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` serial_number="$row.serial_number$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` serial_number=$row.serial_number|s$&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="host">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` host="$row.host$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` host=$row.host|s$&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="admin">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin="$row.admin$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` admin=$row.admin|s$&earliest=$earliest$&latest=$latest$
           ]]>
         </link>
         <link field="host_name">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` host_name="$row.host_name$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` host_name=$row.host_name|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="client">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` client="$row.client$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` client=$row.client|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
         <link field="configuration_path">
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` configuration_path="$row.configuration_path$"
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_config` configuration_path=$row.configuration_path|s$
 	  ]]>
         </link>
       </drilldown>
@@ -147,7 +147,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` cmd="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` cmd=$click.name2|s$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
@@ -173,7 +173,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` admin="$click.name2$" [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` admin=$click.name2|s$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest] earliest = $click.value$
 	  ]]>
         </link>
       </drilldown>
@@ -201,7 +201,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
@@ -227,7 +227,7 @@
       <drilldown>
         <link>
           <![CDATA[
-            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$="$click.value$"&earliest=$earliest$&latest=$latest$
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_logs` $click.name$=$click.value|s$&earliest=$earliest$&latest=$latest$
 	  ]]>
         </link>
       </drilldown>
