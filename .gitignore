@@ -20,3 +20,6 @@ git-repositories/
 
 # PyCharm/IntelliJ meta-directory
 .idea
+
+# VI files
+*.un~
