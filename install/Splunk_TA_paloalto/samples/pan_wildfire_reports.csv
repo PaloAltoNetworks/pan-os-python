@@ -1,0 +1,596 @@
+"_raw","_time","dns{@query}","dns{@type}",eventtype,host,index,linecount,product,punct,"report_id",source,sourcetype,"splunk_server","splunk_server_group",tag,"tag::eventtype","tcp_ip","tcp_ip_port","tcp_port",timestamp,"udp_ip_port","url{@host}","url{@method}","url{@uri}","url{@user_agent}",vendor,"vendor_product","wildfire.file_info.filetype","wildfire.file_info.malware","wildfire.file_info.md5","wildfire.file_info.sha256","wildfire.file_info.size","wildfire.id","wildfire.report.file.file_deleted{@deleted_file}","wildfire.report.file.file_deleted{@pid}","wildfire.report.file.file_deleted{@process_image}","wildfire.report.file.file_written{@pid}","wildfire.report.file.file_written{@process_image}","wildfire.report.file.file_written{@written_file}","wildfire.report.id","wildfire.report.malware","wildfire.report.md5","wildfire.report.network.TCP{@country}","wildfire.report.network.TCP{@ip}","wildfire.report.network.TCP{@port}","wildfire.report.network.UDP{@country}","wildfire.report.network.UDP{@ip}","wildfire.report.network.UDP{@port}","wildfire.report.network.dns{@query}","wildfire.report.network.dns{@type}","wildfire.report.network.tcp-connection{@ip}","wildfire.report.network.tcp-connection{@pid}","wildfire.report.network.tcp-connection{@port}","wildfire.report.network.tcp-connection{@process_image}","wildfire.report.network.url{@host}","wildfire.report.network.url{@method}","wildfire.report.network.url{@uri}","wildfire.report.network.url{@user_agent}","wildfire.report.process.process_created{@child_pid}","wildfire.report.process.process_created{@child_process_image}","wildfire.report.process.process_created{@parent_pid}","wildfire.report.process.process_created{@parent_process_image}","wildfire.report.process.process_terminated{@child_pid}","wildfire.report.process.process_terminated{@child_process_image}","wildfire.report.process.process_terminated{@parent_pid}","wildfire.report.process.process_terminated{@parent_process_image}","wildfire.report.registry.DeleteKey{@pid}","wildfire.report.registry.DeleteKey{@process_image}","wildfire.report.registry.DeleteKey{@reg_key}","wildfire.report.registry.DeleteValueKey{@pid}","wildfire.report.registry.DeleteValueKey{@process_image}","wildfire.report.registry.DeleteValueKey{@reg_key}","wildfire.report.registry.SetValueKey{@pid}","wildfire.report.registry.SetValueKey{@process_image}","wildfire.report.registry.SetValueKey{@reg_key}","wildfire.report.sha256","wildfire.report.size","wildfire.report.summary.entry","wildfire.report.task","wildfire.report.version","wildfire.task_info.report.file.file_deleted{@deleted_file}","wildfire.task_info.report.file.file_deleted{@pid}","wildfire.task_info.report.file.file_deleted{@process_image}","wildfire.task_info.report.file.file_written{@pid}","wildfire.task_info.report.file.file_written{@process_image}","wildfire.task_info.report.file.file_written{@written_file}","wildfire.task_info.report.malware","wildfire.task_info.report.md5","wildfire.task_info.report.network.TCP{@country}","wildfire.task_info.report.network.TCP{@ip}","wildfire.task_info.report.network.TCP{@port}","wildfire.task_info.report.network.dns{@query}","wildfire.task_info.report.network.dns{@type}","wildfire.task_info.report.network.url{@host}","wildfire.task_info.report.network.url{@method}","wildfire.task_info.report.network.url{@uri}","wildfire.task_info.report.network.url{@user_agent}","wildfire.task_info.report.platform","wildfire.task_info.report.process.process_created{@child_pid}","wildfire.task_info.report.process.process_created{@child_process_image}","wildfire.task_info.report.process.process_created{@parent_pid}","wildfire.task_info.report.process.process_created{@parent_process_image}","wildfire.task_info.report.process.process_terminated{@child_pid}","wildfire.task_info.report.process.process_terminated{@child_process_image}","wildfire.task_info.report.process.process_terminated{@parent_pid}","wildfire.task_info.report.process.process_terminated{@parent_process_image}","wildfire.task_info.report.registry.DeleteValueKey{@pid}","wildfire.task_info.report.registry.DeleteValueKey{@process_image}","wildfire.task_info.report.registry.DeleteValueKey{@reg_key}","wildfire.task_info.report.registry.SetValueKey{@pid}","wildfire.task_info.report.registry.SetValueKey{@process_image}","wildfire.task_info.report.registry.SetValueKey{@reg_key}","wildfire.task_info.report.sha256","wildfire.task_info.report.size","wildfire.task_info.report.software","wildfire.task_info.report.summary.entry","wildfire.task_info.report.version","wildfire.version"
+"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+<wildfire> 
+<version>2.0</version>
+<id>254797768</id>
+<file_info>
+  <sha256>95bdb3832b6ee802347f228547d3a0955b3f91a9c8f34645fb99c1037e7753c5</sha256>
+  <md5>279f2db47628a630123ce145699b5598</md5>
+  <filetype>PE</filetype>
+  <size>57216</size>
+  <malware>yes</malware>
+</file_info>
+<task_info>
+<report>
+  <version>2.0</version>
+  <platform>2</platform>
+  <software>Windows XP, Adobe Reader 9.4.0, Flash 10, Office 2007</software>
+  <sha256>95bdb3832b6ee802347f228547d3a0955b3f91a9c8f34645fb99c1037e7753c5</sha256>
+  <md5>279f2db47628a630123ce145699b5598</md5>
+  <size>57216</size>
+  <malware>yes</malware>
+  <summary>
+    <entry>Sample attempted to copy itself</entry>
+    <entry>Created an executable file in the Windows system folder</entry>
+    <entry>Created or modified files</entry>
+    <entry>Contained unknown TCP/UDP traffic</entry>
+    <entry>Moved itself</entry>
+    <entry>Started or stopped a system service</entry>
+    <entry>Modified Windows registries</entry>
+    <entry>Changed security settings of Internet Explorer</entry>
+    <entry>Scheduled a file name change at next start-up</entry>
+  </summary>
+  <process>
+    <process_created child_pid=""2840"" child_process_image=""C:\WINDOWS\system32\jwzvwy.exe"" parent_pid=""716"" parent_process_image=""C:\WINDOWS\system32\services.exe""/>
+    <process_created child_pid=""2812"" child_process_image=""C:\sample.exe"" parent_pid=""4294967295"" parent_process_image=""UNKNOWN""/>
+    <process_created child_pid=""2812"" child_process_image=""C:\sample.exe"" parent_pid=""2772"" parent_process_image=""explorer.exe""/>
+    <process_terminated child_pid=""2812"" child_process_image=""C:\sample.exe"" parent_pid=""2772"" parent_process_image=""explorer.exe""/>
+    <process_terminated child_pid=""1600"" child_process_image=""C:\WINDOWS\system32\userinit.exe"" parent_pid=""672"" parent_process_image=""C:\WINDOWS\system32\winlogon.exe""/>
+  </process>
+  <file>
+    <file_written pid=""2812"" process_image=""C:\sample.exe"" written_file=""C:\WINDOWS\system32\jwzvwy.exe""/>
+  </file>
+  <registry>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Personal""/>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass""/>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Documents""/>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Desktop""/>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Desktop""/>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\ProxyBypass""/>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\IntranetName""/>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\UNCAsIntranet""/>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\AutoDetect""/>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cache""/>
+    <SetValueKey pid=""2772"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cookies""/>
+    <SetValueKey pid=""2812"" process_image=""C:\sample.exe"" reg_key=""HKLM\SYSTEM\ControlSet001\Services\aspnet_statesjrq\Description""/>
+    <SetValueKey pid=""2812"" process_image=""C:\sample.exe"" reg_key=""HKLM\SYSTEM\ControlSet001\Control\Session Manager\PendingFileRenameOperations""/>
+    <SetValueKey pid=""672"" process_image=""C:\WINDOWS\system32\winlogon.exe"" reg_key=""HKCU\Control Panel\Keyboard\InitialKeyboardIndicators""/>
+  </registry>
+  <network>
+    <TCP country=""CN"" ip=""119.147.138.52"" port=""9000""/>
+    <TCP country=""CN"" ip=""222.186.43.246"" port=""6666""/>
+    <TCP country=""CN"" ip=""119.147.138.52"" port=""8000""/>
+    <dns query=""rouji888.com"" type=""A""/>
+    <dns query=""100geili.com"" type=""NS""/>
+    <dns query=""rat3.100geili.com"" type=""A""/>
+    <dns query=""rouji888.com"" type=""NS""/>
+    <dns query=""rat2.100geili.com"" type=""A""/>
+  </network>
+</report>
+</task_info>
+</wildfire>","2016-05-31T21:26:53.000+0000",,,"pan pan_wildfire_report","127.0.0.1","main",70,WildFire,"<?_="".""_=""-""_?><>_<>.</><></><>__<></>__<></>__<><",254797768,"http-simple","pan:wildfire_report",55bd81970555,,network,network,"119.147.138.52
+222.186.43.246
+119.147.138.52","119.147.138.52,9000
+222.186.43.246,6666
+119.147.138.52,8000","9000
+6666
+8000",none,,,,,,"Palo Alto Networks","Palo Alto Networks Wildfire",PE,yes,279f2db47628a630123ce145699b5598,95bdb3832b6ee802347f228547d3a0955b3f91a9c8f34645fb99c1037e7753c5,57216,254797768,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,2812,"C:\sample.exe","C:\WINDOWS\system32\jwzvwy.exe",yes,279f2db47628a630123ce145699b5598,"CN
+CN
+CN","119.147.138.52
+222.186.43.246
+119.147.138.52","9000
+6666
+8000","rouji888.com
+100geili.com
+rat3.100geili.com
+rouji888.com
+rat2.100geili.com","A
+NS
+A
+NS
+A",,,,,2,"2840
+2812
+2812","C:\WINDOWS\system32\jwzvwy.exe
+C:\sample.exe
+C:\sample.exe","716
+4294967295
+2772","C:\WINDOWS\system32\services.exe
+UNKNOWN
+explorer.exe","2812
+1600","C:\sample.exe
+C:\WINDOWS\system32\userinit.exe","2772
+672","explorer.exe
+C:\WINDOWS\system32\winlogon.exe",,,,"2772
+2772
+2772
+2772
+2772
+2772
+2772
+2772
+2772
+2772
+2772
+2812
+2812
+672","explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+C:\sample.exe
+C:\sample.exe
+C:\WINDOWS\system32\winlogon.exe","HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Personal
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Documents
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Desktop
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Desktop
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\ProxyBypass
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\IntranetName
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\UNCAsIntranet
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\AutoDetect
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cache
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cookies
+HKLM\SYSTEM\ControlSet001\Services\aspnet_statesjrq\Description
+HKLM\SYSTEM\ControlSet001\Control\Session Manager\PendingFileRenameOperations
+HKCU\Control Panel\Keyboard\InitialKeyboardIndicators",95bdb3832b6ee802347f228547d3a0955b3f91a9c8f34645fb99c1037e7753c5,57216,"Windows XP, Adobe Reader 9.4.0, Flash 10, Office 2007","Sample attempted to copy itself
+Created an executable file in the Windows system folder
+Created or modified files
+Contained unknown TCP/UDP traffic
+Moved itself
+Started or stopped a system service
+Modified Windows registries
+Changed security settings of Internet Explorer
+Scheduled a file name change at next start-up","2.0","2.0"
+"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+<wildfire> 
+<version>2.0</version>
+<id>254797738</id>
+<file_info>
+  <sha256>f00579f0908376f1562556005e398ca536a22bec46974603413bfe33e2a5877f</sha256>
+  <md5>b20bfeface7d7a549410297253a797a2</md5>
+  <filetype>PE</filetype>
+  <size>132760</size>
+  <malware>yes</malware>
+</file_info>
+<task_info>
+<report>
+  <version>2.0</version>
+  <platform>2</platform>
+  <software>Windows XP, Adobe Reader 9.4.0, Flash 10, Office 2007</software>
+  <sha256>f00579f0908376f1562556005e398ca536a22bec46974603413bfe33e2a5877f</sha256>
+  <md5>b20bfeface7d7a549410297253a797a2</md5>
+  <size>132760</size>
+  <malware>yes</malware>
+  <summary>
+    <entry>Created a file in the Windows folder</entry>
+    <entry>Used the POST method in HTTP</entry>
+    <entry>Injected code into another process</entry>
+    <entry>Started a process from a user document folder</entry>
+    <entry>Spawned new processes</entry>
+    <entry>Moved itself</entry>
+    <entry>Modified the network hosts file</entry>
+    <entry>Registered a file as auto-start from a local directory</entry>
+    <entry>Modified registries or system configuration to enable auto start capability</entry>
+    <entry>Modified Windows registries</entry>
+    <entry>Changed security settings of Internet Explorer</entry>
+    <entry>Created or modified files</entry>
+    <entry>Used direct IP instead of host name</entry>
+    <entry>Changed the Windows firewall policy</entry>
+  </summary>
+  <process>
+    <process_created child_pid=""2432"" child_process_image=""C:\sample.exe"" parent_pid=""2396"" parent_process_image=""explorer.exe""/>
+    <process_created child_pid=""2480"" child_process_image=""C:\sample.exe"" parent_pid=""2432"" parent_process_image=""C:\sample.exe""/>
+    <process_terminated child_pid=""2432"" child_process_image=""C:\sample.exe"" parent_pid=""2396"" parent_process_image=""explorer.exe""/>
+    <process_created child_pid=""2540"" child_process_image=""C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe"" parent_pid=""2480"" parent_process_image=""C:\sample.exe""/>
+    <process_terminated child_pid=""1604"" child_process_image=""C:\WINDOWS\system32\userinit.exe"" parent_pid=""664"" parent_process_image=""C:\WINDOWS\system32\winlogon.exe""/>
+    <process_terminated child_pid=""2480"" child_process_image=""C:\sample.exe"" parent_pid=""2432"" parent_process_image=""C:\sample.exe""/>
+    <process_created child_pid=""2552"" child_process_image=""C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe"" parent_pid=""2540"" parent_process_image=""C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe""/>
+    <process_terminated child_pid=""2540"" child_process_image=""C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe"" parent_pid=""2480"" parent_process_image=""C:\sample.exe""/>
+  </process>
+  <file>
+    <file_deleted deleted_file=""C:\WINDOWS\system32\drivers\etc\hosts"" pid=""2480"" process_image=""C:\sample.exe""/>
+    <file_written pid=""2480"" process_image=""C:\sample.exe"" written_file=""C:\WINDOWS\system32\drivers\etc\hosts""/>
+    <file_deleted deleted_file=""C:\Documents and Settings\Administrator\Application Data\desktop.ini"" pid=""2552"" process_image=""C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe""/>
+    <file_written pid=""2552"" process_image=""C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe"" written_file=""C:\Documents and Settings\Administrator\Application Data\desktop.ini""/>
+    <file_written pid=""2552"" process_image=""C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe"" written_file=""C:\Documents and Settings\Administrator\Application Data\ntuser.dat""/>
+  </file>
+  <registry>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Personal""/>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass""/>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Documents""/>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Desktop""/>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Desktop""/>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\ProxyBypass""/>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\IntranetName""/>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\UNCAsIntranet""/>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\AutoDetect""/>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cache""/>
+    <SetValueKey pid=""2396"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cookies""/>
+    <SetValueKey pid=""2480"" process_image=""C:\sample.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\AppData""/>
+    <SetValueKey pid=""2480"" process_image=""C:\sample.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Run\Windows Init""/>
+    <DeleteValueKey pid=""1712"" process_image=""C:\WINDOWS\system32\ctfmon.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Run\internat.exe""/>
+    <SetValueKey pid=""2552"" process_image=""C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\AppData""/>
+    <SetValueKey pid=""2552"" process_image=""C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe"" reg_key=""HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\AuthorizedApplications\List\c:\documents and settings\administrator\application data\xvaisavndkxousjftmxauirc3ipbpr3m2\svcnost.exe""/>
+    <SetValueKey pid=""2552"" process_image=""C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe"" reg_key=""HKCU\Software\Microsoft\Internet Explorer\LowRegistry\SavedLegacySettingsML""/>
+    <SetValueKey pid=""664"" process_image=""C:\WINDOWS\system32\winlogon.exe"" reg_key=""HKCU\Control Panel\Keyboard\InitialKeyboardIndicators""/>
+  </registry>
+  <network>
+    <TCP country=""DE"" ip=""89.149.242.193"" port=""80""/>
+    <TCP country=""RU"" ip=""37.9.55.55"" port=""80""/>
+    <TCP country=""DE"" ip=""217.20.112.85"" port=""80""/>
+    <dns query=""jejrw.su"" type=""NS""/>
+    <dns query=""jejrw.su"" type=""A""/>
+    <url host=""89.149.242.193"" method=""POST"" uri=""/stat1.php"" user_agent=""Mozilla/4.0 (compatible. MSIE 8.0. Windows NT 5.1)""/>
+    <url host=""87.75.44.12"" method=""POST"" uri=""/stat1.php"" user_agent=""Mozilla/4.0 (compatible. MSIE 8.0. Windows NT 5.1)""/>
+    <url host=""217.20.112.85"" method=""POST"" uri=""/stat1.php"" user_agent=""Mozilla/4.0 (compatible. MSIE 8.0. Windows NT 5.1)""/>
+  </network>
+</report>
+</task_info>
+</wildfire>","2016-05-31T21:26:18.000+0000",,,"pan pan_wildfire_report","127.0.0.1","main",86,WildFire,"<?_="".""_=""-""_?><>_<>.</><></><>__<></>__<></>__<><",254797738,"http-simple","pan:wildfire_report",55bd81970555,,network,network,"89.149.242.193
+37.9.55.55
+217.20.112.85","89.149.242.193,80
+37.9.55.55,80
+217.20.112.85,80","80
+80
+80",none,,,,,,"Palo Alto Networks","Palo Alto Networks Wildfire",PE,yes,b20bfeface7d7a549410297253a797a2,f00579f0908376f1562556005e398ca536a22bec46974603413bfe33e2a5877f,132760,254797738,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"C:\WINDOWS\system32\drivers\etc\hosts
+C:\Documents and Settings\Administrator\Application Data\desktop.ini","2480
+2552","C:\sample.exe
+C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe","2480
+2552
+2552","C:\sample.exe
+C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe
+C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe","C:\WINDOWS\system32\drivers\etc\hosts
+C:\Documents and Settings\Administrator\Application Data\desktop.ini
+C:\Documents and Settings\Administrator\Application Data\ntuser.dat",yes,b20bfeface7d7a549410297253a797a2,"DE
+RU
+DE","89.149.242.193
+37.9.55.55
+217.20.112.85","80
+80
+80","jejrw.su
+jejrw.su","NS
+A","89.149.242.193
+87.75.44.12
+217.20.112.85","POST
+POST
+POST","/stat1.php
+/stat1.php
+/stat1.php","Mozilla/4.0 (compatible. MSIE 8.0. Windows NT 5.1)
+Mozilla/4.0 (compatible. MSIE 8.0. Windows NT 5.1)
+Mozilla/4.0 (compatible. MSIE 8.0. Windows NT 5.1)",2,"2432
+2480
+2540
+2552","C:\sample.exe
+C:\sample.exe
+C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe
+C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe","2396
+2432
+2480
+2540","explorer.exe
+C:\sample.exe
+C:\sample.exe
+C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe","2432
+1604
+2480
+2540","C:\sample.exe
+C:\WINDOWS\system32\userinit.exe
+C:\sample.exe
+C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe","2396
+664
+2432
+2480","explorer.exe
+C:\WINDOWS\system32\winlogon.exe
+C:\sample.exe
+C:\sample.exe",1712,"C:\WINDOWS\system32\ctfmon.exe","HKCU\Software\Microsoft\Windows\CurrentVersion\Run\internat.exe","2396
+2396
+2396
+2396
+2396
+2396
+2396
+2396
+2396
+2396
+2396
+2480
+2480
+2552
+2552
+2552
+664","explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+C:\sample.exe
+C:\sample.exe
+C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe
+C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe
+C:\Documents and Settings\Administrator\Application Data\xvaisavndkxousjftmxauirc3ipbpr3m\svcnost.exe
+C:\WINDOWS\system32\winlogon.exe","HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Personal
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Documents
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Desktop
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Desktop
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\ProxyBypass
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\IntranetName
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\UNCAsIntranet
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\AutoDetect
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cache
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cookies
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\AppData
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run\Windows Init
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\AppData
+HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\AuthorizedApplications\List\c:\documents and settings\administrator\application data\xvaisavndkxousjftmxauirc3ipbpr3m2\svcnost.exe
+HKCU\Software\Microsoft\Internet Explorer\LowRegistry\SavedLegacySettingsML
+HKCU\Control Panel\Keyboard\InitialKeyboardIndicators",f00579f0908376f1562556005e398ca536a22bec46974603413bfe33e2a5877f,132760,"Windows XP, Adobe Reader 9.4.0, Flash 10, Office 2007","Created a file in the Windows folder
+Used the POST method in HTTP
+Injected code into another process
+Started a process from a user document folder
+Spawned new processes
+Moved itself
+Modified the network hosts file
+Registered a file as auto-start from a local directory
+Modified registries or system configuration to enable auto start capability
+Modified Windows registries
+Changed security settings of Internet Explorer
+Created or modified files
+Used direct IP instead of host name
+Changed the Windows firewall policy","2.0","2.0"
+"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+<wildfire> 
+<version>2.0</version>
+<id>254796538</id>
+<file_info>
+  <sha256>5cffd8d8aad442208575779db500c8d0c42ec0a30b7de0f4c5459fa90a03ed00</sha256>
+  <md5>9d8304179be4e6a0bb6180b4c992539b</md5>
+  <filetype>PE</filetype>
+  <size>693660</size>
+  <malware>yes</malware>
+</file_info>
+<task_info>
+<report>
+  <version>2.0</version>
+  <platform>2</platform>
+  <software>Windows XP, Adobe Reader 9.4.0, Flash 10, Office 2007</software>
+  <sha256>5cffd8d8aad442208575779db500c8d0c42ec0a30b7de0f4c5459fa90a03ed00</sha256>
+  <md5>9d8304179be4e6a0bb6180b4c992539b</md5>
+  <size>693660</size>
+  <malware>yes</malware>
+  <summary>
+    <entry>Sample attempted to copy itself</entry>
+    <entry>Created an executable file in a user document folder</entry>
+    <entry>Injected code into another process</entry>
+    <entry>Started a process from a user document folder</entry>
+    <entry>Sample used a Known bad User-Agent</entry>
+    <entry>Spawned new processes</entry>
+    <entry>Performed a DNS query for a mail server</entry>
+    <entry>Created a hidden executable file</entry>
+    <entry>Registered a file as auto-start from a local directory</entry>
+    <entry>Modified registries or system configuration to enable auto start capability</entry>
+    <entry>Modified Windows registries</entry>
+    <entry>Changed security settings of Internet Explorer</entry>
+    <entry>Created or modified files</entry>
+    <entry>Attempted to sleep for a long period</entry>
+    <entry>Communicated using IRC over a non-standard port</entry>
+    <entry>Sent out emails</entry>
+    <entry>Changed the Windows firewall policy</entry>
+  </summary>
+  <process>
+    <process_created child_pid=""2772"" child_process_image=""C:\sample.exe"" parent_pid=""4294967295"" parent_process_image=""UNKNOWN""/>
+    <process_created child_pid=""2772"" child_process_image=""C:\sample.exe"" parent_pid=""2736"" parent_process_image=""explorer.exe""/>
+    <process_created child_pid=""2784"" child_process_image=""UNKNOWN"" parent_pid=""2772"" parent_process_image=""C:\sample.exe""/>
+    <process_created child_pid=""2824"" child_process_image=""C:\Documents and Settings\Administrator\M-670240924709424894672\winmgr.exe"" parent_pid=""2812"" parent_process_image=""UNKNOWN""/>
+    <process_terminated child_pid=""2772"" child_process_image=""C:\sample.exe"" parent_pid=""2736"" parent_process_image=""explorer.exe""/>
+    <process_created child_pid=""2812"" child_process_image=""UNKNOWN"" parent_pid=""2784"" parent_process_image=""UNKNOWN""/>
+    <process_terminated child_pid=""2784"" child_process_image=""UNKNOWN"" parent_pid=""2772"" parent_process_image=""C:\sample.exe""/>
+  </process>
+  <file>
+    <file_written pid=""2772"" process_image=""C:\sample.exe"" written_file=""C:\Documents and Settings\Administrator\Local Settings\Temp\aut1.tmp""/>
+    <file_written pid=""2772"" process_image=""C:\sample.exe"" written_file=""C:\Documents and Settings\Administrator\Local Settings\Temp\m785636.rcf""/>
+    <file_deleted deleted_file=""C:\Documents and Settings\Administrator\Local Settings\Temp\aut1.tmp"" pid=""2772"" process_image=""C:\sample.exe""/>
+    <file_written pid=""2784"" process_image=""UNKNOWN"" written_file=""C:\Documents and Settings\Administrator\M-670240924709424894672\winmgr.exe""/>
+  </file>
+  <registry>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Personal""/>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass""/>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Documents""/>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Desktop""/>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Desktop""/>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\ProxyBypass""/>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\IntranetName""/>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\UNCAsIntranet""/>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\AutoDetect""/>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cache""/>
+    <SetValueKey pid=""2736"" process_image=""explorer.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cookies""/>
+    <SetValueKey pid=""2772"" process_image=""C:\sample.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\AuthorizedApplications\List\C:\Documents and Settings\Administrator\M-670240924709424894672\winmgr.exe""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Run\Microsoft Windows Service""/>
+    <DeleteValueKey pid=""1696"" process_image=""C:\WINDOWS\system32\ctfmon.exe"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Run\internat.exe""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Personal""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Documents""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Desktop""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Desktop""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\ProxyBypass""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\IntranetName""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\UNCAsIntranet""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\AutoDetect""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cache""/>
+    <SetValueKey pid=""2784"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cookies""/>
+    <SetValueKey pid=""2812"" process_image=""UNKNOWN"" reg_key=""HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass""/>
+    <SetValueKey pid=""508"" process_image=""C:\WINDOWS\system32\winlogon.exe"" reg_key=""HKCU\Control Panel\Keyboard\InitialKeyboardIndicators""/>
+  </registry>
+  <network>
+    <TCP country=""LU"" ip=""94.242.198.64"" port=""5050""/>
+    <TCP country=""US"" ip=""74.208.5.27"" port=""25""/>
+    <TCP country=""US"" ip=""69.197.137.58"" port=""80""/>
+    <dns query=""api.wipmania.com"" type=""A""/>
+    <dns query=""gmx.com"" type=""MX""/>
+    <dns query=""wipmania.com"" type=""NS""/>
+    <dns query=""gmx.com"" type=""NS""/>
+    <dns query=""mx01.gmx.com"" type=""A""/>
+    <dns query=""srv1.su"" type=""A""/>
+    <dns query=""srv1.su"" type=""NS""/>
+    <url host=""api.wipmania.com"" method=""GET"" uri=""/"" user_agent=""hi""/>
+  </network>
+</report>
+</task_info>
+</wildfire>","2016-05-31T21:26:13.000+0000",,,"pan pan_wildfire_report","127.0.0.1","main",100,WildFire,"<?_="".""_=""-""_?><>_<>.</><></><>__<></>__<></>__<><",254796538,"http-simple","pan:wildfire_report",55bd81970555,,network,network,"94.242.198.64
+74.208.5.27
+69.197.137.58","94.242.198.64,5050
+74.208.5.27,25
+69.197.137.58,80","5050
+25
+80",none,,,,,,"Palo Alto Networks","Palo Alto Networks Wildfire",PE,yes,9d8304179be4e6a0bb6180b4c992539b,5cffd8d8aad442208575779db500c8d0c42ec0a30b7de0f4c5459fa90a03ed00,693660,254796538,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"C:\Documents and Settings\Administrator\Local Settings\Temp\aut1.tmp",2772,"C:\sample.exe","2772
+2772
+2784","C:\sample.exe
+C:\sample.exe
+UNKNOWN","C:\Documents and Settings\Administrator\Local Settings\Temp\aut1.tmp
+C:\Documents and Settings\Administrator\Local Settings\Temp\m785636.rcf
+C:\Documents and Settings\Administrator\M-670240924709424894672\winmgr.exe",yes,9d8304179be4e6a0bb6180b4c992539b,"LU
+US
+US","94.242.198.64
+74.208.5.27
+69.197.137.58","5050
+25
+80","api.wipmania.com
+gmx.com
+wipmania.com
+gmx.com
+mx01.gmx.com
+srv1.su
+srv1.su","A
+MX
+NS
+NS
+A
+A
+NS","api.wipmania.com",GET,"/",hi,2,"2772
+2772
+2784
+2824
+2812","C:\sample.exe
+C:\sample.exe
+UNKNOWN
+C:\Documents and Settings\Administrator\M-670240924709424894672\winmgr.exe
+UNKNOWN","4294967295
+2736
+2772
+2812
+2784","UNKNOWN
+explorer.exe
+C:\sample.exe
+UNKNOWN
+UNKNOWN","2772
+2784","C:\sample.exe
+UNKNOWN","2736
+2772","explorer.exe
+C:\sample.exe",1696,"C:\WINDOWS\system32\ctfmon.exe","HKCU\Software\Microsoft\Windows\CurrentVersion\Run\internat.exe","2736
+2736
+2736
+2736
+2736
+2736
+2736
+2736
+2736
+2736
+2736
+2772
+2784
+2784
+2784
+2784
+2784
+2784
+2784
+2784
+2784
+2784
+2784
+2784
+2784
+2812
+508","explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+explorer.exe
+C:\sample.exe
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+UNKNOWN
+C:\WINDOWS\system32\winlogon.exe","HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Personal
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Documents
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Desktop
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Desktop
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\ProxyBypass
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\IntranetName
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\UNCAsIntranet
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\AutoDetect
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cache
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cookies
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass
+HKLM\SYSTEM\ControlSet001\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile\AuthorizedApplications\List\C:\Documents and Settings\Administrator\M-670240924709424894672\winmgr.exe
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run\Microsoft Windows Service
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Personal
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Documents
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Desktop
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Common Desktop
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\ProxyBypass
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\IntranetName
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\UNCAsIntranet
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\AutoDetect
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cache
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders\Cookies
+HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\{e86064ca-57e4-11e0-bef8-806d6172696f}\BaseClass
+HKCU\Control Panel\Keyboard\InitialKeyboardIndicators",5cffd8d8aad442208575779db500c8d0c42ec0a30b7de0f4c5459fa90a03ed00,693660,"Windows XP, Adobe Reader 9.4.0, Flash 10, Office 2007","Sample attempted to copy itself
+Created an executable file in a user document folder
+Injected code into another process
+Started a process from a user document folder
+Sample used a Known bad User-Agent
+Spawned new processes
+Performed a DNS query for a mail server
+Created a hidden executable file
+Registered a file as auto-start from a local directory
+Modified registries or system configuration to enable auto start capability
+Modified Windows registries
+Changed security settings of Internet Explorer
+Created or modified files
+Attempted to sleep for a long period
+Communicated using IRC over a non-standard port
+Sent out emails
+Changed the Windows firewall policy","2.0","2.0"

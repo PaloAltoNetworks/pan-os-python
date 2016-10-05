@@ -79,7 +79,9 @@ Yes! The `Splunk Enterprise Security app`_ (or "ES"), is a set of security
 log parsers and security related dashboards that conform to the Common
 Information Model. The Enterprise Security app contains a TA (parsers) for
 Palo Alto Networks firewall logs. The Splunk for Palo Alto Networks app and
-Enterprise Security app can be used individually, or together.
+Enterprise Security app can be used individually, or together. The Palo
+Alto Networks Add-on 3.7 supports the new Adaptive Response capabilities
+of Splunk Enterprise Security.
 
 .. _Splunk Enterprise Security app: http://www.splunk.com/en_us/products/premium-solutions/splunk-enterprise-security.html
 
@@ -102,7 +104,7 @@ My question isn't answered here, how do I get answers?
 ------------------------------------------------------
 Here are a few ways to get your questions answered. Search for answers in this order:
 
-* Check the App Documentation at http://splunkforpaloaltonetworks.readthedocs.io
+* Check the App Documentation at http://pansplunk.readthedocs.io
 * Search on `Splunk Answers`_
 * If you can't find an answer or need support, ask a question using the
   instructions on the :ref:`getsupport` page.
