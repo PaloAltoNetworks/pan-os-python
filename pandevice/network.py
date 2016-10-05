@@ -361,9 +361,11 @@ class Arp(PanObject):
     Can be added to interfaces in 'layer3' mode
 
     Args:
-        hw-address (str): The MAC address for the static ARP
-
+        ip (str): The IP address
+        hw_address (str): The MAC address for the static ARP
     """
+    XPATH = "/arp"
+    SUFFIX = ENTRY
     NAME = "ip"
 
     @classmethod
@@ -493,14 +495,14 @@ class AbstractSubinterface(object):
         if self.name.find(".") == -1:
             self.name = self.name + "." + str(self.tag)
 
-    def pandevice(self):
+    def nearest_pandevice(self):
         """The PanDevice parent for this instance
 
         Returns:
             PanDevice: Parent PanDevice instance (Firewall or Panorama)
 
         """
-        return self.parent.pandevice()
+        return self.parent._nearest_pandevice()
 
     def set_zone(self, zone_name, mode=None, refresh=False, update=False, running_config=False):
         raise err.PanDeviceError("Unable to set zone on abstract subinterface because layer must be known to set zone")
@@ -549,15 +551,12 @@ class AbstractSubinterface(object):
                 subintclass = Layer2Subinterface
             else:
                 raise err.PanDeviceError("Unknown layer passed to subinterface factory: %s" % mode)
-            # Check if the subinterface exists already
             layered_subinterface = self.parent.find(self.name, subintclass)
             # Verify tag is correct
             if layered_subinterface is not None:
-                # The subinterface exists already, so verify its tag
                 if layered_subinterface.tag != self.tag:
                     layered_subinterface.tag = self.tag
             else:
-                # The subinterface does not exist yet
                 if add:
                     layered_subinterface = self.parent.add(subintclass(self.name, tag=self.tag))
                 else:

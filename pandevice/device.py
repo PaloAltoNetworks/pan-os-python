@@ -172,7 +172,7 @@ class SystemSettings(PanObject):
     Args:
         hostname (str): The hostname of the device
         domain (str): The domain of the device
-        ip-address (str): Management interface IP address
+        ip_address (str): Management interface IP address
         netmask (str): Management interface netmask
         default_gateway (str): Management interface default gateway
         ipv6_address (str): Management interface IPv6 address
@@ -182,14 +182,13 @@ class SystemSettings(PanObject):
         timezone (str): Device timezone
         panorama (str): IP address of primary Panorama
         panorama2 (str):  IP address of secondary Panorama
-        login-banner (str): Login banner text
-        update-server (str): IP or hostname of the update server
+        login_banner (str): Login banner text
+        update_server (str): IP or hostname of the update server
 
     """
 
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/system"
-    NAME = "hostname"
     HA_SYNC = False
     CHILDTYPES = (
         "device.NTPServerPrimary",

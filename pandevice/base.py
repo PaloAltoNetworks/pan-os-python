@@ -129,6 +129,11 @@ class PanObject(object):
     def vsys(self, value):
         raise err.PanDeviceError("Cannot set vsys on non-vsys object")
 
+    @property
+    def uid(self):
+        '''Returns the unique identifier of this object.'''
+        return getattr(self, self.NAME)
+
     def add(self, child):
         """Add a child node to this node
 
@@ -190,13 +195,14 @@ class PanObject(object):
 
         Args:
             child (PanObject): Child to remove
-
         """
         self.children.remove(child)
         child.parent = None
 
     def remove_by_name(self, name, cls=None):
         """Remove a child node by name
+
+        If the class is not specified, then it defaults to type(self).
 
         Args:
             name (str): Name of the child node
@@ -205,13 +211,12 @@ class PanObject(object):
             cls (class): Restrict removal to instances of this class
 
         Returns:
-            PanObject: The removed node
-
+            PanObject: The removed node, otherwise None
         """
-        index = PanObject.find_index(self.children, name, cls)
-        if index is None:
-            return None
-        return self.pop(index)  # Just remove the first child that matches the name
+        # Get the index of the first matching child
+        index = self.find_index(name, cls)
+        if index is not None:
+            return self.pop(index)
 
     def removeall(self, cls=None):
         """Remove all children of a type
@@ -248,8 +253,10 @@ class PanObject(object):
 
         """
         xpath = self._parent_xpath() + self.XPATH
-        suffix = "" if self.SUFFIX is None else self.SUFFIX % getattr(self, self.NAME)
-        return xpath + suffix
+        if self.SUFFIX is not None:
+            xpath += self.SUFFIX % (self.uid, )
+
+        return xpath
 
     def xpath_nosuffix(self):
         """Return the xpath without the suffix
@@ -280,11 +287,12 @@ class PanObject(object):
         if self.parent is None:
             # self with no parent
             parent_xpath = ""
-        elif isinstance(self.parent, PanDevice):
+        elif hasattr(self.parent, 'xpath_root'):
             # Parent is Firewall or Panorama
             parent_xpath = self.parent.xpath_root(self.ROOT)
         else:
             parent_xpath = self.parent.xpath()
+
         return parent_xpath
 
     def xpath_vsys(self):
@@ -414,10 +422,10 @@ class PanObject(object):
 
     def _root_element(self):
         if self.SUFFIX == ENTRY:
-            return ET.Element("entry", {'name': getattr(self, self.NAME)})
+            return ET.Element("entry", {'name': self.uid})
         elif self.SUFFIX == MEMBER:
             root = ET.Element("member")
-            root.text = getattr(self, self.NAME)
+            root.text = self.uid
             return root
         elif self.SUFFIX is None:
             tag = self.XPATH.rsplit('/', 1)[-1] # Get right of last / in xpath
@@ -463,13 +471,13 @@ class PanObject(object):
         **Modifies the live device**
 
         """
-        pandevice = self.pandevice()
-        logger.debug(pandevice.id + ": apply called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
-        pandevice.set_config_changed()
+        device = self.nearest_pandevice()
+        logger.debug(device.id + ": apply called on %s object \"%s\"" % (type(self), self.uid))
+        device.set_config_changed()
         if self.HA_SYNC:
-            pandevice.active().xapi.edit(self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC)
+            device.active().xapi.edit(self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC)
         else:
-            pandevice.xapi.edit(self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC)
+            device.xapi.edit(self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC)
         for child in self.children:
             child._check_child_methods("apply")
 
@@ -484,14 +492,14 @@ class PanObject(object):
         the value in this object.
 
         """
-        pandevice = self.pandevice()
-        logger.debug(pandevice.id + ": create called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
-        pandevice.set_config_changed()
+        device = self.nearest_pandevice()
+        logger.debug(device.id + ": create called on %s object \"%s\"" % (type(self), self.uid))
+        device.set_config_changed()
         element = self.element_str()
         if self.HA_SYNC:
-            pandevice.active().xapi.set(self.xpath_short(), element, retry_on_peer=self.HA_SYNC)
+            device.active().xapi.set(self.xpath_short(), element, retry_on_peer=self.HA_SYNC)
         else:
-            pandevice.xapi.set(self.xpath_short(), element, retry_on_peer=self.HA_SYNC)
+            device.xapi.set(self.xpath_short(), element, retry_on_peer=self.HA_SYNC)
         for child in self.children:
             child._check_child_methods("create")
 
@@ -501,17 +509,17 @@ class PanObject(object):
         **Modifies the live device**
 
         """
-        pandevice = self.pandevice()
-        logger.debug(pandevice.id + ": delete called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
-        pandevice.set_config_changed()
+        device = self.nearest_pandevice()
+        logger.debug(device.id + ": delete called on %s object \"%s\"" % (type(self), self.uid))
+        device.set_config_changed()
         for child in self.children:
             child._check_child_methods("delete")
         if self.HA_SYNC:
-            pandevice.active().xapi.delete(self.xpath(), retry_on_peer=self.HA_SYNC)
+            device.active().xapi.delete(self.xpath(), retry_on_peer=self.HA_SYNC)
         else:
-            pandevice.xapi.delete(self.xpath(), retry_on_peer=self.HA_SYNC)
+            device.xapi.delete(self.xpath(), retry_on_peer=self.HA_SYNC)
         if self.parent is not None:
-            self.parent.remove_by_name(getattr(self, self.NAME), type(self))
+            self.parent.remove_by_name(self.uid, type(self))
 
     def update(self, variable):
         """Change the value of a variable
@@ -525,10 +533,10 @@ class PanObject(object):
             variable (str): The name of an instance variable to update on the device
 
         """
-        pan_device = self.pandevice()
-        logger.debug(pan_device.id + ": update called on %s object \"%s\" and variable \"%s\"" %
-                     (type(self), getattr(self, self.NAME), variable))
-        pan_device.set_config_changed()
+        device = self.nearest_pandevice()
+        logger.debug(device.id + ": update called on %s object \"%s\" and variable \"%s\"" %
+                     (type(self), self.uid, variable))
+        device.set_config_changed()
         variables = type(self).variables()
         value = getattr(self, variable)
         # Get the requested variable from the class' variables tuple
@@ -566,7 +574,7 @@ class PanObject(object):
                 # Not an 'entry' variable
                 varpath = re.sub(regex, getattr(self, matchedvar.variable), varpath)
         if value is None:
-            pan_device.xapi.delete(self.xpath() + "/" + varpath, retry_on_peer=self.HA_SYNC)
+            device.xapi.delete(self.xpath() + "/" + varpath, retry_on_peer=self.HA_SYNC)
         else:
             element_tag = varpath.split("/")[-1]
             element = ET.Element(element_tag)
@@ -578,7 +586,7 @@ class PanObject(object):
                 # Regular text variables
                 element.text = value
                 xpath = self.xpath() + "/" + varpath
-            pan_device.xapi.edit(xpath, ET.tostring(element), retry_on_peer=self.HA_SYNC)
+            device.xapi.edit(xpath, ET.tostring(element), retry_on_peer=self.HA_SYNC)
 
     def refresh(self, running_config=False, xml=None, refresh_children=True, exceptions=True):
         """Refresh all variables and child objects from the device
@@ -592,17 +600,17 @@ class PanObject(object):
         """
         # Get the root of the xml to parse
         if xml is None:
-            pandevice = self.pandevice()
-            logger.debug(pandevice.id + ": refresh called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+            device = self.nearest_pandevice()
+            logger.debug(device.id + ": refresh called on %s object \"%s\"" % (type(self), self.uid))
             if running_config:
-                api_action = pandevice.xapi.show
+                api_action = device.xapi.show
             else:
-                api_action = pandevice.xapi.get
+                api_action = device.xapi.get
             try:
                 root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
             except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
                 if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=device)
                 else:
                     return
             # Determine the first element to look for in the XML
@@ -613,12 +621,12 @@ class PanObject(object):
             obj = root.find("result/" + lasttag)
             if obj is None:
                 if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=device)
                 else:
                     return
         else:
             # Use the xml that was passed in
-            logger.debug("refresh called using xml on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+            logger.debug("refresh called using xml on %s object \"%s\"" % (type(self), self.uid))
             obj = xml
         # Refresh each variable
         variables = type(self)._parse_xml(obj)
@@ -650,17 +658,17 @@ class PanObject(object):
         if var is None:
             raise err.PanDeviceError("Variable %s does not exist in variable tuple" % variable)
         if xml is None:
-            pandevice = self.pandevice()
-            logger.debug(pandevice.id + ": refresh_variable called on %s object \"%s\" with variable %s" % (type(self), getattr(self, self.NAME), variable))
+            device = self.nearest_pandevice()
+            logger.debug(device.id + ": refresh_variable called on %s object \"%s\" with variable %s" % (type(self), self.uid, variable))
             if running_config:
-                api_action = pandevice.xapi.show
+                api_action = device.xapi.show
             else:
-                api_action = pandevice.xapi.get
+                api_action = device.xapi.get
             try:
                 root = api_action(self.xpath() + "/" + var.path, retry_on_peer=self.HA_SYNC)
             except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
                 if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=device)
                 else:
                     setattr(self, variable, None)
                     return
@@ -669,7 +677,7 @@ class PanObject(object):
             obj = root.find("result/" + lasttag)
             if obj is None:
                 if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
+                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=device)
                 else:
                     if var.vartype in ("member", "entry"):
                         setattr(self, variable, [])
@@ -678,7 +686,7 @@ class PanObject(object):
                     return
         else:
             # Use the xml that was passed in
-            logger.debug("refresh_variable called using xml on %s object \"%s\" with variable %s" % (type(self), getattr(self, self.NAME), variable))
+            logger.debug("refresh_variable called using xml on %s object \"%s\" with variable %s" % (type(self), self.uid, variable))
             obj = xml
         # Rebuild the elements that are lost by refreshing the variable directly
         sections = var.path.split("/")[:-1]
@@ -697,11 +705,11 @@ class PanObject(object):
     def _refresh_children(self, running_config=False, xml=None):
         # Get the root of the xml to parse
         if xml is None:
-            pan_device = self.pandevice()
+            device = self.nearest_pandevice()
             if running_config:
-                api_action = pan_device.xapi.show
+                api_action = device.xapi.show
             else:
-                api_action = pan_device.xapi.get
+                api_action = device.xapi.get
             root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
             # Determine the first element to look for in the XML
             if self.SUFFIX is None:
@@ -728,17 +736,19 @@ class PanObject(object):
 
     def refresh_xml(self, running_config=False, refresh_children=True, exceptions=True):
         # Get the root of the xml to parse
-        pandevice = self.pandevice()
-        logger.debug(pandevice.id + ": refresh_xml called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+        device = self.nearest_pandevice()
+        logger.debug(device.id + ": refresh_xml called on %s object \"%s\"" % (type(self), self.uid))
         if running_config:
-            api_action = pandevice.xapi.show
+            api_action = device.xapi.show
         else:
-            api_action = pandevice.xapi.get
+            api_action = device.xapi.get
+        xpath = self.xpath()
         try:
-            root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
+            root = api_action(xpath, retry_on_peer=self.HA_SYNC)
         except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
             if exceptions:
-                raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
+                raise err.PanObjectMissing("Object doesn't exist: %s" % xpath,
+                                           pan_device=device)
             else:
                 return
         # Determine the first element to look for in the XML
@@ -749,13 +759,14 @@ class PanObject(object):
         obj = root.find("result/" + lasttag)
         if obj is None:
             if exceptions:
-                raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=self.pandevice())
+                raise err.PanObjectMissing("Object doesn't exist: %s" % xpath,
+                                           pan_device=device)
             else:
                 return
         self.refresh(xml=obj, refresh_children=refresh_children, exceptions=exceptions)
         return obj
 
-    def pandevice(self):
+    def nearest_pandevice(self):
         """The nearest :class:`pandevice.base.PanDevice` object
 
         This method is used to determine the device to apply this object
@@ -767,13 +778,12 @@ class PanObject(object):
             PanDevice: The PanDevice object closest to this object in the configuration tree
 
         """
+        return self._nearest_pandevice(True)
+
+    def _nearest_pandevice(self, first_call=False):
         if self.parent is not None:
-            if isinstance(self.parent, PanDevice):
-                return self.parent
-            else:
-                return self.parent.pandevice()
-        else:
-            raise err.PanDeviceNotSet("No PanDevice set for object tree")
+            return self.parent._nearest_pandevice()
+        raise err.PanDeviceNotSet("No PanDevice set for object tree")
 
     def panorama(self):
         """The nearest :class:`pandevice.panorama.Panorama` object
@@ -787,10 +797,9 @@ class PanObject(object):
             Panorama: The Panorama object closest to this object in the configuration tree
 
         """
-        if self.parent is None:
-            raise err.PanDeviceNotSet("No Panorama set for object tree")
-        else:
+        if self.parent is not None:
             return self.parent.panorama()
+        raise err.PanDeviceNotSet("No Panorama set for object tree")
 
     def devicegroup(self):
         """The nearest :class:`pandevice.panorama.DeviceGroup` object
@@ -800,11 +809,8 @@ class PanObject(object):
         Returns:
             DeviceGroup: The DeviceGroup object closest to this object in the configuration tree,
             or None if there is no DeviceGroup in the path to this node.
-
         """
-        if self.parent is None:
-            return
-        else:
+        if self.parent is not None:
             return self.parent.devicegroup()
 
     def find(self, name, class_type=None, recursive=False):
@@ -896,20 +902,32 @@ class PanObject(object):
         else:
             return [self.add(class_type(*args, **kwargs))]
 
-    @classmethod
-    def find_index(cls, list_of_panobjects, name, class_type=None):
+    def find_index(self, name=None, class_type=None):
+        """Finds the first index of the given name and class type.
+
+        If name is None, just find the first instance of class_type.
+
+        If class_type is unspecified, it defaults to the current class type.
+
+        Args:
+            name (str): Name of the child node
+            class_type (class): Restrict the find to children of this type
+
+        Returns:
+            int:  the index of the first matching child
+        """
         if class_type is None:
-            class_type = cls
-        indexes = [i for i, child in enumerate(list_of_panobjects) if
-                   getattr(child, child.NAME) == name and type(child) == class_type]
-        for index in indexes:
-            return index  # Just return the first index that matches the name
-        return None
+            class_type = type(self)
+
+        for num, child in enumerate(self.children):
+            if ((name is None or self.uid == name)
+                    and type(child) == class_type):
+                return num
 
     @classmethod
     def applyall(cls, parent):
-        pandevice = parent.pandevice()
-        logger.debug(pandevice.id + ": applyall called on %s type" % cls)
+        device = parent.nearest_pandevice()
+        logger.debug(device.id + ": applyall called on %s type" % cls)
         objects = parent.findall(cls)
         if not objects:
             return
@@ -920,10 +938,10 @@ class PanObject(object):
         element = ET.Element(lasttag)
         # Build the full element from the objects
         for obj in objects:
-            pandevice.xml_combine(element, [obj.element()])
+            device.xml_combine(element, [obj.element(), ])
         # Apply the element to the xpath
-        pandevice.set_config_changed()
-        pandevice.xapi.edit(xpath, ET.tostring(element), retry_on_peer=cls.HA_SYNC)
+        device.set_config_changed()
+        device.xapi.edit(xpath, ET.tostring(element), retry_on_peer=cls.HA_SYNC)
         for obj in objects:
             obj._check_child_methods("apply")
 
@@ -958,17 +976,18 @@ class PanObject(object):
             raise ValueError("can't get name_only from running_config")
         if name_only and cls.SUFFIX != ENTRY:
             raise ValueError("name_only is invalid, can only be used on entry type objects")
+        # TODO(gfreeman): can this be simplified?
         if isinstance(parent, PanDevice):
-            pandevice = parent
+            device = parent
             parent_xpath = parent.xpath_root(cls.ROOT)
         else:
-            pandevice = parent.pandevice()
+            device = parent.nearest_pandevice()
             parent_xpath = parent.xpath()
-        logger.debug(pandevice.id + ": refreshall called on %s type" % cls)
+        logger.debug(device.id + ": refreshall called on %s type" % cls)
         if running_config:
-            api_action = pandevice.xapi.show
+            api_action = device.xapi.show
         else:
-            api_action = pandevice.xapi.get
+            api_action = device.xapi.get
         xpath = parent_xpath + cls.XPATH
         if name_only:
             xpath = xpath + "/entry/@name"
@@ -1131,23 +1150,23 @@ class PanObject(object):
         For example, set_zone() would set the zone for an interface by creating a reference from
         the zone to the interface. If the desired reference already exists then nothing happens.
         """
-        pandevice = self.pandevice()
+        device = self.nearest_pandevice()
         if refresh:
-            allobjects = reference_type.refreshall(pandevice, running_config=running_config)
+            allobjects = reference_type.refreshall(device, running_config=running_config)
         else:
-            allobjects = pandevice.findall(reference_type)
+            allobjects = device.findall(reference_type)
         # Find any current references to self and remove them, unless it is the desired reference
         if exclusive:
             for obj in allobjects:
                 references = getattr(obj, reference_var)
                 if references is None:
                     continue
-                elif hasattr(references, "__iter__") and self in references:
+                elif hasattr(self, "__iter__") and self in references:
                     if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
                         continue
                     references.remove(self)
                     if update: obj.update(reference_var)
-                elif hasattr(references, "__iter__") and str(self) in references:
+                elif hasattr(self, "__iter__") and str(self) in references:
                     if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
                         continue
                     references.remove(str(self))
@@ -1159,16 +1178,17 @@ class PanObject(object):
                     if update: obj.update(reference_var)
         # Add new reference to self in requested object
         if reference_name is not None:
-            obj = pandevice.find_or_create(reference_name, reference_type, *args, **kwargs)
+            obj = device.find_or_create(reference_name, reference_type, *args, **kwargs)
             var = getattr(obj, reference_var)
             if var is None:
                 setattr(obj, reference_var, [self])
                 if update: obj.update(reference_var)
-            elif hasattr(var, "__iter__") and not (self in var or str(self) in var):
+            elif hasattr(var, "__iter__") and self not in var and str(self) not in var:
                 var.append(self)
+                setattr(obj, reference_var, var)
                 if update: obj.update(reference_var)
-            elif not hasattr(var, "__iter__") and (var != self or var != str(self)):
-                setattr(obj, reference_var, [self])
+            elif var != self and var != str(self):
+                setattr(obj, reference_var, self)
                 if update: obj.update(reference_var)
             return obj
 
@@ -1190,26 +1210,20 @@ class VarPath(object):
     """
     def __init__(self, path, variable=None, vartype=None, default=None, xmldefault=None, condition=None, order=100):
         self.path = path
-        self._variable = variable
         self.vartype = vartype
         self.default = default
         self.xmldefault = xmldefault
         self.condition = condition
         self.order = order
 
+        if variable is None:
+            self.variable = self.path.rsplit(
+                "/", 1)[-1].replace('-', '_')
+        else:
+            self.variable = variable
+
     def __repr__(self):
         return "<%s %s at 0x%x>" % (type(self).__name__, repr(self.variable), id(self))
-
-    @property
-    def variable(self):
-        if self._variable is None:
-            return self.path.rsplit("/", 1)[-1].replace('-','_')
-        else:
-            return self._variable
-
-    @variable.setter
-    def variable(self, value):
-        self._variable = value
 
 
 class VsysImportMixin(object):
@@ -1267,7 +1281,7 @@ class VsysImportMixin(object):
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            self.pandevice().xapi.set(xpath_import, "<member>%s</member>" % getattr(self, self.NAME), retry_on_peer=True)
+            self.nearest_pandevice().xapi.set(xpath_import, "<member>%s</member>" % getattr(self, self.NAME), retry_on_peer=True)
 
     def delete_import(self, vsys=None):
         """Delete a vsys import for the object
@@ -1280,7 +1294,7 @@ class VsysImportMixin(object):
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            self.pandevice().xapi.delete(xpath_import + "/member[text()='%s']" % getattr(self, self.NAME), retry_on_peer=True)
+            self.nearest_pandevice().xapi.delete(xpath_import + "/member[text()='%s']" % getattr(self, self.NAME), retry_on_peer=True)
 
     def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
         """Set the vsys for this interface
@@ -1304,7 +1318,7 @@ class VsysImportMixin(object):
         if refresh and running_config:
             raise ValueError("Can't refresh vsys from running config in set_vsys method")
         if refresh:
-            all_vsys = device.Vsys.refreshall(self.pandevice(), name_only=True)
+            all_vsys = device.Vsys.refreshall(self.nearest_pandevice(), name_only=True)
             for a_vsys in all_vsys:
                 a_vsys.refresh_variable(self.XPATH_IMPORT.split("/")[-1])
         return self._set_reference(vsys_id, device.Vsys, self.XPATH_IMPORT.split("/")[-1], True, refresh=False, update=update, running_config=running_config)
@@ -1313,11 +1327,11 @@ class VsysImportMixin(object):
     def refreshall(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
         instances = super(VsysImportMixin, cls).refreshall(parent, running_config, add=False, exceptions=exceptions, name_only=name_only)
         # Filter out instances that are not in this vlan's imports
-        pandevice = parent.pandevice()
+        device = parent.nearest_pandevice()
         if running_config:
-            api_action = pandevice.xapi.show
+            api_action = device.xapi.show
         else:
-            api_action = pandevice.xapi.get
+            api_action = device.xapi.get
         if parent.vsys != "shared" and cls.XPATH_IMPORT is not None:
             xpath_import = parent.xpath_vsys() + "/import" + cls.XPATH_IMPORT
             try:
@@ -1684,12 +1698,6 @@ class PanDevice(PanObject):
         self._xapi_private = self.generate_xapi()
         return self._xapi_private
 
-    def pandevice(self):
-        if self.parent is None:
-            return self
-        else:
-            return self.parent.pandevice()
-
     def generate_xapi(self):
         kwargs = {'api_key': self.api_key,
                   'hostname': self.hostname,
@@ -1836,9 +1844,9 @@ class PanDevice(PanObject):
         """
         if hostname is None:
             raise ValueError("hostname should not be None")
-        from pandevice import device
+        import pandevice.device
         self._logger.debug("Set hostname: %s" % str(hostname))
-        system = self.findall_or_create(device.SystemSettings)[0]
+        system = self.findall_or_create(pandevice.device.SystemSettings)[0]
         if system.hostname != hostname:
             system.hostname = hostname
             # This handles addition and deletion
@@ -1854,9 +1862,9 @@ class PanDevice(PanObject):
             secondary (str): IP address of secondary DNS server
 
         """
-        from pandevice import device
+        import pandevice.device
         self._logger.debug("Set dns-servers: primary:%s secondary:%s" % (primary, secondary))
-        system = self.findall_or_create(device.SystemSettings)[0]
+        system = self.findall_or_create(pandevice.device.SystemSettings)[0]
         if system.dns_primary != primary:
             system.dns_primary = primary
             # This handles addition and deletion
@@ -1875,24 +1883,24 @@ class PanDevice(PanObject):
             secondary (str): IP address of secondary DNS server
 
         """
-        from pandevice import device
+        import pandevice.device
         self._logger.debug("Set ntp-servers: primary:%s secondary:%s" % (primary, secondary))
-        system = self.findall_or_create(device.SystemSettings)[0]
+        system = self.findall_or_create(pandevice.device.SystemSettings)[0]
         if primary is None:
-            ntp1 = system.findall(device.NTPServerPrimary)
+            ntp1 = system.findall(pandevice.device.NTPServerPrimary)
             if ntp1:
                 ntp1[0].delete()
         else:
-            ntp1 = system.findall_or_create(device.NTPServerPrimary)[0]
+            ntp1 = system.findall_or_create(pandevice.device.NTPServerPrimary)[0]
             if ntp1.address != primary:
                 ntp1.address = primary
                 ntp1.create()
         if secondary is None:
-            ntp2 = system.findall(device.NTPServerSecondary)
+            ntp2 = system.findall(pandevice.device.NTPServerSecondary)
             if ntp2:
                 ntp2[0].delete()
         else:
-            ntp2 = system.findall_or_create(device.NTPServerSecondary)[0]
+            ntp2 = system.findall_or_create(pandevice.device.NTPServerSecondary)[0]
             if ntp2.address != secondary:
                 ntp2.address = secondary
                 ntp2.create()
@@ -2032,14 +2040,14 @@ class PanDevice(PanObject):
     def ha_peer(self):
         return self._ha_peer
 
-    def set_ha_peers(self, pandevice):
+    def set_ha_peers(self, device):
         """Establish an HA peer relationship between two PanDevice objects
 
         Args:
-            pandevice: The HA peer device
+            device: The HA peer device
 
         """
-        self._ha_peer = pandevice
+        self._ha_peer = device
         self.ha_peer._ha_peer = self
         # If both are active or both are passive,
         # set self to active and ha_peer to passive
@@ -2536,11 +2544,7 @@ class PanDevice(PanObject):
         if get_devices:
             messages = []
         else:
-            try:
-                messages = job['details']['line']
-            except KeyError:
-                logger.error("Unable to get messages from commit job xml: %s" % str(job))
-                raise err.PanDeviceError("Unable to get messages from commit job xml")
+            messages = job['details']['line']
         if issubclass(messages.__class__, basestring):
             messages = [messages]
         # Create the results dict
@@ -2605,3 +2609,15 @@ class PanDevice(PanObject):
 
             logger.debug("Sleep %.2f seconds" % interval)
             time.sleep(interval)
+
+    def _nearest_pandevice(self, first_call=False):
+        """Returns the nearest PanDevice object.
+
+        Since this itself is a PanDevice object, it should return itself.
+
+        However, if this is the first invocation of this function *and*
+        this PanDevice has a parent, then return the parent's PanDevice.
+        """
+        if self.parent is not None and first_call:
+            return self.parent._nearest_pandevice()
+        return self
