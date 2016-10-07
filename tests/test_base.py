@@ -1106,7 +1106,7 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj.nearest_pandevice()
 
         self.assertEqual(expected, ret_val)
-        self.obj._nearest_pandevice.assert_called_once_with(True)
+        self.obj._nearest_pandevice.assert_called_once_with()
 
     def test__nearest_pandevice_with_parent(self):
         expected = 'ParentObject'

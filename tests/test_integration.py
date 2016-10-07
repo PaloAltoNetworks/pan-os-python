@@ -26,41 +26,6 @@ import pandevice.objects
 import pandevice.panorama
 
 
-"""
-TODO Check List of Bugs, Discrepancies, etc.
-
-* pandevice.network.Arp's element_str() doesn't seem correct, affecting the
-  following test results:
-    - test_element_str_from_ethernetinterface_in_en_l3s_arp
-    - test_element_str_from_ethernetinterface_aggregate_group_in_en_l3s_arp
-* pandevice.HA1 docstring doesn't account for the NAME param being first,
-  and thus getting the `port` variable is also incorrect.
-* pandevice.HA1 docstring doesn't mention the `monitor_hold_time` variable
-  that exists
-* Both pandevice.ha.HA1 and pandevice.ha.HA2's names are not used when
-  creating the element..?
-* pandevice.ha.HighAvailability can have a value stored in the following
-  location:
-
-    Var("interface", vartype="none"),
-
-  But this value is not used anywhere (I'm also doing this in my integration
-  test below).
-* vartype="entry" with iterable defaults (discuss with Brian)
-* @classmethod is everywhere!  @classmethod!  @classmethod!
-  - https://julien.danjou.info/blog/2013/guide-python-static-class-abstract-methods
-* Login banner for SystemSettings made me think:  we don't do any sanitizing of
-  input?  What about `<' and `>' ..?
-* Seems to be a few params firewall.Firewall() takes in the constructor that
-  don't get mentioned in it's docstring
-* firewall.Firewall.id (id is a builtin function + simplification):
-    return self.serial or self.hostname or '<no-id>'
-* firewall.Firewall: both vsys setter/getter caution about 'before object
-  exists..  I don't see this happening in Firewall's constructor
-
-"""
-
-
 class TestNearestPandevice(unittest.TestCase):
     """
     [Test section: nearest_pandevice()]

@@ -769,18 +769,18 @@ class PanObject(object):
     def nearest_pandevice(self):
         """The nearest :class:`pandevice.base.PanDevice` object
 
-        This method is used to determine the device to apply this object
+        This method is used to determine the device to apply this object.
 
         Raises:
             PanDeviceNotSet: There is no PanDevice object in the tree
 
         Returns:
-            PanDevice: The PanDevice object closest to this object in the configuration tree
-
+            PanDevice: The PanDevice object closest to this object in
+                the configuration tree
         """
-        return self._nearest_pandevice(True)
+        return self._nearest_pandevice()
 
-    def _nearest_pandevice(self, first_call=False):
+    def _nearest_pandevice(self):
         if self.parent is not None:
             return self.parent._nearest_pandevice()
         raise err.PanDeviceNotSet("No PanDevice set for object tree")
@@ -2610,14 +2610,22 @@ class PanDevice(PanObject):
             logger.debug("Sleep %.2f seconds" % interval)
             time.sleep(interval)
 
-    def _nearest_pandevice(self, first_call=False):
-        """Returns the nearest PanDevice object.
+    def nearest_pandevice(self):
+        """The nearest :class:`pandevice.base.PanDevice` object
 
-        Since this itself is a PanDevice object, it should return itself.
+        This method is used to determine the device to apply this object.
 
-        However, if this is the first invocation of this function *and*
-        this PanDevice has a parent, then return the parent's PanDevice.
+        Raises:
+            PanDeviceNotSet: There is no PanDevice object in the tree
+
+        Returns:
+            PanDevice: The PanDevice object closest to this object in
+                the configuration tree
         """
-        if self.parent is not None and first_call:
+        if self.parent is not None:
             return self.parent._nearest_pandevice()
+        else:
+            return self._nearest_pandevice()
+
+    def _nearest_pandevice(self):
         return self
