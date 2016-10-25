@@ -133,8 +133,7 @@ class Firewall(PanDevice):
 
     @property
     def id(self):
-        id = self.serial if self.serial is not None else self.hostname
-        return id if id is not None else '<no-id>'
+        return self.serial or self.hostname or '<no-id>'
 
     @property
     def vsys(self):
