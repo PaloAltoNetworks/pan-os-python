@@ -79,6 +79,7 @@ class Firewall(PanDevice):
         "network.VlanInterface",
         "network.Vlan",
         "network.VirtualRouter",
+        "network.ManagementProfile",
     )
 
     def __init__(self,
