@@ -865,3 +865,26 @@ class VirtualRouter(VsysImportMixin, PanObject):
         return (
             Var("interface", vartype="member"),
         )
+
+
+class ManagementProfile(PanObject):
+    ROOT = Root.DEVICE
+    XPATH = '/network/profiles/interface-management-profile'
+    SUFFIX = ENTRY
+
+    @classmethod
+    def variables(cls):
+        return (
+            Var('ping', vartype='bool'),
+            Var('telnet', vartype='bool'),
+            Var('ssh', vartype='bool'),
+            Var('http', vartype='bool'),
+            Var('http-ocsp', vartype='bool'),
+            Var('https', vartype='bool'),
+            Var('snmp', vartype='bool'),
+            Var('response-pages', vartype='bool'),
+            Var('userid-service', vartype='bool'),
+            Var('userid-syslog-listener-ssl', vartype='bool'),
+            Var('userid-syslog-listener-udp', vartype='bool'),
+            Var('permitted-ip', vartype='entry'),
+        )
