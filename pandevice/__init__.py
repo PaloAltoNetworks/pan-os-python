@@ -28,6 +28,7 @@ __version__ = '0.3.5'
 
 
 import logging
+from distutils.version import LooseVersion  # Used by PanOSVersion class
 
 try:
     import pan
@@ -86,6 +87,73 @@ logging.addLevelName(DEBUG4, 'DEBUG4')
 pan.DEBUG1 = logging.DEBUG - 2  # equavalent to DEBUG2
 pan.DEBUG2 = pan.DEBUG1 - 1
 pan.DEBUG3 = pan.DEBUG2 - 1
+
+
+class PanOSVersion(LooseVersion):
+    """LooseVersion with convenience properties to access version components"""
+    @property
+    def major(self):
+        return self.version[0]
+
+    @property
+    def minor(self):
+        return self.version[1]
+
+    @property
+    def patch(self):
+        try:
+            patch = self.version[2]
+        except IndexError:
+            patch = 0
+        return patch
+
+    @property
+    def mainrelease(self):
+        return self.version[0:3]
+
+    @property
+    def subrelease(self):
+        try:
+            subrelease = str(self.version[4]) + str(self.version[5])
+        except IndexError:
+            subrelease = None
+        return subrelease
+
+    @property
+    def subrelease_type(self):
+        try:
+            subrelease_type = self.version[4]
+        except IndexError:
+            subrelease_type = None
+        return subrelease_type
+
+    @property
+    def subrelease_num(self):
+        try:
+            subrelease_num = self.version[5]
+        except IndexError:
+            subrelease_num = None
+        return subrelease_num
+
+    def __repr__ (self):
+        return "PanOSVersion ('%s')" % str(self)
+
+    def __cmp__ (self, other):
+        if isinstance(other, basestring):
+            other = PanOSVersion(other)
+
+        # Compare subreleases if number part of version is the same
+        if cmp(self.mainrelease, other.mainrelease) == 0:
+            if self.subrelease_type == 'c' and other.subrelease_type != 'c':
+                return -1
+            elif self.subrelease_type == 'b' and other.subrelease is None:
+                return -1
+            elif self.subrelease_type != 'c' and other.subrelease_type == 'c':
+                return 1
+            elif self.subrelease is None and other.subrelease_type == 'b':
+                return 1
+
+        return cmp(self.version, other.version)
 
 
 # Convenience methods used internally by module

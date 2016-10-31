@@ -19,10 +19,10 @@
 """Device updater handles software versions and updates for devices"""
 
 import logging
-from distutils.version import LooseVersion
 
 from pan.config import PanConfig
 import pandevice.errors as err
+from pandevice import PanOSVersion
 
 
 logger = logging.getLogger(__name__)
@@ -376,46 +376,3 @@ class ContentUpdater(Updater):
         self.download(version, sync_to_peer=sync_to_peer, sync=True)
         # Install the software upgrade
         self.install(version, sync_to_peer=sync_to_peer, skip_commit=skip_commit, sync=sync)
-
-
-class PanOSVersion(LooseVersion):
-    """LooseVersion with convenience properties to access version components"""
-    @property
-    def major(self):
-        return self.version[0]
-
-    @property
-    def minor(self):
-        return self.version[1]
-
-    @property
-    def patch(self):
-        try:
-            patch = self.version[2]
-        except KeyError:
-            patch = 0
-        return patch
-
-    @property
-    def prerelease(self):
-        try:
-            prerelease = "".join(map(self.version[4:6]))
-        except KeyError:
-            prerelease = None
-        return prerelease
-
-    @property
-    def prerelease_type(self):
-        try:
-            prerelease_type = self.version[4]
-        except KeyError:
-            prerelease_type = None
-        return prerelease_type
-
-    @property
-    def prerelease_num(self):
-        try:
-            prerelease_num = self.version[5]
-        except KeyError:
-            prerelease_num = None
-        return prerelease_num
