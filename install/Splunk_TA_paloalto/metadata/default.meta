@@ -3,12 +3,6 @@
 access = read : [ * ], write : [ admin ]
 export = system
 
-# This is a TA, so export almost everything
-
-[]
-access = read : [ * ], write : [ admin, power ]
-export = system
-
 # Do not export commands 
 [commands]
 export = none
