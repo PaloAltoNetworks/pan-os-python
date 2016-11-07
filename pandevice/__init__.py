@@ -177,12 +177,39 @@ def string_or_list(value):
         "string" -> [string]
         ("t1", "t2") -> ["t1", "t2"]
         ["l1", "l2"] -> ["l1", "l2"]
+        None -> None
 
     """
     if value is None:
         return None
     else:
         return list(value) if "__iter__" in dir(value) else [value]
+
+
+def string_or_list_or_none(value):
+    """Return a list containing value
+
+    This method allows flexibility in class __init__ arguments,
+    allowing you to pass a string, object, list, tuple, or None.
+    In all cases, a list will be returned.
+
+    Args:
+        value: a string, object, list, tuple, or None
+
+    Returns:
+        list
+
+    Examples:
+        "string" -> [string]
+        ("t1", "t2") -> ["t1", "t2"]
+        ["l1", "l2"] -> ["l1", "l2"]
+        None -> []
+
+    """
+    if value is None:
+        return []
+    else:
+        return string_or_list(value)
 
 
 def convert_if_int(string):

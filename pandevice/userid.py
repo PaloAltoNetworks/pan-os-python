@@ -19,12 +19,14 @@
 """User-ID and Dynamic Address Group updates using the User-ID API"""
 
 import logging
-import xml.etree.ElementTree as et
+import xml.etree.ElementTree as ET
 from copy import deepcopy
 
 import pandevice.errors as err
 from pandevice import string_or_list
+from pandevice import string_or_list_or_none
 from pan.xapi import PanXapiError
+from pandevice.updater import PanOSVersion
 
 
 logger = logging.getLogger(__name__)
@@ -44,19 +46,22 @@ class UserId(object):
 
     Args:
         panfirewall (firewall.Firewall): The firewall this user-id subsystem leverages
+        prefix (str): Prefix to use in all IP tag operations for Dynamic Address Groups
 
     """
 
-    def __init__(self, panfirewall):
+    def __init__(self, panfirewall, prefix="", ignore_dup_errors=True):
         # Create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.panfirewall = panfirewall
+        self.prefix = prefix
+        self.ignore_dup_errors = ignore_dup_errors
 
         # Build the initial uid-message
-        self._uidmessage = et.fromstring("<uid-message>"
-                                         "<version>1.0</version>"
-                                         "<type>update</type>"
-                                         "<payload/>"
+        self._uidmessage = ET.fromstring("<uid-message>" +
+                                         "<version>1.0</version>" +
+                                         "<type>update</type>" +
+                                         "<payload/>" +
                                          "</uid-message>")
         # Batch state
         self._batch = False
@@ -110,14 +115,14 @@ class UserId(object):
         if self._batch:
             return
         else:
-            cmd = et.tostring(uidmessage)
+            cmd = ET.tostring(uidmessage)
             try:
                 self.panfirewall.xapi.user_id(cmd=cmd, vsys=self.panfirewall.vsys)
             except (err.PanDeviceXapiError, PanXapiError) as e:
                 # Check if this is just an error about duplicates or nonexistant tags
                 # If so, ignore the error. Most operations don't care about this.
                 message = str(e)
-                if message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg"):
+                if self.ignore_dup_errors and (message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg")):
                     return
                 else:
                     raise e
@@ -137,8 +142,8 @@ class UserId(object):
         root, payload = self._create_uidmessage()
         login = payload.find("login")
         if login is None:
-            login = et.SubElement(payload, "login")
-        et.SubElement(login, "entry", {"name": user, "ip": ip})
+            login = ET.SubElement(payload, "login")
+        ET.SubElement(login, "entry", {"name": user, "ip": ip})
         self.send(root)
 
     def logins(self, users):
@@ -154,9 +159,9 @@ class UserId(object):
         root, payload = self._create_uidmessage()
         login = payload.find("login")
         if login is None:
-            login = et.SubElement(payload, "login")
+            login = ET.SubElement(payload, "login")
         for user in users:
-            et.SubElement(login, "entry", {"name": user[0], "ip": user[1]})
+            ET.SubElement(login, "entry", {"name": user[0], "ip": user[1]})
         self.send(root)
 
     def logout(self, user, ip):
@@ -174,8 +179,8 @@ class UserId(object):
         root, payload = self._create_uidmessage()
         logout = payload.find("logout")
         if logout is None:
-            logout = et.SubElement(payload, "logout")
-        et.SubElement(logout, "entry", {"name": user, "ip": ip})
+            logout = ET.SubElement(payload, "logout")
+        ET.SubElement(logout, "entry", {"name": user, "ip": ip})
         self.send(root)
 
     def logouts(self, users):
@@ -191,9 +196,9 @@ class UserId(object):
         root, payload = self._create_uidmessage()
         logout = payload.find("logout")
         if logout is None:
-            logout = et.SubElement(payload, "logout")
+            logout = ET.SubElement(payload, "logout")
         for user in users:
-            et.SubElement(logout, "entry", {"name": user[0], "ip": user[1]})
+            ET.SubElement(logout, "entry", {"name": user[0], "ip": user[1]})
         self.send(root)
 
     def register(self, ip, tags):
@@ -202,23 +207,24 @@ class UserId(object):
         This method can be batched with batch_start() and batch_end().
 
         Args:
-            ip (str): IP address to tag
-            tags (str): The tag for the IP address
+            ip (:obj:`list` or :obj:`str`): IP address(es) to tag
+            tags (:obj:`list` or :obj:`str`): The tag(s) for the IP address
 
         """
         root, payload = self._create_uidmessage()
         register = payload.find("register")
         if register is None:
-            register = et.SubElement(payload, "register")
-        tagelement = register.find("./entry[@ip='%s']/tag" % ip)
-        if tagelement is None:
-            entry = et.SubElement(register, "entry", {"ip": ip})
-            tagelement = et.SubElement(entry, "tag")
-        tags = string_or_list(tags)
-        tags = list(set(tags))
-        for tag in tags:
-            member = et.SubElement(tagelement, "member")
-            member.text = tag
+            register = ET.SubElement(payload, "register")
+        tags = list(set(string_or_list(tags)))
+        tags = [self.prefix+t for t in tags]
+        for c_ip in ip:
+            tagelement = register.find("./entry[@ip='%s']/tag" % c_ip)
+            if tagelement is None:
+                entry = ET.SubElement(register, "entry", {"ip": c_ip})
+                tagelement = ET.SubElement(entry, "tag")
+            for tag in tags:
+                member = ET.SubElement(tagelement, "member")
+                member.text = tag
         self.send(root)
 
     def unregister(self, ip, tags):
@@ -227,60 +233,109 @@ class UserId(object):
         This method can be batched with batch_start() and batch_end().
 
         Args:
-            ip (str): IP address with the tag to remove
-            tags (str): The tag to remove from the IP address
+            ip (:obj:`list` or :obj:`str`): IP address(es) with the tag to remove
+            tags (:obj:`list` or :obj:`str`): The tag(s) to remove from the IP address
 
         """
         root, payload = self._create_uidmessage()
         unregister = payload.find("unregister")
         if unregister is None:
-            unregister = et.SubElement(payload, "unregister")
-        tagelement = unregister.find("./entry[@ip='%s']/tag" % ip)
-        if tagelement is None:
-            entry = et.SubElement(unregister, "entry", {"ip": ip})
-            tagelement = et.SubElement(entry, "tag")
-        tags = string_or_list(tags)
-        tags = list(set(tags))
-        for tag in tags:
-            member = et.SubElement(tagelement, "member")
-            member.text = tag
+            unregister = ET.SubElement(payload, "unregister")
+        tags = list(set(string_or_list(tags)))
+        tags = [self.prefix+t for t in tags]
+        for c_ip in ip:
+            tagelement = unregister.find("./entry[@ip='%s']/tag" % c_ip)
+            if tagelement is None:
+                entry = ET.SubElement(unregister, "entry", {"ip": c_ip})
+                tagelement = ET.SubElement(entry, "tag")
+            for tag in tags:
+                member = ET.SubElement(tagelement, "member")
+                member.text = tag
         self.send(root)
 
-    def get_all_registered_ip(self):
-        """Return all registered/tagged addresses
+    def get_registered_ip(self, ip=None, tags=None, prefix=None):
+        """Return registered/tagged addresses
+
+        When called without arguments, retrieves all registered addresses.
+
+        Note: Passing a single ip and/or single tag to this method results in a response
+        from the firewall that contains only the relevant entries. ie. the filtering is done on
+        the firewall before it responds.  Passing a list of multiple ip addresses or tags will
+        result in retreival of the entire tag database from the firewall which is then filtered and
+        returned with only the relevant entries. Therefor, using a single ip or tag is more efficient.
 
         **Support:** PAN-OS 6.0 and higher
+
+        Args:
+            ip (:obj:`list` or :obj:`str`): IP address(es) to get tags for
+            tags (:obj:`list` or :obj:`str`): Tag(s) to get
+            prefix (str): Override class tag prefix
 
         Returns:
             dict: ip addresses as keys with tags as values
 
         """
-        root = self.panfirewall.op(cmd='show object registered-ip all', vsys=self.panfirewall.vsys, cmd_xml=True)
+        if prefix is None:
+            prefix = self.prefix
+        root = ET.Element("show")
+        cmd = ET.SubElement(root, "object")
+        # Simple check to determine which command to use
+        if self.panfirewall and self.panfirewall.version and PanOSVersion('6.1.0') > self.panfirewall.version:
+            cmd = ET.SubElement(cmd, "registered-address")
+        else:
+            cmd = ET.SubElement(cmd, "registered-ip")
+        # Add arguments to command
+        ip = list(set(string_or_list_or_none(ip)))
+        tags = list(set(string_or_list_or_none(tags)))
+        tags = [prefix+t for t in tags]
+        if len(tags) == 1:
+            tag_element = ET.SubElement(cmd, "tag")
+            ET.SubElement(tag_element, "entry", {"name": tags[0]})
+        if len(ip) == 1:
+            ip_element = ET.SubElement(cmd, "ip")
+            ip_element.text = ip[0]
+        root = self.panfirewall.op(cmd=ET.tostring(root), vsys=self.panfirewall.vsys, cmd_xml=False)
         entries = root.findall("./result/entry")
-        if not entries:
-            return None
         addresses = {}
         for entry in entries:
-            ip = entry.get("ip")
+            c_ip = entry.get("ip")
+            if ip and c_ip not in ip:
+                continue
             members = entry.findall("./tag/member")
-            tags = []
+            c_tags = []
             for member in members:
-                tags.append(member.text)
-            addresses[ip] = tags
+                tag = member.text
+                if not prefix or tag.startswith(prefix):
+                    if not tags or tag in tags:
+                        c_tags.append(tag)
+            if c_tags:
+                addresses[c_ip] = c_tags
         return addresses
 
-    def clear_all_registered_ip(self):
-        """Unregister all registered/tagged addresses
+    def clear_registered_ip(self, ip=None, tags=None, prefix=None):
+        """Unregister registered/tagged addresses
 
-        Removes all registered addresses used by dynamic address groups.
+        Removes registered addresses used by dynamic address groups.
+        When called without arguments, removes all registered addresses
+
+        Note: Passing a single ip and/or single tag to this method results in a response
+        from the firewall that contains only the relevant entries. ie. the filtering is done on
+        the firewall before it responds.  Passing a list of multiple ip addresses or tags will
+        result in retreival of the entire tag database from the firewall which is then filtered and
+        returned with only the relevant entries. Therefor, using a single ip or tag is more efficient.
 
         **Support:** PAN-OS 6.0 and higher
 
         Warning:
             This will clear any batch without it being sent, and can't be used as part of a batch.
 
+        Args:
+            ip (:obj:`list` or :obj:`str`): IP address(es) to remove tags for
+            tags (:obj:`list` or :obj:`str`): Tag(s) to remove
+            prefix (str): Override class tag prefix
+
         """
-        addresses = self.get_all_registered_ip()
+        addresses = self.get_registered_ip(ip, tags, prefix)
         self.batch_start()
         for ip, tags in addresses.iteritems():
             self.unregister(ip, tags)
