@@ -19,7 +19,7 @@
 """User-ID and Dynamic Address Group updates using the User-ID API"""
 
 import logging
-import xml.etree.ElementTree as et
+import xml.etree.ElementTree as ET
 from copy import deepcopy
 
 import pandevice.errors as err
@@ -54,7 +54,7 @@ class UserId(object):
         self.panfirewall = panfirewall
 
         # Build the initial uid-message
-        self._uidmessage = et.fromstring("<uid-message>"
+        self._uidmessage = ET.fromstring("<uid-message>"
                                          "<version>1.0</version>"
                                          "<type>update</type>"
                                          "<payload/>"
@@ -111,7 +111,7 @@ class UserId(object):
         if self._batch:
             return
         else:
-            cmd = et.tostring(uidmessage)
+            cmd = ET.tostring(uidmessage)
             try:
                 self.panfirewall.xapi.user_id(cmd=cmd, vsys=self.panfirewall.vsys)
             except (err.PanDeviceXapiError, PanXapiError) as e:
@@ -138,8 +138,8 @@ class UserId(object):
         root, payload = self._create_uidmessage()
         login = payload.find("login")
         if login is None:
-            login = et.SubElement(payload, "login")
-        et.SubElement(login, "entry", {"name": user, "ip": ip})
+            login = ET.SubElement(payload, "login")
+        ET.SubElement(login, "entry", {"name": user, "ip": ip})
         self.send(root)
 
     def logins(self, users):
@@ -155,9 +155,9 @@ class UserId(object):
         root, payload = self._create_uidmessage()
         login = payload.find("login")
         if login is None:
-            login = et.SubElement(payload, "login")
+            login = ET.SubElement(payload, "login")
         for user in users:
-            et.SubElement(login, "entry", {"name": user[0], "ip": user[1]})
+            ET.SubElement(login, "entry", {"name": user[0], "ip": user[1]})
         self.send(root)
 
     def logout(self, user, ip):
@@ -175,8 +175,8 @@ class UserId(object):
         root, payload = self._create_uidmessage()
         logout = payload.find("logout")
         if logout is None:
-            logout = et.SubElement(payload, "logout")
-        et.SubElement(logout, "entry", {"name": user, "ip": ip})
+            logout = ET.SubElement(payload, "logout")
+        ET.SubElement(logout, "entry", {"name": user, "ip": ip})
         self.send(root)
 
     def logouts(self, users):
@@ -192,9 +192,9 @@ class UserId(object):
         root, payload = self._create_uidmessage()
         logout = payload.find("logout")
         if logout is None:
-            logout = et.SubElement(payload, "logout")
+            logout = ET.SubElement(payload, "logout")
         for user in users:
-            et.SubElement(logout, "entry", {"name": user[0], "ip": user[1]})
+            ET.SubElement(logout, "entry", {"name": user[0], "ip": user[1]})
         self.send(root)
 
     def register(self, ip, tags):
@@ -210,15 +210,15 @@ class UserId(object):
         root, payload = self._create_uidmessage()
         register = payload.find("register")
         if register is None:
-            register = et.SubElement(payload, "register")
+            register = ET.SubElement(payload, "register")
         tagelement = register.find("./entry[@ip='%s']/tag" % ip)
         if tagelement is None:
-            entry = et.SubElement(register, "entry", {"ip": ip})
-            tagelement = et.SubElement(entry, "tag")
+            entry = ET.SubElement(register, "entry", {"ip": ip})
+            tagelement = ET.SubElement(entry, "tag")
         tags = string_or_list(tags)
         tags = list(set(tags))
         for tag in tags:
-            member = et.SubElement(tagelement, "member")
+            member = ET.SubElement(tagelement, "member")
             member.text = tag
         self.send(root)
 
@@ -235,15 +235,15 @@ class UserId(object):
         root, payload = self._create_uidmessage()
         unregister = payload.find("unregister")
         if unregister is None:
-            unregister = et.SubElement(payload, "unregister")
+            unregister = ET.SubElement(payload, "unregister")
         tagelement = unregister.find("./entry[@ip='%s']/tag" % ip)
         if tagelement is None:
-            entry = et.SubElement(unregister, "entry", {"ip": ip})
-            tagelement = et.SubElement(entry, "tag")
+            entry = ET.SubElement(unregister, "entry", {"ip": ip})
+            tagelement = ET.SubElement(entry, "tag")
         tags = string_or_list(tags)
         tags = list(set(tags))
         for tag in tags:
-            member = et.SubElement(tagelement, "member")
+            member = ET.SubElement(tagelement, "member")
             member.text = tag
         self.send(root)
 
