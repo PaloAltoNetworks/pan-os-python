@@ -24,6 +24,7 @@ from copy import deepcopy
 
 import pandevice.errors as err
 from pandevice import string_or_list
+from pandevice import string_or_list_or_none
 from pan.xapi import PanXapiError
 from pandevice.updater import PanOSVersion
 
@@ -45,13 +46,15 @@ class UserId(object):
 
     Args:
         panfirewall (firewall.Firewall): The firewall this user-id subsystem leverages
+        prefix (str): Prefix to use in all IP tag operations for Dynamic Address Groups
 
     """
 
-    def __init__(self, panfirewall):
+    def __init__(self, panfirewall, prefix=""):
         # Create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.panfirewall = panfirewall
+        self.prefix = prefix
 
         # Build the initial uid-message
         self._uidmessage = ET.fromstring("<uid-message>"
@@ -217,6 +220,7 @@ class UserId(object):
             tagelement = ET.SubElement(entry, "tag")
         tags = string_or_list(tags)
         tags = list(set(tags))
+        tags = [self.prefix+t for t in tags]
         for tag in tags:
             member = ET.SubElement(tagelement, "member")
             member.text = tag
@@ -242,53 +246,81 @@ class UserId(object):
             tagelement = ET.SubElement(entry, "tag")
         tags = string_or_list(tags)
         tags = list(set(tags))
+        tags = [self.prefix+t for t in tags]
         for tag in tags:
             member = ET.SubElement(tagelement, "member")
             member.text = tag
         self.send(root)
 
-    def get_all_registered_ip(self):
-        """Return all registered/tagged addresses
+    def get_registered_ip(self, ip=None, tags=None, prefix=None):
+        """Return registered/tagged addresses
+
+        When called without arguments, retrieves all registered addresses
 
         **Support:** PAN-OS 6.0 and higher
+
+        Args:
+            ip (:obj:`list` or :obj:`str`): IP address(es) to get tags for
+            tags (:obj:`list` or :obj:`str`): Tag(s) to get
+            prefix (str): Override class tag prefix
 
         Returns:
             dict: ip addresses as keys with tags as values
 
         """
+        if prefix is None:
+            prefix = self.prefix
         # Simple check to determine which command to use
-        if self.panfirewall.version is not None:
-            current_version = PanOSVersion(str(self.panfirewall.version))
-            if current_version < PanOSVersion("6.1.0"):
-                command = 'show object registered-address all'
-            else:
-                command = 'show object registered-ip all'
+        if self.panfirewall and self.panfirewall.version and PanOSVersion('6.1.0') > self.panfirewall.version:
+            command = 'show object registered-address'
         else:
-            command = 'show object registered-ip all'
+            command = 'show object registered-ip'
+        # Add arguments to command
+        ip = list(set(string_or_list_or_none(ip)))
+        tags = list(set(string_or_list_or_none(tags)))
+        tags = [prefix+t for t in tags]
+        # This should work but doesn't on some PAN-OS versions
+        # Commenting it out for now
+        #if len(tags) == 1:
+        #    command += ' tag "{0}"'.format(tags[0])
+        if len(ip) == 1:
+            command += ' ip "{0}"'.format(ip[0])
         root = self.panfirewall.op(cmd=command, vsys=self.panfirewall.vsys, cmd_xml=True)
         entries = root.findall("./result/entry")
         addresses = {}
         for entry in entries:
-            ip = entry.get("ip")
+            c_ip = entry.get("ip")
+            if ip and c_ip not in ip:
+                continue
             members = entry.findall("./tag/member")
-            tags = []
+            c_tags = []
             for member in members:
-                tags.append(member.text)
-            addresses[ip] = tags
+                tag = member.text
+                if not prefix or tag.startswith(prefix):
+                    if not tags or tag in tags:
+                        c_tags.append(tag)
+            if c_tags:
+                addresses[c_ip] = c_tags
         return addresses
 
-    def clear_all_registered_ip(self):
-        """Unregister all registered/tagged addresses
+    def clear_registered_ip(self, ip=None, tags=None, prefix=None):
+        """Unregister registered/tagged addresses
 
-        Removes all registered addresses used by dynamic address groups.
+        Removes registered addresses used by dynamic address groups.
+        When called without arguments, removes all registered addresses
 
         **Support:** PAN-OS 6.0 and higher
 
         Warning:
             This will clear any batch without it being sent, and can't be used as part of a batch.
 
+        Args:
+            ip (:obj:`list` or :obj:`str`): IP address(es) to remove tags for
+            tags (:obj:`list` or :obj:`str`): Tag(s) to remove
+            prefix (str): Override class tag prefix
+
         """
-        addresses = self.get_all_registered_ip()
+        addresses = self.get_registered_ip(ip, tags, prefix)
         self.batch_start()
         for ip, tags in addresses.iteritems():
             self.unregister(ip, tags)
