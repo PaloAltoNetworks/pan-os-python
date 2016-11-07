@@ -207,24 +207,24 @@ class UserId(object):
         This method can be batched with batch_start() and batch_end().
 
         Args:
-            ip (str): IP address to tag
-            tags (str): The tag for the IP address
+            ip (:obj:`list` or :obj:`str`): IP address(es) to tag
+            tags (:obj:`list` or :obj:`str`): The tag(s) for the IP address
 
         """
         root, payload = self._create_uidmessage()
         register = payload.find("register")
         if register is None:
             register = ET.SubElement(payload, "register")
-        tagelement = register.find("./entry[@ip='%s']/tag" % ip)
-        if tagelement is None:
-            entry = ET.SubElement(register, "entry", {"ip": ip})
-            tagelement = ET.SubElement(entry, "tag")
-        tags = string_or_list(tags)
-        tags = list(set(tags))
+        tags = list(set(string_or_list(tags)))
         tags = [self.prefix+t for t in tags]
-        for tag in tags:
-            member = ET.SubElement(tagelement, "member")
-            member.text = tag
+        for c_ip in ip:
+            tagelement = register.find("./entry[@ip='%s']/tag" % c_ip)
+            if tagelement is None:
+                entry = ET.SubElement(register, "entry", {"ip": c_ip})
+                tagelement = ET.SubElement(entry, "tag")
+            for tag in tags:
+                member = ET.SubElement(tagelement, "member")
+                member.text = tag
         self.send(root)
 
     def unregister(self, ip, tags):
@@ -233,24 +233,24 @@ class UserId(object):
         This method can be batched with batch_start() and batch_end().
 
         Args:
-            ip (str): IP address with the tag to remove
-            tags (str): The tag to remove from the IP address
+            ip (:obj:`list` or :obj:`str`): IP address(es) with the tag to remove
+            tags (:obj:`list` or :obj:`str`): The tag(s) to remove from the IP address
 
         """
         root, payload = self._create_uidmessage()
         unregister = payload.find("unregister")
         if unregister is None:
             unregister = ET.SubElement(payload, "unregister")
-        tagelement = unregister.find("./entry[@ip='%s']/tag" % ip)
-        if tagelement is None:
-            entry = ET.SubElement(unregister, "entry", {"ip": ip})
-            tagelement = ET.SubElement(entry, "tag")
-        tags = string_or_list(tags)
-        tags = list(set(tags))
+        tags = list(set(string_or_list(tags)))
         tags = [self.prefix+t for t in tags]
-        for tag in tags:
-            member = ET.SubElement(tagelement, "member")
-            member.text = tag
+        for c_ip in ip:
+            tagelement = unregister.find("./entry[@ip='%s']/tag" % c_ip)
+            if tagelement is None:
+                entry = ET.SubElement(unregister, "entry", {"ip": c_ip})
+                tagelement = ET.SubElement(entry, "tag")
+            for tag in tags:
+                member = ET.SubElement(tagelement, "member")
+                member.text = tag
         self.send(root)
 
     def get_registered_ip(self, ip=None, tags=None, prefix=None):
