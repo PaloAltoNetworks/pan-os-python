@@ -256,7 +256,13 @@ class UserId(object):
     def get_registered_ip(self, ip=None, tags=None, prefix=None):
         """Return registered/tagged addresses
 
-        When called without arguments, retrieves all registered addresses
+        When called without arguments, retrieves all registered addresses.
+
+        Note: Passing a single ip and/or single tag to this method results in a response
+        from the firewall that contains only the relevant entries. ie. the filtering is done on
+        the firewall before it responds.  Passing a list of multiple ip addresses or tags will
+        result in retreival of the entire tag database from the firewall which is then filtered and
+        returned with only the relevant entries. Therefor, using a single ip or tag is more efficient.
 
         **Support:** PAN-OS 6.0 and higher
 
@@ -271,22 +277,24 @@ class UserId(object):
         """
         if prefix is None:
             prefix = self.prefix
+        root = ET.Element("show")
+        cmd = ET.SubElement(root, "object")
         # Simple check to determine which command to use
         if self.panfirewall and self.panfirewall.version and PanOSVersion('6.1.0') > self.panfirewall.version:
-            command = 'show object registered-address'
+            cmd = ET.SubElement(cmd, "registered-address")
         else:
-            command = 'show object registered-ip'
+            cmd = ET.SubElement(cmd, "registered-ip")
         # Add arguments to command
         ip = list(set(string_or_list_or_none(ip)))
         tags = list(set(string_or_list_or_none(tags)))
         tags = [prefix+t for t in tags]
-        # This should work but doesn't on some PAN-OS versions
-        # Commenting it out for now
-        #if len(tags) == 1:
-        #    command += ' tag "{0}"'.format(tags[0])
+        if len(tags) == 1:
+            tag_element = ET.SubElement(cmd, "tag")
+            ET.SubElement(tag_element, "entry", {"name": tags[0]})
         if len(ip) == 1:
-            command += ' ip "{0}"'.format(ip[0])
-        root = self.panfirewall.op(cmd=command, vsys=self.panfirewall.vsys, cmd_xml=True)
+            ip_element = ET.SubElement(cmd, "ip")
+            ip_element.text = ip[0]
+        root = self.panfirewall.op(cmd=ET.tostring(root), vsys=self.panfirewall.vsys, cmd_xml=False)
         entries = root.findall("./result/entry")
         addresses = {}
         for entry in entries:
@@ -309,6 +317,12 @@ class UserId(object):
 
         Removes registered addresses used by dynamic address groups.
         When called without arguments, removes all registered addresses
+
+        Note: Passing a single ip and/or single tag to this method results in a response
+        from the firewall that contains only the relevant entries. ie. the filtering is done on
+        the firewall before it responds.  Passing a list of multiple ip addresses or tags will
+        result in retreival of the entire tag database from the firewall which is then filtered and
+        returned with only the relevant entries. Therefor, using a single ip or tag is more efficient.
 
         **Support:** PAN-OS 6.0 and higher
 
