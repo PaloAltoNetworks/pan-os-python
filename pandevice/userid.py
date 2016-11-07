@@ -50,11 +50,12 @@ class UserId(object):
 
     """
 
-    def __init__(self, panfirewall, prefix=""):
+    def __init__(self, panfirewall, prefix="", ignore_dup_errors=True):
         # Create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.panfirewall = panfirewall
         self.prefix = prefix
+        self.ignore_dup_errors = ignore_dup_errors
 
         # Build the initial uid-message
         self._uidmessage = ET.fromstring("<uid-message>"
@@ -121,7 +122,7 @@ class UserId(object):
                 # Check if this is just an error about duplicates or nonexistant tags
                 # If so, ignore the error. Most operations don't care about this.
                 message = str(e)
-                if message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg"):
+                if self.ignore_dup_errors and (message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg")):
                     return
                 else:
                     raise e
