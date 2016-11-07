@@ -58,10 +58,10 @@ class UserId(object):
         self.ignore_dup_errors = ignore_dup_errors
 
         # Build the initial uid-message
-        self._uidmessage = ET.fromstring("<uid-message>"
-                                         "<version>1.0</version>"
-                                         "<type>update</type>"
-                                         "<payload/>"
+        self._uidmessage = ET.fromstring("<uid-message>" +
+                                         "<version>1.0</version>" +
+                                         "<type>update</type>" +
+                                         "<payload/>" +
                                          "</uid-message>")
         # Batch state
         self._batch = False
