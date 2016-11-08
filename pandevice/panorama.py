@@ -241,7 +241,8 @@ class Panorama(base.PanDevice):
         # Filter to only requested devices
         if devices:
             filtered_devices_xml = ET.Element("devices")
-            for serial, vsys in [(d.serial, d.vsys) for d in devices]:
+            for device in devices:
+                serial = str(device)
                 if serial is None:
                     continue
                 entry = devices_xml.find("entry[@name='%s']" % serial)
@@ -249,6 +250,10 @@ class Panorama(base.PanDevice):
                     raise err.PanDeviceError("Can't find device with serial %s attached to Panorama at %s" %
                                              (serial, self.hostname))
                 multi_vsys = yesno(entry.findtext("multi-vsys"))
+                try:
+                    vsys = device.vsys
+                except AttributeError:
+                    continue
                 # Create entry if needed
                 if filtered_devices_xml.find("entry[@name='%s']" % serial) is None:
                     entry_copy = deepcopy(entry)
@@ -312,6 +317,9 @@ class Panorama(base.PanDevice):
             dg_serials = [entry.get("name") for entry in devicegroup_opxml.findall("entry[@name='%s']/devices/entry" % dg.name)]
             # Find firewall with each serial
             for dg_serial in dg_serials:
+                # Skip devices not requested
+                if dg_serial not in [str(f) for f in devices]:
+                    continue
                 all_dg_vsys = [entry.get("name") for entry in devicegroup_opxml.findall(
                     "entry[@name='%s']/devices/entry[@name='%s']/vsys/entry" % (dg.name, dg_serial))]
                 # Collect the firewall serial entry to get current status information
@@ -320,6 +328,16 @@ class Panorama(base.PanDevice):
                     # This is a single-context firewall, assume vsys1
                     all_dg_vsys = ["vsys1"]
                 for dg_vsys in all_dg_vsys:
+                    # Check if this is a requested vsys in devices argument
+                    try:
+                        requested_vsys = [f.vsys for f in devices]
+                    except AttributeError:
+                        # Passed in string serials, no vsys, so get all vsys
+                        pass
+                    else:
+                        if "shared" not in requested_vsys and dg_vsys not in requested_vsys:
+                            # A specific vsys was requested, and this isn't it, skip
+                            continue
                     fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
                     if fw is None:
                         # It's possible for device-groups to reference a serial/vsys that doesn't exist
@@ -331,9 +349,10 @@ class Panorama(base.PanDevice):
                         # Move the firewall to the device-group
                         dg.add(fw)
                         firewall_instances.remove(fw)
-                        fw.state.connected = yesno(fw_entry.findtext("connected"))
-                        fw.state.unsupported_version = yesno(fw_entry.findtext("unsupported-version"))
-                        fw.state.set_shared_policy_synced(fw_entry.findtext("shared-policy-status"))
+                        shared_policy_status = fw_entry.findtext("shared-policy-status")
+                        if shared_policy_status is None:
+                            shared_policy_status = fw_entry.findtext("vsys/entry[@name='%s']/shared-policy-status" % dg_vsys)
+                        fw.state.set_shared_policy_synced(shared_policy_status)
 
         if add:
             for dg in devicegroup_instances:

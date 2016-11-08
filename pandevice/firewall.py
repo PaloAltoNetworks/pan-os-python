@@ -30,6 +30,7 @@ import xml.etree.ElementTree as ET
 from decimal import Decimal
 
 from pandevice import device
+from pandevice import yesno
 
 # import other parts of this pandevice package
 import errors as err
@@ -338,6 +339,7 @@ class Firewall(PanDevice):
             Var("vsysid", "vsys", default="vsys1"),
             Var("vsysname", "vsys_name"),
             Var("ha/state/peer/serial", "serial_ha_peer"),
+            Var("connected", "state.connected"),
         )
         if len(xml[0]) > 1:
             # This is a 'show devices' op command
@@ -348,6 +350,9 @@ class Firewall(PanDevice):
                 system = fw.find_or_create(None, device.SystemSettings)
                 system.hostname = entry.findtext("hostname")
                 system.ip_address = entry.findtext("ip-address")
+                # Add state
+                fw.state.connected = yesno(entry.findtext("connected"))
+                fw.state.unsupported_version = yesno(entry.findtext("unsupported-version"))
         else:
             # This is a config command
             # For each vsys, instantiate a new firewall
@@ -402,7 +407,7 @@ class FirewallState(object):
             self.shared_policy_synced = True
         elif sync_status == "Out of Sync":
             self.shared_policy_synced = False
-        elif sync_status is None:
+        elif not sync_status:
             self.shared_policy_synced = None
         else:
             raise err.PanDeviceError("Unknown shared policy status: %s" % str(sync_status))
