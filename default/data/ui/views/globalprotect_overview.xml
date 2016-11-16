@@ -293,7 +293,6 @@
         <option name="colorBy">value</option>
         <option name="colorMode">none</option>
         <option name="drilldown">none</option>
-        <option name="linkView">search</option>
         <option name="numberPrecision">0</option>
         <option name="rangeColors">["0x65a637","0x6db7c6","0xf7bc38","0xf58f39","0xd93f3c"]</option>
         <option name="rangeValues">[0,30,70,100]</option>

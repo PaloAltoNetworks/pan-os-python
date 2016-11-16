@@ -7,11 +7,25 @@ Release Notes
 App
 ===
 
-v5.3.0
+v5.3.1
+  * Changes made to meet new certification requirements
+
+
+Add-on
+======
+
+v3.7.1
+  * Changes made to meet new certification requirements 
+
+Previous Versions
+=================
+
+App v5.3.0
+----------
   * GlobalProtect Dashboard
   * Other updates are in the Add-on (see below)
 
-Important App Upgrade Notes
+..  note::
   * App 5.3.x requires Add-on 3.7.x
   * The App setup screen has moved to the Add-on. If you has previous set firewall credentials
     or a WildFire API key in the App setup screen, you'll need to set them in the Add-on
@@ -23,25 +37,20 @@ Important App Upgrade Notes
     pan_url, pan_data, pan_file, and pan_wildfire.
 
 
-Add-on
-======
-
-v3.7.0
+Add-on v3.7.0
+-------------
   * Integration with new Splunk Adaptive Response
   * Tag to dynamic address group using modular actions and Adaptive Response
   * Submit URL’s from any log in Splunk to WildFire
   * Logs with malware hashes have a new event action that links directly to that hash in Autofocus
   * Improved tagging for Splunk Enterprise Security, based on customer feedback
   * New parser for GlobalProtect logs
-
-Important Add-on Upgrade Notes
-  * Eventtype pan_threat no longer includes these log_subtypes: url, data, file, and wildfire.
+    
+..  note:: Eventtype pan_threat no longer includes these log_subtypes: url, data, file, and wildfire.
     You might need to update custom searches or panels you created that leverage
     the pan_threat eventtype. There are new eventtypes for each of the removed log_subtypes:
     pan_url, pan_data, pan_file, and pan_wildfire.
 
-Previous Versions
-=================
 
 App v5.2
 --------
