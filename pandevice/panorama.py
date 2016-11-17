@@ -257,8 +257,8 @@ class Panorama(base.PanDevice):
                 # Create entry if needed
                 if filtered_devices_xml.find("entry[@name='%s']" % serial) is None:
                     entry_copy = deepcopy(entry)
-                    # If multivsys firewall with vsys defined, erase all vsys in filtered
-                    if multi_vsys and vsys != "shared" and vsys is not None:
+                    # If looking for specific vsys, erase all vsys in filtered entry
+                    if vsys != "shared" and vsys is not None:
                         entry_copy.remove(entry_copy.find("vsys"))
                         ET.SubElement(entry_copy, "vsys")
                     filtered_devices_xml.append(entry_copy)
