@@ -323,7 +323,7 @@ class Panorama(base.PanDevice):
             # Find firewall with each serial
             for dg_serial in dg_serials:
                 # Skip devices not requested
-                if dg_serial not in [str(f) for f in devices]:
+                if devices and dg_serial not in [str(f) for f in devices]:
                     continue
                 all_dg_vsys = [entry.get("name") for entry in devicegroup_opxml.findall(
                     "entry[@name='%s']/devices/entry[@name='%s']/vsys/entry" % (dg.name, dg_serial))]
@@ -334,15 +334,16 @@ class Panorama(base.PanDevice):
                     all_dg_vsys = ["vsys1"]
                 for dg_vsys in all_dg_vsys:
                     # Check if this is a requested vsys in devices argument
-                    try:
-                        requested_vsys = [f.vsys for f in devices]
-                    except AttributeError:
-                        # Passed in string serials, no vsys, so get all vsys
-                        pass
-                    else:
-                        if "shared" not in requested_vsys and dg_vsys not in requested_vsys:
-                            # A specific vsys was requested, and this isn't it, skip
-                            continue
+                    if devices:
+                        try:
+                            requested_vsys = [f.vsys for f in devices]
+                        except AttributeError:
+                            # Passed in string serials, no vsys, so get all vsys
+                            pass
+                        else:
+                            if "shared" not in requested_vsys and dg_vsys not in requested_vsys:
+                                # A specific vsys was requested, and this isn't it, skip
+                                continue
                     fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
                     if fw is None:
                         # It's possible for device-groups to reference a serial/vsys that doesn't exist
