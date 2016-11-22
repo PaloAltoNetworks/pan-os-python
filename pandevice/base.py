@@ -95,16 +95,21 @@ class PanObject(object):
                 varvalue = args[idx+1]
             except IndexError:
                 # If it's not in args, get it from 'kwargs', or store a None in the variable
-                varvalue = kwargs.pop(varname, None)
+                try:
+                    varvalue = kwargs.pop(varname)
+                except KeyError:
+                    # If None was stored in the variable, check if
+                    # there's a default value, and store that instead
+                    if var.default is not None:
+                        setattr(self, varname, var.default)
+                    else:
+                        setattr(self, varname, None)
+                    continue
             # For member variables, store a list containing the value instead of the individual value
             if var.vartype in ("member", "entry"):
                 varvalue = pandevice.string_or_list(varvalue)
             # Store the value in the instance variable
             setattr(self, varname, varvalue)
-            # If None was stored in the variable, check if
-            # there's a default value, and store that instead
-            if getattr(self, varname) is None:
-                setattr(self, varname, var.default)
 
     def __str__(self):
         return str(getattr(self, self.NAME, None))
@@ -1202,8 +1207,6 @@ class PanObject(object):
                     # This is a text variable
                     # Save the variable if it exists in the xml
                     vardict[var.variable] = cls._convert_var(xml.findtext(path), var.vartype)
-                if var.default is not None and vardict[var.variable] is None:
-                    vardict[var.variable] = var.default
         return vardict
 
     @classmethod
