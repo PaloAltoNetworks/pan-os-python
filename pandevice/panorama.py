@@ -311,24 +311,28 @@ class Panorama(base.PanDevice):
 
         # Combine the config XML and operational command XML to get a complete picture
         # of the device groups
-        pandevice.xml_combine(devicegroup_opxml, devicegroup_configxml)
+        for dg_entry in devicegroup_configxml:
+            for fw_entry in dg_entry.find('devices'):
+                fw_entry_op = devicegroup_opxml.find("entry/devices/entry[@name='%s']" % fw_entry.get("name"))
+                if fw_entry_op is not None:
+                    pandevice.xml_combine(fw_entry, fw_entry_op)
 
         dg = DeviceGroup()
         dg.parent = self
         devicegroup_instances = dg.refreshall_from_xml(
-            devicegroup_opxml, refresh_children=False)
+            devicegroup_configxml, refresh_children=False)
 
         for dg in devicegroup_instances:
-            dg_serials = [entry.get("name") for entry in devicegroup_opxml.findall("entry[@name='%s']/devices/entry" % dg.name)]
+            dg_serials = [entry.get("name") for entry in devicegroup_configxml.findall("entry[@name='%s']/devices/entry" % dg.name)]
             # Find firewall with each serial
             for dg_serial in dg_serials:
                 # Skip devices not requested
                 if devices and dg_serial not in [str(f) for f in devices]:
                     continue
-                all_dg_vsys = [entry.get("name") for entry in devicegroup_opxml.findall(
+                all_dg_vsys = [entry.get("name") for entry in devicegroup_configxml.findall(
                     "entry[@name='%s']/devices/entry[@name='%s']/vsys/entry" % (dg.name, dg_serial))]
                 # Collect the firewall serial entry to get current status information
-                fw_entry = devicegroup_opxml.find("entry[@name='%s']/devices/entry[@name='%s']" % (dg.name, dg_serial))
+                fw_entry = devicegroup_configxml.find("entry[@name='%s']/devices/entry[@name='%s']" % (dg.name, dg_serial))
                 if not all_dg_vsys:
                     # This is a single-context firewall, assume vsys1
                     all_dg_vsys = ["vsys1"]
