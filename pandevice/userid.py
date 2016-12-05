@@ -215,6 +215,7 @@ class UserId(object):
         register = payload.find("register")
         if register is None:
             register = ET.SubElement(payload, "register")
+        ip = list(set(string_or_list(ip)))
         tags = list(set(string_or_list(tags)))
         tags = [self.prefix+t for t in tags]
         for c_ip in ip:
@@ -241,6 +242,7 @@ class UserId(object):
         unregister = payload.find("unregister")
         if unregister is None:
             unregister = ET.SubElement(payload, "unregister")
+        ip = list(set(string_or_list(ip)))
         tags = list(set(string_or_list(tags)))
         tags = [self.prefix+t for t in tags]
         for c_ip in ip:
