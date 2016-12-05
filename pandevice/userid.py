@@ -342,3 +342,48 @@ class UserId(object):
         for ip, tags in addresses.iteritems():
             self.unregister(ip, tags)
         self.batch_end()
+
+    def audit_registered_ip(self, ip_tags_pairs):
+        """Synchronize the current registered-ip tag list to this exact set of ip-tags
+
+        Sets the registered-ip tag list on the device.
+        Regardless of the current state of the registered-ip tag list when this method is
+        called, at the end of the method the list will contain only the ip-tags passed in the
+        argument. The current state of the list is retrieved to reduce the number of operations
+        needed. If the list is currently in the requested state, no API call is made after
+        retrieving the list.
+
+        **Support:** PAN-OS 6.0 and higher
+
+        Warning:
+            This will clear any batch without it being sent, and can't be used as part of a batch.
+
+        Args:
+            ip_tags_pairs (dict): dictionary where keys are ip addresses and values or tuples of tags
+
+        """
+        device_list = self.get_registered_ip()
+        requested_list = deepcopy(ip_tags_pairs)
+        self.batch_start()
+        # Handle unregistrations
+        for ip, tags in device_list.iteritems():
+            if ip not in requested_list:
+                # The IP is not requested, unregister it and all its tags
+                self.unregister(ip, tags)
+            else:
+                # Convert requested tags from tuple to list
+                requested_list[ip] = list(requested_list[ip])
+                # The IP is requested, audit its tags
+                for tag in tags:
+                    if tag not in requested_list[ip]:
+                        # Tag is not requested, unregister it
+                        self.unregister(ip, tag)
+                    else:
+                        # Tag already exists on device, so don't re-register it
+                        requested_list[ip].remove(tag)
+        # Remove ip's with no tags left to register
+        requested_list = {ip: tags for ip, tags in requested_list.iteritems() if tags}
+        # Handle registrations
+        for ip, tags in requested_list.iteritems():
+            self.register(ip, tags)
+        self.batch_end()
