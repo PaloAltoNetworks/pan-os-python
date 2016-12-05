@@ -36,7 +36,6 @@ from pandevice import yesno
 import errors as err
 from base import PanDevice, Root, ENTRY
 from base import VarPath as Var
-import userid
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 logger = logging.getLogger(__name__)
@@ -121,14 +120,6 @@ class Firewall(PanDevice):
 
         self.state = FirewallState()
         """Panorama state variables refreshed by Panorama"""
-
-        # Create a User-ID subsystem
-        self.userid = userid.UserId(self)
-        """User-ID subsystem
-
-        See Also: :class:`pandevice.userid`
-
-        """
 
     def __repr__(self):
         return "<%s %s %s at 0x%x>" % (type(self).__name__, repr(self.id), repr(self.vsys), id(self))

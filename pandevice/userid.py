@@ -41,19 +41,25 @@ class UserId(object):
     user/group mappings, and dynamic address group tags.
 
     This class is typically not instantiated by anything but the
-    firewall.Firewall class itself. There is an instance of this UserId class
-    inside every instantiated firewall.Firewall class.
+    base.PanDevice class itself. There is an instance of this UserId class
+    inside every instantiated base.PanDevice class.
+
+    **Support:** UserId API is supported on Panorama starting with Panorama 8.0
+        UserId API is supported on all firewall PAN-OS versions but with varying
+        features as noted in the documentation for each method.
 
     Args:
-        panfirewall (firewall.Firewall): The firewall this user-id subsystem leverages
+        device (base.PanDevice): The firewall or Panorama this user-id subsystem leverages
         prefix (str): Prefix to use in all IP tag operations for Dynamic Address Groups
+        ignore_dup_errors (bool): Devices produce errors when a tag is registered that already
+            exists. Set to true to ignore these errors. (Default: True)
 
     """
 
-    def __init__(self, panfirewall, prefix="", ignore_dup_errors=True):
+    def __init__(self, device, prefix="", ignore_dup_errors=True):
         # Create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
-        self.panfirewall = panfirewall
+        self.device = device
         self.prefix = prefix
         self.ignore_dup_errors = ignore_dup_errors
 
@@ -117,7 +123,7 @@ class UserId(object):
         else:
             cmd = ET.tostring(uidmessage)
             try:
-                self.panfirewall.xapi.user_id(cmd=cmd, vsys=self.panfirewall.vsys)
+                self.device.xapi.user_id(cmd=cmd, vsys=self.device.vsys)
             except (err.PanDeviceXapiError, PanXapiError) as e:
                 # Check if this is just an error about duplicates or nonexistant tags
                 # If so, ignore the error. Most operations don't care about this.
@@ -282,7 +288,7 @@ class UserId(object):
         root = ET.Element("show")
         cmd = ET.SubElement(root, "object")
         # Simple check to determine which command to use
-        if self.panfirewall and self.panfirewall.version and PanOSVersion('6.1.0') > self.panfirewall.version:
+        if self.device and self.device.version and PanOSVersion('6.1.0') > self.device.version:
             cmd = ET.SubElement(cmd, "registered-address")
         else:
             cmd = ET.SubElement(cmd, "registered-ip")
@@ -296,7 +302,7 @@ class UserId(object):
         if len(ip) == 1:
             ip_element = ET.SubElement(cmd, "ip")
             ip_element.text = ip[0]
-        root = self.panfirewall.op(cmd=ET.tostring(root), vsys=self.panfirewall.vsys, cmd_xml=False)
+        root = self.device.op(cmd=ET.tostring(root), vsys=self.device.vsys, cmd_xml=False)
         entries = root.findall("./result/entry")
         addresses = {}
         for entry in entries:

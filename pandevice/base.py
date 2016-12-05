@@ -36,6 +36,7 @@ import pan.commit
 from pan.config import PanConfig
 import errors as err
 import updater
+import userid
 
 # set logging to nullhandler to prevent exceptions if logging not enabled
 logger = logging.getLogger(__name__)
@@ -2371,6 +2372,14 @@ class PanDevice(PanObject):
         self._ha_peer = None
         self._ha_active = True
         self.ha_failed = None
+
+        # Create a User-ID subsystem
+        self.userid = userid.UserId(self)
+        """User-ID subsystem
+
+        See Also: :class:`pandevice.userid`
+
+        """
 
     def get_device_version(self):
         '''Gets the current version on the PanDevice.'''
