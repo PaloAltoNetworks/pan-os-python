@@ -47,23 +47,6 @@ if not hasattr(logging, 'NullHandler'):
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-# XPaths
-XPATH_SHARED = "/config/shared"
-XPATH_DEVICE = "/config/devices/entry[@name='localhost.localdomain']"
-XPATH_NETWORK = XPATH_DEVICE + "/network"
-
-XPATH_INTERFACES = "/config/devices/entry[@name='localhost.localdomain']/network/interface"
-XPATH_ETHERNET = "/config/devices/entry[@name='localhost.localdomain']/network/interface/ethernet"
-XPATH_VLAN = "/config/devices/entry[@name='localhost.localdomain']/network/vlan"
-XPATH_VWIRE = "/config/devices/entry[@name='localhost.localdomain']/network/virtual-wire"
-XPATH_ZONE = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone"
-XPATH_VROUTER = "/config/devices/entry[@name='localhost.localdomain']/network/virtual-router"
-XPATH_DEFAULT_VROUTER = "/config/devices/entry[@name='localhost.localdomain']/network/virtual-router/entry[@name='default']"
-XPATH_DEFAULT_VROUTER_INTERFACES = "/config/devices/entry[@name='localhost.localdomain']/network/virtual-router/entry[@name='default']/interface"
-XPATH_VSYS_IMPORT_NETWORK = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/import/network"
-XPATH_DEVICE_GROUPS = "/config/devices/entry[@name='localhost.localdomain']/device-group"
-XPATH_DEVICECONFIG_SYSTEM = "/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system"
-
 
 # Enumerator type
 def enum(*sequential, **named):
