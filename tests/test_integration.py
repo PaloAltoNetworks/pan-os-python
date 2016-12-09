@@ -206,21 +206,22 @@ class TestElementStr_7_0(unittest.TestCase):
     def test_element_str_from_ethernetinterface_in_en_l3s_arp(self):
         '''EthernetInterface > Layer3Subinterface > Arp'''
         expected = ''.join([
-            '<entry name="ethernet1/1"><link-speed>1000</link-speed>',
-            '<link-duplex>auto</link-duplex><link-state>up</link-state>',
-            '<layer3><units><entry name="ethernet1/1.1"><tag>ragtag</tag>',
-            '<mtu>1500</mtu><adjust-tcp-mss>yes</adjust-tcp-mss><arp>',
-            '<entry name="10.5.10.15"><hw-address>00:30:45:c2:d2:e2',
+            '<entry name="ethernet1/1"><layer3><ip>',
+            '<entry name="10.3.6.12" /></ip><units>',
+            '<entry name="ethernet1/1.355"><tag>355</tag><ip>',
+            '<entry name="10.20.30.40/24" /></ip><mtu>1500</mtu>',
+            '<adjust-tcp-mss>yes</adjust-tcp-mss><arp>',
+            '<entry name="10.5.10.15"><hw-address>00:30:48:52:cd:dc',
             '</hw-address></entry></arp></entry></units></layer3></entry>',
         ])
 
-        ao = pandevice.network.Arp('10.5.10.15', '00:30:45:c2:d2:e2')
+        ao = pandevice.network.SubinterfaceArp('10.5.10.15',
+                                               '00:30:48:52:cd:dc')
         l3so = pandevice.network.Layer3Subinterface(
-            'ethernet1/1.1', 'ragtag', mtu=1500, adjust_tcp_mss=True)
+            'ethernet1/1.355', 355, '10.20.30.40/24',
+            mtu=1500, adjust_tcp_mss=True)
         eio = pandevice.network.EthernetInterface(
-            'ethernet1/1', 'layer3', '10.4.8.16', mtu=1500,
-            adjust_tcp_mss=False, link_speed=1000, link_duplex='auto',
-            link_state='up')
+            'ethernet1/1', mode='layer3', ip='10.3.6.12')
 
         l3so.add(ao)
         eio.add(l3so)
@@ -229,27 +230,15 @@ class TestElementStr_7_0(unittest.TestCase):
 
         self.assertEqual(expected, ret_val)
 
-    def test_element_str_from_ethernetinterface_aggregate_group_in_en_l3s_arp(self):
-        '''EthernetInterface > Layer3Subinterface > Arp'''
+    def test_element_str_from_ethernetinterface_for_aggregate_group(self):
         expected = ''.join([
-            '<entry name="ethernet1/1"><layer3><units>',
-            '<entry name="ethernet1/1.1"><tag>ragtag</tag><mtu>1500</mtu>',
-            '<adjust-tcp-mss>yes</adjust-tcp-mss><arp>',
-            '<entry name="10.5.10.15"><hw-address>00:30:45:c2:d2:e2',
-            '</hw-address></entry></arp></entry>',
-            '</units></layer3></entry>'
+            '<entry name="ethernet1/1"><aggregate-group>ae1',
+            '</aggregate-group></entry>',
         ])
-
-        ao = pandevice.network.Arp('10.5.10.15', '00:30:45:c2:d2:e2')
-        l3so = pandevice.network.Layer3Subinterface(
-            'ethernet1/1.1', 'ragtag', mtu=1500, adjust_tcp_mss=True)
         eio = pandevice.network.EthernetInterface(
             'ethernet1/1', 'aggregate-group', '10.3.6.12',
             aggregate_group='ae1')
-
-        l3so.add(ao)
-        eio.add(l3so)
-
+        
         ret_val = eio.element_str()
 
         self.assertEqual(expected, ret_val)
@@ -427,6 +416,7 @@ class TestXpaths_7_0(unittest.TestCase):
         child = pandevice.network.VirtualRouter('vr')
         parent = pandevice.network.StaticRoute('sr')
         fw = pandevice.firewall.Firewall('fw')
+        fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         parent.add(child)
         fw.add(parent)
@@ -446,6 +436,7 @@ class TestXpaths_7_0(unittest.TestCase):
         child = pandevice.network.VirtualRouter('vr')
         parent = pandevice.network.StaticRoute('sr')
         fw = pandevice.firewall.Firewall('fw')
+        fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         parent.add(child)
         fw.add(parent)
@@ -463,10 +454,11 @@ class TestXpaths_7_0(unittest.TestCase):
             "/arp/entry[@name='arp object']",
         ])
 
-        ao = pandevice.network.Arp('arp object')
+        ao = pandevice.network.SubinterfaceArp('arp object')
         l3so = pandevice.network.Layer3Subinterface('Layer3 Subint Object')
         eio = pandevice.network.EthernetInterface('Eth Interface Object')
         fw = pandevice.firewall.Firewall('fw')
+        fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         l3so.add(ao)
         eio.add(l3so)
@@ -484,10 +476,11 @@ class TestXpaths_7_0(unittest.TestCase):
             "/arp",
         ])
 
-        ao = pandevice.network.Arp('arp object')
+        ao = pandevice.network.SubinterfaceArp('arp object')
         l3so = pandevice.network.Layer3Subinterface('Layer3 Subint Object')
         eio = pandevice.network.EthernetInterface('Eth Interface Object')
         fw = pandevice.firewall.Firewall('fw')
+        fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         l3so.add(ao)
         eio.add(l3so)
@@ -597,6 +590,7 @@ class TestXpaths_7_0(unittest.TestCase):
 
         ao = pandevice.objects.AddressObject('ntp server')
         fw = pandevice.firewall.Firewall('fw', vsys='vsys2')
+        fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         fw.add(ao)
 
@@ -614,6 +608,7 @@ class TestXpaths_7_0(unittest.TestCase):
         ao = pandevice.objects.AddressObject('webproxy')
         dg = pandevice.panorama.DeviceGroup('My Group')
         pano = pandevice.panorama.Panorama('My Panorama')
+        pano.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         dg.add(ao)
         pano.add(dg)
@@ -631,6 +626,7 @@ class TestXpaths_7_0(unittest.TestCase):
 
         ao = pandevice.objects.AddressObject('ntp server')
         fw = pandevice.firewall.Firewall('fw', vsys='vsys2')
+        fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         fw.add(ao)
 
@@ -648,6 +644,7 @@ class TestXpaths_7_0(unittest.TestCase):
         ao = pandevice.objects.AddressObject('webproxy')
         dg = pandevice.panorama.DeviceGroup('My Group')
         pano = pandevice.panorama.Panorama('My Panorama')
+        pano.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         dg.add(ao)
         pano.add(dg)

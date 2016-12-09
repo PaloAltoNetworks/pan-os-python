@@ -26,6 +26,8 @@ import pandevice
 from base import PanObject, Root, MEMBER, ENTRY, VsysImportMixin
 from base import VarPath as Var
 from pandevice import device
+from pandevice.base import VersionedPanObject
+from pandevice.base import VersionedParamPath
 
 # import other parts of this pandevice package
 import errors as err
@@ -88,7 +90,8 @@ def interface(name, *args, **kwargs):
     else:
         raise err.PanDeviceError("Can't identify interface type from name: %s" % name)
 
-class Zone(PanObject):
+
+class Zone(VersionedPanObject):
     """Security zone
 
     Args:
@@ -98,36 +101,46 @@ class Zone(PanObject):
             of :class:`pandevice.network.Interface`.
 
     """
-    XPATH = "/zone"
     ROOT = Root.VSYS
     SUFFIX = ENTRY
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("network/(tap|virtual-wire|layer2|layer3|external)", "mode", default="layer3"),
-            Var("network/{{mode}}", "interface", vartype="member"),
-        )
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/zone')
 
+        # params
+        params = []
 
-class StaticMac(PanObject):
+        params.append(VersionedParamPath(
+            'mode', default='layer3', path='network/{mode}',
+            values=['tap', 'virtual-wire', 'layer2', 'layer3', 'external']))
+        params.append(VersionedParamPath(
+            'interface', path='network/{mode}', vartype='member'))
+
+        self._params = tuple(params)
+
+class StaticMac(VersionedPanObject):
     """Static MAC address for a Vlan
 
     Can be added to a :class:`pandevice.network.Vlan` object
 
     Args:
         interface (str): Name of an interface
-
     """
-    XPATH = "/mac"
     SUFFIX = ENTRY
-    NAME = "mac"
+    NAME = 'mac'
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("interface"),
-        )
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/mac')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'interface', path='interface'))
+
+        self._params = tuple(params)
 
 
 class Vlan(VsysImportMixin, PanObject):
@@ -154,14 +167,15 @@ class Vlan(VsysImportMixin, PanObject):
         )
 
 
-class IPv6Address(PanObject):
+class IPv6Address(VersionedPanObject):
     """IPv6 Address
 
     Can be added to any :class:`pandevice.network.Interface` subclass
     that supports IPv6
 
     Args:
-        enabled-on-interface (bool): Enabled IPv6 on the interface this object was added to
+        enabled-on-interface (bool): Enabled IPv6 on the interface this
+            object was added to
         prefix (bool): Use interface ID as host portion
         anycast (bool): Enable anycast
         advertise_enabled (bool): Enabled router advertisements
@@ -174,18 +188,37 @@ class IPv6Address(PanObject):
     SUFFIX = ENTRY
     NAME = "address"
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("enable-on-interface", vartype="bool"),
-            Var("prefix", vartype="exist"),
-            Var("anycast", vartype="exist"),
-            Var("advertise/enable", "advertise_enabled", vartype="bool"),
-            Var("advertise/valid-lifetime", vartype="int"),
-            Var("advertise/preferred-lifetime", vartype="int"),
-            Var("advertise/onlink-flag", vartype="bool"),
-            Var("advertise/auto-config-flag", vartype="bool"),
-        )
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/ipv6/address')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable_on_interface', vartype='yesno',
+            path='enable-on-interface'))
+        params.append(VersionedParamPath(
+            'prefix', vartype='exist', path='prefix'))
+        params.append(VersionedParamPath(
+            'anycast', vartype='exist', path='anycast'))
+        params.append(VersionedParamPath(
+            'advertise_enabled', vartype='yesno',
+            path='advertise/enable'))
+        params.append(VersionedParamPath(
+            'valid_lifetime', vartype='int',
+            path='advertise/valid-lifetime'))
+        params.append(VersionedParamPath(
+            'preferred_lifetime', vartype='int',
+            path='advertise/preferred-lifetime'))
+        params.append(VersionedParamPath(
+            'onlink_flag', vartype='yesno',
+            path='advertise/onlink-flag'))
+        params.append(VersionedParamPath(
+            'auto_config_flag', vartype='yesno',
+            path='advertise/auto-config-flag'))
+
+        self._params = tuple(params)
 
 
 class Interface(PanObject):
@@ -355,7 +388,32 @@ class Interface(PanObject):
         self.delete()
 
 
-class Arp(PanObject):
+class SubinterfaceArp(VersionedPanObject):
+    """Static ARP Mapping
+
+    Can be added to subinterfaces in 'layer3' mode
+
+    Args:
+        ip (str): The IP address
+        hw_address (str): The MAC address for the static ARP
+    """
+    SUFFIX = ENTRY
+    NAME = 'ip'
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/arp')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'hw_address', path='hw-address'))
+
+        self._params = tuple(params)
+
+
+class EthernetInterfaceArp(SubinterfaceArp):
     """Static ARP Mapping
 
     Can be added to interfaces in 'layer3' mode
@@ -364,15 +422,12 @@ class Arp(PanObject):
         ip (str): The IP address
         hw_address (str): The MAC address for the static ARP
     """
-    XPATH = "/arp"
-    SUFFIX = ENTRY
-    NAME = "ip"
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("hw-address"),
-        )
+    def _setup(self):
+        super(EthernetInterfaceArp, self)._setup()
+
+        # xpaths
+        self._xpaths.add_profile(value='/layer3/arp')
 
 
 class Layer3Parameters(object):
@@ -579,20 +634,21 @@ class Layer3Subinterface(Layer3Parameters, VsysImportMixin, Subinterface):
     """Ethernet or Aggregate Subinterface in Layer 3 mode.
 
     Args:
+        tag (int): Tag for the interface, aka vlan id
         ip (tuple): Interface IPv4 addresses
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
         adjust_tcp_mss (bool): Adjust TCP MSS
         netflow_profile (NetflowProfile): Netflow profile
-
     """
     XPATH = "/layer3/units"
     XPATH_IMPORT = "/network/interface"
     SUFFIX = ENTRY
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.Arp",
+        "network.SubinterfaceArp",
+        "network.ManagementProfile",
     )
 
     def set_zone(self, zone_name, mode="layer3", refresh=False, update=False, running_config=False):
@@ -634,22 +690,10 @@ class PhysicalInterface(Interface):
             raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
         super(PhysicalInterface, self).__init__(*args, **kwargs)
 
-    def element(self):
-        mode = None
-        if self.children and self.mode is not None:
-            mode = self.mode
-            self.mode = None
-        elif not self.children and self.mode is None:
-            self.mode = "tap"
-        element = super(PhysicalInterface, self).element()
-        if self.children and mode is not None:
-            self.mode = mode
-        return element
-
     @classmethod
     def variables(cls):
         return (
-            Var("(layer3|layer2|virtual-wire|tap|ha|decrypt-mirror|aggregate-group)", "mode", default="layer3"),
+            Var("(layer3|layer2|virtual-wire|tap|ha|decrypt-mirror|aggregate-group)", "mode", default="layer3", xmldefault="tap"),
         ) + super(PhysicalInterface, PhysicalInterface).variables()
 
     @staticmethod
@@ -691,7 +735,8 @@ class EthernetInterface(Layer2Parameters, Layer3Parameters, VsysImportMixin, Phy
         "network.Layer3Subinterface",
         "network.Layer2Subinterface",
         "network.IPv6Address",
-        "network.Arp",
+        "network.EthernetInterfaceArp",
+        "network.ManagementProfile",
     )
 
     @classmethod
@@ -729,6 +774,7 @@ class AggregateInterface(Layer2Parameters, Layer3Parameters, VsysImportMixin, Ph
         "network.Layer2Subinterface",
         "network.IPv6Address",
         "network.Arp",
+        "network.ManagementProfile",
     )
 
 
@@ -748,6 +794,7 @@ class VlanInterface(Layer3Parameters, VsysImportMixin, Interface):
     CHILDTYPES = (
         "network.IPv6Address",
         "network.Arp",
+        "network.ManagementProfile",
     )
 
 
@@ -767,6 +814,7 @@ class LoopbackInterface(Layer3Parameters, VsysImportMixin, Interface):
     CHILDTYPES = (
         "network.IPv6Address",
         "network.Arp",
+        "network.ManagementProfile",
     )
 
 
@@ -786,36 +834,37 @@ class TunnelInterface(Layer3Parameters, VsysImportMixin, Interface):
     CHILDTYPES = (
         "network.IPv6Address",
         "network.Arp",
+        "network.ManagementProfile",
     )
 
 
-class StaticRoute(PanObject):
-    """Static Route
-
-    Add to a :class:`pandevice.network.VirtualRouter` instance.
-
-    Args:
-        destination (str): Destination network (eg. 10.0.5.0/24) Use 0.0.0.0/0 for default route.
-        nexthop_type (str): ip-address or discard
-        nexthop (str): Next hop IP address
-        interface (str): Next hop interface
-        admin-dist (str): Administrative distance
-        metric (int): Metric (Default: 10)
-
-    """
-    XPATH = "/routing-table/ip/static-route"
+class StaticRoute(VersionedPanObject):
     SUFFIX = ENTRY
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("destination"),
-            Var("nexthop/(ip-address|discard)", "nexthop_type", default="ip-address"),
-            Var("nexthop/ip-address", "nexthop"),
-            Var("interface"),
-            Var("admin-dist"),
-            Var("metric", vartype="int", default=10, xmldefault=10),
-        )
+    def _setup_xpaths(self):
+        self._xpaths.add_profile(value='/routing-table/ip/static-route')
+
+    def _setup(self):
+        self._setup_xpaths()
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'destination', path='destination'))
+        params.append(VersionedParamPath(
+            'nexthop_type', default='ip-address',
+            values=['discard', 'ip-address'],
+            path='nexthop/{nexthop_type}'))
+        params.append(VersionedParamPath(
+            'nexthop', path='nexthop/ip-address'))
+        params.append(VersionedParamPath(
+            'interface', path='interface'))
+        params.append(VersionedParamPath(
+            'admin_dist', path='admin-dist'))
+        params.append(VersionedParamPath(
+            'metric', default=10, vartype='int', path='metric'))
+
+        self._params = tuple(params)
 
 
 class StaticRouteV6(StaticRoute):
@@ -830,9 +879,9 @@ class StaticRouteV6(StaticRoute):
         interface (str): Next hop interface
         admin-dist (str): Administrative distance
         metric (int): Metric (Default: 10)
-
     """
-    XPATH = "/routing-table/ipv6/static-route"
+    def _setup_xpaths(self):
+        self._xpaths.add_profile(value='/routing-table/ipv6/static-route')
 
 
 class VirtualRouter(VsysImportMixin, PanObject):
@@ -867,24 +916,51 @@ class VirtualRouter(VsysImportMixin, PanObject):
         )
 
 
-class ManagementProfile(PanObject):
+class ManagementProfile(VersionedPanObject):
+    """Interface management provile.
+
+    Add to any of the following interfaces:
+
+    * Layer3Subinterface
+    * EthernetInterface
+    * AggregateInterface
+    * VlanInterface
+    * LoopbackInterface
+    * TunnelInterface
+
+    Args:
+        ping (bool): Enable ping
+        telnet (bool): Enable telnet
+        ssh (bool): Enable ssh
+        http (bool): Enable http
+        http_ocsp (bool): Enable http-ocsp
+        https (bool): Enable https
+        snmp (bool): Enable snmp
+        response_pages (bool): Enable response pages
+        userid_service (bool): Enable userid service
+        userid_syslog_listener_ssl (bool): Enable userid syslog listener ssl
+        userid_syslog_listener_udp (bool): Enable userid syslog listener udp
+        permitted_ip (list): The list of permitted IP addresses
+
+    """
     ROOT = Root.DEVICE
-    XPATH = '/network/profiles/interface-management-profile'
     SUFFIX = ENTRY
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var('ping', vartype='bool'),
-            Var('telnet', vartype='bool'),
-            Var('ssh', vartype='bool'),
-            Var('http', vartype='bool'),
-            Var('http-ocsp', vartype='bool'),
-            Var('https', vartype='bool'),
-            Var('snmp', vartype='bool'),
-            Var('response-pages', vartype='bool'),
-            Var('userid-service', vartype='bool'),
-            Var('userid-syslog-listener-ssl', vartype='bool'),
-            Var('userid-syslog-listener-udp', vartype='bool'),
-            Var('permitted-ip', vartype='entry'),
-        )
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(
+            value='/network/profiles/interface-management-profile')
+
+        # params
+        params = []
+
+        yesnos = ('ping', 'telnet', 'ssh', 'http', 'http-ocsp', 'https', 
+                  'snmp', 'response-pages', 'userid-service',
+                  'userid-syslog-listener-ssl', 'userid-syslog-listener-udp')
+        for yn in yesnos:
+            params.append(VersionedParamPath(
+                yn, path=yn, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'permitted-ip', path='permitted-ip', vartype='entry'))
+
+        self._params = tuple(params)

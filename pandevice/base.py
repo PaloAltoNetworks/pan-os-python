@@ -19,12 +19,14 @@
 
 """Base object classes for inheritence by other classes"""
 
-import re
-import xml.etree.ElementTree as ET
-import logging
-import inspect
-import time
 import copy
+import inspect
+import itertools
+import logging
+import re
+import sys
+import time
+import xml.etree.ElementTree as ET
 
 import pandevice
 from pandevice import yesno
@@ -55,7 +57,10 @@ class PanObject(object):
         name (str): The name of this object
 
     Attributes:
+        uid (str): The unique identifier for this object if it has one.  If it
+            doesn't have one, then this returns the class name.
         vsys (str): The vsys id for this object (eg. 'vsys2') or 'shared' if no vsys
+
     """
     XPATH = ""
     SUFFIX = None
@@ -131,8 +136,11 @@ class PanObject(object):
 
     @property
     def uid(self):
-        '''Returns the unique identifier of this object.'''
-        return getattr(self, self.NAME)
+        """Returns the unique identifier of this object as a string."""
+        if self.NAME is not None:
+            return getattr(self, self.NAME)
+        else:
+            return self.__class__.__name__
 
     def add(self, child):
         """Add a child node to this node
@@ -195,6 +203,7 @@ class PanObject(object):
 
         Args:
             child (PanObject): Child to remove
+
         """
         self.children.remove(child)
         child.parent = None
@@ -212,6 +221,7 @@ class PanObject(object):
 
         Returns:
             PanObject: The removed node, otherwise None
+
         """
         # Get the index of the first matching child
         index = self.find_index(name, cls)
@@ -228,6 +238,7 @@ class PanObject(object):
 
         Returns:
             list: List of PanObjects that were removed
+
         """
         if not self.children:
             return
@@ -307,7 +318,8 @@ class PanObject(object):
         """Construct an ElementTree for this PanObject and all its children
 
         Returns:
-            xml.etree.ElementTree: An ElementTree instance representing the xml form of this object and its children
+            xml.etree.ElementTree: An ElementTree instance representing the
+                xml form of this object and its children
 
         """
         root = self._root_element()
@@ -408,11 +420,11 @@ class PanObject(object):
                 pass
             else:
                 nextelement.text = str(value)
-        pandevice.xml_combine(root, self._subelements())
+        self.xml_merge(root, self._subelements())
         return root
 
     def element_str(self):
-        """The XML representation of this PanObject and all its children
+        """The XML representation of this PanObject and all its children.
 
         Returns:
             str: XML form of this object and its children
@@ -428,36 +440,33 @@ class PanObject(object):
             root.text = self.uid
             return root
         elif self.SUFFIX is None:
-            tag = self.XPATH.rsplit('/', 1)[-1] # Get right of last / in xpath
+            # Get right of last / in xpath
+            tag = self.XPATH.rsplit('/', 1)[-1]
             return ET.Element(tag)
 
+        raise ValueError('No suffix or XPATH defined for {0}'.format(
+                         self.__class__.__name__))
+
     def _subelements(self):
+        """Generator function to turn children into XML objects.
 
-        def _next_xpath_level(child, element, xpath_sections):
-            """Recursive nested method to handle long xpaths"""
-            if not xpath_sections:
-                element.append(child.element())
-                return
-            next_section = xpath_sections[0]
-            next_element = element.find(next_section)
-            if next_element is None:
-                next_element = ET.SubElement(element, xpath_sections[0])
-            _next_xpath_level(child,
-                              next_element,
-                              xpath_sections[1:])
-            return
+        Yields:
+            xml.etree.ElementTree: The next child as an ``ElementTree`` object.
 
-        elements = ET.Element('root')
+        """
         for child in self.children:
-            # Get the extra layers in the next node's xpath
-            xpath_sections = type(child).XPATH.split('/')[1:]
-            # If no suffix, remove the last xpath section
-            # because it will be part of the element
-            if type(child).SUFFIX is None:
+            root = self._root_element()
+            # Paths have a leading slash to get rid of
+            xpath_sections = child.XPATH.split('/')[1:]
+            if child.SUFFIX is None:
+                # If not suffix, remove the last xpath section
+                # because it will be part of the element
                 xpath_sections = xpath_sections[:-1]
-            _next_xpath_level(child, elements, xpath_sections)
-        # Return a list of subelements
-        return [element for element in elements]
+            e = root
+            for path in xpath_sections:
+                e = ET.SubElement(e, path)
+            e.append(child.element())
+            yield root
 
     def _check_child_methods(self, method):
         if method in self.CHILDMETHODS:
@@ -537,6 +546,39 @@ class PanObject(object):
         logger.debug(device.id + ": update called on %s object \"%s\" and variable \"%s\"" %
                      (type(self), self.uid, variable))
         device.set_config_changed()
+        path, value, var_path = self._get_param_specific_info(variable)
+        xpath = '{0}/{1}'.format(self.xpath(), path)
+
+        # Perform the operation
+        if value is None:
+            device.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
+        else:
+            element_tag = path.split("/")[-1]
+            element = ET.Element(element_tag)
+            if var_path.vartype == "member":
+                for member in pandevice.string_or_list(value):
+                    ET.SubElement(element, 'member').text = str(member)
+            else:
+                # Regular text variables
+                element.text = value
+            device.xapi.edit(xpath, ET.tostring(element),
+                             retry_on_peer=self.HA_SYNC)
+
+    def _get_param_specific_info(self, variable):
+        """Gets a tuple of info for the given parameter.
+
+        This is to aid in things like updates or refreshes of a specific
+        parameter attached to this PanObject / VersionedPanObject.
+
+        Returns:
+            A three element tuple of the variable's xpath (str), the value of
+            the variable, and the full ``VarPath`` or ``ParamPath`` object that
+            is responsible for handling this variable.
+
+        Raises:
+            PanDeviceError: If the variable specified does not exist.
+
+        """
         variables = type(self).variables()
         value = getattr(self, variable)
         # Get the requested variable from the class' variables tuple
@@ -573,210 +615,199 @@ class PanObject(object):
             else:
                 # Not an 'entry' variable
                 varpath = re.sub(regex, getattr(self, matchedvar.variable), varpath)
-        if value is None:
-            device.xapi.delete(self.xpath() + "/" + varpath, retry_on_peer=self.HA_SYNC)
-        else:
-            element_tag = varpath.split("/")[-1]
-            element = ET.Element(element_tag)
-            if var.vartype == "member":
-                for member in pandevice.string_or_list(value):
-                    ET.SubElement(element, 'member').text = str(member)
-                xpath = self.xpath() + "/" + varpath
-            else:
-                # Regular text variables
-                element.text = value
-                xpath = self.xpath() + "/" + varpath
-            device.xapi.edit(xpath, ET.tostring(element), retry_on_peer=self.HA_SYNC)
 
-    def refresh(self, running_config=False, xml=None, refresh_children=True, exceptions=True):
-        """Refresh all variables and child objects from the device
+        return (varpath, value, var)
+
+    def refresh(self, running_config=False, xml=None,
+                refresh_children=True, exceptions=True):
+        """Refresh all variables and child objects from the device.
 
         Args:
-            running_config (bool): Set to True to refresh from the running configuration (Default: False)
-            xml (str or xml.etree.ElementTree): XML from a configuration to use instead of refreshing from a live device
-            refresh_children (bool): Set to False to prevent refresh of child objects (Default: True)
-            exceptions (bool): Set to False to prevent exceptions on failure (Default: True)
+            running_config (bool): Set to True to refresh from the running
+                configuration (Default: False)
+            xml (xml.etree.ElementTree): XML from a configuration to use
+                instead of refreshing from a live device
+            refresh_children (bool): Set to False to prevent refresh of child
+                objects (Default: True)
+            exceptions (bool): Set to False to prevent exceptions on failure
+                (Default: True)
 
         """
-        # Get the root of the xml to parse
+        # Either retrieve the xml or use what is passed in
         if xml is None:
-            device = self.nearest_pandevice()
-            logger.debug(device.id + ": refresh called on %s object \"%s\"" % (type(self), self.uid))
-            if running_config:
-                api_action = device.xapi.show
-            else:
-                api_action = device.xapi.get
-            try:
-                root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
-            except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
-                if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=device)
-                else:
-                    return
-            # Determine the first element to look for in the XML
-            if self.SUFFIX is None:
-                lasttag = self.XPATH.rsplit("/", 1)[-1]
-            else:
-                lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
-            obj = root.find("result/" + lasttag)
-            if obj is None:
-                if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=device)
-                else:
-                    return
+            xml = self._refresh_xml(running_config, exceptions)
         else:
-            # Use the xml that was passed in
-            logger.debug("refresh called using xml on %s object \"%s\"" % (type(self), self.uid))
-            obj = xml
-        # Refresh each variable
-        variables = type(self)._parse_xml(obj)
-        for var, value in variables.iteritems():
-            setattr(self, var, value)
-        # Refresh sub-objects
+            logger.debug('refresh called using xml on {0} object "{1}"'.format(
+                type(self), self.uid))
+
+        if xml is None:
+            return
+
+        # Refresh this object
+        if hasattr(self, 'parse_xml'):
+            # Versioned object
+            self.parse_xml(xml)
+        else:
+            # Classic object
+            variables = type(self)._parse_xml(xml)
+            for var, value in variables.iteritems():
+                setattr(self, var, value)
+
+        # Refresh children objects if requested
         if refresh_children:
-            self._refresh_children(xml=obj)
+            self._refresh_children(xml=xml)
 
-    def refresh_variable(self, variable, running_config=False, xml=None, exceptions=False):
-        """Refresh a single variable of an object
+    def refresh_variable(self, variable,
+                         running_config=False, exceptions=False):
+        """Refresh a single variable of an object.
 
-        Don't use for variables with replacements or selections in path
+        **Don't use for variables with replacements or selections in path.**
 
         Args:
-            variable (str): Variables name to update
-            running_config (bool): Set to True to refresh from the running configuration (Default: False)
-            xml (str or xml.etree.ElementTree): XML from a configuration to use instead of refreshing from a live device
-            exceptions (bool): Set to False to prevent exceptions on failure (Default: True)
+            variable (str): Variable name to refresh.
+            running_config (bool): Set to True to refresh from the running
+                configuration (Default: False)
+            exceptions (bool): Set to False to prevent exceptions on failure
+                (Default: True)
 
         Returns:
-            New value of the refreshed variable
+            New value of the refreshed variable.
+
+        Raises:
+            PanObjectMissing: When the object this variable is connected to
+                does not exist.
 
         """
-        # Get the root of the xml to parse
-        variables = type(self).variables()
-        # Get the requested variable from the class' variables tuple
-        var = next((x for x in variables if x.variable == variable), None)
-        if var is None:
-            raise err.PanDeviceError("Variable %s does not exist in variable tuple" % variable)
-        if xml is None:
-            device = self.nearest_pandevice()
-            logger.debug(device.id + ": refresh_variable called on %s object \"%s\" with variable %s" % (type(self), self.uid, variable))
-            if running_config:
-                api_action = device.xapi.show
-            else:
-                api_action = device.xapi.get
-            try:
-                root = api_action(self.xpath() + "/" + var.path, retry_on_peer=self.HA_SYNC)
-            except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
-                if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=device)
-                else:
-                    setattr(self, variable, None)
-                    return
-            # Determine the first element to look for in the XML
-            lasttag = var.path.rsplit("/", 1)[-1]
-            obj = root.find("result/" + lasttag)
-            if obj is None:
-                if exceptions:
-                    raise err.PanObjectMissing("Object doesn't exist: %s" % self.xpath(), pan_device=device)
-                else:
-                    if var.vartype in ("member", "entry"):
-                        setattr(self, variable, [])
-                    else:
-                        setattr(self, variable, None)
-                    return
+        device = self.nearest_pandevice()
+        msg = '{0}: refresh_variable({1}) called on {2} object "{3}"'
+        logger.debug(msg.format(device.id, variable,
+                                self.__class__.__name__, self.uid))
+
+        info = self._get_param_specific_info(variable)
+        path = info[0]
+        var_path = info[2]
+        xpath = '{0}/{1}'.format(self.xpath(), path)
+        err_msg = "Object doesn't exist: {0}".format(xpath)
+        setattr(self, variable,
+                [] if var_path.vartype in ('member', 'entry') else None)
+
+        # Query to get the variable's XML from the device
+        if running_config:
+            api_action = device.xapi.show
         else:
-            # Use the xml that was passed in
-            logger.debug("refresh_variable called using xml on %s object \"%s\" with variable %s" % (type(self), self.uid, variable))
-            obj = xml
-        # Rebuild the elements that are lost by refreshing the variable directly
-        sections = var.path.split("/")[:-1]
-        root = ET.Element("root")
-        next_element = root
-        for section in sections:
-            next_element = ET.SubElement(next_element, section)
-        next_element.append(obj)
-        # Refresh the requested variable
-        variables = type(self)._parse_xml(root)
-        for var, value in variables.iteritems():
-            if var == variable:
-                setattr(self, var, value)
-        return getattr(self, variable, None)
+            api_action = device.xapi.get
+        try:
+            root = api_action(xpath, retry_on_peer=self.HA_SYNC)
+        except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
+            if exceptions:
+                raise err.PanObjectMissing(err_msg, pan_device=device)
+            return
+
+        # Determine the first element to look for in the XML
+        lasttag = path.rsplit("/", 1)[-1]
+        obj = root.find("result/" + lasttag)
+        if obj is None:
+            if exceptions:
+                raise err.PanObjectMissing(err_msg, pan_device=device)
+            return
+
+        if hasattr(var_path, 'parse_value_from_xml_last_tag'):
+            # Versioned class
+            settings = {}
+            var_path.parse_value_from_xml_last_tag(obj, settings)
+            setattr(self, variable, settings.get(variable))
+        else:
+            # Classic class
+            # Rebuild the elements that are lost by refreshing the
+            # variable directly
+            sections = path.split("/")[:-1]
+            root = ET.Element("root")
+            next_element = root
+            for section in sections:
+                next_element = ET.SubElement(next_element, section)
+            next_element.append(obj)
+            # Refresh the requested variable
+            variables = type(self)._parse_xml(root)
+            for var, value in variables.iteritems():
+                if var == variable:
+                    setattr(self, var, value)
+
+        return getattr(self, variable)
 
     def _refresh_children(self, running_config=False, xml=None):
-        # Get the root of the xml to parse
+        # Retrieve the xml if we weren't given it
         if xml is None:
-            device = self.nearest_pandevice()
-            if running_config:
-                api_action = device.xapi.show
-            else:
-                api_action = device.xapi.get
-            root = api_action(self.xpath(), retry_on_peer=self.HA_SYNC)
-            # Determine the first element to look for in the XML
-            if self.SUFFIX is None:
-                lasttag = self.XPATH.rsplit("/", 1)[-1]
-            else:
-                lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
-            obj = root.find("result/" + lasttag)
-            if obj is None:
-                raise err.PanDeviceError("Object no longer exists!")
-        else:
-            # Use the xml that was passed in
-            obj = xml
+            xml = self._refresh_xml(running_config, True)
+
+        if xml is None:
+            return
+
         # Remove all the current child instances first
         self.removeall()
+
         # Check for children in the remaining XML
-        for childtypestring in self.CHILDTYPES:
-            childtype = getattr(getattr(pandevice, childtypestring.split(".")[0]),
-                                childtypestring.split(".")[-1])
-            childroot = obj.find(childtype.XPATH[1:])
+        for child_type_string in self.CHILDTYPES:
+            module_name, class_name = child_type_string.split('.')
+            child = getattr(getattr(pandevice, module_name), class_name)()
+
+            # Versioned objects need a PanDevice to get the version from, so
+            # set the child's parent before accessing XPATH.
+            child.parent = self
+
+            childroot = xml.find(child.XPATH[1:])
             if childroot is not None:
-                l = childtype.refreshall_from_xml(childroot)
+                l = child.refreshall_from_xml(childroot)
                 self.extend(l)
+
         return self.children
 
-    def refresh_xml(self, running_config=False, refresh_children=True, exceptions=True):
+    def _refresh_xml(self, running_config, exceptions):
+        """Get the XML for a single PanObject."""
         # Get the root of the xml to parse
         device = self.nearest_pandevice()
-        logger.debug(device.id + ": refresh_xml called on %s object \"%s\"" % (type(self), self.uid))
+        msg = '{0}: refreshing xml on {1} object {2}'.format(
+            device.id, type(self), self.uid)
+        logger.debug(msg)
         if running_config:
             api_action = device.xapi.show
         else:
             api_action = device.xapi.get
         xpath = self.xpath()
+        err_msg = "Object doesn't exist: {0}".format(xpath)
+
+        # Query the live device
         try:
             root = api_action(xpath, retry_on_peer=self.HA_SYNC)
         except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
             if exceptions:
-                raise err.PanObjectMissing("Object doesn't exist: %s" % xpath,
-                                           pan_device=device)
+                raise err.PanObjectMissing(err_msg, pan_device=device)
             else:
                 return
+
         # Determine the first element to look for in the XML
         if self.SUFFIX is None:
             lasttag = self.XPATH.rsplit("/", 1)[-1]
         else:
             lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
-        obj = root.find("result/" + lasttag)
-        if obj is None:
-            if exceptions:
-                raise err.PanObjectMissing("Object doesn't exist: %s" % xpath,
-                                           pan_device=device)
-            else:
-                return
-        self.refresh(xml=obj, refresh_children=refresh_children, exceptions=exceptions)
-        return obj
+        elm = root.find("result/" + lasttag)
+
+        if elm is None and exceptions:
+            raise err.PanObjectMissing(err_msg, pan_device=device)
+
+        return elm
 
     def nearest_pandevice(self):
-        """The nearest :class:`pandevice.base.PanDevice` object
+        """The nearest :class:`pandevice.base.PanDevice` object to.
 
         This method is used to determine the device to apply this object.
 
-        Raises:
-            PanDeviceNotSet: There is no PanDevice object in the tree
-
         Returns:
             PanDevice: The PanDevice object closest to this object in
-                the configuration tree
+                the configuration tree.
+
+        Raises:
+            PanDeviceNotSet: There is no PanDevice object in the tree.
+
         """
         return self._nearest_pandevice()
 
@@ -786,15 +817,16 @@ class PanObject(object):
         raise err.PanDeviceNotSet("No PanDevice set for object tree")
 
     def panorama(self):
-        """The nearest :class:`pandevice.panorama.Panorama` object
+        """The nearest :class:`pandevice.panorama.Panorama` object.
 
-        This method is used to determine the device to apply this object
-
-        Raises:
-            PanDeviceNotSet: There is no Panorama object in the tree
+        This method is used to determine the device to apply this object to.
 
         Returns:
-            Panorama: The Panorama object closest to this object in the configuration tree
+            Panorama: The Panorama object closest to this object in the
+                configuration tree
+
+        Raises:
+            PanDeviceNotSet: There is no Panorama object in the tree.
 
         """
         if self.parent is not None:
@@ -802,13 +834,15 @@ class PanObject(object):
         raise err.PanDeviceNotSet("No Panorama set for object tree")
 
     def devicegroup(self):
-        """The nearest :class:`pandevice.panorama.DeviceGroup` object
+        """The nearest :class:`pandevice.panorama.DeviceGroup` object.
 
-        This method is used to determine the device to apply this object
+        This method is used to determine the device to apply this object to.
 
         Returns:
-            DeviceGroup: The DeviceGroup object closest to this object in the configuration tree,
-            or None if there is no DeviceGroup in the path to this node.
+            DeviceGroup: The DeviceGroup object closest to this object in the
+            configuration tree, or None if there is no DeviceGroup in the path
+            to this node.
+
         """
         if self.parent is not None:
             return self.parent.devicegroup()
@@ -946,23 +980,29 @@ class PanObject(object):
             obj._check_child_methods("apply")
 
     @classmethod
-    def refreshall(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
-        """Factory method to instantiate class from live device
+    def refreshall(cls, parent, running_config=False, add=True,
+                   exceptions=False, name_only=False):
+        """Factory method to instantiate class from live device.
 
-        This method is a factory for the class. It takes an firewall or Panorama
-        and gets the xml config from the live device. It generates instances of this
-        class for each item this class represents in the xml config. For example,
-        if the class is AddressObject and there are 5 address objects on the
-        firewall, then this method will generate 5 instances of the class AddressObject.
+        This method is a factory for the class. It takes an firewall or
+        Panorama and gets the xml config from the live device. It generates
+        instances of this class for each item this class represents in the xml
+        config. For example, if the class is AddressObject and there are 5
+        address objects on the firewall, then this method will generate 5
+        instances of the class AddressObject.
 
         Args:
-            parent (PanObject): A PanDevice, or a PanObject subclass with a PanDevice as its parental root
-            running_config (bool): False for candidate config, True for running config
+            parent (PanObject): A PanDevice, or a PanObject subclass with a
+                PanDevice as its parental root.
+            running_config (bool): False for candidate config, True for running
+                config.
             add (bool): Update the objects of this type in pandevice with
-                the refreshed values
-            exceptions (bool): If False, exceptions are ignored if the xpath can't be found
-            name_only (bool): If True, refresh only the name of the object, but not its variables
-                This results in a smaller response to the API call when only the object name is needed.
+                the refreshed values.
+            exceptions (bool): If False, exceptions are ignored if the xpath
+                can't be found.
+            name_only (bool): If True, refresh only the name of the object, but
+                not its variables.  This results in a smaller response to the
+                API call when only the object name is needed.
 
         Returns:
             list: created instances of class
@@ -976,7 +1016,6 @@ class PanObject(object):
             raise ValueError("can't get name_only from running_config")
         if name_only and cls.SUFFIX != ENTRY:
             raise ValueError("name_only is invalid, can only be used on entry type objects")
-        # TODO(gfreeman): can this be simplified?
         if isinstance(parent, PanDevice):
             device = parent
             parent_xpath = parent.xpath_root(cls.ROOT)
@@ -984,13 +1023,18 @@ class PanObject(object):
             device = parent.nearest_pandevice()
             parent_xpath = parent.xpath()
         logger.debug(device.id + ": refreshall called on %s type" % cls)
-        if running_config:
-            api_action = device.xapi.show
-        else:
-            api_action = device.xapi.get
-        xpath = parent_xpath + cls.XPATH
+
+        # Versioned objects need a PanDevice to get the version from, so
+        # set the child's parent before accessing XPATH.
+        class_instance = cls()
+        class_instance.parent = parent
+
+        # Set api_action and xpath
+        api_action = device.xapi.show if running_config else device.xapi.get
+        xpath = parent_xpath + class_instance.XPATH
         if name_only:
             xpath = xpath + "/entry/@name"
+
         try:
             root = api_action(xpath, retry_on_peer=cls.HA_SYNC)
         except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
@@ -1003,22 +1047,24 @@ class PanObject(object):
         if name_only:
             obj = root.find("result")
         else:
-            lasttag = cls.XPATH.rsplit("/", 1)[-1]
+            lasttag = class_instance.XPATH.rsplit("/", 1)[-1]
             obj = root.find("result/" + lasttag)
         if obj is None:
             return []
+
         # Refresh each object
-        instances = cls.refreshall_from_xml(obj)
+        instances = class_instance.refreshall_from_xml(obj)
+
         if add:
             # Remove current children of this type from parent
             parent.removeall(cls=cls)
             # Add the new children that were just refreshed from the device
             parent.extend(instances)
+
         return instances
 
-    @classmethod
-    def refreshall_from_xml(cls, xml, refresh_children=True, variables=None):
-        """Factory method to instantiate class from firewall config
+    def refreshall_from_xml(self, xml, refresh_children=True, variables=None):
+        """Factory method to instantiate class from firewall config.
 
         This method is a factory for the class. It takes an xml config
         from a firewall and generates instances of this class for each item
@@ -1027,41 +1073,67 @@ class PanObject(object):
         this method will generate 5 instances of the class AddressObject.
 
         Args:
-            xml (Element): A section of XML configuration from a firewall or Panorama
-                Should not contain response or result tags
+            xml (xml.etree.ElementTree): A section of XML configuration from a
+                firewall or Panorama.  It should not contain the response or
+                result tags.
+            refresh_children (bool): Refresh children objects or not.
+            variables (iterable): A list or tuple of the variables to parse
+                from the XML.  Note that this is only used when invoked
+                against classes not derived from ``VersionedPanObject``.
 
         Returns:
             list: created instances of class
+
         """
         instances = []
-        if cls.SUFFIX is None:
+
+        # Get the objects from the xml at this level
+        if self.SUFFIX is None:
             objects = [xml]
         else:
-            lasttag = re.match(r'^/(\w*?)\[', cls.SUFFIX).group(1)
+            lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
             objects = xml.findall(lasttag)
+
         # Refresh each object
         for obj in objects:
-            objvars = cls._parse_xml(obj, variables=variables)
-            if cls.SUFFIX is not None:
-                name = obj.get('name')
-                if name is not None:
-                    objvars[cls.NAME] = name
             # Create the object instance
-            instance = cls(variables=variables, **objvars)
+            if hasattr(self, 'parse_xml'):
+                # Versioned object handling
+                instance = type(self)()
+                instance.parent = self.parent
+                instance.parse_xml(obj)
+            else:
+                # Classic object handling
+                objvars = self._parse_xml(obj, variables=variables)
+                if self.SUFFIX is not None:
+                    name = obj.get('name')
+                    if name is not None:
+                        objvars[self.NAME] = name
+                instance = type(self)(variables=variables, **objvars)
+
+            # Add this instance to the list
             instances.append(instance)
+
             # Refresh the children of these instances
             if refresh_children:
-                for childtypestring in cls.CHILDTYPES:
-                    childtype = getattr(getattr(pandevice, childtypestring.split(".")[0]),
-                                        childtypestring.split(".")[-1])
-                    childroot = obj.find(childtype.XPATH[1:])
-                    if childroot is not None:
-                        l = childtype.refreshall_from_xml(childroot)
-                        instance.extend(l)
+                instance._refresh_children(xml=obj)
+
         return instances
 
     @classmethod
     def _parse_xml(cls, xml, variables=None):
+        """Classic class method to parse XML to variables.
+
+        Args:
+            xml (xml.etree.ElementTree): the xml to retrieve variables from.
+            variables (list): a list of ``VarPath`` instances to parse
+                from the given XML.  If this is not specified, then all of the
+                variables that this ``PanObject`` contains are parsed.
+
+        Returns:
+            A dict of ``VarPath`` objects.
+
+        """
         vardict = {}
         # Parse each variable
         if variables:
@@ -1192,6 +1264,645 @@ class PanObject(object):
                 if update: obj.update(reference_var)
             return obj
 
+    def xml_merge(self, root, elements):
+        """Merges other elements into the root element.
+
+        This differs from xml_combine in a few important ways:
+
+        1) The base tag of root is valid
+        2) The root element must be a valid ElementTree object
+        3) Individual Nones in the elements iterable are ignored
+
+        Args:
+            root (xml.etree.ElementTree): The root element.
+            elements (iterable): Other xml.etree.ElementTree instances (or
+                None) that should be merged into ``root`` as well.
+
+        Returns:
+            xml.etree.ElementTree: The final merged root element.
+
+        """
+        for e in elements:
+            if e is not None:
+                self._merge_elements(root, e)
+
+        return root
+
+    def _merge_elements(self, root, elm):
+        class dicthash(dict):
+            def __hash__(self):
+                return hash(tuple(sorted(self.items())))
+
+        # Copy text only if it isn't set already
+        if root.tag == elm.tag and root.text is None:
+            root.text = elm.text
+
+        mapping = dict(((e.tag, dicthash(e.attrib)), e) for e in root)
+        for e in elm:
+            hashed_attribs = dicthash(e.attrib)
+            if len(e) == 0:
+                try:
+                    # Copy text only if it isn't set already
+                    if mapping[e.tag, hashed_attribs].text is None:
+                        # Tag doesn't have text, but another element does
+                        mapping[e.tag, hashed_attribs].text = e.text
+                    if (mapping[e.tag, hashed_attribs].tag == e.tag
+                            and mapping[e.tag, hashed_attribs].text
+                            and e.text
+                            and mapping[e.tag, hashed_attribs].text != e.text):
+                        # Member vartypes, so append this element
+                        raise KeyError
+                except KeyError:
+                    # Add new element to the mapping
+                    mapping[e.tag, hashed_attribs] = e
+                    root.append(e)
+            else:
+                try:
+                    # Merge subelements together
+                    self._merge_elements(mapping[e.tag, hashed_attribs], e)
+                except KeyError:
+                    # Add new element to the mapping
+                    mapping[e.tag, hashed_attribs] = e
+                    root.append(e)
+
+    def about(self, parameter=None):
+        """Return information about this object or the given parameter.
+
+        If no parameter is specified, then invoking this function is similar to
+        doing `vars(obj)`:  it will return a dict of key/value pairs, with the
+        difference being that the keys are all specifically parameters attached
+        to this `VersionedPanObject`, and the values being what the current
+        settings are for those keys.
+
+        If a parameter is specified and this object is connected to a
+        parent PanDevice, then version specific information on the parameter
+        is returned.
+
+        If a parameter is specified but this object is not connected to a
+        PanDevice instance, then all versioning information for the given
+        parameter is returned.
+
+        Args:
+            parameter (str): The parameter to get info for.
+
+        Returns:
+            dict: An informational dict about either the object as a whole
+            or the specified parameter.
+
+        Raises:
+            AttributeError: If a parameter is specified that does not exist
+                on this object.
+
+        """
+        if parameter is None:
+            return self._about_object()
+        else:
+            return self._about_parameter(parameter)
+
+    def _about_object(self):
+        ans = {}
+
+        # Get the variables for this object
+        for v in type(self).variables():
+            ans[v.variable] = getattr(self, v.variable)
+
+        # Add the object's uid if applicable
+        if self.NAME is not None:
+            ans[self.NAME] = self.uid
+
+        return ans
+
+    def _about_parameter(self, parameter):
+        parameter = str(parameter)
+        ans = {
+            'Parameter': parameter,
+            'Current Value': getattr(self, parameter, None),
+        }
+
+        for v in type(self).variables():
+            if parameter == v.variable:
+                ans['About'] = v.about()
+                break
+        else:
+            if parameter == self.NAME:
+                ans['About'] = "This is the object's unique identifier"
+            else:
+                raise AttributeError(parameter)
+
+        return ans
+
+
+class VersioningSupport(object):
+    """A class that supports getting version specific values of something.
+
+    Versions of the value are added in ascending order using ``add_profile()``,
+    then can be retrieved by using ``_get_versioned_value()``.  You can specify
+    how the retrieved value is cast by overriding ``_cast_version_value()``.
+    """
+    def __init__(self):
+        self.__profiles = []
+
+    def add_profile(self, version=None, value=None):
+        """Add support for version ``version`` that returns ``value``.
+
+        **Version support must be added in ascending order.**
+
+        Args:
+            version (str): The version to add support for.  If this is
+                unspecified, then the version defaults to '0.0.0'.
+            value: The value to be retrieved for this version.
+
+        Raises:
+            ValueError: If the given version is lower than the most recent
+                version.
+
+        """
+        # TODO(gfreeman): use pandevice versioning
+        if version is None:
+            version_tuple = (0, 0, 0)
+        else:
+            version_tuple = tuple(int(x) for x in
+                                  version.split('-')[0].split('.'))
+            if len(version_tuple) != 3:
+                msg = '{0} profile version {1} not formatted as X.Y.Z'
+                raise ValueError(msg.format(self.param, version))
+
+        # Make sure that this new profile is not a version lower
+        if self.__profiles:
+            if self.__profiles[0][0] > version_tuple:
+                msg = 'Cannot add version {0} support after version {1}'
+                raise ValueError(msg.format(
+                    version_tuple, self.__profiles[0][0]))
+
+        # Add the profile
+        self.__profiles.insert(0, (version_tuple, value))
+
+        # Return self for chained invocations
+        return self
+
+    def _get_versioned_value(self, panos_version):
+        """Returns version specific value.
+
+        Args:
+            panos_version (tuple): The version as (x, y, z) tuple
+
+        Returns:
+            The casted value stored for this version.
+
+        """
+        value = None
+
+        for version_number, value in self.__profiles:
+            if panos_version >= version_number:
+                break
+
+        return self._cast_version_value(value)
+
+    def __iter__(self):
+        for version_number, value in self.__profiles:
+            yield version_number, self._cast_version_value(value)
+
+    def _cast_version_value(self, value):
+        """Defines any special handling for the value before returning it."""
+        return value
+
+
+class VersionedStubs(VersioningSupport):
+    def add_profile(self, version=None, *paths):
+        """Adds the following stubs for the specified version.
+
+        Args:
+            version (str): The version to add support for.
+            *paths (str): Variable length arg list of paths for this version.
+
+        """
+        return super(VersionedStubs, self).add_profile(
+            version, paths)
+
+    def _cast_version_value(self, value):
+        """Turn the list of strings into a list of stubs."""
+        if value is None:
+            return []
+
+        ans = []
+        for path in value:
+            ans.append(ParamPath(None, path, 'stub'))
+
+        return ans
+
+
+class VersionedPanObject(PanObject):
+    """Base class for all versioned package objects.
+
+    This class is an extention of :class:`pandevice.base.PanObject` that
+    supports versioning.
+
+    Args:
+        name (str): The name of this object.
+        *args: Variable length list of values to initialize this object.
+        **kwargs: Keyword args to initialize this object.
+
+    Attributes:
+        uid (str): The unique identifier for this object if it has one.  If it
+            doesn't have one, then this returns the class name.
+        vsys (str): The vsys id for this object (e.g. 'vsys2') or 'shared' if
+            no vsys.
+        XPATH (str): The xpath for this object, based on where in the tree it
+            currently resides, as well as the versioning.
+
+    """
+    _UNKNOWN_PANOS_VERSION = (sys.maxint, 0, 0)
+
+    def __init__(self, *args, **kwargs):
+        if self.NAME is not None:
+            try:
+                name = args[0]
+                args = args[1:]
+            except IndexError:
+                name = kwargs.pop(self.NAME, None)
+            setattr(self, self.NAME, name)
+        self.parent = None
+        self.children = []
+        self._xpaths = VersioningSupport()
+        self._stubs = VersionedStubs()
+
+        self._setup()
+
+        try:
+            params = super(VersionedPanObject,
+                           self).__getattribute__('_params')
+        except AttributeError:
+            params = ()
+
+        # Sanity check: there shouldn't be more args than params
+        if len(args) > len(params):
+            msg = 'Args "{0}" exceeds params "{1}"'
+            raise ValueError(msg.format(args, params))
+
+        # Set all params to their default values initially
+        for param in params:
+            param.value = param.default
+
+        # Handle positional params
+        for value, param in zip(args, params):
+            param.value = value
+
+        # Handle kwargs params
+        for name, value in kwargs.items():
+            for param in params:
+                if param.name == name:
+                    param.value = value
+                    break
+            else:
+                raise ValueError('No param "{0}" exists'.format(name))
+
+    def _setup(self):
+        """Setup the object here.
+
+        The setup includes configuring the following:
+
+        * _xpaths
+        * _params
+        * _stubs
+
+        If you want this to have versioned parameters, be sure to
+        set a `_params` variable here.  It should be a tuple of
+        :class:`pandevice.base.VersionedParamPath` objects.
+        """
+        pass
+
+    def _about_object(self):
+        try:
+            ans = dict((p.name, p.value) for p in self._params)
+        except AttributeError:
+            ans = {}
+        finally:
+            # If the object has a self.NAME, include that in the result
+            if self.NAME is not None:
+                ans[self.NAME] = self.uid
+
+        return ans
+
+    def _about_parameter(self, parameter):
+        parameter = str(parameter)
+        ans = {
+            'Parameter': parameter,
+            'Current Value': getattr(self, parameter, None),
+        }
+
+        # Make sure the param exists or raise AttributeError
+        try:
+            for param in self._params:
+                if param.name == parameter:
+                    break
+            else:
+                raise AttributeError
+        except AttributeError:
+            # Check if the parameter is the object's uid
+            if parameter == self.NAME:
+                ans['About'] = "This is the object's unique identifier"
+                return ans
+            else:
+                raise AttributeError(parameter)
+
+        version_info = []
+        panos_version = self.retrieve_panos_version()
+
+        if panos_version == self._UNKNOWN_PANOS_VERSION:
+            # No parent, return all versioning info for this parameter
+            version_info = []
+            for version_number, var_path in param:
+                version_info.append(var_path.about(version_number))
+            ans['About'] = version_info
+        else:
+            # Display parameter's version specific info
+            var_path = param._get_versioned_value(panos_version)
+            if var_path:
+                ans['About'] = var_path.about()
+            else:
+                ans['About'] = 'No VarPath for this version'
+
+        return ans
+
+    def __dir__(self):
+        """This is for tab-complete options."""
+        ans = set([])
+
+        # Get standard stuff:  methods and variables/properties
+        try:
+            ans.update(super(VersionedPanObject, self).__dir__())
+        except AttributeError:
+            # Get variables
+            ans.update(self.__dict__.keys())
+            # Get functions
+            ans.update(dir(type(self)))
+
+        # Get the _params stuff if it's present
+        try:
+            ans.update(x.name for x in self._params)
+        except Exception:
+            pass
+
+        return list(ans)
+
+    def retrieve_panos_version(self):
+        """Gets the panos_version of the closest PanDevice.
+
+        If this object is not attached to a PanDevice, then a very large
+        number is returned to ensure that the newest version of the
+        object and xpath is presented to the user.
+
+        Returns:
+            tuple: The version as (x, y, z)
+
+        """
+        try:
+            device = self.nearest_pandevice()
+            panos_version = device.get_device_version()
+        except err.PanDeviceNotSet:
+            panos_version = self._UNKNOWN_PANOS_VERSION
+
+        return panos_version
+
+    def _build_element_info(self):
+        panos_version = self.retrieve_panos_version()
+        settings = {}
+        params = ()
+        try:
+            params = self._params
+        except AttributeError:
+            pass
+
+        for param in params:
+            settings[param.name] = param.value
+
+        paths = []
+        for param in params:
+            settings[param.name] = param.value
+            var_path = param._get_versioned_value(panos_version)
+            if var_path:
+                paths.append(var_path)
+
+        stubs = []
+        try:
+            stubs = self._stubs._get_versioned_value(panos_version)
+        except AttributeError:
+            pass
+
+        return (paths, stubs, settings)
+
+    def element(self):
+        """Return an xml.etree.ElementTree for this object and its children.
+
+        Returns:
+            An xml.etree.ElementTree instance representing the xml form of this
+                object and its children
+
+        """
+        ans = self._root_element()
+        paths, stubs, settings = self._build_element_info()
+
+        self.xml_merge(ans, itertools.chain(
+                (p.element(self._root_element(), settings) for p in paths),
+                (s.element(self._root_element(), settings) for s in stubs),
+                self._subelements(),
+        ))
+
+        return ans
+
+    def _get_param_specific_info(self, param):
+        """Gets a tuple of info for the given parameter.
+
+        This is to aid in things like updates or refreshes of a specific
+        parameter attached to this PanObject / VersionedPanObject.
+
+        Returns:
+            A three element tuple of the variable's xpath (str), the value of
+            the variable, and the full ``VarPath`` or ``ParamPath`` object that
+            is responsible for handling this variable.
+
+        Raises:
+            ValueError: If the param does not exist in this object.
+            PanDeviceError: If the param does not exist in the XML.
+
+        """
+        paths, stubs, settings = self._build_element_info()
+        value = settings[param]
+
+        # Find the VarPath to use
+        for var_path in paths:
+            if var_path.param == param:
+                break
+        else:
+            msg = 'Variable {0} is not present in this version'
+            raise ValueError(msg.format(param))
+
+        # Build up the xpath
+        xpath = []
+        for token in var_path.path.split('/'):
+            if not token:
+                continue
+            p = None
+            if token.startswith('entry '):
+                junk, var_to_use = token.split()
+                p = "entry[name='{0}']".format(
+                    *(x for x in self._value_as_list(settings[var_to_use])))
+            else:
+                p = None
+                try:
+                    p = token.format(**{})
+                except KeyError as ke:
+                    param_ref = ke.args[0]
+                    if settings[param_ref] is None:
+                        msg = ' '.join([
+                            'While updating variable {0},',
+                            'missing replacement variable {1} in path',
+                        ])
+                        raise ValueError(msg.format(param, param_ref))
+                    p = token.format(**settings)
+            xpath.append(p)
+
+        return ('/'.join(xpath), value, var_path)
+
+    def parse_xml(self, xml):
+        """Parse the given XML into this object's parameters.
+
+        Args:
+            xml (xml.etree.ElementTree): The XML to parse values from.
+
+        """
+        settings = {}
+        panos_version = self.retrieve_panos_version()
+        params = ()
+        try:
+            params = self._params
+        except AttributeError:
+            return
+
+        # Build up the paths and the possibilities for each param.
+        paths = []
+        possibilities = {}
+        for param in params:
+            var_path = param._get_versioned_value(panos_version)
+            if var_path:
+                paths.append(var_path)
+                if var_path.param and var_path.values:
+                    possibilities[param.name] = var_path.values
+
+        # Get the stubs and append those to the paths to parse as well.  We
+        # do this because a stub could sometimes help us find the value of
+        # another param that might not otherwise be present.
+        stubs = []
+        try:
+            stubs = self._stubs._get_versioned_value(panos_version)
+        except AttributeError:
+            pass
+        for stub in stubs:
+            if stub:
+                paths.append(stub)
+
+        # Retrieve the uid (if applicable)
+        if self.SUFFIX == ENTRY:
+            setattr(self, self.NAME, xml.attrib['name'])
+
+        # Parse out all VarPaths
+        for var_path in paths:
+            var_path.parse_xml(xml, settings, possibilities)
+
+        # Save results from the settings dict
+        for param in params:
+            param.value = settings.get(param.name)
+
+    def element_str(self):
+        """The XML form of this object (and its children) as a string."""
+        return ET.tostring(self.element())
+
+    def __getattr__(self, name):
+        params = super(VersionedPanObject, self).__getattribute__('_params')
+
+        for param in params:
+            if name == param.name:
+                return param.value
+
+        raise AttributeError(str(name))
+
+    def __setattr__(self, name, value):
+        params = ()
+
+        try:
+            params = super(VersionedPanObject,
+                           self).__getattribute__('_params')
+        except AttributeError:
+            pass
+
+        for param in params:
+            if name == param.name:
+                param.value = value
+                break
+        else:
+            super(VersionedPanObject, self).__setattr__(name, value)
+
+    @property
+    def XPATH(self):
+        """Returns the version specific xpath of this object."""
+        panos_version = self.retrieve_panos_version()
+        return self._xpaths._get_versioned_value(panos_version)
+
+
+class VersionedParamPath(VersioningSupport):
+    """A wrapper class for ParamPath objects.
+
+    Specifying any kwargs will be interpreted as args for the first profile to
+    add for this parameter.  If there are no kwargs specified, then any version
+    that may or may not have been passed in is ignored.
+
+    The ``values`` stored in each profile added are the kwargs used to
+    initialize the ``ParamPath`` object.  The ``name`` should not be specified,
+    as that will be passed in positionally for you.
+
+    Args:
+        name (str): The parameter name.  Any hyphens in the name are replaced
+            with underscores, as hyphens are not a valid variable character.
+        default: The default value this parameter should take when the user
+            is creating a ``VersionedPanObject``, but doesn't specify a value.
+        version (str): A version string like '1.2.3' or None.  If the version
+            is None, then the version is set to '0.0.0'.
+        **kwargs: Various ``ParamPath`` parameters for the given version.
+
+    """
+    def __init__(self, name, default=None, version=None, **kwargs):
+        super(VersionedParamPath, self).__init__()
+        self.name = name.replace('-', '_')
+        self.default = default
+        self.value = None
+
+        if kwargs:
+            self.add_profile(version, **kwargs)
+
+    def add_profile(self, version=None, **kwargs):
+        """Add support for version ``version``.
+
+        Args:
+            version (str): The version to add support for.  If this is
+                unspecified, then the version defaults to '0.0.0'.
+            **kwargs: The various ``ParamPath`` arguments to use for the
+                given version.  Note that if your kwargs do not contain
+                a ``path``, then this means that the variable will only be
+                present in the resulting XML if another ``VersionedParamPath``
+                references this parameter in it's ``path``.
+
+        """
+        return super(VersionedParamPath, self).add_profile(
+            version, kwargs)
+
+    def _cast_version_value(self, value):
+        return ParamPath(self.name, **value)
+
+    def __repr__(self):
+        return "<{0} {1}={2} default={3} {4:#x}>".format(
+            self.__class__.__name__, self.name, self.value,
+            self.default, id(self))
+
 
 class VarPath(object):
     """Configuration variable within the object
@@ -1224,6 +1935,237 @@ class VarPath(object):
 
     def __repr__(self):
         return "<%s %s at 0x%x>" % (type(self).__name__, repr(self.variable), id(self))
+
+    def about(self):
+        """Returns information about this VarPath as a dict."""
+        return {
+            'Type': self.vartype or 'string',
+            'Condition': self.condition,
+            'Default': self.default,
+            'XML Path': self.path,
+        }
+
+
+class ParamPath(object):
+    """Configuration parameter within the object.
+
+    Args:
+        param (str): The name of the instance parameter in the class
+        path: The relative xpath to the variable.
+        vartype: The type of variable (None, 'member', 'entry', 'yesno',
+            'int', 'exist').
+        condition (dict): Other settings that must be true for this param
+            to appear in the XML.  The keys of the condition should be other
+            parameter names, with the value being what the necessary value of
+            that parameter should be.
+        values (list): Valid values this param can be set to.  This is not
+            enforced in any way from the user's perspective when setting
+            parameters, but these values are referenced when parsing any XML
+            returned from a live device.
+
+    """
+    def __init__(self, param, path=None, vartype=None,
+                 condition=None, values=None):
+        self.param = param
+        self.path = path
+        self.vartype = vartype
+        self.condition = condition or {}
+        self.values = values or []
+
+    def about(self, version_header=None):
+        """Returns information about this ParamPath as a dict."""
+        info = {
+            'Type': self.vartype or 'string',
+            'Values': self.values,
+            'Condition': self.condition,
+            'XML Path': self.path,
+        }
+
+        if version_header is not None:
+            info['Versioning'] = version_header
+
+        return info
+
+    def __repr__(self):
+        return "<{0} '{1}' at {2:#x}>".format(
+            self.__class__.__name__, self.param, id(self))
+
+    def _value_as_list(self, value):
+        if hasattr(value, 'append'):
+            for v in value:
+                yield str(v)
+        else:
+            yield str(value)
+
+    def element(self, elm, settings):
+        """Create the xml.etree.ElementTree for this parameter.
+
+        Args:
+            elm (xml.etree.ElementTree): the root node for which to append
+                onto this param's XML.
+            settings (dict): All parameter settings for the
+                ``VersionedPanObject``.
+
+        Returns:
+            xml.etree.ElementTree: The ``elm`` passed in, modified to contain
+            this parameter in the XML.  If this param should not be contained
+            in the full ``VersionedPanObject``'s XML, then None is returned.
+
+        """
+        value = settings.get(self.param)
+
+        # Check if this should return None instead of an element
+        if self.path is None:
+            return None
+        elif value is None and self.vartype != 'stub':
+            return None
+        for condition_key, condition_value in self.condition.items():
+            if settings[condition_key] != condition_value:
+                return None
+
+        e = elm
+
+        # Build the element
+        for token in self.path.split('/'):
+            if not token:
+                continue
+            if token.startswith('entry '):
+                junk, var_to_use = token.split()
+                child = ET.Element('entry', {'name': settings[var_to_use]})
+            else:
+                child = ET.Element(token.format(**settings))
+                if child.tag == 'None':
+                    return None
+            e.append(child)
+            e = child
+
+        # Format the element text appropriately
+        if self.vartype == 'member':
+            for v in self._value_as_list(value):
+                ET.SubElement(e, 'member').text = v
+        elif self.vartype == 'entry':
+            for v in self._value_as_list(value):
+                ET.SubElement(e, 'entry', {'name': v})
+        elif self.vartype == 'exist':
+            if value:
+                ET.SubElement(e, self.param)
+        elif self.vartype == 'yesno':
+            e.text = 'yes' if value else 'no'
+        elif self.vartype == 'stub' or '{{{0}}}'.format(
+                    self.param) == self.path.split('/')[-1]:
+            pass
+        elif self.vartype == 'int':
+            e.text = str(int(value))
+        else:
+            e.text = str(value)
+
+        return elm
+
+    def parse_xml(self, xml, settings, possibilities):
+        """Parse the XML to find this parameter's value.
+
+        Both this parameter, and any other parameters that may be discovered
+        during the parsing of this parameter, will be saved in the ``settings``
+        dict passed in to this function.
+
+        Args:
+            xml (xml.etree.ElementTree): The XML to parse.
+            settings (dict): Current known values for this object's parameters.
+            possibilities (dict): A dict where the key is a parameter's name,
+                and the value is a list of strings that that param could be
+                in the XML.
+
+        """
+        if not self.path:
+            # No path, so this is just a parameter ParamPath
+            return
+
+        e = xml
+        for p in self.path.split('/'):
+            # Skip this path part if there is no path part
+            if not p:
+                continue
+
+            path_str = None
+            if p.startswith('entry '):
+                # Entry path part
+                entry_var = p.split()[1]
+                if entry_var not in settings:
+                    # Entry's name is not yet known, try to find it
+                    ans = e.find('./entry')
+                    if ans is None:
+                        return
+                    settings[entry_var] = ans.attrib['name']
+                path_str = "entry[@name='{0}']".format(settings[entry_var])
+            else:
+                # Standard path part
+                try:
+                    # If we don't have all the settings necessary to format
+                    # this string, a KeyError will be raised
+                    path_str = p.format(**settings)
+                except KeyError as ke:
+                    # Missing a parameter's setting, check all of that param's
+                    # possibilities against the XML to see which one it is
+                    missing_variable = ke.args[0]
+                    if missing_variable not in possibilities:
+                        return
+                    possibility_settings = settings.copy()
+                    for pos in possibilities[missing_variable]:
+                        possibility_settings[missing_variable] = pos
+                        path_str = p.format(**possibility_settings)
+                        ans = e.find('./{0}'.format(path_str))
+                        if ans is not None:
+                            settings[missing_variable] = pos
+                            break
+                    else:
+                        return
+
+            ans = e.find('./{0}'.format(path_str))
+            if ans is None:
+                return
+            e = ans
+
+        # Pull the value, properly formatted, from this last element
+        self.parse_value_from_xml_last_tag(e, settings)
+
+    def parse_value_from_xml_last_tag(self, elm, settings):
+        """Actually do the parsing for this parameter.
+
+        The value parsed is saved into the ``settings`` dict.
+
+        Args:
+            elm (xml.etree.ElementTree): The final (deepest) tag in the XML
+                document passed in to ``parse_xml()`` that contains the actual
+                value to parse out for this parameter.
+            settings (dict): The dict where the parsed value will be saved.
+
+        Raises:
+            ValueError: If a param is in an incorrect format.
+
+        """
+        # Do vartype processing
+        if self.vartype == 'member':
+            settings[self.param] = [x.text for x in elm.findall('member')]
+        elif self.vartype == 'entry':
+            settings[self.param] = [x.attrib['name']
+                                    for x in elm.findall('entry')]
+        elif self.vartype == 'exist':
+            ans = elm.find('./{0}'.format(elm.tag))
+            settings[self.param] = True if ans is not None else False
+        elif self.vartype == 'yesno':
+            if elm.text == 'yes':
+                settings[self.param] = True
+            elif elm.text == 'no':
+                settings[self.param] = False
+            else:
+                raise ValueError('{0} is not yes/no'.format(elm.text))
+        elif self.vartype == 'stub' or '{{{0}}}'.format(
+                    self.param) == self.path.split('/')[-1]:
+            pass
+        elif self.vartype == 'int':
+            settings[self.param] = int(elm.text)
+        else:
+            settings[self.param] = elm.text
 
 
 class VsysImportMixin(object):
@@ -1421,6 +2363,7 @@ class PanDevice(PanObject):
 
         # State variables
         self.version = None
+        self._version_info = None
         self.content_version = None
         self.platform = None
 
@@ -1428,6 +2371,15 @@ class PanDevice(PanObject):
         self._ha_peer = None
         self._ha_active = True
         self.ha_failed = None
+
+    def get_device_version(self):
+        '''Gets the current version on the PanDevice.'''
+        if self._version_info is None:
+            self.refresh_system_info()
+            self._version_info = tuple(int(x) for x in
+                                       self.version.split('-')[0].split('.'))
+
+        return self._version_info
 
     @classmethod
     def create_from_device(cls,
@@ -2611,16 +3563,17 @@ class PanDevice(PanObject):
             time.sleep(interval)
 
     def nearest_pandevice(self):
-        """The nearest :class:`pandevice.base.PanDevice` object
+        """The nearest :class:`pandevice.base.PanDevice` object.
 
-        This method is used to determine the device to apply this object.
-
-        Raises:
-            PanDeviceNotSet: There is no PanDevice object in the tree
+        This method is used to determine the device to apply this object to.
 
         Returns:
             PanDevice: The PanDevice object closest to this object in
-                the configuration tree
+                the configuration tree.
+
+        Raises:
+            PanDeviceNotSet: There is no PanDevice object in the tree.
+
         """
         if self.parent is not None:
             return self.parent._nearest_pandevice()

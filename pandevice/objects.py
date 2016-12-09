@@ -25,6 +25,8 @@ import xml.etree.ElementTree as ET
 import pandevice
 from base import PanObject, Root, MEMBER, ENTRY
 from base import VarPath as Var
+from pandevice.base import VersionedPanObject
+from pandevice.base import VersionedParamPath
 
 # import other parts of this pandevice package
 import errors as err
@@ -34,56 +36,63 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
-class AddressObject(PanObject):
+class AddressObject(VersionedPanObject):
     """Address Object
 
     Args:
         name (str): Name of the object
         value (str): IP address or other value of the object
-        type (str): Type of object: ip-netmask, ip-range, or fqdn (Default: ip-netmask)
+        type (str): Type of address:
+                * ip-netmask (default)
+                * ip-range
+                * fqdn
         description (str): Description of this object
         tag (list): Administrative tags
-
-    """
-
-    ROOT = Root.VSYS
-    XPATH = "/address"
-    SUFFIX = ENTRY
-
-    @classmethod
-    def variables(cls):
-        return (
-            Var("(ip-netmask|ip-range|fqdn)", "type", default="ip-netmask"),
-            Var("{{type}}", "value", order=99),
-            Var("description"),
-            Var("tag", vartype="member"),
-        )
-
-
-class AddressGroup(PanObject):
-    """Address Group
-
-    Args:
-        name (str): Name of the group
-        static_value (list): A static Address Group with a list of AddressObjects
-        dynamic_value (str): A dynamic Address Group with a tag string.
-            Example of tag string:  "'linux' and 'server' and 'apache'"
-        description (str): Description of this group
-        tag (list): Administrative tags
-
     """
     ROOT = Root.VSYS
-    XPATH = "/address-group"
     SUFFIX = ENTRY
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("static", "static_value", vartype="member"),
-            Var("dynamic/filter", "dynamic_value"),
-            Var("description"),
-            Var("tag", vartype="member"),
-        )
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/address')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'value', path='{type}'))
+        params.append(VersionedParamPath(
+            'type', default='ip-netmask',
+            values=['ip-netmask', 'ip-range', 'fqdn'], path='{type}'))
+        params.append(VersionedParamPath(
+            'description', path='description'))
+        params.append(VersionedParamPath(
+            'tag', path='tag', vartype='member'))
+
+        self._params = tuple(params)
+
+
+class AddressGroup(VersionedPanObject):
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/address-group')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'static_value', path='static', vartype='member'))
+        params.append(VersionedParamPath(
+            'dynamic_value', path='dynamic/filter'))
+        params.append(VersionedParamPath(
+            'description', path='description'))
+        params.append(VersionedParamPath(
+            'tag', path='tag', vartype='member'))
+
+        self._params = tuple(params)
 
 
 class Tag(PanObject):

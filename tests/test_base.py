@@ -770,7 +770,7 @@ class TestPanObject(unittest.TestCase):
     # Skip _refresh_children
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_default_args_none_suffix(self, m_uid):
+    def test__refresh_xml_default_args_none_suffix(self, m_uid):
         Xpath = '/x/path'
         lasttag = ''
 
@@ -789,9 +789,8 @@ class TestPanObject(unittest.TestCase):
 
         self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
         self.obj.xpath = mock.Mock(return_value=Xpath)
-        self.obj.refresh = mock.Mock()
 
-        ret_val = self.obj.refresh_xml()
+        ret_val = self.obj._refresh_xml(False, True)
 
         self.assertEqual(expected, ret_val)
         m_pandevice.xapi.get.assert_called_once_with(
@@ -800,13 +799,9 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with(
             'result/{0}'.format(lasttag))
-        self.obj.refresh.assert_called_once_with(
-            xml=expected,
-            refresh_children=True,
-            exceptions=True)
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_default_args_with_member_suffix(self, m_uid):
+    def test__refresh_xml_default_args_with_member_suffix(self, m_uid):
         Xpath = '/x/path'
         lasttag = 'member'
 
@@ -825,10 +820,9 @@ class TestPanObject(unittest.TestCase):
 
         self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
         self.obj.xpath = mock.Mock(return_value=Xpath)
-        self.obj.refresh = mock.Mock()
         self.obj.SUFFIX = Base.MEMBER
 
-        ret_val = self.obj.refresh_xml()
+        ret_val = self.obj._refresh_xml(False, True)
 
         self.assertEqual(expected, ret_val)
         m_pandevice.xapi.get.assert_called_once_with(
@@ -837,13 +831,9 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with(
             'result/{0}'.format(lasttag))
-        self.obj.refresh.assert_called_once_with(
-            xml=expected,
-            refresh_children=True,
-            exceptions=True)
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_default_args_with_entry_suffix(self, m_uid):
+    def test__refresh_xml_default_args_with_entry_suffix(self, m_uid):
         Xpath = '/x/path'
         lasttag = 'entry'
 
@@ -862,10 +852,9 @@ class TestPanObject(unittest.TestCase):
 
         self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
         self.obj.xpath = mock.Mock(return_value=Xpath)
-        self.obj.refresh = mock.Mock()
         self.obj.SUFFIX = Base.ENTRY
 
-        ret_val = self.obj.refresh_xml()
+        ret_val = self.obj._refresh_xml(False, True)
 
         self.assertEqual(expected, ret_val)
         m_pandevice.xapi.get.assert_called_once_with(
@@ -874,13 +863,9 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with(
             'result/{0}'.format(lasttag))
-        self.obj.refresh.assert_called_once_with(
-            xml=expected,
-            refresh_children=True,
-            exceptions=True)
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_with_running_config(self, m_uid):
+    def test__refresh_xml_with_running_config(self, m_uid):
         Xpath = '/x/path'
         lasttag = ''
 
@@ -901,7 +886,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath = mock.Mock(return_value=Xpath)
         self.obj.refresh = mock.Mock()
 
-        ret_val = self.obj.refresh_xml(running_config=True)
+        ret_val = self.obj._refresh_xml(True, True)
 
         self.assertEqual(expected, ret_val)
         m_pandevice.xapi.show.assert_called_once_with(
@@ -910,13 +895,9 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with(
             'result/{0}'.format(lasttag))
-        self.obj.refresh.assert_called_once_with(
-            xml=expected,
-            refresh_children=True,
-            exceptions=True)
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_no_refresh_children(self, m_uid):
+    def test__refresh_xml_no_refresh_children(self, m_uid):
         Xpath = '/x/path'
         lasttag = ''
 
@@ -937,7 +918,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath = mock.Mock(return_value=Xpath)
         self.obj.refresh = mock.Mock()
 
-        ret_val = self.obj.refresh_xml(refresh_children=False)
+        ret_val = self.obj._refresh_xml(False, False)
 
         self.assertEqual(expected, ret_val)
         m_pandevice.xapi.get.assert_called_once_with(
@@ -946,13 +927,9 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with(
             'result/{0}'.format(lasttag))
-        self.obj.refresh.assert_called_once_with(
-            xml=expected,
-            refresh_children=False,
-            exceptions=True)
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_api_action_raises_pannosuchnode_with_exceptions_on_raises_error(self, m_uid):
+    def test__refresh_xml_api_action_raises_pannosuchnode_with_exceptions_on_raises_error(self, m_uid):
         Xpath = '/x/path'
 
         spec = {
@@ -966,14 +943,14 @@ class TestPanObject(unittest.TestCase):
 
         self.assertRaises(
             Err.PanObjectMissing,
-            self.obj.refresh_xml)
+            self.obj._refresh_xml, False, True)
         m_pandevice.xapi.get.assert_called_once_with(
             Xpath,
             retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_api_action_raises_pannosuchnode_with_exceptions_off_returns_none(self, m_uid):
+    def test__refresh_xml_api_action_raises_pannosuchnode_with_exceptions_off_returns_none(self, m_uid):
         Xpath = '/x/path'
 
         spec = {
@@ -985,7 +962,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath = mock.Mock(return_value=Xpath)
         m_uid.return_value = 'uid'
 
-        ret_val = self.obj.refresh_xml(exceptions=False)
+        ret_val = self.obj._refresh_xml(False, False)
 
         self.assertIsNone(ret_val)
         m_pandevice.xapi.get.assert_called_once_with(
@@ -994,7 +971,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath.assert_called_once_with()
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_api_action_raises_panxapierror_with_exceptions_on_raises_error(self, m_uid):
+    def test__refresh_xml_api_action_raises_panxapierror_with_exceptions_on_raises_error(self, m_uid):
         Xpath = '/x/path'
 
         spec = {
@@ -1008,14 +985,14 @@ class TestPanObject(unittest.TestCase):
 
         self.assertRaises(
             Err.PanObjectMissing,
-            self.obj.refresh_xml)
+            self.obj._refresh_xml, False, True)
         m_pandevice.xapi.get.assert_called_once_with(
             Xpath,
             retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_api_action_raises_panxapierror_with_exceptions_off_returns_none(self, m_uid):
+    def test__refresh_xml_api_action_raises_panxapierror_with_exceptions_off_returns_none(self, m_uid):
         Xpath = '/x/path'
 
         spec = {
@@ -1027,7 +1004,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath = mock.Mock(return_value=Xpath)
         m_uid.return_value = 'uid'
 
-        ret_val = self.obj.refresh_xml(exceptions=False)
+        ret_val = self.obj._refresh_xml(False, False)
 
         self.assertIsNone(ret_val)
         m_pandevice.xapi.get.assert_called_once_with(
@@ -1036,7 +1013,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath.assert_called_once_with()
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_find_fails_with_exceptions_on_raises_error(self, m_uid):
+    def test__refresh_xml_find_fails_with_exceptions_on_raises_error(self, m_uid):
         Xpath = '/x/path'
         lasttag = ''
 
@@ -1058,7 +1035,7 @@ class TestPanObject(unittest.TestCase):
 
         self.assertRaises(
             Err.PanObjectMissing,
-            self.obj.refresh_xml)
+            self.obj._refresh_xml, False, True)
         m_pandevice.xapi.get.assert_called_once_with(
             Xpath,
             retry_on_peer=self.obj.HA_SYNC)
@@ -1067,7 +1044,7 @@ class TestPanObject(unittest.TestCase):
             'result/{0}'.format(lasttag))
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_refresh_xml_find_fails_with_exceptions_off_returns_none(self, m_uid):
+    def test__refresh_xml_find_fails_with_exceptions_off_returns_none(self, m_uid):
         '''Requires exceptions=False.'''
         Xpath = '/x/path'
         lasttag = ''
@@ -1088,7 +1065,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
         self.obj.xpath = mock.Mock(return_value=Xpath)
 
-        ret_val = self.obj.refresh_xml(exceptions=False)
+        ret_val = self.obj._refresh_xml(False, False)
 
         self.assertIsNone(ret_val)
         m_pandevice.xapi.get.assert_called_once_with(

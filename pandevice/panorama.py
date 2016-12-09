@@ -288,7 +288,9 @@ class Panorama(base.PanDevice):
                     devices_xml.append(new_vsys_device)
 
         # Create firewall instances
-        firewall_instances = firewall.Firewall.refreshall_from_xml(devices_xml, refresh_children=not expand_vsys)
+        tmp_fw = firewall.Firewall()
+        firewall_instances = tmp_fw.refreshall_from_xml(
+            devices_xml, refresh_children=not expand_vsys)
 
         if not include_device_groups:
             if add:
@@ -311,7 +313,10 @@ class Panorama(base.PanDevice):
         # of the device groups
         pandevice.xml_combine(devicegroup_opxml, devicegroup_configxml)
 
-        devicegroup_instances = DeviceGroup.refreshall_from_xml(devicegroup_opxml, refresh_children=False)
+        dg = DeviceGroup()
+        dg.parent = self
+        devicegroup_instances = dg.refreshall_from_xml(
+            devicegroup_opxml, refresh_children=False)
 
         for dg in devicegroup_instances:
             dg_serials = [entry.get("name") for entry in devicegroup_opxml.findall("entry[@name='%s']/devices/entry" % dg.name)]
