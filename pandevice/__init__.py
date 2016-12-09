@@ -18,7 +18,7 @@
 
 """pandevice library is a framework for interacting with Palo Alto Networks devices
 
-Documentation available at http://pandevice.readthedocs.org
+Documentation available at http://pandevice.readthedocs.io
 
 """
 

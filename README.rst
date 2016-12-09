@@ -8,7 +8,7 @@ device API that is object oriented and conceptually similar to interaction
 with the device via the GUI or CLI.
 
 * Free software: ISC License
-* Documentation: http://pandevice.readthedocs.org
+* Documentation: http://pandevice.readthedocs.io
 
 -----
 
@@ -98,14 +98,14 @@ Some operational commands have methods to refresh the variables in an object::
 
 
 .. _pan-python: http://github.com/kevinsteves/pan-python
-.. _Configuration Tree: http://pandevice.readthedocs.org/en/latest/configtree.html
+.. _Configuration Tree: http://pandevice.readthedocs.io/en/latest/configtree.html
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pandevice.svg
     :target: https://pypi.python.org/pypi/pandevice
     :alt: Latest version released on PyPi
 
 .. |rtd| image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
-    :target: http://pandevice.readthedocs.org/en/latest/?badge=latest
+    :target: http://pandevice.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
 .. |coverage| image:: https://img.shields.io/coveralls/PaloAltoNetworks/pandevice/master.svg?label=coverage
