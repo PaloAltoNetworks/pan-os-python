@@ -3508,7 +3508,10 @@ class PanDevice(PanObject):
         if get_devices:
             messages = []
         else:
-            messages = job['details']['line']
+            try:
+                messages = job['details']['line']
+            except KeyError:
+                messages = []
         if issubclass(messages.__class__, basestring):
             messages = [messages]
         # Create the results dict
