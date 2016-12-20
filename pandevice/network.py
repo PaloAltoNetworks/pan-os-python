@@ -338,7 +338,7 @@ class Interface(PanObject):
         self.state = state
         return self.state
 
-    def full_delete(self, refresh=False, delete_referencing_objects=False):
+    def full_delete(self, refresh=False, delete_referencing_objects=False, include_vsys=False):
         """Delete the interface and all references to the interface
 
         Often when deleting an interface there is an API error because
@@ -363,7 +363,8 @@ class Interface(PanObject):
         # Only pre-refreshed objects are scanned for references.
         for obj in self.pandevice().findall(PanObject, recursive=True):
             if isinstance(obj, device.Vsys):
-                continue
+                if not include_vsys:
+                    continue
             try:
                 if str(self) == obj.interface or self == obj.interface:
                     if delete_referencing_objects:
