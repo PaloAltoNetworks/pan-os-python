@@ -22,7 +22,6 @@
 import copy
 import inspect
 import itertools
-import logging
 import re
 import sys
 import time
@@ -38,9 +37,7 @@ import errors as err
 import updater
 import userid
 
-# set logging to nullhandler to prevent exceptions if logging not enabled
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger = pandevice.getlogger(__name__)
 
 Root = pandevice.enum("DEVICE", "VSYS", "MGTCONFIG")
 SELF = "/%s"
@@ -2342,7 +2339,7 @@ class PanDevice(PanObject):
         """Initialize PanDevice"""
         super(PanDevice, self).__init__(*args, **kwargs)
         # create a class logger
-        self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self._logger = pandevice.getlogger(__name__ + "." + self.__class__.__name__)
 
         self.hostname = hostname
         self.port = port

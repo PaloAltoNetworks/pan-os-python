@@ -27,6 +27,7 @@ from copy import deepcopy
 
 # import other parts of this pandevice package
 import pandevice
+from pandevice import getlogger
 import base
 import firewall
 import errors as err
@@ -36,9 +37,9 @@ from pandevice import yesno
 
 import pan.commit
 
+logger = getlogger(__name__)
 
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+
 
 
 class DeviceGroup(PanObject):

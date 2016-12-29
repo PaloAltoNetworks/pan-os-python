@@ -29,6 +29,7 @@ import logging
 import xml.etree.ElementTree as ET
 from decimal import Decimal
 
+from pandevice import getlogger
 from pandevice import device
 from pandevice import yesno
 
@@ -37,9 +38,8 @@ import errors as err
 from base import PanDevice, Root, ENTRY
 from base import VarPath as Var
 
-# set logging to nullhandler to prevent exceptions if logging not enabled
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+
+logger = getlogger(__name__)
 
 
 class Firewall(PanDevice):

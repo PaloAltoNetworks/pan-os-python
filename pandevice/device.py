@@ -18,16 +18,14 @@
 
 """Device module contains objects that exist in the 'Device' tab in the firewall GUI"""
 
-import logging
 from base import PanObject, Root, MEMBER, ENTRY
 from base import VarPath as Var
 
 # import other parts of this pandevice package
+from pandevice import getlogger
 import errors as err
 
-# set logging to nullhandler to prevent exceptions if logging not enabled
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger = getlogger(__name__)
 
 
 class VsysResources(PanObject):

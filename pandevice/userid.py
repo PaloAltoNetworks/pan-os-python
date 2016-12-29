@@ -18,19 +18,17 @@
 
 """User-ID and Dynamic Address Group updates using the User-ID API"""
 
-import logging
 import xml.etree.ElementTree as ET
 from copy import deepcopy
 
+from pandevice import getlogger
 import pandevice.errors as err
 from pandevice import string_or_list
 from pandevice import string_or_list_or_none
 from pan.xapi import PanXapiError
 from pandevice.updater import PanOSVersion
 
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger = getlogger(__name__)
 
 
 class UserId(object):
@@ -58,7 +56,7 @@ class UserId(object):
 
     def __init__(self, device, prefix="", ignore_dup_errors=True):
         # Create a class logger
-        self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self._logger = getlogger(__name__ + "." + self.__class__.__name__)
         self.device = device
         self.prefix = prefix
         self.ignore_dup_errors = ignore_dup_errors

@@ -25,6 +25,7 @@ import xml.etree.ElementTree as ET
 import pandevice
 from base import PanObject, Root, MEMBER, ENTRY, VsysImportMixin
 from base import VarPath as Var
+from pandevice import getlogger
 from pandevice import device
 from pandevice.base import VersionedPanObject
 from pandevice.base import VersionedParamPath
@@ -32,9 +33,7 @@ from pandevice.base import VersionedParamPath
 # import other parts of this pandevice package
 import errors as err
 
-# set logging to nullhandler to prevent exceptions if logging not enabled
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger = getlogger(__name__)
 
 
 def interface(name, *args, **kwargs):
@@ -955,7 +954,7 @@ class ManagementProfile(VersionedPanObject):
         # params
         params = []
 
-        yesnos = ('ping', 'telnet', 'ssh', 'http', 'http-ocsp', 'https', 
+        yesnos = ('ping', 'telnet', 'ssh', 'http', 'http-ocsp', 'https',
                   'snmp', 'response-pages', 'userid-service',
                   'userid-syslog-listener-ssl', 'userid-syslog-listener-udp')
         for yn in yesnos:

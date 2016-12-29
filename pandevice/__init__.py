@@ -43,9 +43,20 @@ if not hasattr(logging, 'NullHandler'):
             pass
     logging.NullHandler = NullHandler
 
-# set logging to nullhandler to prevent exceptions if logging not enabled
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+
+def getlogger(name=__name__):
+    logger_instance = logging.getLogger(name)
+    # Add nullhandler to prevent exceptions in python 2.6
+    logger_instance.addHandler(logging.NullHandler())
+    # Add convenience methods for logging
+    logger_instance.debug1 = lambda inst, msg, *args, **kwargs: inst.log(DEBUG1, msg, *args, **kwargs)
+    logger_instance.debug2 = lambda inst, msg, *args, **kwargs: inst.log(DEBUG2, msg, *args, **kwargs)
+    logger_instance.debug3 = lambda inst, msg, *args, **kwargs: inst.log(DEBUG3, msg, *args, **kwargs)
+    logger_instance.debug4 = lambda inst, msg, *args, **kwargs: inst.log(DEBUG4, msg, *args, **kwargs)
+    return logger_instance
+
+
+logger = getlogger(__name__)
 
 
 # Enumerator type

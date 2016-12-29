@@ -24,15 +24,14 @@ import inspect
 import xml.etree.ElementTree as ET
 
 import pan.xapi
+from pandevice import getlogger
 from base import PanObject, PanDevice, Root, MEMBER, ENTRY
 from base import VarPath as Var
 import errors as err
 import network
 import firewall
 
-# set logging to nullhandler to prevent exceptions if logging not enabled
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger = getlogger(__name__)
 
 
 class HighAvailabilityInterface(PanObject):

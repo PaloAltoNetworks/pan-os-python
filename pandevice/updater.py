@@ -18,15 +18,12 @@
 
 """Device updater handles software versions and updates for devices"""
 
-import logging
-
+from pandevice import getlogger
 from pan.config import PanConfig
 import pandevice.errors as err
 from pandevice import PanOSVersion
 
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger = getlogger(__name__)
 
 
 class Updater(object):
@@ -34,7 +31,7 @@ class Updater(object):
 
     def __init__(self, pandevice):
         # create a class logger
-        self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self._logger = getlogger(__name__ + "." + self.__class__.__name__)
         self.pandevice = pandevice
         self.versions = {}
 
