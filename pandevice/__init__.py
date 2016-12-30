@@ -45,14 +45,19 @@ if not hasattr(logging, 'NullHandler'):
 
 
 def getlogger(name=__name__):
+    import types
     logger_instance = logging.getLogger(name)
     # Add nullhandler to prevent exceptions in python 2.6
     logger_instance.addHandler(logging.NullHandler())
     # Add convenience methods for logging
-    logger_instance.debug1 = lambda inst, msg, *args, **kwargs: inst.log(DEBUG1, msg, *args, **kwargs)
-    logger_instance.debug2 = lambda inst, msg, *args, **kwargs: inst.log(DEBUG2, msg, *args, **kwargs)
-    logger_instance.debug3 = lambda inst, msg, *args, **kwargs: inst.log(DEBUG3, msg, *args, **kwargs)
-    logger_instance.debug4 = lambda inst, msg, *args, **kwargs: inst.log(DEBUG4, msg, *args, **kwargs)
+    logger_instance.debug1 = types.MethodType(
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG1, msg, *args, **kwargs), logger_instance)
+    logger_instance.debug2 = types.MethodType(
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG2, msg, *args, **kwargs), logger_instance)
+    logger_instance.debug3 = types.MethodType(
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG3, msg, *args, **kwargs), logger_instance)
+    logger_instance.debug4 = types.MethodType(
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG4, msg, *args, **kwargs), logger_instance)
     return logger_instance
 
 
