@@ -80,6 +80,12 @@ class PanSessionTimedOut(PanDeviceXapiError):
 class PanDeviceNotSet(PanDeviceError):
     pass
 
+class PanNotConnectedOnPanorama(PanDeviceError):
+    pass
+
+class PanNotAttachedOnPanorama(PanDeviceError):
+    pass
+
 class PanNoSuchNode(PanDeviceXapiError):
     pass
 

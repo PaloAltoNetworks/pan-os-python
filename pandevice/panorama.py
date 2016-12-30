@@ -249,10 +249,10 @@ class Panorama(base.PanDevice):
                 entry = devices_xml.find("entry[@name='%s']" % serial)
                 if entry is None:
                     if only_connected:
-                        raise err.PanDeviceError("Can't find device with serial %s attached and connected"
+                        raise err.PanNotConnectedOnPanorama("Can't find device with serial %s attached and connected"
                                                  " to Panorama at %s" % (serial, self.hostname))
                     else:
-                        raise err.PanDeviceError("Can't find device with serial %s attached to Panorama at %s" %
+                        raise err.PanNotAttachedOnPanorama("Can't find device with serial %s attached to Panorama at %s" %
                                                  (serial, self.hostname))
                 multi_vsys = yesno(entry.findtext("multi-vsys"))
                 try:
@@ -271,10 +271,9 @@ class Panorama(base.PanDevice):
                 if vsys != "shared" and vsys is not None:
                     vsys_entry = entry.find("vsys/entry[@name='%s']" % vsys)
                     if vsys_entry is None:
-                        raise err.PanDeviceError("Can't find device with serial %s and"
-                                                 " vsys %s attached to Panorama at %s" %
-                                                 (serial, vsys, self.hostname)
-                                                 )
+                        raise err.PanNotAttachedOnPanorama("Can't find device with serial %s and"
+                                                           " vsys %s attached to Panorama at %s" %
+                                                           (serial, vsys, self.hostname))
                     vsys_section = filtered_devices_xml.find("entry[@name='%s']/vsys" % serial)
                     vsys_section.append(vsys_entry)
             devices_xml = filtered_devices_xml
