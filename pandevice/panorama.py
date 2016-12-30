@@ -248,8 +248,12 @@ class Panorama(base.PanDevice):
                     continue
                 entry = devices_xml.find("entry[@name='%s']" % serial)
                 if entry is None:
-                    raise err.PanDeviceError("Can't find device with serial %s attached to Panorama at %s" %
-                                             (serial, self.hostname))
+                    if only_connected:
+                        raise err.PanDeviceError("Can't find device with serial %s attached and connected"
+                                                 " to Panorama at %s" % (serial, self.hostname))
+                    else:
+                        raise err.PanDeviceError("Can't find device with serial %s attached to Panorama at %s" %
+                                                 (serial, self.hostname))
                 multi_vsys = yesno(entry.findtext("multi-vsys"))
                 try:
                     vsys = device.vsys
@@ -284,8 +288,8 @@ class Panorama(base.PanDevice):
                 for vsys_entry in entry.findall("vsys/entry"):
                     new_vsys_device = deepcopy(entry)
                     new_vsys_device.set("name", serial)
-                    ET.SubElement(new_vsys_device, "vsysid").text = vsys_entry.get("name")
-                    ET.SubElement(new_vsys_device, "vsysname").text = vsys_entry.findtext("display-name")
+                    ET.SubElement(new_vsys_device, "vsys_id").text = vsys_entry.get("name")
+                    ET.SubElement(new_vsys_device, "vsys_name").text = vsys_entry.findtext("display-name")
                     devices_xml.append(new_vsys_device)
 
         # Create firewall instances

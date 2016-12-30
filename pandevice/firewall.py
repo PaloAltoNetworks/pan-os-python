@@ -327,8 +327,8 @@ class Firewall(PanDevice):
             Var("ip-address", "management_ip"),
             Var("sw-version", "version"),
             Var("multi-vsys", vartype="bool"),
-            Var("vsysid", "vsys", default="vsys1"),
-            Var("vsysname", "vsys_name"),
+            Var("vsys_id", "vsys", default="vsys1"),
+            Var("vsys_name"),
             Var("ha/state/peer/serial", "serial_ha_peer"),
             Var("connected", "state.connected"),
         )
