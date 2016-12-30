@@ -323,7 +323,6 @@ class Firewall(PanDevice):
                 xml, refresh_children, variables)
         op_vars = (
             Var("serial"),
-            Var("ip-address", "hostname"),
             Var("ip-address", "management_ip"),
             Var("sw-version", "version"),
             Var("multi-vsys", vartype="bool"),
