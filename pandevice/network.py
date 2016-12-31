@@ -360,7 +360,7 @@ class Interface(PanObject):
         # Remove any references to the interface across all known
         # children of this pan_device. This does not use 'refresh'.
         # Only pre-refreshed objects are scanned for references.
-        for obj in self.pandevice().findall(PanObject, recursive=True):
+        for obj in self.nearest_pandevice().findall(PanObject, recursive=True):
             if isinstance(obj, device.Vsys):
                 if not include_vsys:
                     continue
