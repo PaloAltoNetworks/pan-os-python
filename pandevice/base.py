@@ -109,7 +109,7 @@ class PanObject(object):
             setattr(self, varname, varvalue)
 
     def __str__(self):
-        return str(getattr(self, self.NAME, None))
+        return self.uid
 
     def __repr__(self):
         return "<%s %s at 0x%x>" % (type(self).__name__, repr(getattr(self, self.NAME, None)), id(self))
@@ -141,9 +141,9 @@ class PanObject(object):
     def uid(self):
         """Returns the unique identifier of this object as a string."""
         if self.NAME is not None:
-            return getattr(self, self.NAME)
+            return str(getattr(self, self.NAME))
         else:
-            return self.__class__.__name__
+            return None
 
     def add(self, child):
         """Add a child node to this node
@@ -864,11 +864,11 @@ class PanObject(object):
         """
         if class_type is None:
             # Find the matching object or return None
-            result = next((child for child in self.children if getattr(child, child.NAME) == name), None)
+            result = next((child for child in self.children if child.uid == name), None)
         else:
             # Find the matching object or return None
             result = next((child for child in self.children if
-                           getattr(child, child.NAME) == name and isinstance(child, class_type)), None)
+                           child.uid == name and isinstance(child, class_type)), None)
         # Search recursively in children
         if result is None and recursive:
             for child in self.children:
@@ -1235,17 +1235,17 @@ class PanObject(object):
                 if references is None:
                     continue
                 elif hasattr(self, "__iter__") and self in references:
-                    if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
+                    if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
                     references.remove(self)
                     if update: obj.update(reference_var)
                 elif hasattr(self, "__iter__") and str(self) in references:
-                    if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
+                    if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
                     references.remove(str(self))
                     if update: obj.update(reference_var)
                 elif references == self or references == str(self):
-                    if reference_name is not None and getattr(obj, reference_type.NAME) == reference_name:
+                    if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
                     references = None
                     if update: obj.update(reference_var)
@@ -2224,7 +2224,7 @@ class VsysImportMixin(object):
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            self.nearest_pandevice().xapi.set(xpath_import, "<member>%s</member>" % getattr(self, self.NAME), retry_on_peer=True)
+            self.nearest_pandevice().xapi.set(xpath_import, "<member>%s</member>" % self.uid, retry_on_peer=True)
 
     def delete_import(self, vsys=None):
         """Delete a vsys import for the object
@@ -2237,7 +2237,7 @@ class VsysImportMixin(object):
             vsys = self.vsys
         if vsys != "shared" and self.XPATH_IMPORT is not None:
             xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            self.nearest_pandevice().xapi.delete(xpath_import + "/member[text()='%s']" % getattr(self, self.NAME), retry_on_peer=True)
+            self.nearest_pandevice().xapi.delete(xpath_import + "/member[text()='%s']" % self.uid, retry_on_peer=True)
 
     def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
         """Set the vsys for this interface
@@ -2607,7 +2607,7 @@ class PanDevice(PanObject):
 
     @property
     def id(self):
-        return getattr(self, self.NAME, '<no-id>')
+        return str(getattr(self, self.NAME, '<no-id>'))
 
     @property
     def api_key(self):
@@ -2882,7 +2882,7 @@ class PanDevice(PanObject):
         return response['result']
 
     def add_commit_lock(self, comment=None, scope="shared", exceptions=True, retry_on_peer=True):
-        self._logger.debug("%s: Add commit lock requested for scope %s" % (self.hostname, scope))
+        self._logger.debug("%s: Add commit lock requested for scope %s" % (self.id, scope))
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "commit-lock")
         subel = ET.SubElement(subel, "add")
@@ -2904,7 +2904,7 @@ class PanDevice(PanObject):
         return True
 
     def remove_commit_lock(self, admin=None, scope="shared", exceptions=True, retry_on_peer=True):
-        self._logger.debug("%s: Remove commit lock requested for scope %s" % (self.hostname, scope))
+        self._logger.debug("%s: Remove commit lock requested for scope %s" % (self.id, scope))
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "commit-lock")
         subel = ET.SubElement(subel, "remove")
@@ -2926,7 +2926,7 @@ class PanDevice(PanObject):
         return True
 
     def add_config_lock(self, comment=None, scope="shared", exceptions=True, retry_on_peer=True):
-        self._logger.debug("%s: Add config lock requested for scope %s" % (self.hostname, scope))
+        self._logger.debug("%s: Add config lock requested for scope %s" % (self.id, scope))
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "add")
@@ -2949,7 +2949,7 @@ class PanDevice(PanObject):
         return True
 
     def remove_config_lock(self, scope="shared", exceptions=True, retry_on_peer=True):
-        self._logger.debug("%s: Remove config lock requested for scope %s" % (self.hostname, scope))
+        self._logger.debug("%s: Remove config lock requested for scope %s" % (self.id, scope))
         cmd = ET.Element("request")
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "remove")
@@ -2982,13 +2982,13 @@ class PanDevice(PanObject):
         return True if response is not None else False
 
     def revert_to_running_configuration(self, retry_on_peer=True):
-        self._logger.debug("%s: Revert to running configuration" % self.hostname)
+        self._logger.debug("%s: Revert to running configuration" % self.id)
         self.xapi.op("<load><config><from>"
                      "running-config.xml"
                      "</from></config></load>", retry_on_peer=retry_on_peer)
 
     def restart(self):
-        self._logger.debug("Requesting restart on device: %s" % (self.hostname,))
+        self._logger.debug("Requesting restart on device: %s" % (self.id,))
         try:
             self.xapi.op("request restart system", cmd_xml=True)
         except pan.xapi.PanXapiError as e:
@@ -3214,7 +3214,7 @@ class PanDevice(PanObject):
             dict: Commit results
 
         """
-        self._logger.debug("Commit initiated on device: %s" % (self.hostname,))
+        self._logger.debug("Commit initiated on device: %s" % (self.id,))
         return self._commit(sync=sync, exception=exception, cmd=cmd)
 
     def _commit(self, cmd=None, exclude=None, commit_all=False,
@@ -3249,7 +3249,7 @@ class PanDevice(PanObject):
                 excluded = ET.SubElement(cmd, "partial")
                 excluded = ET.SubElement(excluded, exclude)
             cmd = ET.tostring(cmd)
-        logger.debug(self.hostname + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s" % (str(commit_all),
+        logger.debug(self.id + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s" % (str(commit_all),
                                                                                                        str(sync),
                                                                                                        str(sync_all),
                                                                                                        cmd,
@@ -3288,7 +3288,7 @@ class PanDevice(PanObject):
 
             if exception and not result['success']:
                 self._logger.debug("Commit failed - device: %s, job: %s, messages: %s, warnings: %s" %
-                                   (self.hostname,
+                                   (self.id,
                                     result['jobid'],
                                     result['messages'],
                                     result['warnings']))
@@ -3296,13 +3296,13 @@ class PanDevice(PanObject):
             else:
                 if result['success']:
                     self._logger.debug("Commit succeeded - device: %s, job: %s, messages: %s, warnings: %s" %
-                                       (self.hostname,
+                                       (self.id,
                                         result['jobid'],
                                         result['messages'],
                                         result['warnings']))
                 else:
                     self._logger.debug("Commit failed - device: %s, job: %s, messages: %s, warnings: %s" %
-                                       (self.hostname,
+                                       (self.id,
                                         result['jobid'],
                                         result['messages'],
                                         result['warnings']))

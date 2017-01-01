@@ -161,7 +161,7 @@ class Panorama(base.PanDevice):
             dict: Commit results
 
         """
-        self._logger.debug("Commit-all initiated on device: %s" % (self.hostname,))
+        self._logger.debug("Commit-all initiated on device: %s" % (self.id,))
 
         if cmd is None:
             # XXX: This only works on PAN-OS 7.0+
@@ -221,7 +221,7 @@ class Panorama(base.PanDevice):
             If 'include_device_groups' is False, returns a list containing new Firewall instances.
 
         """
-        logger.debug(self.hostname + ": refresh_devices called")
+        logger.debug(self.id + ": refresh_devices called")
         try:
             # Test if devices is iterable
             test_iterable = iter(devices)
@@ -250,10 +250,10 @@ class Panorama(base.PanDevice):
                 if entry is None:
                     if only_connected:
                         raise err.PanNotConnectedOnPanorama("Can't find device with serial %s attached and connected"
-                                                 " to Panorama at %s" % (serial, self.hostname))
+                                                 " to Panorama at %s" % (serial, self.id))
                     else:
                         raise err.PanNotAttachedOnPanorama("Can't find device with serial %s attached to Panorama at %s" %
-                                                 (serial, self.hostname))
+                                                 (serial, self.id))
                 multi_vsys = yesno(entry.findtext("multi-vsys"))
                 try:
                     vsys = device.vsys
@@ -273,7 +273,7 @@ class Panorama(base.PanDevice):
                     if vsys_entry is None:
                         raise err.PanNotAttachedOnPanorama("Can't find device with serial %s and"
                                                            " vsys %s attached to Panorama at %s" %
-                                                           (serial, vsys, self.hostname))
+                                                           (serial, vsys, self.id))
                     vsys_section = filtered_devices_xml.find("entry[@name='%s']/vsys" % serial)
                     vsys_section.append(vsys_entry)
             devices_xml = filtered_devices_xml
