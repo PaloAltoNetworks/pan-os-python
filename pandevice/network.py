@@ -879,24 +879,36 @@ class StaticRouteV6(StaticRoute):
         interface (str): Next hop interface
         admin-dist (str): Administrative distance
         metric (int): Metric (Default: 10)
+
     """
     def _setup_xpaths(self):
         self._xpaths.add_profile(value='/routing-table/ipv6/static-route')
 
 
-class VirtualRouter(VsysImportMixin, PanObject):
+class VirtualRouter(VsysImportMixin, VersionedPanObject):
     """Virtual router
 
     Args:
         name (str): Name of virtual router (Default: "default")
         interface (list): List of interface names
+        ad_static (int): Administrative distance for this protocol
+        ad_static_ipv6 (int): Administrative distance for this protocol
+        ad_ospf_int (int): Administrative distance for this protocol
+        ad_ospf_ext (int): Administrative distance for this protocol
+        ad_ospfv3_int (int): Administrative distance for this protocol
+        ad_ospfv3_ext (int): Administrative distance for this protocol
+        ad_ibgp (int): Administrative distance for this protocol
+        ad_ebgp (int): Administrative distance for this protocol
+        ad_rip (int): Administrative distance for this protocol
+
     """
     ROOT = Root.DEVICE
-    XPATH = "/network/virtual-router"
     SUFFIX = ENTRY
     CHILDTYPES = (
         "network.StaticRoute",
         "network.StaticRouteV6",
+        "network.RedistributionProfile",
+        "network.Ospf",
     )
     XPATH_IMPORT = "/network/virtual-router"
 
@@ -905,15 +917,389 @@ class VirtualRouter(VsysImportMixin, PanObject):
         try:
             name = args[0]
         except IndexError:
-            if not "name" in kwargs:
+            if "name" not in kwargs:
                 args = ("default")
         super(VirtualRouter, self).__init__(*args, **kwargs)
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("interface", vartype="member"),
+    def _setup(self):
+        self._xpaths.add_profile(value='/network/virtual-router')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'interface', path='interface', vartype='member'))
+
+        admin_dists = (
+            ('ad_static', 'static'), ('ad_static_ipv6', 'static-ipv6'),
+            ('ad_ospf_int', 'ospf-int'), ('ad_ospf_ext', 'ospf-ext'),
+            ('ad_ospfv3_int', 'ospfv3-int'), ('ad_ospfv3_ext', 'ospfv3-ext'),
+            ('ad_ibgp', 'ibgp'), ('ad_ebgp', 'ebgp'), ('ad_rip', 'rip')
         )
+
+        for var_name, path in admin_dists:
+            params.append(VersionedParamPath(
+                var_name, vartype='int', path='admin-dists/' + path))
+
+        self._params = tuple(params)
+
+
+class RedistributionProfile(VersionedPanObject):
+    """Redistribution Profile
+
+    Args:
+        name (str): Name of profile
+        priority (int): Priority id
+        action (str): 'no-redist' or 'redist'
+        filter_type (tuple): Any of 'static', 'connect', 'rip', 'ospf', or 'bgp'
+        filter_interface (tuple): Filter interface
+        filter_destination (tuple): Filter destination
+        filter_nexthop (tuple): Filter nexthop
+        ospf_filter_pathtype (tuple): Any of 'intra-area', 'inter-area', 'ext-1', or 'ext-2
+        ospf_filter_area (tuple): OSPF filter on area
+        ospf_filter_tag (tuple): OSPF filter on tag
+        bgp_filter_community (tuple): BGP filter on community
+        bgp_filter_extended_community (tuple): BGP filter on extended community
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/protocol/redist-profile')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'priority', vartype='int'))
+        params.append(VersionedParamPath(
+            'action', values=['no-redist', 'redist'], path='action/{action}'))
+        params.append(VersionedParamPath(
+            'filter_type', path='filter/type', vartype='member'))
+        params.append(VersionedParamPath(
+            'filter_interface', path='filter/interface', vartype='member'))
+        params.append(VersionedParamPath(
+            'filter_destination', path='filter/destination', vartype='member'))
+        params.append(VersionedParamPath(
+            'filter_nexthop', path='filter/nexthop', vartype='member'))
+        params.append(VersionedParamPath(
+            'ospf_filter_pathtype', path='filter/ospf/path-type', vartype='member'))
+        params.append(VersionedParamPath(
+            'ospf_filter_area', path='filter/ospf/area', vartype='member'))
+        params.append(VersionedParamPath(
+            'ospf_filter_tag', path='filter/ospf/tag', vartype='member'))
+        params.append(VersionedParamPath(
+            'bgp_filter_community', path='filter/bgp/community', vartype='member'))
+        params.append(VersionedParamPath(
+            'bgp_filter_extended_community', path='filter/bgp/extended-community', vartype='member'))
+
+        self._params = tuple(params)
+
+
+class Ospf(VersionedPanObject):
+    """OSPF Process
+
+    Args:
+        enable (bool): Enable OSPF (Default: True)
+        router_id (str): Router ID in IP format (eg. 1.1.1.1)
+        reject_default_route (bool): Reject default route
+        allow_redist_default_route (bool): Allow redistribution in default route
+        rfc1583 (bool): rfc1583
+        spf_calculation_delay (int): SPF calculation delay
+        lsa_interval (int): LSA interval
+        graceful_restart_enable (bool): Enable OSPF graceful restart
+        gr_grace_period (int): Graceful restart period
+        gr_helper_enable (bool): Graceful restart helper enable
+        gr_strict_lsa_checking (bool): Graceful restart strict lsa checking
+        gr_max_neighbor_restart_time (int): Graceful restart neighbor restart time
+
+    """
+    NAME = None
+    CHILDTYPES = (
+        "network.OspfArea",
+        "network.OspfAuthProfile",
+        "network.OspfExportRules",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/protocol/ospf')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', default=True, path='enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'router_id'))
+        params.append(VersionedParamPath(
+            'reject_default_route', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'allow_redist_default_route', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'rfc1583', vartype='yesno'))
+        # TODO: Add flood prevention
+        params.append(VersionedParamPath(
+            'spf_calculation_delay', path='timers/spf-calculation-delay', vartype='int'))
+        params.append(VersionedParamPath(
+            'lsa_interval', path='timers/lsa-interval', vartype='int'))
+        params.append(VersionedParamPath(
+            'graceful_restart_enable', path='graceful-restart/enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'gr_grace_period', path='graceful-restart/grace-period', vartype='int'))
+        params.append(VersionedParamPath(
+            'gr_helper_enable', path='graceful-restart/helper-enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'gr_strict_lsa_checking', path='graceful-restart/strict-LSA-checking', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'gr_max_neighbor_restart_time', path='graceful-restart/max-neighbor-restart-time', vartype='int'))
+
+        self._params = tuple(params)
+
+
+class OspfArea(VersionedPanObject):
+    """OSPF Area
+
+    Args:
+        name (str): Area in IP format
+        type (str): Type of area, 'normal', 'stub', or 'nssa' (Default: normal)
+        accept_summary (bool): Accept summary route - stub and nssa only
+        default_route_advertise (str): 'disable' or 'advertise' (Default: disable) - stub and nssa only
+        default_route_advertise_metric (int): Default route metric - stub and nssa only
+        default_route_advertise_type (str): 'ext-1' or 'ext2' (Default: ext-2 - nssa only
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.OspfRange",
+        "network.OspfAreaInterface",
+        "network.OspfNssaExternalRange",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/area')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'type', default='normal', values=['normal', 'stub', 'nssa'], path='type/{type}'))
+        params.append(VersionedParamPath(
+            'accept_summary',
+            condition={'type': ['stub', 'nssa']},
+            path='type/{type}/accept-summary',
+            vartype='yesno'))
+        params.append(VersionedParamPath(
+            'default_route_advertise',
+            default='disable',
+            condition={'type': ['stub', 'nssa']},
+            values=['disable', 'advertise'],
+            path='type/{type}/default-route/{default_route_advertise}'))
+        params.append(VersionedParamPath(
+            'default_route_advertise_metric',
+            condition={'type': ['stub', 'nssa'], 'default_route_advertise': 'advertise'},
+            path='type/{type}/default-route/advertise/metric',
+            vartype='int'))
+        params.append(VersionedParamPath(
+            'default_route_advertise_type',
+            default='ext-2',
+            condition={'type': 'nssa', 'default_route_advertise': 'advertise'},
+            values=['ext-1', 'ext-2'],
+            path='type/nssa/default-route/advertise/type'))
+
+        self._params = tuple(params)
+
+
+class OspfRange(VersionedPanObject):
+    """OSPF Range
+
+    Args:
+        name (str): IP network with prefix
+        mode (str): 'advertise' or 'suppress' (Default: advertise)
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/range')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'mode', default='advertise', values=['advertise', 'suppress'], path='{mode}'))
+
+        self._params = tuple(params)
+
+
+class OspfNssaExternalRange(VersionedPanObject):
+    """OSPF NSSA External Range
+
+    Args:
+        name (str): IP network with prefix
+        mode (str): 'advertise' or 'suppress' (Default: advertise)
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/nssa-ext-range')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'mode', default='advertise', values=['advertise', 'suppress'], path='{mode}'))
+
+        self._params = tuple(params)
+
+
+class OspfAreaInterface(VersionedPanObject):
+    """OSPF Area Interface
+
+    Args:
+        name (str): Name of the interface (interface must exist)
+        enable (bool): OSPF enabled on this interface
+        passive (bool): Passive mode
+        link_type (str): Link type, 'broadcast', 'p2p', or 'p2mp' (Default: broadcast)
+        metric (int): Metric
+        priority (int): Priority id
+        hello_interval (int): Hello interval
+        dead_counts (int): Dead counts
+        retransmit_interval (int): Retransmit interval
+        transit_delay (int): Transit delay
+        gr_delay (int): Graceful restart delay
+        authentication (str): Reference to a :class:`pandevice.network.OspfAuthProfile`
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.OspfNeighbor",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/interface')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'passive', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'link_type', default='broadcast', values=['broadcast', 'p2p', 'p2mp'], path='link-type/{link_type}'))
+        params.append(VersionedParamPath(
+            'metric', vartype='int'))
+        params.append(VersionedParamPath(
+            'priority', vartype='int'))
+        params.append(VersionedParamPath(
+            'hello_interval', vartype='int'))
+        params.append(VersionedParamPath(
+            'dead_counts', vartype='int'))
+        params.append(VersionedParamPath(
+            'retransmit_interval', vartype='int'))
+        params.append(VersionedParamPath(
+            'transit_delay', vartype='int'))
+        params.append(VersionedParamPath(
+            'gr_delay', vartype='int'))
+        params.append(VersionedParamPath(
+            'authentication'))
+
+        self._params = tuple(params)
+
+
+class OspfNeighbor(VersionedPanObject):
+    """OSPF Neighbor
+
+    Args:
+        name (str): IP of neighbor
+        metric (int): Metric
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/neighbor')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'metric', vartype='int'))
+
+        self._params = tuple(params)
+
+
+class OspfAuthProfile(VersionedPanObject):
+    """OSPF Authentication Profile
+
+    Args:
+        name (str): Name of Auth Profile
+        type (str): 'password' or 'md5'
+        password (str): The password if type is set to 'password'.
+            If type is set to 'md5', add a :class:`pandevice.network.OspfAuthProfileMd5`
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.OspfAuthProfileMd5",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/auth-profile')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'type', values=['password', 'md5'], path='{type}'))
+        params.append(VersionedParamPath(
+            'password', condition={'type': 'password'}, path='{type}'))
+
+        self._params = tuple(params)
+
+
+class OspfAuthProfileMd5(VersionedPanObject):
+    """OSPF Authentication Profile
+
+    Args:
+        keyid (int): Identifier for key
+        key (str): The authentication key
+        preferred (bool): This key is preferred
+
+    """
+    SUFFIX = ENTRY
+    NAME = 'keyid'
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/md5')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'key'))
+        params.append(VersionedParamPath(
+            'preferred', vartype='yesno'))
+
+        self._params = tuple(params)
+
+
+class OspfExportRules(VersionedPanObject):
+    """OSPF Export Rules
+
+    Args:
+        name (str): IP subnet or :class:`pandevice.network.RedistributionProfile`
+        new_path_type (str): New path type, 'ext-1' or 'ext-2' (Default: ext-2)
+        new_tag (str): New tag (int or IP format)
+        metric (int): Metric
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/export-rules')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'new_path_type', default='ext-2', values=['ext-1', 'ext-2']))
+        params.append(VersionedParamPath(
+            'new_tag'))
+        params.append(VersionedParamPath(
+            'metric', vartype='int'))
+
+        self._params = tuple(params)
 
 
 class ManagementProfile(VersionedPanObject):
