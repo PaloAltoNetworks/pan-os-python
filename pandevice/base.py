@@ -475,7 +475,7 @@ class PanObject(object):
         if method in self.CHILDMETHODS:
             getattr(self, "child_"+method)()
         for child in self.children:
-            child.check_child_methods(method)
+            child._check_child_methods(method)
 
     def apply(self):
         """Apply this object to the device, replacing any existing object of the same name
