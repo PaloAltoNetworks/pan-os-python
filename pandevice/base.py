@@ -1897,6 +1897,8 @@ class VersionedParamPath(VersioningSupport):
             version, kwargs)
 
     def _cast_version_value(self, value):
+        if value is None:
+            value = {}
         return ParamPath(self.name, **value)
 
     def __repr__(self):
@@ -1973,6 +1975,9 @@ class ParamPath(object):
         self.condition = condition or {}
         self.values = values or []
 
+        if self.path is None:
+            self.path = self.param.replace('_', '-')
+
     def about(self, version_header=None):
         """Returns information about this ParamPath as a dict."""
         info = {
@@ -1992,7 +1997,7 @@ class ParamPath(object):
             self.__class__.__name__, self.param, id(self))
 
     def _value_as_list(self, value):
-        if hasattr(value, 'append'):
+        if hasattr(value, '__iter__'):
             for v in value:
                 yield str(v)
         else:
@@ -2021,7 +2026,8 @@ class ParamPath(object):
         elif value is None and self.vartype != 'stub':
             return None
         for condition_key, condition_value in self.condition.items():
-            if settings[condition_key] != condition_value:
+            condition_value = pandevice.string_or_list(condition_value)
+            if settings[condition_key] not in condition_value:
                 return None
 
         e = elm
