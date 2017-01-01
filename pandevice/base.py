@@ -1260,6 +1260,9 @@ class PanObject(object):
                 var.append(self)
                 setattr(obj, reference_var, var)
                 if update: obj.update(reference_var)
+            elif hasattr(var, "__iter__"):
+                # The reference already exists so do nothing
+                pass
             elif var != self and var != str(self):
                 setattr(obj, reference_var, self)
                 if update: obj.update(reference_var)
