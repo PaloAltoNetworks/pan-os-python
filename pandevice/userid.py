@@ -160,6 +160,8 @@ class UserId(object):
                    eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
 
         """
+        if not users:
+            return
         root, payload = self._create_uidmessage()
         login = payload.find("login")
         if login is None:
@@ -197,6 +199,8 @@ class UserId(object):
                    eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
 
         """
+        if not users:
+            return
         root, payload = self._create_uidmessage()
         logout = payload.find("logout")
         if logout is None:
@@ -221,6 +225,8 @@ class UserId(object):
             register = ET.SubElement(payload, "register")
         ip = list(set(string_or_list(ip)))
         tags = list(set(string_or_list(tags)))
+        if not tags:
+            return
         tags = [self.prefix+t for t in tags]
         for c_ip in ip:
             tagelement = register.find("./entry[@ip='%s']/tag" % c_ip)
@@ -248,6 +254,8 @@ class UserId(object):
             unregister = ET.SubElement(payload, "unregister")
         ip = list(set(string_or_list(ip)))
         tags = list(set(string_or_list(tags)))
+        if not tags:
+            return
         tags = [self.prefix+t for t in tags]
         for c_ip in ip:
             tagelement = unregister.find("./entry[@ip='%s']/tag" % c_ip)
