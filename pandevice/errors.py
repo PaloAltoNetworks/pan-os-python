@@ -97,3 +97,6 @@ class PanHAConfigSyncFailed(PanDeviceXapiError):
 
 class PanHASyncInProgress(PanDeviceXapiError):
     pass
+
+class PanObjectError(PanDeviceError):
+    pass

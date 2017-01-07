@@ -1268,7 +1268,7 @@ class OspfAuthProfileMd5(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'key'))
+            'key', vartype='encrypted'))
         params.append(VersionedParamPath(
             'preferred', vartype='yesno'))
 

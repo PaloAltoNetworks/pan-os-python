@@ -26,6 +26,8 @@ import re
 import sys
 import time
 import xml.etree.ElementTree as ET
+import base64
+import hashlib
 
 import pandevice
 from pandevice import yesno
@@ -450,7 +452,7 @@ class PanObject(object):
         raise ValueError('No suffix or XPATH defined for {0}'.format(
                          self.__class__.__name__))
 
-    def _subelements(self):
+    def _subelements(self, comparison_element=False):
         """Generator function to turn children into XML objects.
 
         Yields:
@@ -468,7 +470,10 @@ class PanObject(object):
             e = root
             for path in xpath_sections:
                 e = ET.SubElement(e, path)
-            e.append(child.element())
+            if comparison_element:
+                e.append(child.comparison_element())
+            else:
+                e.append(child.element())
             yield root
 
     def _check_child_methods(self, method):
@@ -476,6 +481,28 @@ class PanObject(object):
             getattr(self, "child_"+method)()
         for child in self.children:
             child._check_child_methods(method)
+
+    def equal(self, panobject, force=False):
+        """Compare this object to another object
+
+        Equality of the objects is determined by the XML they generate, not by the
+        values of their variables.
+
+        Args:
+            panobject (PanObject): The object to compare with this object
+            force (bool): Do not raise a PanObjectError if the objects are different classes
+
+        Raises:
+            PanObjectError: Raised if the objects are different types that
+                would not normally be comparable
+
+        Returns:
+            bool: True if the XML of the objects is equal, False if not
+
+        """
+        if not force and type(self) != type(panobject):
+            raise err.PanObjectError("Object {0} is not comparable to {1}".format(type(self), type(panobject)))
+        return self.element_str() == panobject.element_str()
 
     def apply(self):
         """Apply this object to the device, replacing any existing object of the same name
@@ -1677,9 +1704,6 @@ class VersionedPanObject(PanObject):
         except AttributeError:
             pass
 
-        for param in params:
-            settings[param.name] = param.value
-
         paths = []
         for param in params:
             settings[param.name] = param.value
@@ -1713,6 +1737,51 @@ class VersionedPanObject(PanObject):
         ))
 
         return ans
+
+    def comparison_element(self):
+        """Return an xml.etree.ElementTree for this object and its children.
+
+        Returns:
+            An xml.etree.ElementTree instance representing the xml form of this
+                object and its children
+
+        """
+        ans = self._root_element()
+        paths, stubs, settings = self._build_element_info()
+
+        self.xml_merge(ans, itertools.chain(
+            (p.element(self._root_element(), settings, sha1=True) for p in paths),
+            (s.element(self._root_element(), settings, sha1=True) for s in stubs),
+            self._subelements(comparison_element=True),
+        ))
+
+        return ans
+
+    def equal(self, panobject, force=False):
+        """Compare this object to another object
+
+        Equality of the objects is determined by the XML they generate, not by the
+        values of their variables.
+
+        Args:
+            panobject (VersionedPanObject): The object to compare with this object
+            force (bool): Do not raise a PanObjectError if the objects are different classes
+
+        Raises:
+            PanObjectError: Raised if the objects are different types that
+                would not normally be comparable
+
+        Returns:
+            bool: True if the XML of the objects is equal, False if not
+
+        """
+        if type(self) != type(panobject) and not force:
+            raise err.PanObjectError("Object {0} is not comparable to {1}".format(type(self), type(panobject)))
+
+        self_element = self.comparison_element()
+        other_element = panobject.comparison_element()
+
+        return ET.tostring(self_element) == ET.tostring(other_element)
 
     def _get_param_specific_info(self, param):
         """Gets a tuple of info for the given parameter.
@@ -2006,7 +2075,7 @@ class ParamPath(object):
         else:
             yield str(value)
 
-    def element(self, elm, settings):
+    def element(self, elm, settings, sha1=False):
         """Create the xml.etree.ElementTree for this parameter.
 
         Args:
@@ -2014,6 +2083,7 @@ class ParamPath(object):
                 onto this param's XML.
             settings (dict): All parameter settings for the
                 ``VersionedPanObject``.
+            sha1 (bool): Hash encrypted fields for comparison
 
         Returns:
             xml.etree.ElementTree: The ``elm`` passed in, modified to contain
@@ -2066,10 +2136,23 @@ class ParamPath(object):
             pass
         elif self.vartype == 'int':
             e.text = str(int(value))
+        elif self.vartype == 'encrypted' and sha1:
+            e.text = self._sha1_hash(str(value))
         else:
             e.text = str(value)
 
         return elm
+
+    @staticmethod
+    def _sha1_hash(string):
+        # Check if this string is cleartext or encrypted
+        if string.startswith('-'):
+            # Get sha1 part of encrypted string
+            return string[5:33]
+        else:
+            # Sha1 hash the cleartext value
+            sha1 = hashlib.sha1(string)
+            return base64.b64encode(sha1.digest())
 
     def parse_xml(self, xml, settings, possibilities):
         """Parse the XML to find this parameter's value.
