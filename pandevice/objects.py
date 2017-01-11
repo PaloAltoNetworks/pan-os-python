@@ -156,7 +156,7 @@ class ServiceObject(VersionedPanObject):
         name (str): Name of the object
         protocol (str): Protocol of the service, either tcp or udp
         source_port (str): Source port of the protocal, if any
-        port (str): Destination port of the service
+        destination_port (str): Destination port of the service
         description (str): Description of this object
         tag (list): Administrative tags
     """
@@ -176,7 +176,7 @@ class ServiceObject(VersionedPanObject):
         params.append(VersionedParamPath(
             'source_port', path='protocol/{protocol}/source-port'))
         params.append(VersionedParamPath(
-            'port', path='protocol/{protocol}/port', default='1'))
+            'destination_port', path='protocol/{protocol}/port'))
         params.append(VersionedParamPath(
             'description', path='description'))
         params.append(VersionedParamPath(
@@ -219,21 +219,21 @@ class ApplicationObject(VersionedPanObject):
         category (str): Application category
         subcategory (str): Application subcategory
         technology (str): Application technology
-        risk (str): 
-        default_type (str): 
-        default_value (list): 
-        parent_app (str): 
-        timeout (str): 
-        tcp_timeout (str): 
-        udp_timeout (str): 
-        tcp_half_closed_timeout (str): 
-        tcp_time_wait_timeout (str): 
-        evasive_behavior (bool): 
-        consume_big_bandwidth (bool): 
-        used_by_malware (bool): 
-        able_to_transfer_file (bool): 
-        has_known_vulnerability (bool): 
-        tunnel_other_application (bool): 
+        risk (int): Risk (1-5) of the application
+        default_type (str): Default identification type of the application
+        default_value (list): Values for the default type
+        parent_app (str): Parent Application for which this app falls under
+        timeout (int): Default timeout
+        tcp_timeout (int): TCP timeout
+        udp_timeout (int): UDP timeout
+        tcp_half_closed_timeout (int): TCP half closed timeout 
+        tcp_time_wait_timeout (int): TCP wait time timeout
+        evasive_behavior (bool): Applicaiton is actively evasive
+        consume_big_bandwidth (bool): Application uses large bandwidth
+        used_by_malware (bool): Application is used by malware
+        able_to_transfer_file (bool): Application can do file transfers
+        has_known_vulnerability (bool): Application has known vulnerabilities
+        tunnel_other_application (bool):
         tunnel_applications (bool): 
         prone_to_misuse (bool): 
         pervasive_use (bool): 
@@ -264,7 +264,7 @@ class ApplicationObject(VersionedPanObject):
         params.append(VersionedParamPath(
             'technology', path='technology'))
         params.append(VersionedParamPath(
-            'risk', path='risk'))
+            'risk', path='risk', vartype='int'))
         params.append(VersionedParamPath(
             'default_type', path='default/{default_type}', 
             values=['port', 'ident-by-ip-protocol', 'ident-by-icmp-type', 'ident-by-icmp6-type']))
@@ -273,15 +273,15 @@ class ApplicationObject(VersionedPanObject):
         params.append(VersionedParamPath(
             'parent_app', path='parent-app'))
         params.append(VersionedParamPath(
-            'timeout', path='timeout'))
+            'timeout', path='timeout', vartype='int'))
         params.append(VersionedParamPath(
-            'tcp_timeout', path='tcp-timeout'))
+            'tcp_timeout', path='tcp-timeout', vartype='int'))
         params.append(VersionedParamPath(
-            'udp_timeout', path='udp-timeout'))
+            'udp_timeout', path='udp-timeout', vartype='int'))
         params.append(VersionedParamPath(
-            'tcp_half_closed_timeout', path='tcp-half-closed-timeout'))
+            'tcp_half_closed_timeout', path='tcp-half-closed-timeout', vartype='int'))
         params.append(VersionedParamPath(
-            'tcp_time_wait_timeout', path='tcp-time-wait-timeout'))
+            'tcp_time_wait_timeout', path='tcp-time-wait-timeout', vartype='int'))
         params.append(VersionedParamPath(
             'evasive_behavior', path='evasive-behavior', vartype='yesno'))
         params.append(VersionedParamPath(
@@ -345,10 +345,10 @@ class ApplicationFilter(VersionedPanObject):
 
     Args:
         name (str): Name of the object
-        category (str): Application category
-        subcategory (str): Application subcategory
-        technology (str): Application technology 
-        risk (str): Application risk
+        category (list): Application category
+        subcategory (list): Application subcategory
+        technology (list): Application technology 
+        risk (list): Application risk
         evasive (bool): 
         excessive_bandwidth_use (bool): 
         prone_to_misuse (bool): 
