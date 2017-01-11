@@ -2021,8 +2021,12 @@ class ParamPath(object):
         elif value is None and self.vartype != 'stub':
             return None
         for condition_key, condition_value in self.condition.items():
-            if settings[condition_key] != condition_value:
-                return None
+            try:
+                if settings[condition_key] not in condition_value:
+                    return None
+            except TypeError:
+                if settings[condition_key] != condition_value:
+                    return None
 
         e = elm
 
@@ -2080,6 +2084,15 @@ class ParamPath(object):
         if not self.path:
             # No path, so this is just a parameter ParamPath
             return
+
+        # Check that conditional is met
+        for condition_key, condition_value in self.condition.items():
+            try:
+                if settings[condition_key] not in condition_value:
+                    return
+            except TypeError:
+                if settings[condition_key] != condition_value:
+                    return
 
         e = xml
         for p in self.path.split('/'):
