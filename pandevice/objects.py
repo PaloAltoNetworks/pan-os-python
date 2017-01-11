@@ -252,8 +252,6 @@ class ApplicationObject(VersionedPanObject):
         # xpaths
         self._xpaths.add_profile(value='/application')
 
-        # TODO: default_types other than 'port' are not "member" params, need to figure out what to do with those
-
         # params
         params = []
 
@@ -269,7 +267,17 @@ class ApplicationObject(VersionedPanObject):
             'default_type', path='default/{default_type}', 
             values=['port', 'ident-by-ip-protocol', 'ident-by-icmp-type', 'ident-by-icmp6-type']))
         params.append(VersionedParamPath(
-            'default_value', path='default/{default_type}', vartype='member'))
+            'default_port', path='default/{default_type}', vartype='member',
+            condition={'default_type': 'port'}))
+        params.append(VersionedParamPath(
+            'default_ip_protocol', path='default/{default_type}', vartype='int',
+            condition={'default_type': 'ident-by-ip-protocol'}))
+        params.append(VersionedParamPath(
+            'default_icmp_type', path='default/{default_type}/type', vartype='int',
+            condition={'default_type': ['ident-by-icmp-type', 'ident-by-icmp6-type']}))
+        params.append(VersionedParamPath(
+            'default_icmp_code', path='default/{default_type}/code', vartype='int',
+            condition={'default_type': ['ident-by-icmp-type', 'ident-by-icmp6-type']}))
         params.append(VersionedParamPath(
             'parent_app', path='parent-app'))
         params.append(VersionedParamPath(
