@@ -2394,6 +2394,16 @@ class PanDevice(PanObject):
 
         """
 
+        # create a predefined object subsystem
+        # avoid a premature import
+        import predefined
+        self.predefined = predefined.Predefined(self)
+        """Predefined object subsystem
+
+        See Also: :class:`pandevice.predefined`
+
+        """
+
     def get_device_version(self):
         '''Gets the current version on the PanDevice.'''
         if self._version_info is None:

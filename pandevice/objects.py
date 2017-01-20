@@ -264,7 +264,7 @@ class ApplicationObject(VersionedPanObject):
         params.append(VersionedParamPath(
             'risk', path='risk', vartype='int'))
         params.append(VersionedParamPath(
-            'default_type', path='default/{default_type}', 
+            'default_type', path='default/{default_type}',
             values=['port', 'ident-by-ip-protocol', 'ident-by-icmp-type', 'ident-by-icmp6-type']))
         params.append(VersionedParamPath(
             'default_port', path='default/{default_type}', vartype='member',
