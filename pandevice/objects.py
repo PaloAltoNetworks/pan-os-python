@@ -150,7 +150,7 @@ class Tag(PanObject):
 
 
 class ServiceObject(VersionedPanObject):
-    """Address Object
+    """Service Object
 
     Args:
         name (str): Name of the object
@@ -234,7 +234,7 @@ class ApplicationObject(VersionedPanObject):
         able_to_transfer_file (bool): Application can do file transfers
         has_known_vulnerability (bool): Application has known vulnerabilities
         tunnel_other_application (bool):
-        tunnel_applications (bool): 
+        tunnel_applications (list): List of tunneled applications
         prone_to_misuse (bool): 
         pervasive_use (bool): 
         file_type_ident (bool): 
@@ -303,7 +303,7 @@ class ApplicationObject(VersionedPanObject):
         params.append(VersionedParamPath(
             'tunnel_other_application', path='tunnel-other-application', vartype='yesno'))
         params.append(VersionedParamPath(
-            'tunnel_applications', path='tunnel-applications', vartype='yesno'))
+            'tunnel_applications', path='tunnel-applications', vartype='member'))
         params.append(VersionedParamPath(
             'prone_to_misuse', path='prone-to-misuse', vartype='yesno'))
         params.append(VersionedParamPath(
@@ -406,5 +406,32 @@ class ApplicationFilter(VersionedPanObject):
             'pervasive', path='pervasive', vartype='yesno'))
         params.append(VersionedParamPath(
             'tag', path='tag', vartype='member'))
+
+        self._params = tuple(params)
+    
+
+class ApplicationContainer(VersionedPanObject):
+    """ApplicationContainer object
+
+    This is a special class that is used in the predefined modual.
+    It acts much like an ApplicationGroup objects but exists only
+    in the predefined context. It is more or less a way that 
+    Palo Alto groups predefined applications together.
+
+    Args:
+        applications (list): List of memeber applications
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/application-container')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'applications', path='functions', vartype='member'))
 
         self._params = tuple(params)
