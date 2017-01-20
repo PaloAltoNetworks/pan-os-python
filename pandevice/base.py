@@ -2027,6 +2027,10 @@ class ParamPath(object):
             except TypeError:
                 if settings[condition_key] != condition_value:
                     return None
+            except KeyError:
+                # this condition refrences a param that does not exsit and it is
+                # thus not needed
+                return None
 
         e = elm
 
@@ -2093,6 +2097,10 @@ class ParamPath(object):
             except TypeError:
                 if settings[condition_key] != condition_value:
                     return
+            except KeyError:
+                # this condition refrences a param that does not exsit and it is
+                # thus not needed
+                return None
 
         e = xml
         for p in self.path.split('/'):

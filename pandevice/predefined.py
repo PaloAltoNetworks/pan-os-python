@@ -28,6 +28,7 @@ from pandevice import string_or_list_or_none
 from pan.xapi import PanXapiError
 from pandevice.updater import PanOSVersion
 from base import VersionedPanObject
+import objects
 
 logger = getlogger(__name__)
 
@@ -50,8 +51,7 @@ class Predefined(VersionedPanObject):
     # /config/predefined contains A LOT of stuff including threats, so let's get only what we need
     PREDEFINED_ROOT = "/config/predefined"
     XPATH = PREDEFINED_ROOT
-    _SUFFIX = "/node()[name()='service' or name()='application-container' or name()='application']"
-    SUFFIX = ""
+    SUFFIX = None
 
     CHILDTYPES = (
         "objects.ServiceObject",
@@ -71,7 +71,7 @@ class Predefined(VersionedPanObject):
 
     def xpath(self):
         """overridden to force the redefined xpath special case"""
-        return self.PREDEFINED_ROOT + self._SUFFIX
+        return self.XPATH
     
     def _refresh_xml(self, running_config, exceptions):
         """override to ignore suffix check at the end"""
@@ -106,15 +106,12 @@ class Predefined(VersionedPanObject):
 
     def retrieve(self):
         
-        #api_action = self.parent.xapi.get
+        self.objects = {}
 
-        #try:
-        #    xml = api_action(self.PREDEFINED_ROOT, retry_on_peer=self.parent.HA_SYNC)
-        #except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
-        #    if exceptions:
-        #        raise err.PanObjectMissing(err_msg, pan_device=device)
-        #    return
-        #
-        #self.refreshall_from_xml(xml)
+        objects.ServiceObject.refreshall(self)
+        objects.ApplicationContainer.refreshall(self)
+        objects.ApplicationObject.refreshall(self)
 
-        self.refresh()
+
+
+
