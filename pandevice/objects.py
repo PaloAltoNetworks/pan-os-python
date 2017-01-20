@@ -270,7 +270,7 @@ class ApplicationObject(VersionedPanObject):
             'default_port', path='default/{default_type}', vartype='member',
             condition={'default_type': 'port'}))
         params.append(VersionedParamPath(
-            'default_ip_protocol', path='default/{default_type}', vartype='int',
+            'default_ip_protocol', path='default/{default_type}',
             condition={'default_type': 'ident-by-ip-protocol'}))
         params.append(VersionedParamPath(
             'default_icmp_type', path='default/{default_type}/type', vartype='int',
