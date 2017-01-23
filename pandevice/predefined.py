@@ -36,15 +36,15 @@ logger = getlogger(__name__)
 class Predefined(VersionedPanObject):
     """Predefined Objects Subsystem of Firewall
 
-    A member of a firewall.Firewall object that has special methods for
+    A member of a base.PanDevice object that has special methods for
     interacting with the predefned objects of the firewall
 
     This class is typically not instantiated by anything but the
-    base.PanDevice class itself. There is an instance of this UserId class
+    base.PanDevice class itself. There is an instance of this Predefined class
     inside every instantiated base.PanDevice class.
 
     Args:
-        device (base.PanDevice): The firewall or Panorama this user-id subsystem leverages
+        device (base.PanDevice): The firewall or Panorama this Predefined subsystem leverages
 
     """
 
@@ -67,10 +67,12 @@ class Predefined(VersionedPanObject):
 
         self.parent = device
 
-        self.objects = {}
+        self.service_objects = {}
+        self.application_objects = {}
+        self.application_container_objects = {}
 
     def xpath(self):
-        """overridden to force the redefined xpath special case"""
+        """overridden to force the predefined xpath special case"""
         return self.XPATH
     
     def _refresh_xml(self, running_config, exceptions):
@@ -96,7 +98,7 @@ class Predefined(VersionedPanObject):
             else:
                 return
 
-        # in this case, "result" is the rool element we want 
+        # in this case, "result" is the root element we want 
         elm = root.find("result")
 
         if elm is None and exceptions:
@@ -105,13 +107,67 @@ class Predefined(VersionedPanObject):
         return elm
 
     def retrieve(self):
+        """Retrieve the predefined obejcts from the parent PanDevice
+
+        This is more-or-less a wrapper method to envoke calls to pull in
+        predefined ServiceObjects, ApplicationObjects, and ApplicationContainer objects.
         
-        self.objects = {}
+        """
 
+        # clear out everything to start
+        self.service_objects = {}
+        self.application_objects = {}
+        self.application_container_objects = {}
+        self.children = []
+
+        # now we refresh each object type. this puts the objects
+        # as children of self, so we loop through for dict insertion
+        # and finally clear the cildren list for the next onbject type
         objects.ServiceObject.refreshall(self)
-        objects.ApplicationContainer.refreshall(self)
+        for obj in self.children:
+            self.service_objects[obj.name] = obj
+        self.children = []
+
         objects.ApplicationObject.refreshall(self)
+        for obj in self.children:
+            self.application_objects[obj.name] = obj
+        self.children = []
 
+        objects.ApplicationContainer.refreshall(self)
+        for obj in self.children:
+            self.application_container_objects[obj.name] = obj
+        self.children = []
+    
+    def find(self, name, class_type=None, recursive=False):
+        """override to use the internal dicts"""
 
+        if class_type is objects.ServiceObject:
+            return self.service_objects.get(name)
+        elif class_type is objects.ApplicationObject:
+            return self.application_objects.get(name)
+        elif class_type is objects.ApplicationContainer:
+            return self.application_container_objects.get(name)
+        else:
+            return None
 
+    def findall(self, class_type, recursive=False):
+        """override to use the internal dicts"""
 
+        if class_type is objects.ServiceObject:
+            return list(self.service_objects.values())
+        elif class_type is objects.ApplicationObject:
+            return list(self.application_objects.values())
+        elif class_type is objects.ApplicationContainer:
+            return list(self.application_container_objects.values())
+        else:
+            return []
+    
+    # these methods are certainly not needed.
+    def find_or_create(self, name, class_type, *args, **kwargs):
+        raise NotImplementedError()
+    
+    def findall_or_create(self, class_type, *args, **kwargs):
+        raise NotImplementedError()
+
+    def find_index(self, name=None, class_type=None):
+        raise NotImplementedError()
