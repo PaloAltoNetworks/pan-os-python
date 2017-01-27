@@ -500,6 +500,8 @@ class PanObject(object):
             bool: True if the XML of the objects is equal, False if not
 
         """
+        if not panobject:
+            return False
         if not force and type(self) != type(panobject):
             raise err.PanObjectError("Object {0} is not comparable to {1}".format(type(self), type(panobject)))
         return self.element_str() == panobject.element_str()
@@ -1775,6 +1777,8 @@ class VersionedPanObject(PanObject):
             bool: True if the XML of the objects is equal, False if not
 
         """
+        if not panobject:
+            return False
         if type(self) != type(panobject) and not force:
             raise err.PanObjectError("Object {0} is not comparable to {1}".format(type(self), type(panobject)))
 
