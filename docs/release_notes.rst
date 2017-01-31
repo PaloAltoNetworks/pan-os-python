@@ -20,6 +20,8 @@ v3.7.1
 Previous Versions
 =================
 
+.. _v530:
+
 App v5.3.0
 ----------
   * GlobalProtect Dashboard
@@ -27,9 +29,11 @@ App v5.3.0
 
 ..  note::
   * App 5.3.x requires Add-on 3.7.x
-  * The App setup screen has moved to the Add-on. If you has previous set firewall credentials
-    or a WildFire API key in the App setup screen, you'll need to set them in the Add-on
-    setup screen.  See :ref:`initialsetup` in the :ref:`gettingstarted` Guide.
+  * REQUIRED ACTION: The App setup screen has moved to the Add-on. If you had previously set firewall credentials
+    or a WildFire API key in the App setup screen, you'll need to set them again in the Add-on
+    setup screen.  See :ref:`initialsetup` in the updated :ref:`gettingstarted` Guide.
+    You may delete the file ``$SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/passwords.conf``
+    to remove the credentails from the App, since they are no longer used.
   * Datamodel acceleration might rebuild itself after installation due to updated constraints
   * Eventtype pan_threat no longer includes these log_subtypes: url, data, file, and wildfire.
     You might need to update custom searches or panels you created that leverage
