@@ -18,22 +18,16 @@
 
 """Retrieving and parsing predefined objects from the firewall"""
 
-import xml.etree.ElementTree as ET
-from copy import deepcopy
-
 from pandevice import getlogger
 import pandevice.errors as err
-from pandevice import string_or_list
-from pandevice import string_or_list_or_none
 from pan.xapi import PanXapiError
 from pandevice.updater import PanOSVersion
-from base import VersionedPanObject
 import objects
 
 logger = getlogger(__name__)
 
 
-class Predefined(VersionedPanObject):
+class Predefined(object):
     """Predefined Objects Subsystem of Firewall
 
     A member of a base.PanDevice object that has special methods for
@@ -48,22 +42,20 @@ class Predefined(VersionedPanObject):
 
     """
 
-    # /config/predefined contains A LOT of stuff including threats, so let's get only what we need
-    PREDEFINED_ROOT = "/config/predefined"
-    XPATH = PREDEFINED_ROOT
-    SUFFIX = None
-
-    CHILDTYPES = (
-        "objects.ServiceObject",
-        "objects.ApplicationObject",
-        "objects.ApplicationContainer",
-    )
+    # xpath
+    PREDEFINED_ROOT_XPATH = "/config/predefined"
+    ENTRY = "/entry[@name='%s']"
+    SERVICE = "/service"
+    # apps and containers share a namespace so we need to search both
+    APPLICATION_CONTAINS_XPATH = '//*[contains(local-name(), "application")]'
+    ALL_APPLICATION_XPATH = PREDEFINED_ROOT_XPATH + APPLICATION_CONTAINS_XPATH
+    SINGLE_APPLICATION_XPATH = ALL_APPLICATION_XPATH + ENTRY
+    ALL_SERVICE_XPATH = PREDEFINED_ROOT_XPATH + SERVICE
+    SINGLE_SERVIE_XPATH = ALL_SERVICE_XPATH + ENTRY
 
     def __init__(self, device=None, *args, **kwargs):
         # Create a class logger
         self._logger = getlogger(__name__ + "." + self.__class__.__name__)
-
-        super(Predefined, self).__init__(*args, **kwargs)
 
         self.parent = device
 
@@ -71,103 +63,207 @@ class Predefined(VersionedPanObject):
         self.application_objects = {}
         self.application_container_objects = {}
 
-    def xpath(self):
-        """overridden to force the predefined xpath special case"""
-        return self.XPATH
-    
-    def _refresh_xml(self, running_config, exceptions):
-        """override to ignore suffix check at the end"""
-        # Get the root of the xml to parse
-        device = self.nearest_pandevice()
-        msg = '{0}: refreshing xml on {1} object {2}'.format(
-            device.id, type(self), self.uid)
-        logger.debug(msg)
-        if running_config:
-            api_action = device.xapi.show
-        else:
-            api_action = device.xapi.get
-        xpath = self.xpath()
-        err_msg = "Object doesn't exist: {0}".format(xpath)
+    def _get_xml(self, xpath):
+        """use the parent to get the xml given the xpath"""
 
-        # Query the live device
+        err_msg = "Predefined object(s) does not exist with xpath: {0}".format(xpath)
+
         try:
-            root = api_action(xpath, retry_on_peer=self.HA_SYNC)
-        except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
-            if exceptions:
-                raise err.PanObjectMissing(err_msg, pan_device=device)
-            else:
-                return
+            root = self.parent.xapi.get(xpath, retry_on_peer=self.parent.HA_SYNC)
+        except (PanXapiError, err.PanNoSuchNode) as e:
+            raise err.PanObjectMissing(err_msg, pan_device=self.parent)
 
-        # in this case, "result" is the root element we want 
         elm = root.find("result")
-
-        if elm is None and exceptions:
-            raise err.PanObjectMissing(err_msg, pan_device=device)
-
         return elm
 
-    def retrieve(self):
-        """Retrieve the predefined obejcts from the parent PanDevice
+    def _parse_application_xml(self, xml):
+        """parse the xml into actual objects and store them in the dicts"""
+        
+        for elm in xml:
+            if elm.find("functions") is not None:
+                # this is an ApplicationContainerObject
+                obj = objects.ApplicationContainer()
+                obj.refresh(xml=elm)
+                self.application_container_objects[obj.name] = obj
+            else:
+                # this is an ApplicaitonObject
+                obj = objects.ApplicationObject()
+                obj.refresh(xml=elm)
+                self.application_objects[obj.name] = obj
+    
+    def _parse_service_xml(self, xml):
+        """parse the xml into actual objects and store them in the dicts"""
+        
+        for elm in xml:
+            obj = objects.ServiceObject()
+            obj.refresh(xml=elm)
+            self.service_objects[obj.name] = obj
 
-        This is more-or-less a wrapper method to envoke calls to pull in
-        predefined ServiceObjects, ApplicationObjects, and ApplicationContainer objects.
+    def refresh_application(self, name):
+        """Refesh a Single Predefined Applciation
+
+        This method refreshes single predefined applciation or application container 
+        (predefined only object). 
+
+        Args:
+            name (str): Name of the application to refresh
         
         """
 
-        # clear out everything to start
-        self.service_objects = {}
+        xpath = self.SINGLE_APPLICATION_XPATH % name
+        xml = self._get_xml(xpath)
+        self._parse_application_xml(xml)
+
+    def refresh_service(self, name):
+        """Refesh a Single Predefined Service
+
+        This method refreshes single predefined service (predefined only object). 
+
+        Args:
+            name (str): Name of the service to refresh
+        
+        """
+
+        xpath = self.SINGLE_SERVIE_XPATH % name
+        xml = self._get_xml(xpath)
+        self._parse_service_xml(xml)
+
+    def refreshall_applications(self):
+        """Refesh all Predefined Applications
+
+        This method refreshes all predefined applications and application containers.
+        
+        CAUTION: This method requires a lot of overhead on the device api to respond.
+        It will like some time (1-2+ minutes to respond usually).
+        
+        """
+
+        xpath = self.ALL_APPLICATION_XPATH + "/entry"
+        xml = self._get_xml(xpath)
+        self._parse_application_xml(xml)
+
+    def refreshall_services(self):
+        """Refesh all Predefined Services
+
+        This method refreshes all predefined services.
+        
+        """
+
+        xpath = self.ALL_SERVICE_XPATH + "/entry"
+        xml = self._get_xml(xpath)
+        self._parse_service_xml(xml)
+
+    def refreshall(self):
+        """Refesh all Predefined Objects
+
+        This method refreshes all predefined objects. This includes applications,
+        applciation containerd, and services.
+
+        CAUTION: This method requires a lot of overhead on the device api to respond.
+        It will like some time (1-2+ minutes to respond usually).
+        
+        """
+
+        # first we clear all existing objects
         self.application_objects = {}
         self.application_container_objects = {}
-        self.children = []
+        self.service_objects = {}
 
-        # now we refresh each object type. this puts the objects
-        # as children of self, so we loop through for dict insertion
-        # and finally clear the cildren list for the next onbject type
-        objects.ServiceObject.refreshall(self)
-        for obj in self.children:
-            self.service_objects[obj.name] = obj
-        self.children = []
+        # now we call the refresh methods
+        self.refreshall_services()
+        self.refreshall_applications()
 
-        objects.ApplicationObject.refreshall(self)
-        for obj in self.children:
-            self.application_objects[obj.name] = obj
-        self.children = []
+    def application(self, name, refresh_if_none=True, include_containers=True):
+        """Get a Predefined Application
 
-        objects.ApplicationContainer.refreshall(self)
-        for obj in self.children:
-            self.application_container_objects[obj.name] = obj
-        self.children = []
+        Return the instance of the application from the given name.
+
+        Args:
+            name (str): Name of the application
+            refresh_if_none (bool): Refresh the application if it is not found
+            include_containers (bool): also search application containers if no match found
+        
+        Returns:
+            Either an ApplicationObject, ApplicationContainerObject, or None
+        
+        """
+
+        obj = self.application_objects.get(name, None)
+        if obj is None and include_containers:
+            obj = self.application_container_objects.get(name, None)
+        
+        if obj is None and refresh_if_none:
+            self.refresh_application(name)
+            # recursive call but with no refresh
+            obj = self.application(name, refresh_if_none=False, include_containers=include_containers)
+        
+        return obj
+
+    def service(self, name, refresh_if_none=True,):
+        """Get a Predefined Service
+
+        Return the instance of the service from the given name.
+
+        Args:
+            name (str): Name of the service
+            refresh_if_none (bool): Refresh the service if it is not found
+        
+        Returns:
+            Either an ServiceObject or None
+        
+        """
+
+        obj = self.service_objects.get(name, None)
+        
+        if obj is None and refresh_if_none:
+            self.refresh_service(name)
+            # recursive call but with no refresh
+            obj = self.service(name, refresh_if_none=False)
+        
+        return obj
     
-    def find(self, name, class_type=None, recursive=False):
-        """override to use the internal dicts"""
+    def applications(self, names, refresh_if_none=True, include_containers=True):
+        """Get a list of Predefined Applications
 
-        if class_type is objects.ServiceObject:
-            return self.service_objects.get(name)
-        elif class_type is objects.ApplicationObject:
-            return self.application_objects.get(name)
-        elif class_type is objects.ApplicationContainer:
-            return self.application_container_objects.get(name)
-        else:
-            return None
+        Return a list of the instances of the applications from the given names.
 
-    def findall(self, class_type, recursive=False):
-        """override to use the internal dicts"""
+        Args:
+            name (list): Names of the applications
+            refresh_if_none (bool): Refresh the application(s) if it is not found
+            include_containers (bool): also search application containers if no match found
+        
+        Returns:
+            A list of all found ApplicationObjects or ApplicationContainerObjects
+        
+        """
 
-        if class_type is objects.ServiceObject:
-            return list(self.service_objects.values())
-        elif class_type is objects.ApplicationObject:
-            return list(self.application_objects.values())
-        elif class_type is objects.ApplicationContainer:
-            return list(self.application_container_objects.values())
-        else:
-            return []
-    
-    # these methods are certainly not needed.
-    def find_or_create(self, name, class_type, *args, **kwargs):
-        raise NotImplementedError()
-    
-    def findall_or_create(self, class_type, *args, **kwargs):
-        raise NotImplementedError()
+        objs = []
 
-    def find_index(self, name=None, class_type=None):
-        raise NotImplementedError()
+        for name in set(names):
+            obj = self.application(name, refresh_if_none=refresh_if_none, include_containers=include_containers)
+            if obj:
+                objs.append(obj)
+        
+        return objs
+
+    def services(self, names, refresh_if_none=True):
+        """Get a list of Predefined Services
+
+        Return a list of the instances of the services from the given names.
+
+        Args:
+            name (list): Names of the services
+        
+        Returns:
+            A list of all found ServiceObjects
+        
+        """
+
+        objs = []
+
+        for name in set(names):
+            obj = self.service(name, refresh_if_none=refresh_if_none)
+            if obj:
+                objs.append(obj)
+        
+        return objs
