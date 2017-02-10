@@ -517,7 +517,7 @@ class TestPanObject(unittest.TestCase):
 
     def test_check_child_methods_for_name_not_in_childmethods(self):
         spec = {
-            'check_child_methods.return_value': None,
+            '_check_child_methods.return_value': None,
         }
         for x in xrange(3):
             m = mock.Mock(**spec)
@@ -529,11 +529,11 @@ class TestPanObject(unittest.TestCase):
 
         self.assertIsNone(ret_val)
         for c in self.obj.children:
-            c.check_child_methods.assert_called_once_with(Method)
+            c._check_child_methods.assert_called_once_with(Method)
 
     def test_check_child_methods_for_name_in_childmethods(self):
         spec = {
-            'check_child_methods.return_value': None,
+            '_check_child_methods.return_value': None,
         }
         for x in xrange(3):
             m = mock.Mock(**spec)
@@ -549,7 +549,7 @@ class TestPanObject(unittest.TestCase):
         m = getattr(self.obj, 'child_{0}'.format(Method))
         m.assert_called_once_with()
         for c in self.obj.children:
-            c.check_child_methods.assert_called_once_with(Method)
+            c._check_child_methods.assert_called_once_with(Method)
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
     def test_apply_with_ha_sync(self, m_uid):
