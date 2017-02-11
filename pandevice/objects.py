@@ -155,7 +155,7 @@ class ServiceObject(VersionedPanObject):
     Args:
         name (str): Name of the object
         protocol (str): Protocol of the service, either tcp or udp
-        source_port (str): Source port of the protocal, if any
+        source_port (str): Source port of the protocol, if any
         destination_port (str): Destination port of the service
         description (str): Description of this object
         tag (list): Administrative tags
@@ -413,8 +413,8 @@ class ApplicationFilter(VersionedPanObject):
 class ApplicationContainer(VersionedPanObject):
     """ApplicationContainer object
 
-    This is a special class that is used in the predefined modual.
-    It acts much like an ApplicationGroup objects but exists only
+    This is a special class that is used in the predefined module.
+    It acts much like an ApplicationGroup object but exists only
     in the predefined context. It is more or less a way that 
     Palo Alto groups predefined applications together.
 

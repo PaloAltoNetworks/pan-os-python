@@ -68,10 +68,7 @@ class Predefined(object):
 
         err_msg = "Predefined object(s) does not exist with xpath: {0}".format(xpath)
 
-        try:
-            root = self.parent.xapi.get(xpath, retry_on_peer=self.parent.HA_SYNC)
-        except (PanXapiError, err.PanNoSuchNode) as e:
-            raise err.PanObjectMissing(err_msg, pan_device=self.parent)
+        root = self.parent.xapi.get(xpath, retry_on_peer=False)
 
         elm = root.find("result")
         return elm
@@ -134,7 +131,8 @@ class Predefined(object):
         This method refreshes all predefined applications and application containers.
 
         CAUTION: This method requires a lot of overhead on the device api to respond.
-        It will like some time (1-2+ minutes to respond usually).
+        Response time will vary by platform, but know that it will generally take
+        longer than a normal api request.
 
         """
 
@@ -160,7 +158,8 @@ class Predefined(object):
         application containers, and services.
 
         CAUTION: This method requires a lot of overhead on the device api to respond.
-        It will like some time (1-2+ minutes to respond usually).
+        Response time will vary by platform, but know that it will generally take
+        longer than a normal api request.
 
         """
 
@@ -209,7 +208,7 @@ class Predefined(object):
             refresh_if_none (bool): Refresh the service if it is not found
 
         Returns:
-            Either an ServiceObject or None
+            Either a ServiceObject or None
 
         """
 
