@@ -51,7 +51,7 @@ class Predefined(object):
     ALL_APPLICATION_XPATH = PREDEFINED_ROOT_XPATH + APPLICATION_CONTAINS_XPATH
     SINGLE_APPLICATION_XPATH = ALL_APPLICATION_XPATH + ENTRY
     ALL_SERVICE_XPATH = PREDEFINED_ROOT_XPATH + SERVICE
-    SINGLE_SERVIE_XPATH = ALL_SERVICE_XPATH + ENTRY
+    SINGLE_SERVICE_XPATH = ALL_SERVICE_XPATH + ENTRY
 
     def __init__(self, device=None, *args, **kwargs):
         # Create a class logger
@@ -78,7 +78,7 @@ class Predefined(object):
 
     def _parse_application_xml(self, xml):
         """parse the xml into actual objects and store them in the dicts"""
-        
+
         for elm in xml:
             if elm.find("functions") is not None:
                 # this is an ApplicationContainerObject
@@ -86,28 +86,28 @@ class Predefined(object):
                 obj.refresh(xml=elm)
                 self.application_container_objects[obj.name] = obj
             else:
-                # this is an ApplicaitonObject
+                # this is an ApplicationObject
                 obj = objects.ApplicationObject()
                 obj.refresh(xml=elm)
                 self.application_objects[obj.name] = obj
-    
+
     def _parse_service_xml(self, xml):
         """parse the xml into actual objects and store them in the dicts"""
-        
+
         for elm in xml:
             obj = objects.ServiceObject()
             obj.refresh(xml=elm)
             self.service_objects[obj.name] = obj
 
     def refresh_application(self, name):
-        """Refesh a Single Predefined Applciation
+        """Refresh a Single Predefined Application
 
-        This method refreshes single predefined applciation or application container 
-        (predefined only object). 
+        This method refreshes single predefined application or application container
+        (predefined only object).
 
         Args:
             name (str): Name of the application to refresh
-        
+
         """
 
         xpath = self.SINGLE_APPLICATION_XPATH % name
@@ -115,27 +115,27 @@ class Predefined(object):
         self._parse_application_xml(xml)
 
     def refresh_service(self, name):
-        """Refesh a Single Predefined Service
+        """Refresh a Single Predefined Service
 
-        This method refreshes single predefined service (predefined only object). 
+        This method refreshes single predefined service (predefined only object).
 
         Args:
             name (str): Name of the service to refresh
-        
+
         """
 
-        xpath = self.SINGLE_SERVIE_XPATH % name
+        xpath = self.SINGLE_SERVICE_XPATH % name
         xml = self._get_xml(xpath)
         self._parse_service_xml(xml)
 
     def refreshall_applications(self):
-        """Refesh all Predefined Applications
+        """Refresh all Predefined Applications
 
         This method refreshes all predefined applications and application containers.
-        
+
         CAUTION: This method requires a lot of overhead on the device api to respond.
         It will like some time (1-2+ minutes to respond usually).
-        
+
         """
 
         xpath = self.ALL_APPLICATION_XPATH + "/entry"
@@ -143,10 +143,10 @@ class Predefined(object):
         self._parse_application_xml(xml)
 
     def refreshall_services(self):
-        """Refesh all Predefined Services
+        """Refresh all Predefined Services
 
         This method refreshes all predefined services.
-        
+
         """
 
         xpath = self.ALL_SERVICE_XPATH + "/entry"
@@ -154,14 +154,14 @@ class Predefined(object):
         self._parse_service_xml(xml)
 
     def refreshall(self):
-        """Refesh all Predefined Objects
+        """Refresh all Predefined Objects
 
         This method refreshes all predefined objects. This includes applications,
-        applciation containerd, and services.
+        application containers, and services.
 
         CAUTION: This method requires a lot of overhead on the device api to respond.
         It will like some time (1-2+ minutes to respond usually).
-        
+
         """
 
         # first we clear all existing objects
@@ -182,24 +182,24 @@ class Predefined(object):
             name (str): Name of the application
             refresh_if_none (bool): Refresh the application if it is not found
             include_containers (bool): also search application containers if no match found
-        
+
         Returns:
             Either an ApplicationObject, ApplicationContainerObject, or None
-        
+
         """
 
         obj = self.application_objects.get(name, None)
         if obj is None and include_containers:
             obj = self.application_container_objects.get(name, None)
-        
+
         if obj is None and refresh_if_none:
             self.refresh_application(name)
             # recursive call but with no refresh
             obj = self.application(name, refresh_if_none=False, include_containers=include_containers)
-        
+
         return obj
 
-    def service(self, name, refresh_if_none=True,):
+    def service(self, name, refresh_if_none=True):
         """Get a Predefined Service
 
         Return the instance of the service from the given name.
@@ -207,34 +207,34 @@ class Predefined(object):
         Args:
             name (str): Name of the service
             refresh_if_none (bool): Refresh the service if it is not found
-        
+
         Returns:
             Either an ServiceObject or None
-        
+
         """
 
         obj = self.service_objects.get(name, None)
-        
+
         if obj is None and refresh_if_none:
             self.refresh_service(name)
             # recursive call but with no refresh
             obj = self.service(name, refresh_if_none=False)
-        
+
         return obj
-    
+
     def applications(self, names, refresh_if_none=True, include_containers=True):
         """Get a list of Predefined Applications
 
         Return a list of the instances of the applications from the given names.
 
         Args:
-            name (list): Names of the applications
+            names (list): Names of the applications
             refresh_if_none (bool): Refresh the application(s) if it is not found
             include_containers (bool): also search application containers if no match found
-        
+
         Returns:
             A list of all found ApplicationObjects or ApplicationContainerObjects
-        
+
         """
 
         objs = []
@@ -243,7 +243,7 @@ class Predefined(object):
             obj = self.application(name, refresh_if_none=refresh_if_none, include_containers=include_containers)
             if obj:
                 objs.append(obj)
-        
+
         return objs
 
     def services(self, names, refresh_if_none=True):
@@ -252,11 +252,12 @@ class Predefined(object):
         Return a list of the instances of the services from the given names.
 
         Args:
-            name (list): Names of the services
-        
+            names (list): Names of the services
+            refresh_if_none (bool): Refresh the service(s) if it is not found
+
         Returns:
             A list of all found ServiceObjects
-        
+
         """
 
         objs = []
@@ -265,5 +266,5 @@ class Predefined(object):
             obj = self.service(name, refresh_if_none=refresh_if_none)
             if obj:
                 objs.append(obj)
-        
+
         return objs

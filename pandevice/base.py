@@ -2028,7 +2028,7 @@ class ParamPath(object):
                 if settings[condition_key] != condition_value:
                     return None
             except KeyError:
-                # this condition refrences a param that does not exsit and it is
+                # This condition references a param that does not exist and it is
                 # thus not needed
                 return None
 
@@ -2098,7 +2098,7 @@ class ParamPath(object):
                 if settings[condition_key] != condition_value:
                     return
             except KeyError:
-                # this condition refrences a param that does not exsit and it is
+                # this condition references a param that does not exist and it is
                 # thus not needed
                 return None
 
