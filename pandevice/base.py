@@ -2027,6 +2027,10 @@ class ParamPath(object):
             except TypeError:
                 if settings[condition_key] != condition_value:
                     return None
+            except KeyError:
+                # This condition references a param that does not exist and it is
+                # thus not needed
+                return None
 
         e = elm
 
@@ -2093,6 +2097,10 @@ class ParamPath(object):
             except TypeError:
                 if settings[condition_key] != condition_value:
                     return
+            except KeyError:
+                # This condition references a param that does not exist and it is
+                # thus not needed
+                return None
 
         e = xml
         for p in self.path.split('/'):
@@ -2391,6 +2399,16 @@ class PanDevice(PanObject):
         """User-ID subsystem
 
         See Also: :class:`pandevice.userid`
+
+        """
+
+        # create a predefined object subsystem
+        # avoid a premature import
+        import predefined
+        self.predefined = predefined.Predefined(self)
+        """Predefined object subsystem
+
+        See Also: :class:`pandevice.predefined`
 
         """
 

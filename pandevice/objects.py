@@ -150,12 +150,12 @@ class Tag(PanObject):
 
 
 class ServiceObject(VersionedPanObject):
-    """Address Object
+    """Service Object
 
     Args:
         name (str): Name of the object
         protocol (str): Protocol of the service, either tcp or udp
-        source_port (str): Source port of the protocal, if any
+        source_port (str): Source port of the protocol, if any
         destination_port (str): Destination port of the service
         description (str): Description of this object
         tag (list): Administrative tags
@@ -234,7 +234,7 @@ class ApplicationObject(VersionedPanObject):
         able_to_transfer_file (bool): Application can do file transfers
         has_known_vulnerability (bool): Application has known vulnerabilities
         tunnel_other_application (bool):
-        tunnel_applications (bool): 
+        tunnel_applications (list): List of tunneled applications
         prone_to_misuse (bool): 
         pervasive_use (bool): 
         file_type_ident (bool): 
@@ -264,13 +264,13 @@ class ApplicationObject(VersionedPanObject):
         params.append(VersionedParamPath(
             'risk', path='risk', vartype='int'))
         params.append(VersionedParamPath(
-            'default_type', path='default/{default_type}', 
+            'default_type', path='default/{default_type}',
             values=['port', 'ident-by-ip-protocol', 'ident-by-icmp-type', 'ident-by-icmp6-type']))
         params.append(VersionedParamPath(
             'default_port', path='default/{default_type}', vartype='member',
             condition={'default_type': 'port'}))
         params.append(VersionedParamPath(
-            'default_ip_protocol', path='default/{default_type}', vartype='int',
+            'default_ip_protocol', path='default/{default_type}',
             condition={'default_type': 'ident-by-ip-protocol'}))
         params.append(VersionedParamPath(
             'default_icmp_type', path='default/{default_type}/type', vartype='int',
@@ -303,7 +303,7 @@ class ApplicationObject(VersionedPanObject):
         params.append(VersionedParamPath(
             'tunnel_other_application', path='tunnel-other-application', vartype='yesno'))
         params.append(VersionedParamPath(
-            'tunnel_applications', path='tunnel-applications', vartype='yesno'))
+            'tunnel_applications', path='tunnel-applications', vartype='member'))
         params.append(VersionedParamPath(
             'prone_to_misuse', path='prone-to-misuse', vartype='yesno'))
         params.append(VersionedParamPath(
@@ -406,5 +406,32 @@ class ApplicationFilter(VersionedPanObject):
             'pervasive', path='pervasive', vartype='yesno'))
         params.append(VersionedParamPath(
             'tag', path='tag', vartype='member'))
+
+        self._params = tuple(params)
+    
+
+class ApplicationContainer(VersionedPanObject):
+    """ApplicationContainer object
+
+    This is a special class that is used in the predefined module.
+    It acts much like an ApplicationGroup object but exists only
+    in the predefined context. It is more or less a way that 
+    Palo Alto groups predefined applications together.
+
+    Args:
+        applications (list): List of memeber applications
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/application-container')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'applications', path='functions', vartype='member'))
 
         self._params = tuple(params)
