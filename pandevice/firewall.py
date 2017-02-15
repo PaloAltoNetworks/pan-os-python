@@ -71,6 +71,11 @@ class Firewall(PanDevice):
         "ha.HighAvailability",
         "objects.AddressObject",
         "objects.AddressGroup",
+        "objects.ServiceObject",
+        "objects.ServiceGroup",
+        "objects.ApplicationObject",
+        "objects.ApplicationGroup",
+        "objects.ApplicationFilter",
         "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",
@@ -80,6 +85,7 @@ class Firewall(PanDevice):
         "network.Vlan",
         "network.VirtualRouter",
         "network.ManagementProfile",
+        "network.VirtualWire",
     )
 
     def __init__(self,

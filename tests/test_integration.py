@@ -226,6 +226,10 @@ class TestElementStr_7_0(unittest.TestCase):
         l3so.add(ao)
         eio.add(l3so)
 
+        # This is actually a 7.x test
+        for o in (ao, l3so, eio):
+            o.retrieve_panos_version = mock.Mock(return_value=(7, 0, 0))
+
         ret_val = eio.element_str()
 
         self.assertEqual(expected, ret_val)

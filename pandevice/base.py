@@ -1545,6 +1545,7 @@ class VersionedPanObject(PanObject):
 
     """
     _UNKNOWN_PANOS_VERSION = (sys.maxint, 0, 0)
+    _DEFAULT_NAME = None
 
     def __init__(self, *args, **kwargs):
         if self.NAME is not None:
@@ -1553,7 +1554,7 @@ class VersionedPanObject(PanObject):
                 args = args[1:]
             except IndexError:
                 name = kwargs.pop(self.NAME, None)
-            setattr(self, self.NAME, name)
+            setattr(self, self.NAME, name or self._DEFAULT_NAME)
         self.parent = None
         self.children = []
         self._xpaths = VersioningSupport()
@@ -2103,8 +2104,15 @@ class ParamPath(object):
         elif value is None and self.vartype != 'stub':
             return None
         for condition_key, condition_value in self.condition.items():
-            condition_value = pandevice.string_or_list(condition_value)
-            if settings[condition_key] not in condition_value:
+            try:
+                if settings[condition_key] not in condition_value:
+                    return None
+            except TypeError:
+                if settings[condition_key] != condition_value:
+                    return None
+            except KeyError:
+                # This condition references a param that does not exist and it is
+                # thus not needed
                 return None
 
         e = elm
@@ -2176,6 +2184,19 @@ class ParamPath(object):
         if not self.path:
             # No path, so this is just a parameter ParamPath
             return
+
+        # Check that conditional is met
+        for condition_key, condition_value in self.condition.items():
+            try:
+                if settings[condition_key] not in condition_value:
+                    return
+            except TypeError:
+                if settings[condition_key] != condition_value:
+                    return
+            except KeyError:
+                # This condition references a param that does not exist and it is
+                # thus not needed
+                return None
 
         e = xml
         for p in self.path.split('/'):
@@ -2255,7 +2276,8 @@ class ParamPath(object):
             elif elm.text == 'no':
                 settings[self.param] = False
             else:
-                raise ValueError('{0} is not yes/no'.format(elm.text))
+                raise ValueError('{0} "{1}" is not yes/no'.format(
+                    self.param, elm.text))
         elif self.vartype == 'stub' or '{{{0}}}'.format(
                     self.param) == self.path.split('/')[-1]:
             pass
@@ -2394,6 +2416,156 @@ class VsysImportMixin(object):
         return instances
 
 
+class VsysOperations(VersionedPanObject):
+    """Modify PanObject methods to set vsys import configuration.
+    """
+    CHILDMETHODS = ('create', 'apply', 'delete')
+
+    def __init__(self, *args, **kwargs):
+        self._xpath_imports = VersioningSupport()
+        super(VsysOperations, self).__init__(*args, **kwargs)
+
+    @property
+    def XPATH_IMPORT(self):
+        """Returns the version specific xpath import for this object."""
+        panos_version = self.retrieve_panos_version()
+        return self._xpath_imports._get_versioned_value(panos_version)
+
+    def create(self):
+        super(VsysOperations, self).create()
+        self.child_create()
+
+    def apply(self):
+        super(VsysOperations, self).apply()
+        self.child_apply()
+
+    def delete(self):
+        self.child_delete()
+        super(VsysOperations, self).delete()
+
+    def child_create(self):
+        return self._create_apply_child()
+
+    def child_apply(self):
+        return self._create_apply_child()
+
+    def _create_apply_child(self):
+        # Don't do anything if this object has an interface in ha or ag mode
+        if str(getattr(self, "mode", None)) in ("ha", "aggregate-group"):
+            self.set_vsys(None, refresh=True, update=True)
+        else:
+            self.create_import()
+
+    def child_delete(self):
+        self.delete_import()
+
+    def create_import(self, vsys=None):
+        """Create a vsys import for the object
+
+        Args:
+            vsys (str): Override the vsys
+        """
+        if vsys is None:
+            vsys = self.vsys
+
+        if vsys != "shared" and self.XPATH_IMPORT is not None:
+            xpath = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
+            element = '<member>{0}</member>'.format(self.uid)
+            device = self.nearest_pandevice()
+            device.active().xapi.set(xpath, element, retry_on_peer=True)
+
+    def delete_import(self, vsys=None):
+        """Delete a vsys import for the object
+
+        Args:
+            vsys (str): Override the vsys
+        """
+        if vsys is None:
+            vsys = self.vsys
+
+        if vsys != "shared" and self.XPATH_IMPORT is not None:
+            xpath = "{0}/import{1}/member[text()='{2}']".format(
+                self.xpath_vsys(), self.XPATH_IMPORT, self.uid)
+            device = self.nearest_pandevice()
+            device.active().xapi.delete(xpath, retry_on_peer=True)
+
+    def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
+        """Set the vsys for this interface.
+
+        Creates a reference to this interface in the specified vsys and
+        removes references to this interface from all other vsys. The vsys
+        will be created if it doesn't exist.
+
+        Args:
+            vsys_id (str): The vsys id to set for this object (eg. vsys2)
+            refresh (bool): Refresh the relevant current state of the device
+                before taking action (Default: False)
+            update (bool): Apply the changes to the device (Default: False)
+            running_config (bool): If refresh is True, refresh from the running
+                configuration (Default: False)
+
+        Returns:
+            Vsys: The vsys for this interface after the operation completes
+        """
+        param_name = self.XPATH_IMPORT.split('/')[-1]
+
+        if refresh:
+            if running_config:
+                msg = "Can't refresh vsys from running config in set_vsys"
+                raise ValueError(msg)
+
+            import pandevice.device
+            device = self.nearest_pandevice()
+
+            all_vsys = pandevice.device.Vsys.refreshall(device, name_only=True)
+            for a_vsys in all_vsys:
+                a_vsys.refresh_variable(param_name)
+
+        return self._set_reference(vsys_id, pandevice.device.Vsys, param_name,
+            True, refresh=False, update=update, running_config=running_config)
+
+    @classmethod
+    def refreshall(cls, parent, running_config=False, add=True,
+                   exceptions=False, name_only=False):
+        instances = super(VsysOperations, cls).refreshall(
+            parent, running_config, add=False,
+            exceptions=exceptions, name_only=name_only)
+
+        # Versioned objects need a PanDevice to get the version from, so
+        # set the child's parent before accessing XPATH.
+        class_instance = cls()
+        class_instance.parent = parent
+
+        # Filter out instances that are not in this vlan's imports
+        device = parent.nearest_pandevice()
+        api_action = device.xapi.show if running_config else device.xapi.get
+        if parent.vsys != "shared" and class_instance.XPATH_IMPORT is not None:
+            imports = []
+            xpath = '{0}/import{1}'.format(
+                parent.xpath_vsys(), class_instance.XPATH_IMPORT)
+            try:
+                imports_xml = api_action(xpath, retry_on_peer=True)
+            except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
+                if not str(e).startswith("No such node"):
+                    raise e
+            else:
+                imports = imports_xml.findall(".//member")
+                if imports is not None:
+                    imports = [member.text for member in imports]
+
+            if imports is not None:
+                instances = [instance for instance in instances
+                             if instance.name in imports]
+
+        if add:
+            # Remove current children of this type from parent
+            parent.removeall(cls=cls)
+            # Add the new children that were just refreshed from the device
+            parent.extend(instances)
+
+        return instances
+
+
 class PanDevice(PanObject):
     """A Palo Alto Networks device
 
@@ -2474,6 +2646,16 @@ class PanDevice(PanObject):
         """User-ID subsystem
 
         See Also: :class:`pandevice.userid`
+
+        """
+
+        # create a predefined object subsystem
+        # avoid a premature import
+        import predefined
+        self.predefined = predefined.Predefined(self)
+        """Predefined object subsystem
+
+        See Also: :class:`pandevice.predefined`
 
         """
 

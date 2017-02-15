@@ -19,6 +19,7 @@ API Reference
    module-objects
    module-panorama
    module-policies
+   module-predefined
    module-updater
    module-userid
 

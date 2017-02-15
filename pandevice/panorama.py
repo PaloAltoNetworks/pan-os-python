@@ -66,6 +66,11 @@ class DeviceGroup(PanObject):
         "objects.AddressGroup",
         "policies.PreRulebase",
         "policies.PostRulebase",
+        "objects.ServiceObject",
+        "objects.ServiceGroup",
+        "objects.ApplicationObject",
+        "objects.ApplicationGroup",
+        "objects.ApplicationFilter",
     )
 
     @classmethod
@@ -103,6 +108,11 @@ class Panorama(base.PanDevice):
         "objects.AddressGroup",
         "policies.PreRulebase",
         "policies.PostRulebase",
+        "objects.ServiceObject",
+        "objects.ServiceGroup",
+        "objects.ApplicationObject",
+        "objects.ApplicationGroup",
+        "objects.ApplicationFilter",
     )
 
     def __init__(self,

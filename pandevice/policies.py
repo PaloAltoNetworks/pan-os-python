@@ -105,6 +105,10 @@ class SecurityRule(VersionedPanObject):
         file_blocking (str): File Blocking Security Profile
         wildfire_analysis (str): Wildfire Analysis Security Profile
         data_filtering (str): Data Filtering Security Profile
+        negate_target (bool): Target all but the listed target firewalls 
+            (applies to panorama/device groups only)
+        target (list): Apply this policy to the listed firewalls only 
+            (applies to panorama/device groups only)
     """
     # TODO: Add QoS variables
     SUFFIX = ENTRY
@@ -159,6 +163,10 @@ class SecurityRule(VersionedPanObject):
             path='option/disable-server-response-inspection'))
         params.append(VersionedParamPath(
             'group', path='profile-setting/group', vartype='member'))
+        params.append(VersionedParamPath(
+            'negate_target', path='target/negate', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'target', path='target/devices', vartype='entry'))
 
         member_profiles = (
             'virus', 'spyware', 'vulnerability', 'url-filtering',
