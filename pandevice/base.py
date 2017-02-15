@@ -482,7 +482,7 @@ class PanObject(object):
         for child in self.children:
             child._check_child_methods(method)
 
-    def equal(self, panobject, force=False):
+    def equal(self, panobject, force=False, compare_children=True):
         """Compare this object to another object
 
         Equality of the objects is determined by the XML they generate, not by the
@@ -491,6 +491,7 @@ class PanObject(object):
         Args:
             panobject (PanObject): The object to compare with this object
             force (bool): Do not raise a PanObjectError if the objects are different classes
+            compare_children (bool): Not supported in this object, use True
 
         Raises:
             PanObjectError: Raised if the objects are different types that
@@ -1741,7 +1742,7 @@ class VersionedPanObject(PanObject):
 
         return ans
 
-    def comparison_element(self):
+    def comparison_element(self, compare_children=True):
         """Return an xml.etree.ElementTree for this object and its children.
 
         Returns:
@@ -1752,15 +1753,18 @@ class VersionedPanObject(PanObject):
         ans = self._root_element()
         paths, stubs, settings = self._build_element_info()
 
-        self.xml_merge(ans, itertools.chain(
+        iterchain = (
             (p.element(self._root_element(), settings, sha1=True) for p in paths),
             (s.element(self._root_element(), settings, sha1=True) for s in stubs),
-            self._subelements(comparison_element=True),
-        ))
+        )
+        if compare_children:
+            iterchain += (self._subelements(comparison_element=True),)
+
+        self.xml_merge(ans, itertools.chain(iterchain))
 
         return ans
 
-    def equal(self, panobject, force=False):
+    def equal(self, panobject, force=False, compare_children=True):
         """Compare this object to another object
 
         Equality of the objects is determined by the XML they generate, not by the
@@ -1769,6 +1773,7 @@ class VersionedPanObject(PanObject):
         Args:
             panobject (VersionedPanObject): The object to compare with this object
             force (bool): Do not raise a PanObjectError if the objects are different classes
+            compare_children (bool): Include children of the PanObject in the comparison
 
         Raises:
             PanObjectError: Raised if the objects are different types that
@@ -1783,8 +1788,8 @@ class VersionedPanObject(PanObject):
         if type(self) != type(panobject) and not force:
             raise err.PanObjectError("Object {0} is not comparable to {1}".format(type(self), type(panobject)))
 
-        self_element = self.comparison_element()
-        other_element = panobject.comparison_element()
+        self_element = self.comparison_element(compare_children)
+        other_element = panobject.comparison_element(compare_children)
 
         return ET.tostring(self_element) == ET.tostring(other_element)
 
