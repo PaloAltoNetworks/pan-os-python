@@ -52,10 +52,10 @@ Network
 
 .. graphviz:: _diagrams/pandevice.network.dot
 
-.. _tree:
+.. _policytree:
 
-Policy
-------
+Policies
+--------
 
-.. graphviz:: _diagrams/pandevice.policy.dot
+.. graphviz:: _diagrams/pandevice.policies.dot
 
