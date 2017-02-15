@@ -42,6 +42,12 @@ class Predefined(object):
 
     """
 
+    OBJECT_TYPES = (
+        objects.ApplicationObject,
+        objects.ApplicationContainer,
+        objects.ServiceObject,
+    )
+
     # xpath
     PREDEFINED_ROOT_XPATH = "/config/predefined"
     ENTRY = "/entry[@name='%s']"
@@ -267,3 +273,41 @@ class Predefined(object):
                 objs.append(obj)
 
         return objs
+
+    def object(self, name, classtype, refresh_if_none=True):
+        """Get object by classtype
+
+        For example, if you pass in pandevice.objects.ApplicationObject as the
+        classtype, an application will be returned
+
+        Args:
+            name (str): Name of the object
+            classtype: The class of the object (eg. pandevice.objects.ApplicationObject
+            refresh_if_none (bool): Refresh the object if it is not found
+
+        """
+        if classtype == objects.ApplicationObject:
+            return self.application(name, refresh_if_none, include_containers=False)
+        elif classtype == objects.ApplicationContainer:
+            return self.application(name, refresh_if_none, include_containers=True)
+        elif classtype == objects.ServiceObject:
+            return self.service(name, refresh_if_none)
+
+    def objects(self, names, classtype, refresh_if_none=True):
+        """Get a list of objects by classtype
+
+        For example, if you pass in pandevice.objects.ApplicationObject as the
+        classtype, a list of application will be returned
+
+        Args:
+            names (list): List of names of the objects
+            classtype: The class of the object (eg. pandevice.objects.ApplicationObject
+            refresh_if_none (bool): Refresh the object if it is not found
+
+        """
+        if classtype == objects.ApplicationObject:
+            return self.applications(names, refresh_if_none, include_containers=False)
+        elif classtype == objects.ApplicationContainer:
+            return self.applications(names, refresh_if_none, include_containers=True)
+        elif classtype == objects.ServiceObject:
+            return self.services(names, refresh_if_none)
