@@ -1901,6 +1901,176 @@ class VersionedPanObject(PanObject):
         """The XML form of this object (and its children) as a string."""
         return ET.tostring(self.element())
 
+    def link_references(self, include_predefined=True, exceptions=False):
+        """Convert string references into a reference to the PanObject
+
+        Args:
+            include_predefined (bool): If object not found in config tree, check for
+                a predefined object on the device
+            exceptions (bool): Raise an exception if referenced object is not found
+
+        Raises:
+            PanObjectNotFound: If `exceptions` is True and the referenced object is not
+                found in the configuration tree
+
+        """
+        paths, stubs, settings = self._build_element_info()
+
+        # For all references in this object,
+        # check the entire configuration tree
+        # for the referenced objects and assign
+        # as the values
+        for path in paths:
+            if path.references:
+                # This is a reference param
+                orig_value = settings[path.param]
+                if orig_value is None:
+                    continue
+                elif isinstance(orig_value, PanObject):
+                    # Already a linked reference, skip
+                    continue
+                elif isinstance(orig_value, basestring):
+                    # Handle value as a string
+                    try:
+                        ref_obj = self.find_referenced(orig_value, path.param, include_predefined)
+                    except err.PanObjectNotFound as e:
+                        if exceptions:
+                            raise e
+                        else:
+                            continue
+                    setattr(self, path.param, ref_obj)
+                else:
+                    # Handle value as a list
+                    for idx, value in enumerate(orig_value):
+                        if isinstance(value, PanObject):
+                            # Already a linked reference, skip
+                            continue
+                        try:
+                            ref_obj = self.find_referenced(value, path.param, include_predefined)
+                        except err.PanObjectNotFound as e:
+                            if exceptions:
+                                raise e
+                            else:
+                                continue
+                        getattr(self, path.param)[idx] = ref_obj
+
+    def find_referenced(self, name, param, include_predefined=False):
+        """Find the object referenced by a param
+
+        Args:
+            name (str): The name of the object referenced
+            param (str): The referencing parameter
+            include_predefined (bool): If object not found in config tree, check for
+                a predefined object on the device
+
+        """
+        paths, stubs, settings = self._build_element_info()
+
+        # Find the VarPath to use
+        for var_path in paths:
+            if var_path.param == param:
+                break
+        else:
+            msg = 'Variable {0} is not present in this version'
+            raise ValueError(msg.format(param))
+
+        if not var_path.references:
+            return
+
+        if name is None:
+            return
+
+        ref_obj = self.nearest_pandevice().find(name, var_path.references, recursive=True)
+        if ref_obj:
+            return ref_obj
+        # Couldn't find the referenced object in this pandevice so check the next deepest
+        # XXX: This could be more efficient since the children of the firewall are scanned twice
+        if self.nearest_pandevice().parent:
+            ref_obj = self.panorama().find(name, var_path.references, recursive=True)
+            if ref_obj:
+                return ref_obj
+        # Couldn't find the referenced object anywhere in the config tree
+        # so check in the predefined objects
+        if include_predefined:
+            for reftype in var_path.references:
+                if reftype in self.nearest_pandevice().predefined.OBJECT_TYPES:
+                    predef_obj = self.nearest_pandevice().predefined.object(name, reftype)
+                    if predef_obj is not None:
+                        return predef_obj
+        raise err.PanObjectNotFound
+
+    def find_all_references(self, search_root=None, include_vsys=True):
+        """Find all objects with parameters that reference this object
+
+        Args:
+            search_root (PanObject): A PanObject or PanDevice to search under
+            include_vsys (bool): Include references in vsys objects (Default: True)
+
+        Returns:
+            list: A list of tuples that include the PanObject with a reference
+                and the name of the parameter that references. ie. (PanObject, 'Param')
+
+        """
+        from pandevice.device import Vsys
+        if not search_root:
+            search_root = self.nearest_pandevice()
+        referencing_objects = []
+
+        for obj in search_root.findall(PanObject, recursive=True):
+            if obj == self:
+                continue
+            if isinstance(obj, Vsys) and not include_vsys:
+                continue
+            paths, stubs, settings = obj._build_element_info()
+            referencing_params = []
+            for path in paths:
+                if type(self) not in path.references:
+                    continue
+                reference = settings[path.param]
+                if str(self) == reference or self == reference:
+                    # The reference is a string name of this object or the object itself
+                    referencing_params.append(path.param)
+                elif "__iter__" in dir(reference) and (str(self) in reference or self in reference):
+                    # The reference is a list (iterable)
+                    referencing_params.append(path.param)
+            referencing_objects.append((obj, tuple(referencing_params)))
+        return referencing_objects
+
+    def delete_references(self, update=True, delete_referencing_objects=False, include_vsys=False):
+        """Delete all references to this object in the configuration tree and the live device
+
+        Args:
+            update (bool): Make changes on the live device
+            delete_referencing_objects (bool): Delete the entire object that
+                references this object, not just the reference
+            include_vsys (bool): Include references in vsys objects (Default: True)
+
+        """
+        object_references = self.find_all_references(include_vsys=include_vsys)
+        for obj, refs in object_references:
+            for ref in refs:
+                value = getattr(obj, ref)
+                found_ref = False
+                if str(self) == value or self == value:
+                    found_ref = True
+                    if not delete_referencing_objects:
+                        setattr(obj, ref, None)
+                elif "__iter__" in dir(value) and str(self) in value:
+                    found_ref = True
+                    if not delete_referencing_objects:
+                        value.remove(str(self))
+                elif "__iter__" in dir(value) and self in value:
+                    found_ref = True
+                    if not delete_referencing_objects:
+                        value.remove(self)
+                if found_ref and delete_referencing_objects:
+                    if update:
+                        obj.delete()
+                    else:
+                        obj.parent.remove(obj)
+                elif found_ref and update:
+                    obj.update(ref)
+
     def __getattr__(self, name):
         params = super(VersionedPanObject, self).__getattribute__('_params')
 
@@ -2048,15 +2218,17 @@ class ParamPath(object):
             enforced in any way from the user's perspective when setting
             parameters, but these values are referenced when parsing any XML
             returned from a live device.
+        references (list): PanObject subclasses that this parameter can reference
 
     """
     def __init__(self, param, path=None, vartype=None,
-                 condition=None, values=None):
+                 condition=None, values=None, references=None):
         self.param = param
         self.path = path
         self.vartype = vartype
         self.condition = condition or {}
-        self.values = values or []
+        self.values = values or ()
+        self.references = references or ()
 
         if self.path is None:
             self.path = self.param.replace('_', '-')

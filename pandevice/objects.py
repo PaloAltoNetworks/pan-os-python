@@ -83,13 +83,13 @@ class AddressGroup(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'static_value', path='static', vartype='member'))
+            'static_value', path='static', vartype='member', references=(AddressObject,)))
         params.append(VersionedParamPath(
             'dynamic_value', path='dynamic/filter'))
         params.append(VersionedParamPath(
             'description', path='description'))
         params.append(VersionedParamPath(
-            'tag', path='tag', vartype='member'))
+            'tag', path='tag', vartype='member', references=(Tag,)))
 
         self._params = tuple(params)
 

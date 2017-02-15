@@ -109,3 +109,6 @@ class PanActivateFeatureAuthCodeError(PanDeviceError):
 
 class PanOutdatedSslError(PanDeviceError):
     pass
+
+class PanObjectNotFound(PanDeviceError):
+    pass

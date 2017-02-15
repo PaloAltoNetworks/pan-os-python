@@ -656,3 +656,87 @@ class TestXpaths_7_0(unittest.TestCase):
         ret_val = ao.xpath_short()
 
         self.assertEqual(expected, ret_val)
+
+
+class TestReferences(unittest.TestCase):
+    """
+    [Test section: link_references]
+    Test that references are linked correctly to the referenced object
+    """
+    def setUp(self):
+        self.panorama = pandevice.panorama.Panorama(
+            'foo', 'bar', 'baz', 'apikey')
+        self.device_group = pandevice.panorama.DeviceGroup(
+            'My pandevice Group')
+        self.firewall = pandevice.firewall.Firewall(
+            'foo', 'bar', 'baz', 'apikey')
+        self.address_object_fw = pandevice.objects.AddressObject(
+            'webserver_on_fw', '192.168.1.100', description='Intranet web server',
+            tag=['http', 'https'])
+        self.address_object_pano = pandevice.objects.AddressObject(
+            'webserver_on_pano', '192.168.1.100', description='Intranet web server',
+            tag=['http', 'https'])
+        self.address_group = pandevice.objects.AddressGroup(
+            'webservers_group', static_value=['webserver_on_fw'])
+
+        self.firewall.version = '7.0.1'
+        self.firewall._version_info = tuple(int(x) for x in
+                                   self.firewall.version.split('-')[0].split('.'))
+
+        self.firewall.add(self.address_object_fw)
+        self.firewall.add(self.address_group)
+        #self.device_group.add(self.firewall)
+        self.device_group.add(self.address_object_pano)
+        self.panorama.add(self.device_group)
+
+        self.assertEqual(self.firewall, self.address_object_fw.parent)
+        self.assertEqual(self.device_group, self.address_object_pano.parent)
+        self.assertEqual(self.firewall, self.address_group.parent)
+        self.assertEqual([], self.address_object_fw.children)
+        #self.assertEqual(self.device_group, self.firewall.parent)
+        self.assertEqual([self.address_object_fw, self.address_group], self.firewall.children)
+        self.assertEqual(self.panorama, self.device_group.parent)
+        #self.assertEqual([self.firewall, ], self.device_group.children)
+        self.assertEqual([self.address_object_pano, ], self.device_group.children)
+        self.assertEqual(None, self.panorama.parent)
+        self.assertEqual([self.device_group, ], self.panorama.children)
+
+    def test_link_references_with_fw_using_list(self):
+        self.address_group.link_references()
+        self.assertEqual([self.address_object_fw, ], self.address_group.static_value)
+
+    def test_link_references_with_exceptions(self):
+        self.address_group.link_references(exceptions=True)
+        self.assertEqual([self.address_object_fw, ], self.address_group.static_value)
+
+    def test_link_references_with_fw_using_str(self):
+        self.address_group.static_value = self.address_object_fw.name
+
+        self.address_group.link_references()
+        self.assertEqual(self.address_object_fw, self.address_group.static_value)
+
+    def test_link_references_with_panorama(self):
+        self.device_group.add(self.firewall)
+        self.address_group.static_value = [self.address_object_pano.name, ]
+
+        self.address_group.link_references()
+        self.assertEqual([self.address_object_pano, ], self.address_group.static_value)
+
+    def test_link_references_no_object_without_exceptions(self):
+        expected = ['not-an-object', ]
+        self.address_group.static_value = expected
+
+        self.address_group.link_references()
+        self.assertEqual(expected, self.address_group.static_value)
+
+    def test_link_references_no_object_with_exceptions(self):
+        self.address_group.static_value = ['not-an-object', ]
+
+        self.assertRaises(pandevice.errors.PanObjectNotFound,
+                          self.address_group.link_references,
+                          exceptions=True)
+
+    def test_delete_references_with_fw_using_list(self):
+        self.address_object_fw.delete_references(update=False)
+
+        self.assertEqual([], self.address_group.static_value)
