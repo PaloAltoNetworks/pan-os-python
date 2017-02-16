@@ -91,7 +91,7 @@ class HighAvailabilityInterface(PanObject):
         is created on the firewall.
 
         """
-        pandevice = self.pandevice()
+        pandevice = self.nearest_pandevice()
         if pandevice is None:
             return None
         if isinstance(self.port, basestring):
@@ -157,7 +157,7 @@ class HighAvailabilityInterface(PanObject):
 
         """
         if pan_device is None:
-            pan_device = self.pandevice()
+            pan_device = self.nearest_pandevice()
         if pan_device is None:
             return None
         port = interface if interface is not None else self.port
