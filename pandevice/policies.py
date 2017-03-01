@@ -197,7 +197,6 @@ class NatRule(VersionedPanObject):
     Args:
         name (str): Name of the rule
         description (str): The description
-        tag (list): Administrative tags
         nat_type (str): Type of NAT
         fromzone (list): From zones
         tozone (list): To zones
@@ -234,6 +233,11 @@ class NatRule(VersionedPanObject):
         destination_translated_port (int): Translated destination port number
         ha_binding (str): Device binding configuration in HA Active-Active mode
         disabled (bool): Disable this rule
+        negate_target (bool): Target all but the listed target firewalls
+            (applies to panorama/device groups only)
+        target (list): Apply this policy to the listed firewalls only
+            (applies to panorama/device groups only)
+        tag (list): Administrative tags
     """
     SUFFIX = ENTRY
 
@@ -246,8 +250,6 @@ class NatRule(VersionedPanObject):
 
         params.append(VersionedParamPath(
             'description', path='description'))
-        params.append(VersionedParamPath(
-            'tag', path='tag', vartype='member'))
         params.append(VersionedParamPath(
             'nat_type', path='nat-type', default='ipv4',
             values=('ipv4', 'nat64', 'nptv6')))
@@ -397,5 +399,11 @@ class NatRule(VersionedPanObject):
             values=('primary', 'both', '0', '1')))
         params.append(VersionedParamPath(
             'disabled', vartype='yesno', path='disabled'))
+        params.append(VersionedParamPath(
+            'negate_target', path='target/negate', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'target', path='target/devices', vartype='entry'))
+        params.append(VersionedParamPath(
+            'tag', path='tag', vartype='member'))
 
         self._params = tuple(params)
