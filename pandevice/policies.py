@@ -183,16 +183,28 @@ class SecurityRule(VersionedPanObject):
 class NatRule(VersionedPanObject):
     """NAT Rule
 
+    Both the naming convention and the order of the parameters tries to closly
+    match what is presented in the GUI.
+
+    There are groupings of parameters that give hints to the sections that
+    they contribute towards:
+
+        * source_translation_
+        * source_translation_fallback_
+        * source_translation_static
+        * destination_translation_
+
     Args:
         name (str): Name of the rule
         description (str): The description
+        tag (list): Administrative tags
+        nat_type (str): Type of NAT
         fromzone (list): From zones
         tozone (list): To zones
+        to_interface (str): Egress interface from route lookup
+        service (str): The service
         source (list): Source addresses
         destination (list): Destination addresses
-        to_interface (str): Egress interface from routh lookup
-        service (str): The service
-        nat_type (str): Type of NAT
         source_translation_type (str): Type of source address translation
         source_translation_address_type (str): Address type for Dynamic IP
             And Port or Dynamic IP source translation types
@@ -221,7 +233,6 @@ class NatRule(VersionedPanObject):
             address
         destination_translated_port (int): Translated destination port number
         ha_binding (str): Device binding configuration in HA Active-Active mode
-        tag (list): Administrative tags
         disabled (bool): Disable this rule
     """
     SUFFIX = ENTRY
@@ -235,21 +246,24 @@ class NatRule(VersionedPanObject):
 
         params.append(VersionedParamPath(
             'description', path='description'))
-        any_defaults = (
-            ('fromzone', 'from'), ('tozone', 'to'),
-            ('source', 'source'), ('destination', 'destination'),
-        )
-        for var_name, path in any_defaults:
-            params.append(VersionedParamPath(
-                var_name, default='any', vartype='member', path=path))
-
+        params.append(VersionedParamPath(
+            'tag', path='tag', vartype='member'))
+        params.append(VersionedParamPath(
+            'nat_type', path='nat-type', default='ipv4',
+            values=('ipv4', 'nat64', 'nptv6')))
+        params.append(VersionedParamPath(
+            'fromzone', default='any', vartype='member', path='from'))
+        params.append(VersionedParamPath(
+            'tozone', vartype='member', path='to'))
         params.append(VersionedParamPath(
             'to_interface', path='to-interface'))
         params.append(VersionedParamPath(
             'service', default='any', path='service'))
         params.append(VersionedParamPath(
-            'nat_type', path='nat-type', default='ipv4',
-            values=('ipv4', 'nat64', 'nptv6')))
+            'source', default='any', vartype='member', path='source'))
+        params.append(VersionedParamPath(
+            'destination', default='any',
+            vartype='member', path='destination'))
         params.append(VersionedParamPath(
             'source_translation_type',
             path='source-translation/{source_translation_type}',
@@ -381,8 +395,6 @@ class NatRule(VersionedPanObject):
         params.append(VersionedParamPath(
             'ha_binding', path='active-active-device-binding',
             values=('primary', 'both', '0', '1')))
-        params.append(VersionedParamPath(
-            'tag', path='tag', vartype='member'))
         params.append(VersionedParamPath(
             'disabled', vartype='yesno', path='disabled'))
 
