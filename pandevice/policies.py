@@ -40,6 +40,7 @@ class Rulebase(VersionedPanObject):
     ROOT = Root.VSYS
     CHILDTYPES = (
         "policies.SecurityRule",
+        "policies.NatRule",
     )
 
     def _setup(self):
@@ -176,5 +177,213 @@ class SecurityRule(VersionedPanObject):
             params.append(VersionedParamPath(
                 p, vartype='member',
                 path='profile-setting/profiles/{0}'.format(p)))
+
+        self._params = tuple(params)
+
+class NatRule(VersionedPanObject):
+    """NAT Rule
+
+    Args:
+        name (str): Name of the rule
+        description (str): The description
+        fromzone (list): From zones
+        tozone (list): To zones
+        source (list): Source addresses
+        destination (list): Destination addresses
+        to_interface (str): Egress interface from routh lookup
+        service (str): The service
+        nat_type (str): Type of NAT
+        source_translation_type (str): Type of source address translation
+        source_translation_address_type (str): Address type for Dynamic IP
+            And Port or Dynamic IP source translation types
+        source_translation_interface (str): Interface of the source address
+            translation for Dynamic IP and Port source translation types
+        source_translation_ip_address (str): IP address of the source address
+            translation for Dynamic IP and Port source translation types
+        source_translation_translated_addresses (list): Translated addresses
+            of the source address translation for Dynamic IP And Port or
+            Dynamic IP source translation types
+        source_translation_fallback_type (str): Type of fallback for Dynamic IP
+            source translation types
+        source_translation_fallback_translated_addresses (list): Addresses for
+            translated address types of fallback source translation
+        source_translation_fallback_interface (str): The interface for the
+            fallback source translation
+        source_translation_fallback_ip_type (str): The type of the IP address
+            for the fallback source translation IP address
+        source_translation_fallback_ip_address (str): The IP address of the
+            fallback source translation
+        source_translation_static_translated_address (str): The IP address
+            for the static source translation
+        source_translation_static_bi_directional (bool): Allow reverse
+            translation from translated address to original address
+        destination_translated_address (str): Translated destination IP
+            address
+        destination_translated_port (int): Translated destination port number
+        ha_binding (str): Device binding configuration in HA Active-Active mode
+        tag (list): Administrative tags
+        disabled (bool): Disable this rule
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/nat/rules')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'description', path='description'))
+        any_defaults = (
+            ('fromzone', 'from'), ('tozone', 'to'),
+            ('source', 'source'), ('destination', 'destination'),
+        )
+        for var_name, path in any_defaults:
+            params.append(VersionedParamPath(
+                var_name, default='any', vartype='member', path=path))
+
+        params.append(VersionedParamPath(
+            'to_interface', path='to-interface'))
+        params.append(VersionedParamPath(
+            'service', default='any', path='service'))
+        params.append(VersionedParamPath(
+            'nat_type', path='nat-type', default='ipv4',
+            values=('ipv4', 'nat64', 'nptv6')))
+        params.append(VersionedParamPath(
+            'source_translation_type',
+            path='source-translation/{source_translation_type}',
+            values=(
+                'dynamic-ip-and-port',
+                'dynamic-ip',
+                'static-ip')))
+        params.append(VersionedParamPath(
+            'source_translation_address_type',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                '{source_translation_address_type}')),
+            values=('interface-address', 'translated-address'),
+            default='translated-address',
+            condition={
+                'source_translation_type': [
+                    'dynamic-ip-and-port', 'dynamic-ip']}))
+        params.append(VersionedParamPath(
+            'source_translation_interface',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                '{source_translation_address_type}',
+                'interface')),
+            condition={
+                'source_translation_type': 'dynamic-ip-and-port',
+                'source_translation_address_type': 'interface-address'}))
+        params.append(VersionedParamPath(
+            'source_translation_ip_address',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                '{source_translation_address_type}',
+                'ip')),
+            condition={
+                'source_translation_type': 'dynamic-ip-and-port',
+                'source_translation_address_type': 'interface-address'}))
+        params.append(VersionedParamPath(
+            'source_translation_translated_addresses',
+            vartype='member',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                '{source_translation_address_type}')),
+            condition={
+                'source_translation_type': [
+                    'dynamic-ip-and-port', 'dynamic-ip'],
+                'source_translation_address_type': 'translated-address'}))
+        params.append(VersionedParamPath(
+            'source_translation_fallback_type',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                'fallback',
+                '{source_translation_fallback_type}')),
+            values=('translated-address', 'interface-address'),
+            condition={
+                'source_translation_type': 'dynamic-ip'}))
+        params.append(VersionedParamPath(
+            'source_translation_fallback_translated_addresses',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                'fallback',
+                '{source_translation_fallback_type}')),
+            vartype='member',
+            condition={
+                'source_translation_type': 'dynamic-ip',
+                'source_translation_fallback_type': 'translated-address'}))
+        params.append(VersionedParamPath(
+            'source_translation_fallback_interface',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                'fallback',
+                '{source_translation_fallback_type}',
+                'interface')),
+            condition={
+                'source_translation_type': 'dynamic-ip',
+                'source_translation_fallback_type': 'interface-address'}))
+        params.append(VersionedParamPath(
+            'source_translation_fallback_ip_type',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                'fallback',
+                '{source_translation_fallback_type}',
+                '{source_translation_fallback_ip_type}')),
+            values=('ip', 'floating-ip'),
+            default='ip',
+            condition={
+                'source_translation_type': 'dynamic-ip',
+                'source_translation_fallback_type': 'interface-address'}))
+        params.append(VersionedParamPath(
+            'source_translation_fallback_ip_address',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                'fallback',
+                '{source_translation_fallback_type}',
+                '{source_translation_fallback_ip_type}')),
+            condition={
+                'source_translation_type': 'dynamic-ip',
+                'source_translation_fallback_type': 'interface-address'}))
+        params.append(VersionedParamPath(
+            'source_translation_static_translated_address',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                'translated-address')),
+            condition={
+                'source_translation_type': 'static-ip'}))
+        params.append(VersionedParamPath(
+            'source_translation_static_bi_directional',
+            vartype='yesno',
+            path='/'.join((
+                'source-translation',
+                '{source_translation_type}',
+                'bi-directional')),
+            condition={
+                'source_translation_type': 'static-ip'}))
+        params.append(VersionedParamPath(
+            'destination_translated_address',
+            path='destination-translation/translated-address'))
+        params.append(VersionedParamPath(
+            'destination_translated_port', vartype='int',
+            path='destination-translation/translated-port'))
+        params.append(VersionedParamPath(
+            'ha_binding', path='active-active-device-binding',
+            values=('primary', 'both', '0', '1')))
+        params.append(VersionedParamPath(
+            'tag', path='tag', vartype='member'))
+        params.append(VersionedParamPath(
+            'disabled', vartype='yesno', path='disabled'))
 
         self._params = tuple(params)
