@@ -2813,6 +2813,11 @@ class PanDevice(PanObject):
                     # I'm not active, call the peer
                     kwargs["retry_on_peer"] = True
                     result = getattr(ha_peer.xapi, super_method_name)(*args, **kwargs)
+                    # Copy result from peer xapi to this xapi
+                    result_vars = ('status', 'status_detail', 'status_code', 'element_root',
+                                   'element_result', 'export_result', 'xml_document', 'text_document')
+                    for var in result_vars:
+                        setattr(self, var, getattr(ha_peer.xapi, var))
                 else:
                     try:
                         # This device has not failed, or both have failed
