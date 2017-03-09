@@ -19,6 +19,7 @@
 
 """Base object classes for inheritence by other classes"""
 
+import collections
 import copy
 import inspect
 import itertools
@@ -1689,12 +1690,11 @@ class VersionedPanObject(PanObject):
 
         Returns:
             tuple: The version as (x, y, z)
-
         """
         try:
             device = self.nearest_pandevice()
             panos_version = device.get_device_version()
-        except err.PanDeviceNotSet:
+        except (err.PanDeviceNotSet, err.PanApiKeyNotSet):
             panos_version = self._UNKNOWN_PANOS_VERSION
 
         return panos_version
@@ -2665,13 +2665,20 @@ class PanDevice(PanObject):
         """
 
     def get_device_version(self):
-        '''Gets the current version on the PanDevice.'''
-        if self._version_info is None:
-            self.refresh_system_info()
-            self._version_info = tuple(int(x) for x in
-                                       self.version.split('-')[0].split('.'))
+        """Gets the current version on the PanDevice."""
+        # If it's already known, return the version info
+        if self._version_info is not None:
+            return self._version_info
 
-        return self._version_info
+        # If the version is unknown but we have an API key, get the version
+        # from the device.
+        if self._api_key is not None:
+            self.refresh_system_info()
+            return self._version_info
+
+        # The version is unknown and there is not yet an API key, so there
+        # is no permission to touch the live device yet.
+        raise err.PanApiKeyNotSet('Please retrieve an API KEY first.')
 
     @classmethod
     def create_from_device(cls,
@@ -2726,7 +2733,7 @@ class PanDevice(PanObject):
                                          serial,
                                          port,
                                          )
-        instance.version = version
+        instance._set_version_and_version_info(version)
         return instance
 
     class XapiWrapper(pan.xapi.PanXapi):
@@ -3042,27 +3049,75 @@ class PanDevice(PanObject):
         return system_info['response']['result']
 
     def refresh_system_info(self):
-        """Refresh system information variables
-
-        This method is overloaded by subclasses
+        """Refresh system information variables.
 
         Variables refreshed:
 
         - version
         - platform
         - serial
+        - multi_vsys (if this is a :class:`pandevice.firewall.Firewall`)
 
         Returns:
-            tuple: version, platform, serial
-
+            namedtuple: version, platform, serial
         """
-        system_info = self.show_system_info()
+        try:
+            # For PANOS >= 7.1, this is faster than the op command.
+            ans = self.xapi.ad_hoc('type=version', modify_qs=True)
+        except err.PanDeviceXapiError as e:
+            # If this is an error other than "version" isn't supported,
+            # reraise the exception.
+            if str(e) != 'Illegal value for parameter "type" [version].':
+                raise
 
-        self.version = system_info['system']['sw-version']
+            # Otherwise, this is PANOS < 7.1, so do the (slower) op command.
+            system_info = self.show_system_info()
+        else:
+            # The `show_system_info()` returns way more information than
+            # `refresh_system_info()` cares about, so to share the same parsing
+            # code, we'll create our own dict to pass `_save_system_info()`
+            # that contains the keys we care about.  Doing the above
+            # `xapi.ad_hoc()` returns the things we care about, both for
+            # panorama and the firewall's cases, so we don't need to do any
+            # extra processing or tweaking than just formatting the response.
+            system_info = {'system': {}}
+            for e in ans.find('./result'):
+                system_info['system'][e.tag] = e.text
+
+        # Save the system info to this object
+        self._save_system_info(system_info)
+
+        # Return the important fields as a namedtuple
+        SystemInfo = collections.namedtuple(
+            'SystemInfo',
+            ['version', 'platform', 'serial'])
+
+        return SystemInfo(self.version, self.platform, self.serial)
+
+    def _save_system_info(self, system_info):
+        """Save information about the PanDevice to the object itself.
+
+        This function has a few purposes:
+            * Save the PANOS version so that we can make versioning decisions
+            * Save the platform
+            * Save the serial number
+
+        Subclasses may super() this function to get the shared functionality,
+        then save anything specific to them.
+
+        Args:
+            system_info (dict): A dict of system info passed from the
+                "refresh_system_info()" function.
+        """
+        self._set_version_and_version_info(system_info['system']['sw-version'])
         self.platform = system_info['system']['model']
         self.serial = system_info['system']['serial']
 
-        return self.version, self.platform, self.serial
+    def _set_version_and_version_info(self, version):
+        """Sets the version and the specially formatted versioning version."""
+        self.version = version
+        self._version_info = tuple(int(x) for x in
+                                   self.version.split('-')[0].split('.'))
 
     def refresh_version(self):
         """Refresh version of PAN-OS

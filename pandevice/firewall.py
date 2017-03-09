@@ -221,27 +221,13 @@ class Firewall(PanDevice):
         else:
             return super(Firewall, self).generate_xapi()
 
-    def refresh_system_info(self):
-        """Refresh system information variables
+    def _save_system_info(self, system_info):
+        """Save all the shared system info, plus firewall specific info.
 
-        Variables refreshed:
-
-        - version
-        - platform
-        - serial
-        - multi_vsys
-
-        Returns:
-            tuple: version, platform, serial
+        Invoked during "refresh_system_info()"
         """
-        system_info = self.show_system_info()
-
-        self.version = system_info['system']['sw-version']
-        self.platform = system_info['system']['model']
-        self.serial = system_info['system']['serial']
-        self.multi_vsys = True if system_info['system']['multi-vsys'] == "on" else False
-
-        return self.version, self.platform, self.serial
+        super(Firewall, self)._save_system_info(system_info)
+        self.multi_vsys = system_info['system']['multi-vsys'] == 'on'
 
     def element(self):
         if self.serial is None:

@@ -100,3 +100,6 @@ class PanHASyncInProgress(PanDeviceXapiError):
 
 class PanObjectError(PanDeviceError):
     pass
+
+class PanApiKeyNotSet(PanDeviceError):
+    pass
