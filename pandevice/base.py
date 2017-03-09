@@ -3066,28 +3066,32 @@ class PanDevice(PanObject):
         Returns:
             namedtuple: version, platform, serial
         """
-        try:
-            # For PANOS >= 7.1, this is faster than the op command.
-            ans = self.xapi.ad_hoc('type=version', modify_qs=True)
-        except err.PanDeviceXapiError as e:
-            # If this is an error other than "version" isn't supported,
-            # reraise the exception.
-            if str(e) != 'Illegal value for parameter "type" [version].':
-                raise
+        #       This section is commented because version api cannot be targeted
+        #       on Panorama.  When this feature is added, ok to uncomment this.
+        #try:
+        #    # For PANOS >= 7.1, this is faster than the op command.
+        #    ans = self.xapi.ad_hoc('type=version', modify_qs=True)
+        #except err.PanDeviceXapiError as e:
+        #    # If this is an error other than "version" isn't supported,
+        #    # reraise the exception.
+        #    if str(e) != 'Illegal value for parameter "type" [version].':
+        #        raise
+        #
+        #    # Otherwise, this is PANOS < 7.1, so do the (slower) op command.
+        #    system_info = self.show_system_info()
+        #else:
+        #    # The `show_system_info()` returns way more information than
+        #    # `refresh_system_info()` cares about, so to share the same parsing
+        #    # code, we'll create our own dict to pass `_save_system_info()`
+        #    # that contains the keys we care about.  Doing the above
+        #    # `xapi.ad_hoc()` returns the things we care about, both for
+        #    # panorama and the firewall's cases, so we don't need to do any
+        #    # extra processing or tweaking than just formatting the response.
+        #    system_info = {'system': {}}
+        #    for e in ans.find('./result'):
+        #        system_info['system'][e.tag] = e.text
 
-            # Otherwise, this is PANOS < 7.1, so do the (slower) op command.
-            system_info = self.show_system_info()
-        else:
-            # The `show_system_info()` returns way more information than
-            # `refresh_system_info()` cares about, so to share the same parsing
-            # code, we'll create our own dict to pass `_save_system_info()`
-            # that contains the keys we care about.  Doing the above
-            # `xapi.ad_hoc()` returns the things we care about, both for
-            # panorama and the firewall's cases, so we don't need to do any
-            # extra processing or tweaking than just formatting the response.
-            system_info = {'system': {}}
-            for e in ans.find('./result'):
-                system_info['system'][e.tag] = e.text
+        system_info = self.show_system_info()
 
         # Save the system info to this object
         self._save_system_info(system_info)
