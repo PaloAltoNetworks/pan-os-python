@@ -33,3 +33,7 @@ Example scripts
 .. automodule:: examples.dyn_address_group
 
 `View the code <https://github.com/PaloAltoNetworks/pandevice/blob/master/examples/dyn_address_group.py>`_
+
+.. automodule:: examples.ensure_security_rule
+
+`View the code <https://github.com/PaloAltoNetworks/pandevice/blob/master/examples/ensure_security_rule.py>`_
