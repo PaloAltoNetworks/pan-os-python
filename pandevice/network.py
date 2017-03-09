@@ -527,96 +527,102 @@ class Subinterface(Interface):
             self.name = '{0}.{1}'.format(self.name, self.tag)
 
 
-class AbstractSubinterface(Subinterface):
-    """When a subinterface is needed, but the layer is unknown.
+class AbstractSubinterface(object):
+    """When a subinterface is needed, but the layer is unknown
 
-    Kindof like a placeholder or reference for a Layer2Subinterface or
-    Layer3Subinterface.  This class gets a parent which is the ethernet or
-    aggregate interface, but it should not be added to the parent interface
-    with add().
+    Kindof like a placeholder or reference for a Layer2Subinterface or Layer3Subinterface.
+    This class gets a parent which is the ethernet or aggregate interface, but it should
+    not be added to the parent interface with add().
 
     Args:
         name (str): Name of the interface (eg. ethernet1/1.5)
         tag (int): Tag for the interface, aka vlan id
         parent (Interface): The base interface for this subinterface
+
     """
-    def _setup(self):
-        self._params = [VersionedParamPath(
-            'tag', path='tag', vartype='int'), ]
+    def __init__(self, name, tag, parent=None):
+        self.name = name
+        self.tag = tag
+        self.parent = parent
 
-    def set_zone(self, zone_name, mode=None, refresh=False,
-                 update=False, running_config=False):
-        raise err.PanDeviceError(
-            "Unable to set zone on abstract subinterface because " +
-            "layer must be known to set zone")
+    def set_name(self):
+        """Create a name appropriate for a subinterface if it isn't already created
 
-    def set_virtual_router(self, virtual_router_name, refresh=False,
-                           update=False, running_config=False):
-        """Set the virtual router for this interface.
+        Example:
+            If self.name is 'ethernet1/1' and self.tag is 5, this method will change the
+            name to 'ethernet1/1.5'.
 
-        Creates a reference to this interface in the specified virtual router
-        and removes references to this interface from all other virtual
-        routers. The virtual router will be created if it doesn't exist.
+        """
+        if self.name.find(".") == -1:
+            self.name = self.name + "." + str(self.tag)
+
+    def nearest_pandevice(self):
+        """The PanDevice parent for this instance
+
+        Returns:
+            PanDevice: Parent PanDevice instance (Firewall or Panorama)
+
+        """
+        return self.parent._nearest_pandevice()
+
+    def set_zone(self, zone_name, mode=None, refresh=False, update=False, running_config=False):
+        raise err.PanDeviceError("Unable to set zone on abstract subinterface because layer must be known to set zone")
+
+    def set_virtual_router(self, virtual_router_name, refresh=False, update=False, running_config=False):
+        """Set the virtual router for this interface
+
+        Creates a reference to this interface in the specified virtual router and removes references
+        to this interface from all other virtual routers. The virtual router will be created if it doesn't exist.
 
         Args:
             virtual_router_name (str): The name of the VirtualRouter or
                 a :class:`pandevice.network.VirtualRouter` instance
-            refresh (bool): Refresh the relevant current state of the device
-                before taking action (Default: False)
+            refresh (bool): Refresh the relevant current state of the device before taking action
+                (Default: False)
             update (bool): Apply the changes to the device (Default: False)
-            running_config: If refresh is True, refresh from the running
-                configuration (Default: False)
+            running_config: If refresh is True, refresh from the running configuration
+                (Default: False)
 
         Returns:
             Zone: The zone for this interface after the operation completes
+
         """
         interface = Layer3Subinterface(self.name, self.tag)
         interface.parent = self.parent
-        return interface._set_reference(
-            virtual_router_name, VirtualRouter, "interface", True,
-            refresh=False, update=update, running_config=running_config)
+        return interface._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh=False, update=update, running_config=running_config)
 
     def get_layered_subinterface(self, mode, add=True):
-        """Instantiate a specific SubInterface from this AbstractSubinterface.
+        """Instantiate a regular subinterface type from this AbstractSubinterface
 
-        Converts an abstract subinterface to a real subinterface by offering it
-        a mode.
+        Converts an abstract subinterface to a real subinterface by offering it a mode.
 
         Args:
             mode (str): Mode of the subinterface ('layer3' or 'layer2')
-            add (bool): Add the newly instantiated subinterface to the base
-                interface object
+            add (bool): Add the newly instantiated subinterface to the base interface object
 
         Returns:
             Subinterface: A :class:`pandevice.network.Layer3Subinterface` or
-            :class:`pandevice.network.Layer2Subinterface` instance, depending
-            on the mode argument
+            :class:`pandevice.network.Layer2Subinterface` instance, depending on the mode argument
+
         """
-        if self.parent is None:
-            return
-
-        if mode == "layer3":
-            subintclass = Layer3Subinterface
-        elif mode == "layer2":
-            subintclass = Layer2Subinterface
-        else:
-            msg = 'Unknown layer passed to subinterface factory: {0}'.format(
-                mode)
-            raise err.PanDeviceError(msg)
-        layered_subinterface = self.parent.find(self.uid, subintclass)
-
-        # Verify tag is correct
-        if layered_subinterface is not None:
-            if layered_subinterface.tag != self.tag:
-                layered_subinterface.tag = self.tag
-        else:
-            if add:
-                layered_subinterface = self.parent.add(subintclass(
-                    self.uid, tag=self.tag))
+        if self.parent is not None:
+            if mode == "layer3":
+                subintclass = Layer3Subinterface
+            elif mode == "layer2":
+                subintclass = Layer2Subinterface
             else:
-                return
-
-        return layered_subinterface
+                raise err.PanDeviceError("Unknown layer passed to subinterface factory: %s" % mode)
+            layered_subinterface = self.parent.find(self.name, subintclass)
+            # Verify tag is correct
+            if layered_subinterface is not None:
+                if layered_subinterface.tag != self.tag:
+                    layered_subinterface.tag = self.tag
+            else:
+                if add:
+                    layered_subinterface = self.parent.add(subintclass(self.name, tag=self.tag))
+                else:
+                    return
+            return layered_subinterface
 
     def delete(self):
         """Deletes both Layer3 and Layer2 subinterfaces by name
