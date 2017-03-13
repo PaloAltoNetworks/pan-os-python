@@ -1760,7 +1760,7 @@ class VersionedPanObject(PanObject):
         if compare_children:
             iterchain += (self._subelements(comparison_element=True),)
 
-        self.xml_merge(ans, itertools.chain(iterchain))
+        self.xml_merge(ans, itertools.chain(*iterchain))
 
         return ans
 
