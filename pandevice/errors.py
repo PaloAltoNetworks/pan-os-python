@@ -106,3 +106,6 @@ class PanApiKeyNotSet(PanDeviceError):
 
 class PanActivateFeatureAuthCodeError(PanDeviceError):
     pass
+
+class PanOutdatedSslError(PanDeviceError):
+    pass

@@ -2741,7 +2741,9 @@ class PanDevice(PanObject):
         #This is a confusing class used for catching exceptions and faults.
         # TODO: comment the hell out of it!
 
-        CONNECTION_EXCEPTIONS = (err.PanConnectionTimeout, err.PanURLError, err.PanSessionTimedOut)
+        CONNECTION_EXCEPTIONS = (
+            err.PanConnectionTimeout, err.PanURLError,
+            err.PanOutdatedSslError, err.PanSessionTimedOut)
 
         def __init__(self, *args, **kwargs):
             self.pan_device = kwargs.pop('pan_device', None)
@@ -2859,6 +2861,36 @@ class PanDevice(PanObject):
                         pan_device=self.pan_device,
                     )
                 else:
+                    # This could be that we have an old version of OpenSSL
+                    # that doesn't support TLSv1.1, so check for that and give
+                    # a more explicit error if so.
+                    suspect_error = 'URLError: reason: [Errno 54] Connection reset by peer'
+                    if e.message == suspect_error:
+                        min_openssl_version = ['1', '0', '1']
+                        help_url = 'https://www.paloaltonetworks.com/documentation/80/pan-os/pan-os-release-notes/pan-os-8-0-release-information/changes-to-default-behavior#19035'
+                        try:
+                            # Examples:
+                            #   OpenSSL 1.0.2j  26 Sep 2016
+                            #   OpenSSL 0.9.8zh 14 Jan 2016
+                            import ssl
+                            vs = ssl.OPENSSL_VERSION.split()[1].split('.')
+                        except (ImportError, IndexError):
+                            pass
+                        else:
+                            if vs < min_openssl_version:
+                                msg = ' '.join((
+                                    'You are attempting to connect to PANOS',
+                                    '8.0 or higher with an outdated OpenSSL',
+                                    'library({0}). Please update to OpenSSL',
+                                    '{1} or higher. Refer to the following',
+                                    'URL for more information: {2}',
+                                ))
+                                return err.PanOutdatedSslError(
+                                    msg.format(ssl.OPENSSL_VERSION,
+                                               '.'.join(min_openssl_version),
+                                               help_url),
+                                    pan_device=self.pan_device)
+
                     return err.PanURLError(str(e),
                                           pan_device=self.pan_device)
 
