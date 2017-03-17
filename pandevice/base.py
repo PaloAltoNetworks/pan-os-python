@@ -21,6 +21,7 @@
 
 import collections
 import copy
+import datetime
 import inspect
 import itertools
 import re
@@ -2740,7 +2741,9 @@ class PanDevice(PanObject):
         #This is a confusing class used for catching exceptions and faults.
         # TODO: comment the hell out of it!
 
-        CONNECTION_EXCEPTIONS = (err.PanConnectionTimeout, err.PanURLError, err.PanSessionTimedOut)
+        CONNECTION_EXCEPTIONS = (
+            err.PanConnectionTimeout, err.PanURLError,
+            err.PanOutdatedSslError, err.PanSessionTimedOut)
 
         def __init__(self, *args, **kwargs):
             self.pan_device = kwargs.pop('pan_device', None)
@@ -2858,6 +2861,36 @@ class PanDevice(PanObject):
                         pan_device=self.pan_device,
                     )
                 else:
+                    # This could be that we have an old version of OpenSSL
+                    # that doesn't support TLSv1.1, so check for that and give
+                    # a more explicit error if so.
+                    suspect_error = 'URLError: reason: [Errno 54] Connection reset by peer'
+                    if e.message == suspect_error:
+                        min_openssl_version = ['1', '0', '1']
+                        help_url = 'https://www.paloaltonetworks.com/documentation/80/pan-os/pan-os-release-notes/pan-os-8-0-release-information/changes-to-default-behavior#19035'
+                        try:
+                            # Examples:
+                            #   OpenSSL 1.0.2j  26 Sep 2016
+                            #   OpenSSL 0.9.8zh 14 Jan 2016
+                            import ssl
+                            vs = ssl.OPENSSL_VERSION.split()[1].split('.')
+                        except (ImportError, IndexError):
+                            pass
+                        else:
+                            if vs < min_openssl_version:
+                                msg = ' '.join((
+                                    'You are attempting to connect to PANOS',
+                                    '8.0 or higher with an outdated OpenSSL',
+                                    'library({0}). Please update to OpenSSL',
+                                    '{1} or higher. Refer to the following',
+                                    'URL for more information: {2}',
+                                ))
+                                return err.PanOutdatedSslError(
+                                    msg.format(ssl.OPENSSL_VERSION,
+                                               '.'.join(min_openssl_version),
+                                               help_url),
+                                    pan_device=self.pan_device)
+
                     return err.PanURLError(str(e),
                                           pan_device=self.pan_device)
 
@@ -3941,3 +3974,111 @@ class PanDevice(PanObject):
 
     def _nearest_pandevice(self):
         return self
+
+    def _format_result_as_license_list(self, result):
+        """Formats the ElementTree as a list of License namedtuples."""
+        ans = []
+        License = collections.namedtuple(
+            'License', [
+                'feature', 'description', 'serial', 'issued',
+                'expires', 'expired', 'authcode'])
+
+        def _parse_license_date(value):
+            """Turns a string into a datetime.date object.
+
+            If the value is "Never", this function returns None.
+
+            If the value can't be parsed, then the string itself is returned.
+            """
+            if value is None or value.text is None or value.text == 'Never':
+                return None
+
+            date_format = '%B %d, %Y'
+            months = {
+                'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5,
+                'June': 6, 'July': 7, 'August': 8, 'September': 9,
+                'October': 10, 'November': 11, 'December': 12}
+
+            tokens = value.text.split()
+            try:
+                return datetime.date(
+                    int(tokens[2]), months[tokens[0]], int(tokens[1][:-1]))
+            except (ValueError, KeyError, IndexError):
+                return value.text
+
+        for x in result.findall('./result/licenses/entry'):
+            ans.append(License(
+                x.find('./feature').text,
+                x.find('./description').text,
+                x.find('./serial').text,
+                _parse_license_date(x.find('./issued')),
+                _parse_license_date(x.find('./expires')),
+                x.find('./expired').text == 'yes',
+                x.find('./authcode').text))
+
+        return ans
+
+    def request_license_info(self):
+        """Returns the licenses currently installed on this device.
+
+        **Touches the live device**
+
+        Note: For namedtuple objects, you can access the variables via
+        its index like a normal tuple or via name like a class.
+
+        Returns:
+            list: A list of namedtuples of the licenses with the following attributes:
+
+                - feature (str): the feature name
+                - description (str): description
+                - serial (str): the license's serial number
+                - issued (datetime.date/None): issue date
+                - expires (datetime.date/None): expiration date, or None if the license does not expire
+                - expired (bool): True if the license is currently expired
+                - authcode (str/None): license's authcode
+
+        """
+        result = self.op('request license info')
+        return self._format_result_as_license_list(result)
+
+    def fetch_licenses_from_license_server(self):
+        """Fetches licenses from the license server.
+
+        **Modifies the live device**
+
+        Note: For namedtuple objects, you can access the variables via
+        its index like a normal tuple or via name like a class.
+
+        Returns:
+            list: A list of namedtuples of the licenses with the following attributes:
+
+                - feature (str): the feature name
+                - description (str): description
+                - serial (str): the license's serial number
+                - issued (datetime.date/None): issue date
+                - expires (datetime.date/None): expiration date, or None if the license does not expire
+                - expired (bool): True if the license is currently expired
+                - authcode (str/None): license's authcode
+
+        """
+        result = self.op('request license fetch')
+        return self._format_result_as_license_list(result)
+
+    def activate_feature_using_authorization_code(self, code):
+        """Updates a license using the given auth code.
+
+        **Modifies the live device**
+
+        Args:
+            code (str): The authorization code.
+
+        Raises:
+            PanActivateFeatureAuthCodeError
+        """
+        result = self.op('request license fetch auth-code "{0}"'.format(
+                         code))
+
+        if result.attrib.get('status') != 'success':
+            raise err.PanActivateFeatureAuthCodeError(
+                result.get('./msg/line').text,
+                pan_device=self)
