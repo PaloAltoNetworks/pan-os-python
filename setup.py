@@ -25,8 +25,8 @@ setup(
     version='0.3.5',
     description='Framework for interacting with Palo Alto Networks devices via API',
     long_description='The Palo Alto Networks Device Framework is a way to interact with Palo Alto Networks devices (including Next-generation Firewalls and Panorama) using the device API that is object oriented and conceptually similar to interaction with the device via the GUI or CLI.',
-    author='Brian Torres-Gil',
-    author_email='btorres-gil@paloaltonetworks.com',
+    author='Palo Alto Networks',
+    author_email='techpartners@paloaltonetworks.com',
     url='https://github.com/PaloAltoNetworks/pandevice',
     packages=[
         'pandevice',
