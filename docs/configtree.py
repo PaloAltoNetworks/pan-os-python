@@ -92,7 +92,7 @@ def legend(modules):
             result.append("    {0} [style=filled {1}]\n".format(module_name, nodestyle[module_name]))
         except KeyError:
             pass
-    result.append("    PanDevice [style=filled]\n")
+    #result.append("    PanDevice [style=filled]\n")
     result.append("}\n")
     return result
 
