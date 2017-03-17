@@ -732,8 +732,7 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj.delete()
 
         self.assertIsNone(ret_val)
-        self.obj.parent.remove_by_name.assert_called_once_with(
-            Uid, type(self.obj))
+        self.obj.parent.remove.assert_called_once_with(self.obj)
         m_pandevice.set_config_changed.assert_called_once_with()
         m_pandevice.active().xapi.delete.assert_called_once_with(
             PanDeviceXpath,
