@@ -107,8 +107,8 @@ Contributors
 - Garfield Freeman - `github <https://github.com/shinmog>`__
 - John Anderson - `github <https://github.com/lampwins>`__
 
-Thank you to Kevin Steves, creator of the pan-python library.
-https://github.com/kevinsteves/pan-python
+Thank you to Kevin Steves, creator of the pan-python library:
+    https://github.com/kevinsteves/pan-python
 
 
 .. _pan-python: http://github.com/kevinsteves/pan-python
