@@ -103,9 +103,12 @@ See more examples in the `Usage Guide`_.
 Contributors
 ------------
 
-- Brian Torres-Gil - `github <https://github.com/btorresgil>`_
-- Garfield Freeman - `github <https://github.com/shinmog>`_
-- John Anderson - `github <https://github.com/lampwins>`_
+- Brian Torres-Gil - `github <https://github.com/btorresgil>`__
+- Garfield Freeman - `github <https://github.com/shinmog>`__
+- John Anderson - `github <https://github.com/lampwins>`__
+
+Thank you to Kevin Steves, creator of the pan-python library.
+https://github.com/kevinsteves/pan-python
 
 
 .. _pan-python: http://github.com/kevinsteves/pan-python
