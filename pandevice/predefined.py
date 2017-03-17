@@ -30,7 +30,7 @@ class Predefined(object):
     """Predefined Objects Subsystem of Firewall
 
     A member of a base.PanDevice object that has special methods for
-    interacting with the predefned objects of the firewall
+    interacting with the predefined objects of the firewall
 
     This class is typically not instantiated by anything but the
     base.PanDevice class itself. There is an instance of this Predefined class

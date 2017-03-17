@@ -103,6 +103,7 @@ class UserId(object):
         """
         uid_message, payload = self._create_uidmessage()
         self._batch = False
+        # Only send the API call if there was actually a command added to the payload
         if len(payload) > 0:
             self.send(uid_message)
         self._batch_uidmessage = deepcopy(self._uidmessage)

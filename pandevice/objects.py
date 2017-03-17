@@ -72,6 +72,15 @@ class AddressObject(VersionedPanObject):
 
 
 class AddressGroup(VersionedPanObject):
+    """Address Group
+
+    Args:
+        static_value (list): Values for a static address group
+        dynamic_value (str): Registered-ip tags for a dynamic address group
+        description (str): Description of this object
+        tag (list): Administrative tags (not to be confused with registered-ip tags)
+
+    """
     ROOT = Root.VSYS
     SUFFIX = ENTRY
 
