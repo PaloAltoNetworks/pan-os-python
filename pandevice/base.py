@@ -563,7 +563,7 @@ class PanObject(object):
         else:
             device.xapi.delete(self.xpath(), retry_on_peer=self.HA_SYNC)
         if self.parent is not None:
-            self.parent.remove_by_name(self.uid, type(self))
+            self.parent.remove(self)
 
     def update(self, variable):
         """Change the value of a variable
