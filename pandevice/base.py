@@ -652,8 +652,7 @@ class PanObject(object):
 
         return (varpath, value, var)
 
-    def refresh(self, running_config=False, xml=None,
-                refresh_children=True, exceptions=True):
+    def refresh(self, running_config=False, refresh_children=True, exceptions=True, xml=None):
         """Refresh all variables and child objects from the device.
 
         Args:
