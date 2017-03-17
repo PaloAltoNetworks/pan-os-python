@@ -2872,7 +2872,7 @@ class PanDevice(PanObject):
                     suspect_error = 'URLError: reason: [Errno 54] Connection reset by peer'
                     if e.message == suspect_error:
                         min_openssl_version = ['1', '0', '1']
-                        help_url = 'https://www.paloaltonetworks.com/documentation/80/pan-os/pan-os-release-notes/pan-os-8-0-release-information/changes-to-default-behavior#19035'
+                        help_url = 'http://pandevice.readthedocs.io/en/latest/usage.html#connecting-to-pan-os-8-0'
                         try:
                             # Examples:
                             #   OpenSSL 1.0.2j  26 Sep 2016
