@@ -30,6 +30,7 @@ import pandevice
 from pandevice import getlogger
 import base
 import firewall
+import policies
 import errors as err
 from base import VarPath as Var
 from base import PanObject, Root, MEMBER, ENTRY
@@ -38,8 +39,6 @@ from pandevice import yesno
 import pan.commit
 
 logger = getlogger(__name__)
-
-
 
 
 class DeviceGroup(PanObject):
@@ -99,7 +98,7 @@ class Panorama(base.PanDevice):
         interval: The interval to check asynchronous jobs
 
     """
-
+    FIREWALL_CLASS = firewall.Firewall
     NAME = "hostname"
     CHILDTYPES = (
         "panorama.DeviceGroup",
@@ -302,13 +301,13 @@ class Panorama(base.PanDevice):
                     devices_xml.append(new_vsys_device)
 
         # Create firewall instances
-        tmp_fw = firewall.Firewall()
+        tmp_fw = self.FIREWALL_CLASS()
         firewall_instances = tmp_fw.refreshall_from_xml(
             devices_xml, refresh_children=not expand_vsys)
 
         if not include_device_groups:
             if add:
-                self.removeall(firewall.Firewall)
+                self.removeall(self.FIREWALL_CLASS)
                 self.extend(firewall_instances)
             return firewall_instances
 
@@ -367,7 +366,7 @@ class Panorama(base.PanDevice):
                         # It's possible for device-groups to reference a serial/vsys that doesn't exist
                         # In this case, create the FW instance
                         if not only_connected:
-                            fw = firewall.Firewall(serial=dg_serial, vsys=dg_vsys)
+                            fw = self.FIREWALL_CLASS(serial=dg_serial, vsys=dg_vsys)
                             dg.add(fw)
                     else:
                         # Move the firewall to the device-group
@@ -383,13 +382,13 @@ class Panorama(base.PanDevice):
                 found_dg = self.find(dg.name, DeviceGroup)
                 if found_dg is not None:
                     # Move the firewalls to the existing devicegroup
-                    found_dg.removeall(firewall.Firewall)
+                    found_dg.removeall(self.FIREWALL_CLASS)
                     found_dg.extend(dg.children)
                 else:
                     # Devicegroup doesn't exist, add it
                     self.add(dg)
             # Add firewalls that are not in devicegroups
-            self.removeall(firewall.Firewall)
+            self.removeall(self.FIREWALL_CLASS)
             self.extend(firewall_instances)
 
         return firewall_instances + devicegroup_instances
