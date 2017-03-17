@@ -14,7 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 """User-ID and Dynamic Address Group updates using the User-ID API"""
 
@@ -86,6 +85,7 @@ class UserId(object):
         The API call will not be sent to the firewall until batch_end() is
         called. This allows multiple operations to be added to a single API
         call.
+
         """
         self._batch = True
         self._batch_uidmessage = deepcopy(self._uidmessage)
@@ -99,6 +99,7 @@ class UserId(object):
         The API call will not be sent to the firewall until batch_end() is
         called. This allows multiple operations to be added to a single API
         call.
+
         """
         uid_message, payload = self._create_uidmessage()
         self._batch = False

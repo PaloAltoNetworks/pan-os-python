@@ -14,7 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: John Anderson <lampwins@gmail.com>
 
 """Retrieving and parsing predefined objects from the firewall"""
 
@@ -112,7 +111,6 @@ class Predefined(object):
             name (str): Name of the application to refresh
 
         """
-
         xpath = self.SINGLE_APPLICATION_XPATH % name
         xml = self._get_xml(xpath)
         self._parse_application_xml(xml)
@@ -126,7 +124,6 @@ class Predefined(object):
             name (str): Name of the service to refresh
 
         """
-
         xpath = self.SINGLE_SERVICE_XPATH % name
         xml = self._get_xml(xpath)
         self._parse_service_xml(xml)
@@ -141,7 +138,6 @@ class Predefined(object):
         longer than a normal api request.
 
         """
-
         xpath = self.ALL_APPLICATION_XPATH + "/entry"
         xml = self._get_xml(xpath)
         self._parse_application_xml(xml)
@@ -152,7 +148,6 @@ class Predefined(object):
         This method refreshes all predefined services.
 
         """
-
         xpath = self.ALL_SERVICE_XPATH + "/entry"
         xml = self._get_xml(xpath)
         self._parse_service_xml(xml)
@@ -168,7 +163,6 @@ class Predefined(object):
         longer than a normal api request.
 
         """
-
         # first we clear all existing objects
         self.application_objects = {}
         self.application_container_objects = {}
@@ -192,7 +186,6 @@ class Predefined(object):
             Either an ApplicationObject, ApplicationContainerObject, or None
 
         """
-
         obj = self.application_objects.get(name, None)
         if obj is None and include_containers:
             obj = self.application_container_objects.get(name, None)
@@ -217,7 +210,6 @@ class Predefined(object):
             Either a ServiceObject or None
 
         """
-
         obj = self.service_objects.get(name, None)
 
         if obj is None and refresh_if_none:
@@ -241,7 +233,6 @@ class Predefined(object):
             A list of all found ApplicationObjects or ApplicationContainerObjects
 
         """
-
         objs = []
 
         for name in set(names):
@@ -264,7 +255,6 @@ class Predefined(object):
             A list of all found ServiceObjects
 
         """
-
         objs = []
 
         for name in set(names):

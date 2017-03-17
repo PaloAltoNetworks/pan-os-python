@@ -14,7 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 """Network module contains objects that exist in the 'Network' tab in the firewall GUI"""
 
@@ -126,6 +125,7 @@ class StaticMac(VersionedPanObject):
 
     Args:
         interface (str): Name of an interface
+
     """
     SUFFIX = ENTRY
     NAME = 'mac'
@@ -149,6 +149,7 @@ class Vlan(VsysOperations):
     Args:
         interface (list): List of interface names
         virtual-interface (VlanInterface): The layer3 vlan interface for this vlan
+
     """
     SUFFIX = ENTRY
     ROOT = Root.DEVICE
@@ -237,6 +238,7 @@ class Interface(VsysOperations):
     Args:
         name (str): Name of the interface
         state (str): Link state, 'up' or 'down'
+
     """
     SUFFIX = ENTRY
     ROOT = Root.DEVICE
@@ -249,6 +251,7 @@ class Interface(VsysOperations):
         Returns:
             bool: True if state is 'up', False if state is 'down',
                 'unconfigured' or other
+
         """
         return self.state == 'up'
 
@@ -273,6 +276,7 @@ class Interface(VsysOperations):
 
         Returns:
             Zone: The zone for this interface after the operation completes
+
         """
         if mode is None:
             mode = self.DEFAULT_MODE
@@ -299,6 +303,7 @@ class Interface(VsysOperations):
 
         Returns:
             Zone: The zone for this interface after the operation completes
+
         """
         return self._set_reference(virtual_router_name, VirtualRouter,
                                    "interface", True, refresh, update,
@@ -326,6 +331,7 @@ class Interface(VsysOperations):
 
         Returns:
             Zone: The zone for this interface after the operation completes
+
         """
         if not self.ALLOW_SET_VLAN:
             msg = 'Class "{0}" cannot invoke this function'
@@ -340,6 +346,7 @@ class Interface(VsysOperations):
         Returns:
             dict: counter name as key, counter as value, None if interface is
                 not configured
+
         """
         from pan.config import PanConfig
 
@@ -375,6 +382,7 @@ class Interface(VsysOperations):
 
         Returns:
             str: The current state from the firewall
+
         """
         device = self.nearest_pandevice()
         cmd = 'show interface "{0}"'.format(self.name)
@@ -400,6 +408,7 @@ class Interface(VsysOperations):
                 taking action
             delete_referencing_objects (bool): Delete the entire object that
                 references this interface
+
         """
         self.set_zone(None, refresh=refresh, update=True)
         if self.ALLOW_SET_VLAN:
@@ -445,6 +454,7 @@ class SubinterfaceArp(VersionedPanObject):
     Args:
         ip (str): The IP address
         hw_address (str): The MAC address for the static ARP
+
     """
     SUFFIX = ENTRY
     NAME = 'ip'
@@ -470,8 +480,8 @@ class EthernetInterfaceArp(SubinterfaceArp):
     Args:
         ip (str): The IP address
         hw_address (str): The MAC address for the static ARP
-    """
 
+    """
     def _setup(self):
         super(EthernetInterfaceArp, self)._setup()
 
@@ -489,6 +499,7 @@ class VirtualWire(VersionedPanObject):
         interface2 (str): The second interface to use
         multicast (bool): Enable multicast firewalling or not
         pass_through (bool): Enable link state pass through or not
+
     """
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
@@ -520,6 +531,7 @@ class Subinterface(Interface):
     """Subinterface class
 
     Do not instantiate this object. Use a subclass.
+
     """
     def set_name(self):
         """Create a name appropriate for a subinterface if it isn't already"""
@@ -628,6 +640,7 @@ class AbstractSubinterface(object):
         """Deletes both Layer3 and Layer2 subinterfaces by name
 
         This is necessary because an AbstractSubinterface's mode is unknown.
+
         """
         for cls in (Layer3Subinterface, Layer2Subinterface):
             i = self.parent.find_or_create(self.uid, cls, tag=self.tag)
@@ -648,6 +661,7 @@ class Layer3Subinterface(Subinterface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+
     """
     DEFAULT_MODE = 'layer3'
     CHILDTYPES = (
@@ -712,6 +726,7 @@ class Layer2Subinterface(Subinterface):
         lldp_profile (str): Reference to an lldp profile
         netflow_profile_l2 (NetflowProfile): Reference to a netflow profile
         comment (str): The interface's comment
+
     """
     SUFFIX = ENTRY
     DEFAULT_MODE = 'layer2'
@@ -745,6 +760,7 @@ class PhysicalInterface(Interface):
     """Absract base class for Ethernet and Aggregate Interfaces
 
     Do not instantiate this object. Use a subclass.
+
     """
     def set_zone(self, zone_name, mode=None, refresh=False,
                  update=False, running_config=False):
@@ -767,6 +783,7 @@ class PhysicalInterface(Interface):
 
         Returns:
             Zone: The zone for this interface after the operation completes
+
         """
         if mode is None:
             mode = self.mode
@@ -788,7 +805,9 @@ class EthernetInterface(PhysicalInterface):
                 * ha
                 * decrypt-mirror
                 * aggregate-group
+
             Not all modes apply to all interface types (Default: layer3)
+
         ip (tuple): Layer3: Interface IPv4 addresses
         ipv6_enabled (bool): Layer3: IPv6 Enabled (requires
             IPv6Address child object)
@@ -807,6 +826,7 @@ class EthernetInterface(PhysicalInterface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+
     """
     ALLOW_SET_VLAN = True
     CHILDTYPES = (
@@ -908,7 +928,9 @@ class AggregateInterface(PhysicalInterface):
                 * ha
                 * decrypt-mirror
                 * aggregate-group
+
             Not all modes apply to all interface types (Default: layer3)
+
         ip (tuple): Layer3: Interface IPv4 addresses
         ipv6_enabled (bool): Layer3: IPv6 Enabled (requires
             IPv6Address child object)
@@ -923,6 +945,7 @@ class AggregateInterface(PhysicalInterface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+
     """
     ALLOW_SET_VLAN = True
     CHILDTYPES = (
@@ -1003,6 +1026,7 @@ class VlanInterface(Interface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+
     """
     CHILDTYPES = (
         "network.IPv6Address",
@@ -1065,6 +1089,7 @@ class LoopbackInterface(Interface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+
     """
     CHILDTYPES = (
         "network.IPv6Address",
@@ -1127,6 +1152,7 @@ class TunnelInterface(Interface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+
     """
     CHILDTYPES = (
         "network.IPv6Address",

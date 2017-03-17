@@ -14,11 +14,8 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
-
 
 """Panorama and all Panorama related objects"""
-
 
 # import modules
 import logging
@@ -142,7 +139,6 @@ class Panorama(base.PanDevice):
             xml.etree.ElementTree: The result of the operational command. May also return a string of XML if xml=True
 
         """
-
         # TODO: Support device-group and template scope
         return super(Panorama, self).op(cmd, vsys=None, xml=xml, cmd_xml=cmd_xml, extra_qs=extra_qs, retry_on_peer=retry_on_peer)
 
