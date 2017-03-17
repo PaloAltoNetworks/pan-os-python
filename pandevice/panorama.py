@@ -100,15 +100,6 @@ class Panorama(base.PanDevice):
     CHILDTYPES = (
         "panorama.DeviceGroup",
         "firewall.Firewall",
-        "objects.AddressObject",
-        "objects.AddressGroup",
-        "policies.PreRulebase",
-        "policies.PostRulebase",
-        "objects.ServiceObject",
-        "objects.ServiceGroup",
-        "objects.ApplicationObject",
-        "objects.ApplicationGroup",
-        "objects.ApplicationFilter",
     )
 
     def __init__(self,
