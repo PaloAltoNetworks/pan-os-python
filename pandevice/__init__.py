@@ -21,9 +21,9 @@ Documentation available at http://pandevice.readthedocs.io
 
 """
 
-__author__ = 'Brian Torres-Gil'
-__email__ = 'btorres-gil@paloaltonetworks.com'
-__version__ = '0.3.5'
+__author__ = 'Palo Alto Networks'
+__email__ = 'techpartners@paloaltonetworks.com'
+__version__ = '0.4.0'
 
 
 import logging
