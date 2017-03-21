@@ -14,7 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 """Exception classes used by pandevice package"""
 
@@ -33,6 +32,7 @@ class PanDeviceError(PanXapiError):
     Attributes:
         message: The error message for the exception
         pan_device: A reference to the PanDevice that generated the exception
+
     """
     def __init__(self, *args, **kwargs):
         self.pan_device = kwargs.pop('pan_device', None)
@@ -80,6 +80,12 @@ class PanSessionTimedOut(PanDeviceXapiError):
 class PanDeviceNotSet(PanDeviceError):
     pass
 
+class PanNotConnectedOnPanorama(PanDeviceError):
+    pass
+
+class PanNotAttachedOnPanorama(PanDeviceError):
+    pass
+
 class PanNoSuchNode(PanDeviceXapiError):
     pass
 
@@ -90,4 +96,16 @@ class PanHAConfigSyncFailed(PanDeviceXapiError):
     pass
 
 class PanHASyncInProgress(PanDeviceXapiError):
+    pass
+
+class PanObjectError(PanDeviceError):
+    pass
+
+class PanApiKeyNotSet(PanDeviceError):
+    pass
+
+class PanActivateFeatureAuthCodeError(PanDeviceError):
+    pass
+
+class PanOutdatedSslError(PanDeviceError):
     pass

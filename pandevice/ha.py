@@ -14,7 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 """High availability objects to configure HA for a firewall or Panorama"""
 
@@ -24,15 +23,14 @@ import inspect
 import xml.etree.ElementTree as ET
 
 import pan.xapi
+from pandevice import getlogger
 from base import PanObject, PanDevice, Root, MEMBER, ENTRY
 from base import VarPath as Var
 import errors as err
 import network
 import firewall
 
-# set logging to nullhandler to prevent exceptions if logging not enabled
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger = getlogger(__name__)
 
 
 class HighAvailabilityInterface(PanObject):
@@ -92,7 +90,7 @@ class HighAvailabilityInterface(PanObject):
         is created on the firewall.
 
         """
-        pandevice = self.pandevice()
+        pandevice = self.nearest_pandevice()
         if pandevice is None:
             return None
         if isinstance(self.port, basestring):
@@ -158,7 +156,7 @@ class HighAvailabilityInterface(PanObject):
 
         """
         if pan_device is None:
-            pan_device = self.pandevice()
+            pan_device = self.nearest_pandevice()
         if pan_device is None:
             return None
         port = interface if interface is not None else self.port

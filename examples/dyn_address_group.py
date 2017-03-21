@@ -62,15 +62,16 @@ def main():
     parser = argparse.ArgumentParser(description="Tag an IP address on a Palo Alto Networks Next generation Firewall")
     parser.add_argument('-v', '--verbose', action='count', help="Verbose (-vv for extra verbose)")
     parser.add_argument('-q', '--quiet', action='store_true', help="No output")
-    parser.add_argument('-u', '--unregister', action='store_true', help="Remove the tags (default is register)")
-    parser.add_argument('-c', '--clear', action='store_true', help="Clear all tags. ip and tags arguments are ignored")
+    parser.add_argument('-r', '--register', help="Tags to register to an IP, for multiple tags use commas eg. linux,apache,server")
+    parser.add_argument('-u', '--unregister', help="Tags to remove from an an IP, for multiple tags use commas eg. linux,apache,server")
+    parser.add_argument('-l', '--list', action='store_true', help="List all tags for an IP")
+    parser.add_argument('-c', '--clear', action='store_true', help="Clear all tags for all IP")
     # Palo Alto Networks related arguments
     fw_group = parser.add_argument_group('Palo Alto Networks Device')
     fw_group.add_argument('hostname', help="Hostname of Firewall")
     fw_group.add_argument('username', help="Username for Firewall")
     fw_group.add_argument('password', help="Password for Firewall")
-    fw_group.add_argument('ip', help="The IP address that should be tagged")
-    fw_group.add_argument('tags', help="Comma delimited tags.  eg. linux,apache,server")
+    fw_group.add_argument('ip', help="The IP address to tag/untag/list")
     args = parser.parse_args()
 
     ### Set up logger
@@ -88,6 +89,8 @@ def main():
             logging_format = '%(message)s'
         logging.basicConfig(format=logging_format, level=logging_level)
 
+
+
     # Connect to the device and determine its type (Firewall or Panorama).
     device = PanDevice.create_from_device(args.hostname,
                                           args.username,
@@ -104,11 +107,20 @@ def main():
 
     if args.clear:
         device.userid.clear_all_registered_ip()
-        sys.exit(0)
+
+    if args.list:
+        all_tags_by_ip = device.userid.get_all_registered_ip()
+        try:
+            # Print the tags for the requested IP
+            logging.info(all_tags_by_ip[args.ip])
+        except KeyError:
+            # There were no tags for that IP
+            logging.info("No tags for IP: %s" % args.ip)
 
     if args.unregister:
         device.userid.unregister(args.ip, args.tags.split(','))
-    else:
+
+    if args.register:
         device.userid.register(args.ip, args.tags.split(','))
 
 
