@@ -146,6 +146,18 @@
                     "comment": ""
                 },
                 {
+                    "fieldName": "content_version",
+                    "owner": "log",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "content_version",
+                    "comment": ""
+                },
+                {
                     "fieldName": "rt",
                     "owner": "log",
                     "type": "string",
