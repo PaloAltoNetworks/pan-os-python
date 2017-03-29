@@ -79,6 +79,29 @@ class DeviceGroup(PanObject):
         return self
 
 
+class SharedDeviceGroup(DeviceGroup):
+    """Special Device Group for the Panorama 'shared' namespace
+
+    This class extends :class:`pandevice.panorama.DeviceGroup` to provide special access
+    to the objects in the shared namespace (/config/shared) of a Panorama instance.
+    It offers everything a normal DeviceGroup does, but manipulates the xpath to get to
+    the shared objects.
+
+    See also :ref:`classtree`
+    """
+    XPATH = "/config/shared"
+    ROOT = None
+    SUFFIX = None
+    NAME = "shared"
+
+    def xpath(self):
+        """Overide to allow special access to the shared namespace.
+
+        See also :method:`pandevice.base.PanObject.xpath`
+        """
+        return self.XPATH
+
+
 class Panorama(base.PanDevice):
     """Panorama device
 
@@ -93,6 +116,10 @@ class Panorama(base.PanDevice):
         port: Port of device for API connections
         timeout: The timeout for asynchronous jobs
         interval: The interval to check asynchronous jobs
+
+    Attributes:
+        shared (SharedDeviceGroup): The SharedDeviceGroup instance, allowing access to the shared object
+            namespace for the Panorama.
 
     """
     FIREWALL_CLASS = firewall.Firewall
@@ -114,6 +141,20 @@ class Panorama(base.PanDevice):
         super(Panorama, self).__init__(hostname, api_username, api_password, api_key, port, *args, **kwargs)
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
+
+        # create a shared device group instance
+        self.shared = SharedDeviceGroup()
+        self.shared.parent = self
+
+    def refresh(self, running_config=False, refresh_children=True, exceptions=True, xml=None):
+        """Overide to also refresh the SharedDeviceGroup instance
+
+        See also :method:`pandevice.base.PanObject.refresh`
+        """
+        super(Panorama, self).refresh(running_config=False, refresh_children=True, exceptions=True, xml=None)
+
+        # now refresh the local SharedDeviceGroup instance
+        self.shared.refresh(running_config=False, refresh_children=True, exceptions=True, xml=None)
 
     def op(self, cmd=None, vsys=None, xml=False, cmd_xml=True, extra_qs=None, retry_on_peer=False):
         """Perform operational command on this Panorama
