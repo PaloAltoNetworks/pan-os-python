@@ -10,27 +10,28 @@
     </input>
     <input type="text" token="file_name">
       <label>Process</label>
-      <default></default>
+      <default/>
       <prefix>log.file_name="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="user">
       <label>User</label>
-      <default></default>
+      <default/>
       <prefix>log.user="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="text" token="src">
       <label>Hostname</label>
-      <default></default>
+      <default/>
       <prefix>log.src="</prefix>
       <suffix>"</suffix>
     </input>
     <input type="dropdown" token="signature">
       <label>Endpoint Module</label>
+      <default/>
       <prefix>log.signature="</prefix>
       <suffix>"</suffix>
-      <choice value="">ANY</choice>
+      <!-- <choice value="">ANY</choice> -->
       <search>
         <query>| `_pan_ep_dropdown(log.attacks, log.signature)`</query>
       </search>
@@ -39,6 +40,7 @@
     </input>
     <input type="dropdown" token="severity">
       <label>Severity</label>
+      <default/>
       <prefix>log.severity="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
@@ -50,6 +52,7 @@
     </input>
     <input type="dropdown" token="action">
       <label>Action</label>
+      <default/>
       <prefix>log.log_subtype="</prefix>
       <suffix>"</suffix>
       <choice value="">ANY</choice>
@@ -65,7 +68,7 @@
       <chart>
         <title>Security Events</title>
         <search>
-          <query>| tstats summariesonly=t count FROM datamodel="pan_endpoint" WHERE log.type="Threat" GROUPBY _time log.log_subtype | rename log.log_subtype AS subtype | timechart count by subtype</query>
+          <query>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user|s$ $src$ $signature$ $severity$ $action$ GROUPBY _time log.log_subtype | rename log.log_subtype AS subtype | timechart count by subtype</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -99,7 +102,7 @@
       <chart>
         <title>Management Events</title>
         <search>
-          <query>| tstats summariesonly=t count FROM datamodel="pan_endpoint" WHERE log.type!="Threat" GROUPBY _time log.log_subtype | rename log.log_subtype AS subtype | timechart count by subtype</query>
+          <query>| `pan_tstats` count FROM `ep_node(log.operations)` $file_name$ $user|s$ $src$ $signature$ $severity$ $action$ GROUPBY _time log.log_subtype | rename log.log_subtype AS subtype | timechart count by subtype</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -135,7 +138,7 @@
       <table>
         <title>Latest Blocked Executables</title>
         <search>
-          <query>`pan_endpoint` log_subtype="Prevention Event" | table file_name, user, dvc | sort _time DESC | head 5</query>
+          <query>| `pan_tstats` count FROM `ep_node(log.attacks)` AND log.log_subtype="Prevention Event" $file_name$ $user|s$ $src$ $signature$ $severity$ $action$ groupby _time log.dvc log.user log.file_name | table _time log.dvc log.user log.file_name | rename log.user AS "Destination User" | rename log.dvc AS "Destination IP" | rename log.file_name AS Filename | sort _time DESC | HEAD 5</query>
           <earliest>@d</earliest>
           <latest>now</latest>
           <sampleRatio>1</sampleRatio>
@@ -153,7 +156,7 @@
       <chart>
         <title>Wide Spread Malware Files</title>
         <search>
-          <query>| tstats summariesonly=t count FROM datamodel="pan_endpoint" WHERE log.type="Threat" GROUPBY log.file_name | rename log.file_name AS FileName</query>
+          <query>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user|s$ $src$ $signature$ $severity$ $action$ GROUPBY log.file_name | rename log.file_name AS FileName</query>
           <sampleRatio>1</sampleRatio>
         </search>
         <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
@@ -185,7 +188,7 @@
       <single>
         <title>Content Version</title>
         <search>
-          <query>eventtype="pan_endpoint" log_subtype="Server Content Update Success" OR log_subtype="Server Content Revert Success" | sort _time DESC | table content_version | head 1 | rename content_version AS "Content Version"</query>
+          <query>`pan_endpoint` log_subtype="Server Content Update Success" OR log_subtype="Server Content Revert Success" | sort _time DESC | table content_version | head 1 | rename content_version AS "Content Version"</query>
           <earliest>0</earliest>
           <latest></latest>
           <sampleRatio>1</sampleRatio>
@@ -195,7 +198,7 @@
     <panel>
       <single>
         <search>
-          <query>eventtype="pan_endpoint" log_subtype="Protection Enabled" OR log_subtype="Protection Disabled" | sort _time DESC | head 1 | table log_subtype</query>
+          <query>`pan_endpoint` log_subtype="Protection Enabled" OR log_subtype="Protection Disabled" | sort _time DESC | head 1 | table log_subtype</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
           <sampleRatio>1</sampleRatio>
@@ -208,7 +211,7 @@
       <chart>
         <title>Most Vulnerable Applications</title>
         <search>
-          <query>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ "$user|s$" $src$ $signature$ $severity$ $action$ `groupby(log.file_name)`</query>
+          <query>| `pan_tstats` count FROM `ep_node(log.attacks)` $file_name$ $user|s$ $src$ $signature$ $severity$ $action$ `groupby(log.file_name)`</query>
           <earliest>$earliest$</earliest>
           <latest>$latest$</latest>
         </search>

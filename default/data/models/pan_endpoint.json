@@ -86,6 +86,18 @@
                     "comment": ""
                 },
                 {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "device",
+                    "comment": ""
+                },
+                {
                     "fieldName": "dest",
                     "owner": "log",
                     "type": "string",
@@ -329,6 +341,18 @@
                     "comment": ""
                 },
                 {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "device",
+                    "comment": ""
+                },
+                {
                     "fieldName": "dest",
                     "owner": "log",
                     "type": "string",
@@ -557,6 +581,18 @@
                     "hidden": false,
                     "editable": true,
                     "displayName": "msg",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "dvc",
+                    "owner": "log",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "device",
                     "comment": ""
                 },
                 {
