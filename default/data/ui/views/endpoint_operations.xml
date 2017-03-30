@@ -1,0 +1,192 @@
+<form>
+  <label>Endpoint Operations Dashboard</label>
+  <fieldset submitButton="true" autoRun="true">
+    <input type="time" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-60m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="text" token="user">
+      <label>User</label>
+      <default/>
+      <prefix>log.user="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="text" token="src">
+      <label>Hostname</label>
+      <default/>
+      <prefix>log.src="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="text" token="device_ip">
+      <label>Device IP</label>
+      <default/>
+      <prefix>log.dvc="</prefix>
+      <suffix>"</suffix>
+    </input>
+    <input type="dropdown" token="severity">
+      <label>Severity</label>
+      <default/>
+      <prefix>log.severity="</prefix>
+      <suffix>"</suffix>
+      <!-- <choice value="">ANY</choice> -->
+      <search>
+        <query>| `_pan_ep_dropdown(log, log.severity)`</query>
+      </search>
+      <fieldForLabel>field_with_count</fieldForLabel>
+      <fieldForValue>field</fieldForValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <title>Total Endpoints Reporting</title>
+        <search>
+          <query>| `pan_tstats` count FROM `ep_node(log.operations)` AND log.log_subtype=heartbeat GROUPBY log.dest | stats count by log.dest | stats sum(count) as count</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Content Version</title>
+        <search>
+          <query>`pan_endpoint` log_subtype="Server Content Update Success" OR log_subtype="Server Content Revert Success" | sort _time DESC | table content_version | head 1 | rename content_version AS "Content Version"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Protection Status</title>
+        <search>
+          <query>`pan_endpoint` log_subtype="Protection Enabled" OR log_subtype="Protection Disabled" | sort _time DESC | head 1 | table log_subtype</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Management Events</title>
+        <search>
+          <query>| `pan_tstats` count FROM `ep_node(log.operations)` $user|s$ $src$ $device_ip|s$ $severity$ GROUPBY _time log.log_subtype | rename log.log_subtype AS subtype | timechart count by subtype</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` log_subtype=$click.name2|s$ earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+            ]]>
+          </link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Logs by Type</title>
+        <search>
+          <query>| `pan_tstats` count FROM `ep_node` "$user|s$" $src$ $device_ip|s$ $severity$ `groupby(_time log.type)` | timechart values(count) by type</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+            /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` log_subtype=$click.name2|s$ earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+            ]]>
+          </link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>Logs by Severity (24 hours)</title>
+        <search>
+          <query>| `pan_tstats` count FROM `ep_node` "$user|s$" $src$ $device_ip|s$ $severity$ `groupby(_time log.severity)` | timechart values(count) by severity</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <drilldown>
+          <link>
+            <![CDATA[
+              /app/SplunkforPaloAltoNetworks/search?q=`pan_endpoint` severity=$click.name2|s$ earliest=$click.value$ [| stats count | eval latest = $click.value$ %2b 300 | fields latest]
+          ]]>
+          </link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+</form>
