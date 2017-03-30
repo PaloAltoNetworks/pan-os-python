@@ -68,7 +68,8 @@
   </collection>
 
   <collection label="Endpoint">
-    <view name="endpoint_overview" />
+    <view name="endpoint_security" />
+    <view name="endpoint_operations" />
     <divider />
     <collection label="Searches &amp; Reports">
       <a href="search?q=search%20%60pan_endpoint%60">Search Endpoint Log Data</a>
