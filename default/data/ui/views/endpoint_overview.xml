@@ -43,7 +43,7 @@
       <default/>
       <prefix>log.severity="</prefix>
       <suffix>"</suffix>
-      <choice value="">ANY</choice>
+      <!-- <choice value="">ANY</choice> -->
       <search>
         <query>| `_pan_ep_dropdown(log, log.severity)`</query>
       </search>
@@ -55,7 +55,7 @@
       <default/>
       <prefix>log.log_subtype="</prefix>
       <suffix>"</suffix>
-      <choice value="">ANY</choice>
+      <!-- <choice value="">ANY</choice> -->
       <search>
         <query>| `_pan_ep_dropdown(log.attacks, log.log_subtype)`</query>
       </search>
