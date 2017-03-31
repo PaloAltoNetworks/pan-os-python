@@ -3530,8 +3530,14 @@ class PanDevice(PanObject):
             line = response.find("./msg/line")
             if line is None:
                 raise err.PanDeviceError("Unable to syncronize configuration, no response from firewall")
-            if line.text.startswith("successfully sync'd running configuration to HA peer"):
+            elif line.text.startswith("successfully sync'd running configuration to HA peer"):
+                # PAN-OS 7.0
                 return True
+            elif line.text.startswith("HA synchronization job has been queued on peer. "
+                                      "Please check job status on peer."):
+                # PAN-OS 7.1
+                # Wait until synchronization done
+                return self.watch_op("show high-availability state", "group/running-sync", "synchronized")
             else:
                 raise err.PanDeviceError("Unable to syncronize configuration: %s" % line.text)
         else:
