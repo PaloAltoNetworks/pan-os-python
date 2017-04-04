@@ -79,8 +79,7 @@ def get_firewall_credentials(session_key):
         exit_with_error("Could not get %s credentials from splunk. Error: %s" % (APPNAME, str(e)))
     # return first set of credentials
     for i, c in entities.items():
-        if (c['username'] != 'wildfire_api_key') or (c['username'] != 'autofocus_api_key'):
-            logger.debug(c['username'], c['clear_password'])
+        if c['username'] not in ('wildfire_api_key', 'autofocus_api_key'):
             return c['username'], c['clear_password']
     raise NoCredentialsFound("No credentials have been found")
 
@@ -170,8 +169,6 @@ def apikey(sessionKey, hostname, debug=False):
             log(debug, "Getting credentials from Splunk credential store")
             fw_username, fw_password = get_firewall_credentials(sessionKey)
             fw_password = json.loads(fw_password)
-            log(debug, fw_username)
-            log(debug, fw_password["password"])
             # Use the username and password to determine the API key
             log(debug, "Getting API Key from firewall/Panorama")
             device = pandevice.base.PanDevice(hostname, fw_username, fw_password["password"])
