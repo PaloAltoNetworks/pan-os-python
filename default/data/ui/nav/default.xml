@@ -13,7 +13,7 @@
       <a href="search?q=%60pan_system%60">System Logs</a>
     </collection>
     <divider />
-    <a href="/manager/Splunk_TA_paloalto/apps/local/Splunk_TA_paloalto/setup?action=edit">Configuration</a>
+    <a href="/app/Splunk_TA_paloalto/setup_page?action=edit">Configuration</a>
     <divider />
     <a href="http://pansplunk.readthedocs.io" target="_blank">Documentation</a>
     <a href="http://answers.splunk.com/ask/?appid=491" target="_blank">Send Feedback</a>
@@ -85,7 +85,6 @@
       <saved source="all" match="PAN - GlobalProtect" view="search" />
     </collection>
   </collection>
-
   <collection label="Console">
     <view name="system_overview" />
     <view name="config_overview" />

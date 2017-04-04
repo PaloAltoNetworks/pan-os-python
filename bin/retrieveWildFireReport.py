@@ -14,14 +14,12 @@
 # The script must be provided 3 things to retrieve an WildFire log from the cloud:
 # 1.  An API Key. This is found at https://wildfire.paloaltonetworks.com
 #   under 'My Account'.
-# 2.  The Serial Number of the device that produced the alert. This is in the syslog.
+# 2.  The file digest (MD5, SHA-1, or SHA256) of the file that produced the alert. This is in the syslog.
 # 3.  The ID of the report. This is in the syslog.
 ###########################################
 ###########################################
-
-# if you want to go through a proxy, e.g., HTTP_PROXY={squid:'2.2.2.2'}
+# if you DO want to go through a proxy, e.g., HTTP_PROXY={squid:'2.2.2.2'}
 HTTP_PROXY = {}
-
 #########################################################
 # Do NOT modify anything below this line unless you are
 # certain of the ramifications of the changes
@@ -39,7 +37,7 @@ import environment
 import pan.wfapi
 
 logger = common.logging.getLogger().getChild('retrieveWildFireReport')
-#logger.setLevel(common.logging.INFO)
+# logger.setLevel(common.logging.INFO)
 
 if environment.run_by_splunk():
     try:
@@ -59,7 +57,7 @@ def get_cli_args():
     """
     # Setup the argument parser
     parser = argparse.ArgumentParser(description="Download a Wildfire Report using the Wildfire API")
-    #parser.add_argument('-v', '--verbose', action='store_true', help="Verbose")
+    # parser.add_argument('-v', '--verbose', action='store_true', help="Verbose")
     parser.add_argument('apikey', help="API Key from https://wildfire.paloaltonetworks.com")
     parser.add_argument('file_digest', help="Hash of the file for the report")
     options = parser.parse_args()
@@ -75,10 +73,10 @@ def retrieveWildFireData(apikey, file_digest):
 def main_cli():
     # Get command line arguments
     options = get_cli_args()
-    #debug = options.verbose
-    #logger = common.logging.getLogger()
-    #common.logging.basicConfig(level=common.logging.INFO)
-    #if debug:
+    # debug = options.verbose
+    # logger = common.logging.getLogger()
+    # common.logging.basicConfig(level=common.logging.INFO)
+    # if debug:
     #    logger.setLevel(common.logging.DEBUG)
     #    logger.info("Verbose logging enabled")
     # Grab WildFire data
@@ -130,7 +128,7 @@ def main_splunk():
                 # Log the result row in case of an exception
                 logger.info("Log with error: %s" % result)
                 stack = traceback.format_exc()
-                # Log the stack information
+                # log the stack information
                 logger.warn(stack)
         else:
             logger.debug("Required fields missing from result # %s."
