@@ -1,7 +1,87 @@
 .. _troubleshoot:
 
+===============
 Troubleshooting
 ===============
+
+Common Problems and Solutions
+=============================
+
+Problem after upgrading the App/Add-on
+--------------------------------------
+
+Check the :ref:`releasenotes` for actions needed during App/Add-on
+upgrade and ensure you completed all required actions for upgrade.
+
+When upgrading any app in Splunk, configuration created by the Splunk
+administrator is leftover in the app's `local` directory. If the file in the
+`local` directory in the app is not compatible with the new version, then
+unexpected problems can happen.  This is true for all apps in Splunk and a
+best practice is to backup and delete the `local` directory in the app after
+upgrading it if there are problems after the upgrade. Note that you might
+need to leave `inputs.conf` if that is how your logs are getting into Splunk.
+
+Dashboards not working
+----------------------
+
+**All dashboards have no data**
+
+Perform a search for ``eventtype=pan`` with 'All time' as the timeframe. If
+logs show up, then verify the timestamp of the logs is correct. If it is wrong,
+check that the clock and timezone on the Firewall/Panorama matches the Splunk
+server, or use NTP on both. See Troubleshooting Step 2 below for more detail.
+
+**Only 'Overview' dashboard has data**
+
+The 'Overview' dashboard has data, but other dashboards do not,
+usually the datamodel is not fully built.  This can happen on a
+Splunk server with not enough resources to summary index the data as
+it comes in. Increase the time range on the dashbaords with no data
+to 'All Time' to see if data shows up. Check the datamodel to see if
+it is 100% built.  See Troubleshooting Step 4 below for more detail.
+
+**'Overview' dashboard has no data**
+
+The 'Overview' dashboards has no data, but other dashboards work correctly,
+the clock on your firewall is a few minutes off, or the timezone is set wrong.
+The 'Overview' dashboard is a real-time 5 minute search, while the other
+dashboards pull a larger timeframe from the data model. So the 'Overview' is
+more suseptible to minor variations in system clock.  Please verify the clock
+and timezone on Splunk and the Firewall/Panorama are set exactly the same.
+
+No WildFire Data
+----------------
+
+The :ref:`WildFire <wildfire>` dashboard is empty or no WildFire
+data is appearing in the index. For Splunk to take advantage of
+WildFire, you log WildFire events from the Firewall/Panorama
+first. Splunk will leverage the WildFire cloud API to pull reports
+and IOC's from the WildFire analysis only after it receives
+notification of the WildFire event from the Firewall/Panorama.
+
+Some things to check to get WildFire data into Splunk:
+
+- If upgrading to App 5.3 or higher from a version before 5.3, you must
+  set the WildFire API key in the Add-on Setup Screen, even if you
+  previously set it in the App. See the :ref:`release notes <v530>` for
+  more information.
+- Verify there are WildFire Submission logs
+  in the Monitor tab on the Firewall/Panorama
+- Verify WildFire logs are enabled in the Log Forwarding Profile
+  on the Security policy rule which is generating WildFire events
+- Verify WildFire events are received by Splunk
+  with this search: ``eventtype=pan_wildfire``
+- If there are WildFire events (syslogs), verify there are also WildFire
+  reports (XML) with this search: ``eventtype=pan_wildfire_report``
+- If there are WildFire events (syslogs) but not WildFire
+  reports (XML), check the report gathering logs for
+  errors in ``$SPLUNK_HOME/var/log/splunk/python.log``.
+- Check that you have configured the TA with the WildFire API
+  Key, especially if upgrading from a pre-5.3 version of the App.
+
+
+Troubleshooting Steps
+=====================
 
 Follow these troubleshooting steps if there are problems getting the
 dashboards to show data.
@@ -15,6 +95,7 @@ dashboards to show data.
   the same port
 - Check the firewall is not using a Custom Log Format (must use the
   default log format)
+- Check the Endpoint Security Manager is using CEF format
 - Check the firewall is set to log something like system events, config
   events, traffic events, and so on.
 - Check that the clocks and timezones on the firewall and Splunk server are
