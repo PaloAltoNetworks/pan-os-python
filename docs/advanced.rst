@@ -272,3 +272,47 @@ Change the cron_schedule to your desired update schedule.
 
 .. [#f1] The field is called ``dst_class`` in App versions before 5.0
 .. [#f2] Starting in App version 5.0, the ``ip_classifications.csv`` file is located in the Splunk_TA_paloalto Add-on.  Before 5.0, it is in the SplunkforPaloAltoNetworks App.
+
+External Search for AutoFocus
+-----------------------------
+
+External Search can be used with AutoFocus ``Remote Search`` feature. Remote search is a feature in AutoFocus providing a way to search for IOC’s in an external system. The Palo Alto Networks App can now receive a search request from AutoFocus and provide log events that match the search criteria.
+
+.. note:: This feature is only available on Palo Alto Networks App and requires access to AutoFocus.
+
+Setting up remote search and how to use it in AutoFocus is documented on the Palo Alto Networks Website and will not be covered here. The values needed in ``Step 3`` of the documentation are provided here along with the link to the documentation.
+
+* `Setup Remote Search documentation <https://www.paloaltonetworks.com/documentation/autofocus/autofocus/autofocus_admin_guide/autofocus-search/set-up-remote-search>` 
+* Values to be used in **Step 3** of the doc
+    System Type: Custom
+
+    Address: https://<SPLUNK SERVER>:8000/en-US/app/SplunkforPaloAltoNetworks/external_search?search=
+
+External Search for Log Link
+----------------------------
+Palo Alto Networks Firewall has a feature called Log Link. Which allows you to cross launch into an external search from the Firewall UI. This feature can be used with the Palo Alto Networks Splunk App External Search page. 
+
+.. note:: This feature is only available on Palo Alto Networks App and requires access to PAN-OS CLI.
+
+Setting up log link and how to use it on the firewall is documented on the `Palo Alto Networks Live<https://live.paloaltonetworks.com/t5/Configuration-Articles/How-does-the-Log-Link-Feature-Work/ta-p/52298>` site and will not be covered here. The URL and Example CLI command is provided and needs to be used as documented on the Live site. 
+
+  * URL: https://<SPLUNK SERVER>:8000/en-US/app/SplunkforPaloAltoNetworks/external_search?search=
+
+  * Example CLI command::
+      # set deviceconfig system log-link Splunk.Dst url http://<SPLUNK SERVER>:8000/en-US/app/SplunkforPaloAltoNetworks/external_search?search=(dest_ip%20eq%20'{dst}')
+
+  * Other possible fields to search::
+    (dest_ip%20eq%20'{dst}')
+    (src_ip%20eq%20'{src}')
+    (dest_port%20eq%20'{dport}')
+    (src_port%20eq%20'{sport}')
+    (protocol%20eq%20'{proto}')
+
+
+AutoFocus Export List ModInput
+------------------------------
+
+Export list can be used to save AutoFocus artifacts. With the Palo Alto Networks Add-on the export list can be added as a modular input in Splunk. The Modular input utilizes AutoFocus's REST API to periodically sync with an Export List created in AutoFocus. The list of artifacts is stored in the KVStore and can be accessed via inputlookup macros. This data can then be used to correlate against other logs.
+
+
+
