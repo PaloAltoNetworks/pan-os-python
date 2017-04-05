@@ -5,7 +5,7 @@ Syslog-ng and Universal Forwarder
 
 This document assumes you already have syslog-ng, Splunk Universal Forwarder and Splunk installed and will not cover installation.
 
-You should also have the Palo Alto Networks for Splunk app and add-on installed as described in `Getting Started <hhttp://pansplunk.readthedocs.io/en/latest/getting_started.html>`_
+You should also have the Palo Alto Networks for Splunk app and add-on installed as described in `Getting Started <http://pansplunk.readthedocs.io/en/latest/getting_started.html>`_
 
 .. note:: The App and Add-on do not need to be installed on the Universal Forwarder.
 
