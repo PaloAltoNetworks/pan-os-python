@@ -7,18 +7,34 @@ Release Notes
 App
 ===
 
-v5.3.1
-  * Changes made to meet new certification requirements
+v5.4.0
+  * Endpoint Operations Dashboard
+  * Endpoint Security Dashboard 
+  * Endpoint Dashboard support new Traps 3.4 fields
+  * Support for AutoFocus Remote Search via External Search Handler
+  * Support for Firewall Log Link via External Search Handler
+  * Improved AutoFocus cross launch
 
 
 Add-on
 ======
 
-v3.7.1
-  * Changes made to meet new certification requirements 
+v3.8.0
+  * AutoFocus Export List modular input
 
 Previous Versions
 =================
+
+.. _v530:
+
+App v5.3.1
+----------
+  * Changes made to meet new certification requirements
+
+
+Add-on v3.7.1
+-------------
+  * Changes made to meet new certification requirements 
 
 .. _v530:
 
