@@ -362,7 +362,7 @@ Set the name of your export list in the ``label`` field. This field must match t
 
 Verify the data is being synced by running a search ``| `pan_autofocus_export```
 
-.. note:: A pipe is always needed in front of the macro in order to turn the lookup.
+.. note:: A pipe(``|``) is always used in front of the macro to do a lookup search.
 
 .. _creating an Export List:
    https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin/monitor-wildfire-activity/wildfire-analysis-reports-close-up.html`
@@ -374,12 +374,12 @@ There are several new macros that can be used to correlate a search with the art
 
 The remaining macros requires one argument. Set the ``label`` of the export list you want to search against. Each macro is separated by the artifact types. 
 
-```pan_autofocus_export_dns(label)```
+```| pan_autofocus_export_dns(label)```
 
-```pan_autofocus_export_connection(label)```
+```| pan_autofocus_export_connection(label)```
 
-```pan_autofocus_export_registry(label)``` 
+```| pan_autofocus_export_registry(label)``` 
 
-```pan_autofocus_export_file(label)```
+```| pan_autofocus_export_file(label)```
 
-```pan_autofocus_export_process(label)```
+```| pan_autofocus_export_process(label)```
