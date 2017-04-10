@@ -279,7 +279,7 @@ Change the cron_schedule to your desired update schedule.
 External Search for AutoFocus
 -----------------------------
 
-External Search can be used with AutoFocus **Remote Search** feature. Remote search is a feature in AutoFocus providing a way to search for IOC’s in an external system. The Palo Alto Networks App can receive a search request from AutoFocus and provide log events that match the search criteria.
+External Search can be used with AutoFocus **Remote Search** feature. Remote search is a feature in AutoFocus providing a way to search for IOC’s in an external system. The Palo Alto Networks Splunk App can receive a search request from AutoFocus and provide log events that match the search criteria.
 
 .. note:: This feature is only available on Palo Alto Networks App and requires access to AutoFocus.
 
@@ -300,16 +300,13 @@ Setting up remote search and how to use it in AutoFocus is documented on the Pal
 
 External Search for Log Link
 ----------------------------
-Palo Alto Networks Firewall has a feature called Log Link, which allows you to cross launch into an external search from the Firewall UI. This feature can be used with the Palo Alto Networks App External Search page. 
+Palo Alto Networks Firewall has a feature called Log Link, which allows you to cross launch into an external search from the Firewall UI. This feature can be used with the Palo Alto Networks Splunk App External Search page. 
 
 .. note:: This feature is only available on Palo Alto Networks App and requires access to PAN-OS CLI.
 
-Setting up log link and how to use it on the firewall is documented on the `Palo Alto Networks Live`_ site and will not be covered here. The URL and Example CLI command is provided and needs to be used as documented on the site. 
 
 .. _Palo Alto Networks Live:
   https://live.paloaltonetworks.com/t5/Configuration-Articles/How-does-the-Log-Link-Feature-Work/ta-p/52298
-
-URL: ``https://<SPLUNK SERVER>:8000/en-US/app/SplunkforPaloAltoNetworks/external_search?search=``
 
 Example CLI command
 ::
@@ -330,7 +327,7 @@ Other possible fields to search
 AutoFocus Export List
 ---------------------
 
-With the Palo Alto Networks App an AutoFocus export list can be added 
+With the Palo Alto Networks Splunk Add-on an AutoFocus export list can be added 
 as a modular input in Splunk. The modular input utilizes AutoFocus's REST API 
 to periodically sync an Export List from AutoFocus. The list of artifacts are 
 stored in the KVStore and can be accessed via `inputlookup` macros. This data 
@@ -338,10 +335,10 @@ can then be used to correlate against other logs.
 
 Two steps are needed to enable AutoFocus export list syncing:
 
-**Step 1: Add the AutoFocus API key to the Palo Alto Networks App configuration**
+**Step 1: Add the AutoFocus API key to the Add-on configuration**
 
 During the :ref:`initial setup <initialsetup>`, provide the AutoFocus API key.
-The AutoFOcus API key is found in the AutoFocus portal on the **Settings** tab:
+The AutoFocus API key is found in the AutoFocus portal on the **Settings** tab:
 https://autofocus.paloaltonetworks.com
 
 To access the configuration screen after initial setup, navigate to the **Palo
@@ -363,25 +360,26 @@ Set the name of your export list in the ``label`` field. This field must match t
 .. image:: _static/af_modinput.png
    :width: 70%
 
-Verify the data is being synced by running a search ``| pan_autofocus_export``
+Verify the data is being synced by running a search ``| `pan_autofocus_export```
+
+.. note:: A pipe is always needed in front of the macro in order to turn the lookup.
 
 .. _creating an Export List:
    https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin/monitor-wildfire-activity/wildfire-analysis-reports-close-up.html`
 
-Macros
-""""""
+**Macros**
 There are several new macros that can be used to correlate a search with the artifacts imported from the AutoFocus Export List.
 
-``| pan_autofocus_export`` - A macro to search on all export lists. This will return all entries form all AutoFocus inputs. 
+```| pan_autofocus_export``` - A macro to search on all export lists. This will return all entries from all AutoFocus inputs. 
 
-The remaining macros requires one argument. Set the ``label`` of the export list you want to search against. Each macro is seperated by the artifacte types. 
+The remaining macros requires one argument. Set the ``label`` of the export list you want to search against. Each macro is separated by the artifact types. 
 
-``pan_autofocus_export_dns(label)``
+```pan_autofocus_export_dns(label)```
 
-``pan_autofocus_export_connection(label)``
+```pan_autofocus_export_connection(label)```
 
-``pan_autofocus_export_registry(label)`` 
+```pan_autofocus_export_registry(label)``` 
 
-``pan_autofocus_export_file(label)``
+```pan_autofocus_export_file(label)```
 
-``pan_autofocus_export_process(label)``
+```pan_autofocus_export_process(label)```

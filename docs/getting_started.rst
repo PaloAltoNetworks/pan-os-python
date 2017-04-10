@@ -87,6 +87,8 @@ right side click **Set up**.
 
 **Firewall Credentials**
 
+.. note:: Only a single Firewall credential can be added. 
+
 Enter the credentials for your Firewall or Panorama. The
 credentials are encrypted by Splunk and used for the
 following features:
