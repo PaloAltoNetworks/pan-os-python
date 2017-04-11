@@ -185,7 +185,7 @@ class PanHttp:
             else:
                 r = requests.post(**kwargs)
         except requests.exceptions.RequestException as e:
-            raise PanHttpError(str(e))
+            raise PanHttpError('RequestException: ' + str(e))
 
         self.code = r.status_code
         self.reason = r.reason

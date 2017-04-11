@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <link rel="shortcut icon" href="{{SPLUNKWEB_URL_PREFIX}}/static/img/favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="/en-US/static/@f44afce176d0.1/css/build/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="/en-US/static/@f44afce176d0.1/css/build/pages/dashboard-simple-bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="/en-US/static/@f44afce176d0.1/build/css/bootstrap-enterprise.css" />
+
+</head>
+
+<body class="simplexml preload locale-en">
+  <!-- BEGIN LAYOUT
+    This section contains the layout for the dashboard. Splunk uses proprietary
+    styles in <div> tags, similar to Bootstrap's grid system. -->
+  <a class="navSkip" href="#navSkip" tabindex="1">Screen reader users, click here to skip the navigation bar</a>
+
+  <div id="myheaderview"></div>
+
+  <div class="section-padded section-header dashboard-body container-fluid main-section-body" data-role="main">
+    <div data-cid="view24095" class="search-title" data-view="views/search/title/Master" data-render-time="0"><div class="document-controls search-actions" data-cid="view24435" data-view="views/search/actions/Master" data-render-time="0"></div><h2 class="search-name section-title search-title-searchname" data-cid="view24096" data-view="views/search/title/SearchName" title="Search" data-render-time="0">                  <i class="icon-search-thin"></i> External Search</h2></div> 
+    <!-- serach container -->
+    <div class="main-area">
+        <div id="pansearchview"></div>
+        <div id="pansearchcontrols"></div>
+        <div id="pantimeline"></div>
+        <div id="paneventsviewer" style="display:none;"></div>
+    </div>
+    <!--table container -->
+    <div class="container-fluid" id="kvpanel" style="display: none;"> 
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="panel panel-default">
+          <h3>External Search KV Pairs From URL</h3>
+            <div class="panel-body">
+              <table id="kvtable" class="table table-striped">
+                <thead>
+                  <tr>
+                    <td><strong>Key</strong></td>
+                    <td><strong>Value</strong></td>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"></div>
+  <!-- END LAYOUT -->
+<script src="{{SPLUNKWEB_URL_PREFIX}}/config?autoload=1"></script>
+<script src="{{SPLUNKWEB_URL_PREFIX}}/static/js/i18n.js"></script>
+<script src="{{SPLUNKWEB_URL_PREFIX}}/i18ncatalog?autoload=1"></script>
+<script src="{{SPLUNKWEB_URL_PREFIX}}/static/js/build/simplexml.min/config.js"></script>
+
+<script type="text/javascript">
+  require.config({
+    baseUrl: "{{SPLUNKWEB_URL_PREFIX}}/static/js",
+    waitSeconds: 0 // Disable require.js load timeout
+  });
+
+ 
+
+  var splunk_libraries = [
+    "splunkjs/ready!",
+    "splunkjs/mvc/tokenutils",
+    "underscore",
+    "jquery",
+    "splunkjs/mvc/timelineview",
+    "splunkjs/mvc/simplexml/dashboardview",
+    "splunkjs/mvc/simplexml/dashboard/panelref",
+    "splunkjs/mvc/simplexml/element/html",
+    "splunkjs/mvc/simplexml/element/table",
+    "splunkjs/mvc/simplexml/element/visualization",
+    "splunkjs/mvc/simpleform/formutils",
+    "splunkjs/mvc/simplexml/eventhandler",
+    "splunkjs/mvc/simplexml/searcheventhandler",
+    "splunkjs/mvc/simpleform/input/text",
+    "splunkjs/mvc/searchmanager",
+    "splunkjs/mvc/searchcontrolsview",
+    "splunkjs/mvc/savedsearchmanager",
+    "splunkjs/mvc/postprocessmanager",
+    "splunkjs/mvc/simplexml/urltokenmodel",
+    "splunkjs/mvc/searchbarview",
+    "splunkjs/mvc/headerview",
+    "splunkjs/mvc/eventsviewerview"
+  ]
+
+  var splunk_function = function (
+    utils,
+    TokenUtils,
+    _,
+    $,
+    TimelineView,
+    Dashboard,
+    PanelRef,
+    HtmlElement,
+    TableElement,
+    VisualizationElement,
+    FormUtils,
+    EventHandler,
+    SearchEventHandler,
+    TextInput,
+    SearchManager,
+    SearchControlsView,
+    SavedSearchManager,
+    PostProcessManager,
+    UrlTokenModel,
+    SearchBarView,
+    HeaderView,
+    EventsViewer
+    ){
+    var $tbody = $('#kvtable tbody');
+
+    function checkIP( value ) {
+      var validip = value.match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/);
+      if(validip !== null) {
+        console.log('true' + validip);
+        return true; 
+      } else {
+        console.log('false' + validip);
+        return false;
+      }
+    }
+      //*** LETS RENDER FIRST***
+      //navbar header
+      // Instantiate components
+      new HeaderView({
+        id: "example-header",
+        el: $("#myheaderview")
+      }).render();
+
+      //searchbar
+      var panSearchBar = new SearchBarView({
+        id: "pan-searchbar",
+        managerid: "pan-search",
+        el: $("#pansearchview")
+      }).render();
+
+      //Search Controls
+      var pansearchcontrols= new SearchControlsView ({
+        id: "pansearchcontrols",
+        managerid: "pan-search",
+        el: $("#pansearchcontrols")
+      }).render(); 
+
+      var pantimeline = new TimelineView ({
+        id: "pantimeline",
+        managerid: "pan-search",
+        el: $("#pantimeline")
+      });
+
+      var tableviewer = new EventsViewer({
+        id: "example-eventsviewer",
+        count : "50",
+        managerid: "pan-search",
+        type: "list",
+          "table.drilldown": true, // Place complex property names within quotes
+          drilldownRedirect: false,
+          "table.sortColumn": "_time",
+          "table.sortDirection": "desc",
+          "table.wrap": true,
+          count: 20,
+          pagerPosition: "top",
+          rowNumbers: false,
+          el: $("#paneventsviewer")
+        });
+
+      //Search manager
+      var pansearch = new SearchManager({
+        id: "pan-search",
+        status_buckets: 300,
+        required_field_list: "*",
+        preview: true,
+        cache: true,
+        autostart: false// Prevent the search from running automatically
+      });
+
+      // pull from search string and URL decode
+      var getPrefix = "search=("
+      var getParams = window.location.search
+      getParams = decodeURIComponent(getParams)
+      getParams = getParams.substring(getPrefix.length);
+
+      //IS THIS EXTERNAL SEARCH?
+      if(getParams !='') {
+        // split into array based on ‘and’ separator
+        var getLogic = getParams.match(/( and )/g);
+        // console.log("getLogic: ", getLogic);
+        if(getLogic != null) {
+          var logic = ' AND '
+          splitParams = getParams.split(' and ');
+        } else {
+          var logic = ' OR '
+          splitParams = getParams.split(' or ');
+        }
+        // console.log("splitParams: ", splitParams);
+        // splitParams = getParams.split(' or ');
+        //create array
+        var searchTerms = [];
+        // split each variable again by its kv pair
+        for (i = 0; i < splitParams.length ; i++){
+          curParam = splitParams[i].substring(1,splitParams[i].length-1);
+          searchTerms.push(curParam);
+        }
+
+      //split our array again into new array
+      var searchItems = [];
+      var choicesArray = [];
+      var searchArray = {};
+        // var searchArray = {'url':[], 'addr':[], 'file_hash':[], 'http_user_agent':[], 'file_name':[], 'value':[]};
+        var termCount = searchTerms.length;
+        for(i = 0;i<termCount;i++) {
+          //JS split regex up to 3 items
+          searchItems[i] = searchTerms[i].split(/[ ]+/);
+          var addToSearch = [];
+          //create a dict and then push onto the array
+          // tmpDict = {};
+          var label = searchItems[i][0];
+          var operator = searchItems[i][1];
+          var value = searchItems[i][2].replace(/[']+/g, '');
+          if(searchArray[label]==undefined) {
+            searchArray[label]=[];
+          }
+
+          // Construct search for each label and operator
+          if (label === 'addr') {
+            //Check if IP is cidrblock or not
+            if(checkIP(value)===true) {
+              ip = value + '/32';
+            } else {
+              ip = value;
+            }
+            if(operator === 'in') {
+              addToSearch = '(cidrmatch("' + ip + '", src_ip) OR cidrmatch("' + ip + '", dest_ip)) ';
+              searchArray['addr'].push(addToSearch);
+              // searchQuery += 'src_ip=' + value + ' OR dest_ip=' + value;
+            } else {
+              addToSearch = '(NOT cidrmatch("' + ip + '", src_ip) AND NOT cidrmatch("' + ip + '", dest_ip)) ';
+              searchArray['addr'].push(addToSearch);
+            }
+          } else if (label === 'filedigest') {
+            addToSearch = 'file_hash="' + value + '"';
+            searchArray['file_hash'].push(addToSearch);
+          } else if (label === 'url') {
+            if(operator==='contains') {
+              addToSearch = 'url="*' + value + '*"';
+              searchArray['url'].push(addToSearch);
+            } else {
+              addToSearch = 'url="' + value + '"';
+              searchArray['url'].push(addToSearch);
+            }
+          } else if (label === 'user_agent') {
+            if(operator === 'contains') {
+              addToSearch = 'http_user_agent="*' + value + '*"';
+              searchArray['user_agent'].push(addToSearch);
+            } else if(operator==='neq') {
+              addToSearch = 'http_user_agent!="' + value + '"';
+              searchArray['user_agent'].push(addToSearch);
+            } else {
+              addToSearch = 'http_user_agent="' + value + '"';
+              searchArray['user_agent'].push(addToSearch);
+            }
+          } else if (label === 'filename') {
+            if(operator==='contains') {
+              addToSearch = 'file_name="*' + value + '*"';
+              searchArray['filename'].push(addToSearch);
+            } else {
+              addToSearch = 'file_name="' + value + '"';
+              searchArray['filename'].push(addToSearch);
+            }
+          } else {
+            addToSearch += '"' + value + '"';
+            searchArray['value'].push(addToSearch);
+          }
+
+          // if(i!=termCount-1) {
+          //   searchQuery += addToSearch + logic;
+          // } else {
+          //   searchQuery += addToSearch;
+          // }
+          // choicesArray.push(tmpDict);
+        }
+        //Clean up searchArray of empty arrays
+        // searchArray = $.grep(searchArray,function(n){ return n == [] || n });
+
+        // Concstruct Final Search String
+        // console.log("Choice Array: ", choicesArray);
+        // console.log("SEARCHARR: ", searchArray);
+        var searchQuery = "`pan_logs` ";
+        var addrSearch = '| where ';
+        var keyCount = 0;
+        var outerLength = Object.keys(searchArray).length;
+        var searchAddr = 0;
+        if(searchArray['addr']!=undefined) {
+         searchAddr = 1 
+         var addrLength = searchArray['addr'].length;
+         outerLength--;
+       }
+
+       $.each(searchArray, function(field,value) {
+        var innerLength = value.length;
+        console.log(outerLength);
+        if(field!='addr' && value!=''){
+          $.each(value, function(key,value){
+            if(outerLength===1 && innerLength===1) {
+              searchQuery += value;
+            } else if(key===innerLength-1 && keyCount===outerLength) {
+              searchQuery += value;
+            } else {
+              searchQuery += value + logic;
+            }
+          })
+        }
+        keyCount++; 
+      })
+
+        //If searching for IP we add WHERE to search string
+        if (searchAddr>0) {
+          if(addrLength > 0) {
+            searchQuery += addrSearch;
+            var count = 0;
+            $.each(searchArray['addr'], function(key, value) {
+              if(count!=addrLength-1){
+                searchQuery += value + logic;
+              } else {
+                searchQuery += value;
+              }
+              count++;
+            })
+          }
+        }
+        
+        // console.log(searchQuery);
+        panSearchBar.settings.set("value", searchQuery);
+        pansearch.settings.set("search", searchQuery);
+        pansearch.startSearch();
+
+        pantimeline.render();
+        tableviewer.render();
+        $('#paneventsviewer').show();
+      }
+
+        // Listen for changes to the search query portion of the searchbar
+        panSearchBar.on("change", function() {
+          // Reset the search query (allows the search to run again,
+          // even when the query is unchanged)
+          pansearch.settings.unset("search");
+          // Update the search query
+          pansearch.settings.set("search", panSearchBar.val());
+          // Run the search (because autostart=false)
+          pansearch.startSearch();
+          tableviewer.render();
+          pantimeline.render();
+          $('#paneventsviewer').show();
+        });
+
+        // Listen for changes to the built-in timerange portion of the searchbar
+        panSearchBar.timerange.on("change", function() {
+          // Update the time range of the search
+          pansearch.settings.set(panSearchBar.timerange.val());
+          // Run the search (because autostart=false)
+          pansearch.startSearch();
+        });
+        // When the timeline changes, update the search manager
+        pantimeline.on("change", function() {
+          pansearch.search.set(pantimeline.val());
+        });
+      }; //end splunk function
+
+      //return our renderer
+      require(splunk_libraries, splunk_function);
+</script>
+</body>
+</html>

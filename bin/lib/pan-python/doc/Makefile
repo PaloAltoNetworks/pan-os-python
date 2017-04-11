@@ -1,7 +1,8 @@
 RST2HTML = rst2html
 OPTIONS =
 SOURCE = panrc.html panxapi.html pan.xapi.html panconf.html \
-	panwfapi.html pan.wfapi.html pan.afapi.html
+	panwfapi.html pan.wfapi.html pan.afapi.html \
+	panlicapi.html pan.licapi.html
 
 .SUFFIXES: .rst .html
 .rst.html:

@@ -17,6 +17,7 @@
 import inspect
 import json
 import logging
+import ssl
 import sys
 import time
 
@@ -73,6 +74,7 @@ class PanAFapi:
         self.sleeper = _Sleeper if sleeper is None else sleeper
 
         self._log(DEBUG3, 'Python version: %s', sys.version)
+        self._log(DEBUG3, 'ssl: %s', ssl.OPENSSL_VERSION)
         self._log(DEBUG3, 'pan-python version: %s', __version__)
 
         init_panrc = {}  # .panrc args from constructor

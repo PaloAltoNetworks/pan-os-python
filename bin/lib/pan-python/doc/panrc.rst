@@ -2,7 +2,7 @@
  NOTE: derived from documentation in PAN-perl
 
  Copyright (c) 2011 Palo Alto Networks, Inc. <info@paloaltonetworks.com>
- Copyright (c) 2013-2015 Kevin Steves <kevin.steves@pobox.com>
+ Copyright (c) 2013-2017 Kevin Steves <kevin.steves@pobox.com>
 
  Permission to use, copy, modify, and distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
@@ -34,8 +34,9 @@ DESCRIPTION
 
  .panrc files can contain hostname, port, serial number, username,
  password and API key variables for the PAN-OS XML API; and hostname
- and API key variables for the WildFire and AutoFocus APIs.  .panrc is
- used by the PanXapi, PanWFapi and PanAFapi classes.
+ and API key variables for the WildFire, AutoFocus and PAN-OS
+ Licensing APIs.  .panrc is used by the PanXapi, PanWFapi, PanAFapi
+ and PanLicapi classes.
 
  A .panrc file consists of lines with the format:
  ::
@@ -56,9 +57,9 @@ DESCRIPTION
 
  *tagname* is optional and can be appended to *varname* with percent
  (**%**).  This form is used to allow a single .panrc file to contain
- variables for multiple systems.  The PanXapi and PanWFapi
- constructors have an optional **tag** argument to specify that only a
- *varname* with the given *tagname* be used.  For example:
+ variables for multiple systems.  The class constructors have an
+ optional **tag** argument to specify that only a *varname* with the
+ given *tagname* be used.  For example:
  ::
 
   # no tag
@@ -83,16 +84,16 @@ Recognized varname Values
 
  The following *varname* values are recognized:
 
- ================   ======  ========  =========
- *varname*          PAN-OS  WildFire  AutoFocus
- ================   ======  ========  =========
- **hostname**       X       X         X
+ ================   ======  ========  =========  =========
+ *varname*          PAN-OS  WildFire  AutoFocus  Licensing
+ ================   ======  ========  =========  =========
+ **hostname**       X       X         X          X
  **port**           X
  **serial**         X
  **api_username**   X
  **api_password**   X
- **api_key**        X       X         X
- ================   ======  ========  =========
+ **api_key**        X       X         X          X
+ ================   ======  ========  =========  =========
 
 .panrc File Permissions
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -109,7 +110,7 @@ Recognized varname Values
 
  A .panrc file can reside in the current working directory
  ($PWD/.panrc) and in the user's home directory ($HOME/.panrc).
- .panrc variables can also be specified in the PanXapi and PanWFapi
+ .panrc variables can also be specified in the class
  constructors.  When a variable exists from multiple sources, the
  priority for merging variables is: __init__(), $PWD/.panrc,
  $HOME/.panrc.
@@ -117,7 +118,10 @@ Recognized varname Values
 SEE ALSO
 ========
 
- panxapi.py, pan.xapi, panwfapi.py, pan.wfapi, panafapi.py, pan.afapi
+ panxapi.py, pan.xapi,
+ panwfapi.py, pan.wfapi,
+ panafapi.py, pan.afapi,
+ panlicapi.py, pan.licapi
 
 AUTHORS
 =======

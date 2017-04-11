@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2013-2016 Kevin Steves <kevin.steves@pobox.com>
+# Copyright (c) 2013-2017 Kevin Steves <kevin.steves@pobox.com>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -316,6 +316,7 @@ def process_verdict(verdict):
         'benign': pan.wfapi.BENIGN,
         'malware': pan.wfapi.MALWARE,
         'grayware': pan.wfapi.GRAYWARE,
+        'phishing': pan.wfapi.PHISHING,
     }
 
     try:
@@ -628,7 +629,7 @@ def usage():
     --changed             get changed verdicts
     --hash hash           query MD5 or SHA256 hash
     --platform id         platform ID for sandbox environment
-    --new-verdict verdict benign|malware|grayware
+    --new-verdict verdict benign|malware|grayware|phishing
     --email address       notification e-mail address
     --comment comment     change request explanation
     --testfile            get sample malware test file

@@ -1,5 +1,5 @@
 ..
- Copyright (c) 2014-2016 Kevin Steves <kevin.steves@pobox.com>
+ Copyright (c) 2014-2017 Kevin Steves <kevin.steves@pobox.com>
 
  Permission to use, copy, modify, and distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
@@ -86,7 +86,7 @@ pan.wfapi Constants
   Python ``logging`` module debug levels (see **Debugging and
   Logging** below).
 
- **BENIGN**, **MALWARE**, **GRAYWARE**, **PENDING**, **ERROR**, **UNKNOWN**, **INVALID**
+ **BENIGN**, **MALWARE**, **GRAYWARE**, **PHISHING**, **PENDING**, **ERROR**, **UNKNOWN**, **INVALID**
   Constants for the integer verdict values.
 
  **VERDICTS**
@@ -227,6 +227,7 @@ verdicts(hashes=None)
  0      benign
  1      malware
  2      grayware
+ 4      phishing
  -100   pending   sample exists and verdict not known
  -101   error     sample is in error state
  -102   unknown   sample does not exist
@@ -250,18 +251,9 @@ pcap(hash=None, platform=None)
  platform is specified a PCAP from an environment that resulted in a
  *Malware* verdict is returned.
 
- Valid platform IDs are:
-
- ===========  ===================
- Platform ID  Sandbox Environment
- ===========  ===================
- 1            Windows XP, Adobe Reader 9.3.3, Office 2003
- 2            Windows XP, Adobe Reader 9.4.0, Flash 10, Office 2007
- 3            Windows XP, Adobe Reader 11, Flash 11, Office 2010
- 4            Windows 7, Adobe Reader 11, Flash 11, Office 2010
- 5            Windows 7 x64 SP1, Adobe Reader 11, Flash 11, Office 2010
- 201          Android 2.3, API 10, avd2.3.1
- ===========  ===================
+ Platform IDs are documented in the
+ `Get a Packet Capture <https://www.paloaltonetworks.com/documentation/80/wildfire/wf_api/get-wildfire-information-through-the-wildfire-api/get-a-packet-capture-wildfire-api>`_
+ section of the *WildFire API Reference*.
 
 testfile()
 ~~~~~~~~~~
@@ -378,10 +370,10 @@ SEE ALSO
  panwfapi.py
 
  WildFire Administrator's Guide
-  https://www.paloaltonetworks.com/documentation/71/wildfire/wf_admin
+  https://www.paloaltonetworks.com/documentation/80/wildfire/wf_admin
 
  WildFire API
-  https://www.paloaltonetworks.com/documentation/71/wildfire/wf_api
+  https://www.paloaltonetworks.com/documentation/80/wildfire/wf_api
 
 AUTHORS
 =======

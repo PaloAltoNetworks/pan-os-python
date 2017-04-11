@@ -1,6 +1,40 @@
 Release History
 ===============
 
+0.11.0 (2017-03-31)
+-------------------
+
+- pan.wfapi.rst, panwfapi.rst: Reference "WildFire API Reference" for
+  platform ID documentation.
+
+- Use 8.0 documentation links.
+
+- pan.config: Add XPaths for 8.0.
+
+- Add a Python and command line interface to the PAN-OS licensing API.
+
+- panwfapi.py, pan.wfapi: Add phishing verdict.
+
+- pan.xapi: When URLError try to deduce if it's a SSL handshake error
+  and if OpenSSL may not support TLS 1.1, and log warning at DEBUG1
+  that PAN-OS 8.0 does not allow TLS 1.0 connections by default.
+
+- pan.xapi, pan.afapi, pan.wfapi: log ssl.OPENSSL_VERSION at DEBUG3.
+
+- pan.xapi.rst: Fix cut-paste error in xml_result().
+
+- Remove Python 3.[23] and add 3.5 to supported list.  3.[23] should
+  continue to work however I'm not testing with them.
+
+- pan.wfapi, pan.xapi: Handle ssl.CertificateError exception.
+
+- pan.wfapi: Fix raise of PanXapiError vs. PanWFapiError.
+
+- pan.config: Add XPaths used for XML to set translation in 7.0 and 7.1.
+
+- pan.xapi: Add undocumented feature to use pre PAN-OS 4.1 API request
+  URI and commit request.  From Darlene Wong.
+
 0.10.0 (2016-07-23)
 -------------------
 

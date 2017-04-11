@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2016 Kevin Steves <kevin.steves@pobox.com>
+# Copyright (c) 2013-2017 Kevin Steves <kevin.steves@pobox.com>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
 
 import logging
 
-__version__ = '0.10.0'
+__version__ = '0.11.0-current'
 
 DEBUG1 = logging.DEBUG
 DEBUG2 = DEBUG1 - 1

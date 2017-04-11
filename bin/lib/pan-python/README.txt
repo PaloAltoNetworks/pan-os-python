@@ -5,8 +5,9 @@ Firewalls, WildFire and AutoFocus.  It provides:
   - a command line program for managing PAN-OS XML configurations
   - a Python and command line interface to the WildFire API
   - a Python and command line interface to the AutoFocus API
+  - a Python and command line interface to the PAN-OS licensing API
 
-Python versions 2.7, 3.2, 3.3 and 3.4 are supported with a single code
+Python versions 2.7, 3.4 and 3.5 are supported with a single code
 base.  There are no external modules required to use pan-python.
 
 The pan package contains the following modules:
@@ -18,6 +19,7 @@ The pan package contains the following modules:
     pan.wfapi:  pan.wfapi.PanWFapi class
     pan.afapi:  pan.afapi.PanAFapi class factory
     pan.http:   pan.http.PanHttp class (internal)
+    pan.licapi: pan.licapi.PanLicapi class factory
 
 bin/panxapi.py is a command line program for accessing the XML API and
 uses the pan.xapi and pan.commit modules.
@@ -31,27 +33,18 @@ API and uses the pan.wfapi module.
 bin/panafapi.py is a command line program for accessing the AutoFocus
 API and uses the pan.afapi module.
 
+bin/panlicapi.py is a command line program for accessing the PAN-OS
+licensing API and uses the pan.licapi module.
+
 Documentation:
 
   Rendered reStructuredText from GitHub:
 
-    https://github.com/kevinsteves/pan-python/blob/master/doc/panxapi.rst
-    https://github.com/kevinsteves/pan-python/blob/master/doc/panconf.rst
-    https://github.com/kevinsteves/pan-python/blob/master/doc/pan.xapi.rst
-    https://github.com/kevinsteves/pan-python/blob/master/doc/panwfapi.rst
-    https://github.com/kevinsteves/pan-python/blob/master/doc/pan.wfapi.rst
-    https://github.com/kevinsteves/pan-python/blob/master/doc/pan.afapi.rst
-    https://github.com/kevinsteves/pan-python/blob/master/doc/panrc.rst
+    https://github.com/kevinsteves/pan-python/tree/master/doc
 
   HTML from source distribution:
 
-    doc/panxapi.html
-    doc/panconf.html
-    doc/pan.xapi.html
-    doc/panwfapi.html
-    doc/pan.wfapi.html
-    doc/pan.afapi.html
-    doc/panrc.html
+    doc/*.html
 
 Install:
 

@@ -21,6 +21,7 @@
 import os
 import sys
 import traceback
+import json
 
 from environment import run_by_splunk
 
@@ -78,7 +79,7 @@ def get_firewall_credentials(session_key):
         exit_with_error("Could not get %s credentials from splunk. Error: %s" % (APPNAME, str(e)))
     # return first set of credentials
     for i, c in entities.items():
-        if c['username'] != 'wildfire_api_key':
+        if c['username'] not in ('wildfire_api_key', 'autofocus_api_key'):
             return c['username'], c['clear_password']
     raise NoCredentialsFound("No credentials have been found")
 
@@ -94,8 +95,23 @@ def get_wildfire_apikey(session_key):
         if c['username'] == 'wildfire_api_key':
             return c['clear_password']
     logger.warn(
-        "There are Palo Alto Networks WildFire malware events, but no WildFire API Key found, please set the API key in the SplunkforPaloAltoNetworks App set up page")
+        "There are Palo Alto Networks WildFire malware events, but no WildFire API Key found, please set the API key in the Splunk_TA_paloalto App set up page")
     exit_with_error("No Wildfire API key is set, set apikey in App configuration.")
+
+
+def get_autofocus_apikey(session_key):
+    """Given a splunk session_key returns a clear text API Key from a splunk password container"""
+    try:
+        entities = entity.getEntities(['admin', 'passwords'], namespace=APPNAME, owner='nobody', sessionKey=session_key)
+    except Exception as e:
+        exit_with_error("Could not get %s credentials from splunk. Error: %s" % (APPNAME, str(e)))
+    # return first set of credentials
+    for i, c in entities.items():
+        if c['username'] == 'autofocus_api_key':
+            return c['clear_password']
+    logger.warn(
+        "No AutoFocus API Key found, please set the API key in the Splunk_TA_paloalto App set up page")
+    exit_with_error("No AutoFocus API key is set, set apikey in App configuration.")
 
 
 def get_firewall_apikey(session_key):
@@ -152,9 +168,10 @@ def apikey(sessionKey, hostname, debug=False):
             # If Splunk doesn't know the API Key, get the username and password instead
             log(debug, "Getting credentials from Splunk credential store")
             fw_username, fw_password = get_firewall_credentials(sessionKey)
+            fw_password = json.loads(fw_password)
             # Use the username and password to determine the API key
             log(debug, "Getting API Key from firewall/Panorama")
-            device = pandevice.base.PanDevice(hostname, fw_username, fw_password)
+            device = pandevice.base.PanDevice(hostname, fw_username, fw_password["password"])
             apikey = device.api_key
             # Save the API key to the Splunk credential store inside the App
             log(debug, "Adding API Key to Splunk credential store")
@@ -172,7 +189,7 @@ def check_debug(arguments):
     if 'debug' in arguments:
         if arguments['debug'] != "no" and arguments['debug'] != "false":
             logger.info("Debugging enabled")
-            #logger.setLevel(logging.DEBUG)
+            # logger.setLevel(logging.DEBUG)
             return True
     return False
 

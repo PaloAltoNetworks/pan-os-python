@@ -1,5 +1,5 @@
 ..
- Copyright (c) 2013-2016 Kevin Steves <kevin.steves@pobox.com>
+ Copyright (c) 2013-2017 Kevin Steves <kevin.steves@pobox.com>
 
  Permission to use, copy, modify, and distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
@@ -41,7 +41,7 @@ SYNOPSIS
     --changed             get changed verdicts
     --hash hash           query MD5 or SHA256 hash
     --platform id         platform ID for sandbox environment
-    --new-verdict verdict benign|malware|grayware
+    --new-verdict verdict benign|malware|grayware|phishing
     --email address       notification e-mail address
     --comment comment     change request explanation
     --testfile            get sample malware test file
@@ -125,18 +125,10 @@ DESCRIPTION
   specify that hashes be read from *stdin*.
 
  ``--platform`` *id*
-  Platform ID for sandbox environment.  Valid platform IDs are:
-
-  ===========  ===================
-  Platform ID  Sandbox Environment
-  ===========  ===================
-  1            Windows XP, Adobe Reader 9.3.3, Office 2003
-  2            Windows XP, Adobe Reader 9.4.0, Flash 10, Office 2007
-  3            Windows XP, Adobe Reader 11, Flash 11, Office 2010
-  4            Windows 7, Adobe Reader 11, Flash 11, Office 2010
-  5            Windows 7 x64 SP1, Adobe Reader 11, Flash 11, Office 2010
-  201          Android 2.3, API 10, avd2.3.1
-  ===========  ===================
+  Platform ID for sandbox environment.
+  Platform IDs are documented in the
+  `Get a Packet Capture <https://www.paloaltonetworks.com/documentation/80/wildfire/wf_api/get-wildfire-information-through-the-wildfire-api/get-a-packet-capture-wildfire-api>`_
+  section of the *WildFire API Reference*.
 
  ``--testfile``
   Get sample malware test file.  Each request returns a similar PE
@@ -180,7 +172,7 @@ DESCRIPTION
 
  ``--new-verdict`` *verdict*
   The suggested verdict.  Can be specified as a string (*benign*,
-  *malware* or *grayware*) or an integer.
+  *malware*, *grayware*, *phishing*) or an integer.
 
  ``--email`` *address*
   Notification e-mail address.
@@ -349,10 +341,10 @@ SEE ALSO
  pan.wfapi
 
  WildFire Administrator's Guide
-  https://www.paloaltonetworks.com/documentation/71/wildfire/wf_admin
+  https://www.paloaltonetworks.com/documentation/80/wildfire/wf_admin
 
  WildFire API
-  https://www.paloaltonetworks.com/documentation/71/wildfire/wf_api
+  https://www.paloaltonetworks.com/documentation/80/wildfire/wf_api
 
 AUTHORS
 =======

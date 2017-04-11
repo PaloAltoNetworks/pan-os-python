@@ -1,47 +1,71 @@
 <setup>
-    <block title="Add new credentials for PAN devices" endpoint="admin/passwords" entity="_new">
-    	<text> These are the credentials that will be used to communicate with your Palo Alto Networks Firewall or Panorama. 
-    	</text>
-            <input field="name">
-                    <label>Username</label>
-                    <type>text</type>
-            </input>
-            <input field="password">
-                    <label>Password</label>
-                    <type>password</type>
-            </input>
-    </block>
-  <block title="WildFire Cloud API Key" endpoint="storage/passwords" entity="_new">
-    <text> Used to retrieve reports from the WildFire Cloud.  An API Key is available from the WildFire Portal (<![CDATA[<a href="https://wildfire.paloaltonetworks.com" target="_blank">https://wildfire.paloaltonetworks.com</a>)]]>.
-    </text>
-          <input field="name">
-                  <label>API Key Username</label>
-                  <type>text</type>
-          </input>
-          <input field="password">
-                  <label>WildFire API Key</label>
-                  <type>text</type>
-          </input>
-  </block>
-  <block title="">
-        <text><![CDATA[
-        <script>
-        $(document).ready(function()
-        {
-          $(function(){
-               var username_div = $('#item-\\/storage\\/passwords\\/_new\\/name');
-                username_div.hide();
+  <block title="Add new credentials for PAN devices" endpoint="admin/passwords" entity="_new">
+   <text> These are the credentials that will be used to communicate with your Palo Alto Networks Firewall or Panorama. 
+   </text>
+   <input field="name">
+    <label>Username</label>
+    <type>text</type>
+  </input>
+  <input field="password">
+    <label>Password</label>
+    <type>password</type>
+  </input>
+</block>
+<block title="WildFire Cloud API Key" endpoint="storage/passwords" entity="_new">
+  <text> Used to retrieve reports from the WildFire Cloud.  An API Key is available from the WildFire Portal (<![CDATA[<a href="https://wildfire.paloaltonetworks.com" target="_blank">https://wildfire.paloaltonetworks.com</a>)]]>.
+</text>
+<input field="wildfire-name">
+  <label>API Key Username</label>
+  <type>text</type>
+</input>
+<input field="wildfire-password">
+  <label>WildFire API Key</label>
+  <type>text</type>
+</input>
+</block>
 
-                var username_input = $('#\\/storage\\/passwords\\/_new\\/name_id');
-                var apikey_input = $('#\\/storage\\/passwords\\/_new\\/password_id');
+<block title="AutoFocus Cloud API Key" endpoint="storage/passwords" entity="_new">
+  <text> Used to retrieve reports from the AutoFocus Cloud. (<![CDATA[<a href="https://www.paloaltonetworks.com/documentation/autofocus/autofocus/autofocus_api/get-started-with-the-autofocus-api/get-your-api-key#36712" target="_blank">Get Your API Key</a>)]]>.
+</text>
+<input field="autofocus-name" additionalClass="api">
+  <label>API Key Username</label>
+  <type>text</type>
+</input>
+<input field="autofocus-password">
+  <label>AutoFocus API Key</label>
+  <type>text</type>
+</input>
+</block>
+<block title="">
+  <text><![CDATA[
+    <script>
+      $(document).ready(function() {
+        $(function() {
+          var wildfireName = $('#item-\\/storage\\/passwords\\/_new\\/wildfire-name');
+          var autofocusName = $('#item-\\/storage\\/passwords\\/_new\\/autofocus-name');
+          var wildfirePassword= $('#item-\\/storage\\/passwords\\/_new\\/wildfire-password');
+          var autofocusPassword= $('#item-\\/storage\\/passwords\\/_new\\/autofocus-password');
 
-                apikey_input.change(function() {
-                    if(apikey_input.val().length === 0) {
-                        username_input.val('')
-                    } else {
-                        username_input.val('wildfire_api_key');
-                    }
-                });
+          wildfireName.hide();
+          autofocusName.hide();
+
+
+          var autofocusKeyInput = $('#\\/storage\\/passwords\\/_new\\/autofocus-password_id');
+
+          wildfirePassword.find("input").change(function() {
+            if(wildfirePassword.find("input").val().length === 0) {
+              wildfireName.find("input").val('');
+            } else {
+              wildfireName.find("input").val('wildfire_api_key');
+            }
+          });
+
+          autofocusPassword.find("input").change(function() {
+            if(autofocusPassword.find("input").val().length === 0) {
+              autofocusName.find("input").val('');
+            } else {
+              autofocusName.find("input").val('autofocus_api_key');
+            }
           });
         });
         </script>

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2016 Kevin Steves <kevin.steves@pobox.com>
+# Copyright (c) 2013-2017 Kevin Steves <kevin.steves@pobox.com>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -77,6 +77,7 @@ _wildfire_responses = {
 BENIGN = 0
 MALWARE = 1
 GRAYWARE = 2
+PHISHING = 4
 PENDING = -100
 ERROR = -101
 UNKNOWN = -102
@@ -86,6 +87,7 @@ VERDICTS = {
     BENIGN: ('benign', None),
     MALWARE: ('malware', None),
     GRAYWARE: ('grayware', None),
+    PHISHING: ('phishing', None),
     PENDING: ('pending', 'sample exists and verdict not known'),
     ERROR: ('error', 'sample is in error state'),
     UNKNOWN: ('unknown', 'sample does not exist'),
@@ -136,6 +138,7 @@ class PanWFapi:
 
         self._log(DEBUG3, 'Python version: %s', sys.version)
         self._log(DEBUG3, 'xml.etree.ElementTree version: %s', etree.VERSION)
+        self._log(DEBUG3, 'ssl: %s', ssl.OPENSSL_VERSION)
         self._log(DEBUG3, 'pan-python version: %s', __version__)
 
         if self.timeout is not None:
@@ -150,9 +153,15 @@ class PanWFapi:
             try:
                 ssl.SSLContext(ssl.PROTOCOL_SSLv23)
             except AttributeError:
-                raise PanXapiError('SSL module has no SSLContext()')
+                raise PanWFapiError('SSL module has no SSLContext()')
         elif _have_certifi:
             self.ssl_context = self._certifi_ssl_context()
+
+        # handle Python versions with no ssl.CertificateError
+        if hasattr(ssl, 'CertificateError'):
+            self._certificateerror = ssl.CertificateError
+        else:
+            self._certificateerror = NotImplementedError  # XXX Can't happen
 
         init_panrc = {}  # .panrc args from constructor
         if hostname is not None:
@@ -336,6 +345,9 @@ class PanWFapi:
 
         try:
             response = self._urlopen(**kwargs)
+        except self._certificateerror as e:
+            self._msg = 'ssl.CertificateError: %s' % e
+            return False
         except (URLError, IOError) as e:
             self._log(DEBUG2, 'urlopen() exception: %s', sys.exc_info())
             self._msg = str(e)
