@@ -103,7 +103,7 @@ class AddressGroup(VersionedPanObject):
         self._params = tuple(params)
 
 
-class Tag(PanObject):
+class Tag(VersionedPanObject):
     """Administrative tag
 
     Args:
@@ -113,49 +113,21 @@ class Tag(PanObject):
 
     """
     ROOT = Root.VSYS
-    XPATH = "/tag"
     SUFFIX = ENTRY
 
-    COLOR = {
-        "red":         1,
-        "green":       2,
-        "blue":        3,
-        "yello":       4,
-        "copper":      5,
-        "orange":      6,
-        "purple":      7,
-        "gray":        8,
-        "light green": 9,
-        "cyan":        10,
-        "light gray":  11,
-        "blue gray":   12,
-        "lime":        13,
-        "black":       14,
-        "gold":        15,
-        "brown":       16,
-    }
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/tag')
 
-    def __init__(self, *args, **kwargs):
-        super(Tag, self).__init__(*args, **kwargs)
-        if not hasattr(self, "_color"):
-            self._color = None
+        # params
+        params = []
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("color"),
-            Var("comments"),
-        )
+        params.append(VersionedParamPath(
+            'color', path='color'))
+        params.append(VersionedParamPath(
+            'comments', path='comments'))
 
-    @property
-    def color(self):
-        if self._color in self.COLOR:
-            return "color"+str(self.COLOR[self._color])
-        return self._color
-
-    @color.setter
-    def color(self, value):
-        self._color = value
+        self._params = tuple(params)
 
 
 class ServiceObject(VersionedPanObject):

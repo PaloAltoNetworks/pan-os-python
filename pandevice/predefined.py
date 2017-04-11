@@ -45,18 +45,22 @@ class Predefined(object):
         objects.ApplicationObject,
         objects.ApplicationContainer,
         objects.ServiceObject,
+        objects.Tag,
     )
 
     # xpath
     PREDEFINED_ROOT_XPATH = "/config/predefined"
     ENTRY = "/entry[@name='%s']"
     SERVICE = "/service"
+    TAG = "/tag"
     # apps and containers share a namespace so we need to search both
     APPLICATION_CONTAINS_XPATH = '//*[contains(local-name(), "application")]'
     ALL_APPLICATION_XPATH = PREDEFINED_ROOT_XPATH + APPLICATION_CONTAINS_XPATH
     SINGLE_APPLICATION_XPATH = ALL_APPLICATION_XPATH + ENTRY
     ALL_SERVICE_XPATH = PREDEFINED_ROOT_XPATH + SERVICE
     SINGLE_SERVICE_XPATH = ALL_SERVICE_XPATH + ENTRY
+    ALL_TAG_XPATH = PREDEFINED_ROOT_XPATH + TAG
+    SINGLE_TAG_XPATH = ALL_TAG_XPATH + ENTRY
 
     def __init__(self, device=None, *args, **kwargs):
         # Create a class logger
@@ -67,6 +71,7 @@ class Predefined(object):
         self.service_objects = {}
         self.application_objects = {}
         self.application_container_objects = {}
+        self.tag_objects = {}
 
     def _get_xml(self, xpath):
         """use the parent to get the xml given the xpath"""
@@ -101,6 +106,14 @@ class Predefined(object):
             obj.refresh(xml=elm)
             self.service_objects[obj.name] = obj
 
+    def _parse_tag_xml(self, xml):
+        """parse the xml into actual objects and store them in the dicts"""
+
+        for elm in xml:
+            obj = objects.Tag()
+            obj.refresh(xml=elm)
+            self.tag_objects[obj.name] = obj
+
     def refresh_application(self, name):
         """Refresh a Single Predefined Application
 
@@ -128,6 +141,19 @@ class Predefined(object):
         xml = self._get_xml(xpath)
         self._parse_service_xml(xml)
 
+    def refresh_tag(self, name):
+        """Refresh a Single Predefined Tag
+
+        This method refreshes single predefined tag (predefined only object).
+
+        Args:
+            name (str): Name of the tag to refresh
+
+        """
+        xpath = self.SINGLE_TAG_XPATH % name
+        xml = self._get_xml(xpath)
+        self._parse_tag_xml(xml)
+
     def refreshall_applications(self):
         """Refresh all Predefined Applications
 
@@ -152,11 +178,21 @@ class Predefined(object):
         xml = self._get_xml(xpath)
         self._parse_service_xml(xml)
 
+    def refreshall_tags(self):
+        """Refresh all Predefined Tags
+
+        This method refreshes all predefined tag objects
+
+        """
+        xpath = self.ALL_TAG_XPATH + "/entry"
+        xml = self._get_xml(xpath)
+        self._parse_tag_xml(xml)
+
     def refreshall(self):
         """Refresh all Predefined Objects
 
         This method refreshes all predefined objects. This includes applications,
-        application containers, and services.
+        application containers, services, and tags.
 
         CAUTION: This method requires a lot of overhead on the device api to respond.
         Response time will vary by platform, but know that it will generally take
@@ -167,10 +203,12 @@ class Predefined(object):
         self.application_objects = {}
         self.application_container_objects = {}
         self.service_objects = {}
+        self.tag_objects = {}
 
         # now we call the refresh methods
         self.refreshall_services()
         self.refreshall_applications()
+        self.refreshall_tags()
 
     def application(self, name, refresh_if_none=True, include_containers=True):
         """Get a Predefined Application
@@ -219,6 +257,28 @@ class Predefined(object):
 
         return obj
 
+    def tag(self, name, refresh_if_none=True):
+        """Get a Predefined Tag
+
+        Return the instance of the tag from the given name.
+
+        Args:
+            name (str): Name of the tag
+            refresh_if_none (bool): Refresh the tag if it is not found
+
+        Returns:
+            Either a Tag or None
+
+        """
+        obj = self.tag_objects.get(name, None)
+
+        if obj is None and refresh_if_none:
+            self.refresh_tag(name)
+            # recursive call but with no refresh
+            obj = self.tag(name, refresh_if_none=False)
+
+        return obj
+
     def applications(self, names, refresh_if_none=True, include_containers=True):
         """Get a list of Predefined Applications
 
@@ -264,6 +324,28 @@ class Predefined(object):
 
         return objs
 
+    def tags(self, names, refresh_if_none=True):
+        """Get a list of Predefined Tags
+
+        Return a list of the instances of the tags from the given names.
+
+        Args:
+            names (list): Names of the tags
+            refresh_if_none (bool): Refresh the tag(s) if it is not found
+
+        Returns:
+            A list of all found Tags
+
+        """
+        objs = []
+
+        for name in set(names):
+            obj = self.tag(name, refresh_if_none=refresh_if_none)
+            if obj:
+                objs.append(obj)
+
+        return objs
+
     def object(self, name, classtype, refresh_if_none=True):
         """Get object by classtype
 
@@ -282,6 +364,8 @@ class Predefined(object):
             return self.application(name, refresh_if_none, include_containers=True)
         elif classtype == objects.ServiceObject:
             return self.service(name, refresh_if_none)
+        elif classtype == objects.Tag:
+            return self.tag(name, refresh_if_none)
 
     def objects(self, names, classtype, refresh_if_none=True):
         """Get a list of objects by classtype
@@ -301,3 +385,5 @@ class Predefined(object):
             return self.applications(names, refresh_if_none, include_containers=True)
         elif classtype == objects.ServiceObject:
             return self.services(names, refresh_if_none)
+        elif classtype == objects.Tag:
+            return self.tags(names, refresh_if_none)
