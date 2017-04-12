@@ -21,6 +21,7 @@ Add-on
 
 v3.8.0
   * AutoFocus Export List modular input
+  * Improved configuration screen allows credentials to be changed
 
 Previous Versions
 =================
