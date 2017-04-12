@@ -272,3 +272,114 @@ Change the cron_schedule to your desired update schedule.
 
 .. [#f1] The field is called ``dst_class`` in App versions before 5.0
 .. [#f2] Starting in App version 5.0, the ``ip_classifications.csv`` file is located in the Splunk_TA_paloalto Add-on.  Before 5.0, it is in the SplunkforPaloAltoNetworks App.
+
+
+.. _external_search_autofocus:
+
+External Search for AutoFocus
+-----------------------------
+
+External Search can be used with AutoFocus **Remote Search** feature. Remote search is a feature in AutoFocus providing a way to search for IOC’s in an external system. The Palo Alto Networks Splunk App can receive a search request from AutoFocus and provide log events that match the search criteria.
+
+.. note:: This feature is only available on Palo Alto Networks App and requires access to AutoFocus.
+
+Setting up remote search and how to use it in AutoFocus is documented on the Palo Alto Networks Website and will not be covered here. The values needed in ``Step 3`` of the documentation are provided here along with the link to the documentation.
+
+* `Setup AutoFocus remote search`_
+
+* Values to be used in Step 3 of the doc
+    System Type: ``Custom``
+
+    Address: ``https://<SPLUNK SERVER>:8000/en-US/app/SplunkforPaloAltoNetworks/external_search?search=``
+
+.. _Setup AutoFocus remote search:
+   https://www.paloaltonetworks.com/documentation/autofocus/autofocus/autofocus_admin_guide/autofocus-search/set-up-remote-search
+
+   
+.. _external_search_log_link:
+
+External Search for Log Link
+----------------------------
+Palo Alto Networks Firewall has a feature called Log Link, which allows you to cross launch into an external search from the Firewall UI. This feature can be used with the Palo Alto Networks Splunk App External Search page. 
+
+.. note:: This feature is only available on Palo Alto Networks App and requires access to PAN-OS CLI.
+
+
+.. _Palo Alto Networks Live:
+  https://live.paloaltonetworks.com/t5/Configuration-Articles/How-does-the-Log-Link-Feature-Work/ta-p/52298
+
+Example CLI command
+::
+
+  set deviceconfig system log-link Splunk.Dst url http://<SPLUNK SERVER>:8000/en-US/app/SplunkforPaloAltoNetworks/external_search?search=(dest_ip%20eq%20'{dst}')
+
+Other possible fields to search
+::
+
+  (dest_ip%20eq%20'{dst}')
+  (src_ip%20eq%20'{src}')
+  (dest_port%20eq%20'{dport}')
+  (src_port%20eq%20'{sport}')
+  (protocol%20eq%20'{proto}')
+
+.. _autofocus_export_list:
+
+AutoFocus Export List
+---------------------
+
+With the Palo Alto Networks Splunk Add-on an AutoFocus export list can be added 
+as a modular input in Splunk. The modular input utilizes AutoFocus's REST API 
+to periodically sync an Export List from AutoFocus. The list of artifacts are 
+stored in the KVStore and can be accessed via `inputlookup` macros. This data 
+can then be used to correlate against other logs.
+
+Two steps are needed to enable AutoFocus export list syncing:
+
+**Step 1: Add the AutoFocus API key to the Add-on configuration**
+
+During the :ref:`initial setup <initialsetup>`, provide the AutoFocus API key.
+The AutoFocus API key is found in the AutoFocus portal on the **Settings** tab:
+https://autofocus.paloaltonetworks.com
+
+To access the configuration screen after initial setup, navigate to the **Palo
+Alto Networks** menu and click **Configuration**.
+
+.. image:: _static/configuration.png
+   :width: 70%
+
+**Step 2: Add AutoFocus Export List to Splunk from a Data Input**
+
+* Learn more about `creating an Export List`_
+
+To retrieve the export list from AutoFocus, you must configure a data input. From the Settings menu click on `Data Inputs`. Under Local inputs types select `AutoFocus Export List` and add a new list.  
+
+Give your new data input a name by entering it in the ``Name`` field.
+
+Set the name of your export list in the ``label`` field. This field must match the export list name from AutoFocus.
+
+.. image:: _static/af_modinput.png
+   :width: 70%
+
+Verify the data is being synced by running a search ``| `pan_autofocus_export```
+
+.. note:: A pipe(``|``) is always used in front of the macro to do a lookup search.
+
+.. _creating an Export List:
+   https://www.paloaltonetworks.com/documentation/70/wildfire/wf_admin/monitor-wildfire-activity/wildfire-analysis-reports-close-up.html`
+
+**Macros**
+There are several new macros that can be used to correlate a search with the artifacts imported from the AutoFocus Export List.
+
+```| pan_autofocus_export``` - A macro to search on all export lists. This will return all entries from all AutoFocus inputs. 
+
+The remaining macros requires one argument. Set the ``label`` of the export list you want to search against. Each macro is separated by the artifact types. 
+
+```| pan_autofocus_export_dns(label)```
+
+```| pan_autofocus_export_connection(label)```
+
+```| pan_autofocus_export_registry(label)``` 
+
+```| pan_autofocus_export_file(label)```
+
+```| pan_autofocus_export_process(label)```

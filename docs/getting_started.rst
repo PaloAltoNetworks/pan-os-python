@@ -87,6 +87,8 @@ right side click **Set up**.
 
 **Firewall Credentials**
 
+.. note:: Only a single Firewall credential can be added. 
+
 Enter the credentials for your Firewall or Panorama. The
 credentials are encrypted by Splunk and used for the
 following features:
@@ -119,6 +121,13 @@ See also:
 
 .. note:: The WildFire indexing feature is only available for WildFire
    subscribers
+
+**AutoFocus API Key**
+
+Enter a AutoFocus API key. Splunk can retrieve export lists created in AutoFocus.
+Get your AutoFocus API key from the **Settings** tab: https://autofocus.paloaltonetworks.com
+
+See also:
 
 .. note:: If none of these features are desired, leave the fields blank and
    click **Save** to continue.

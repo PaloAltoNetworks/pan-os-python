@@ -7,18 +7,37 @@ Release Notes
 App
 ===
 
-v5.3.1
-  * Changes made to meet new certification requirements
+v5.4.0
+  * Endpoint Operations Dashboard
+  * Endpoint Security Dashboard 
+  * Endpoint Dashboard support new Traps 3.4 fields
+  * Support for AutoFocus Remote Search via External Search Handler
+  * Support for Firewall Log Link via External Search Handler
+  * Improved AutoFocus cross launch
 
 
 Add-on
 ======
 
-v3.7.1
-  * Changes made to meet new certification requirements 
+v3.8.0
+  * AutoFocus Export List modular input
+  * Improved configuration screen allows credentials to be changed
 
 Previous Versions
 =================
+
+.. _v530:
+
+App v5.3.1
+----------
+  * Changes made to meet new certification requirements
+
+
+Add-on v3.7.1
+-------------
+  * Changes made to meet new certification requirements 
+
+.. _v530:
 
 App v5.3.0
 ----------
@@ -27,9 +46,11 @@ App v5.3.0
 
 ..  note::
   * App 5.3.x requires Add-on 3.7.x
-  * The App setup screen has moved to the Add-on. If you has previous set firewall credentials
-    or a WildFire API key in the App setup screen, you'll need to set them in the Add-on
-    setup screen.  See :ref:`initialsetup` in the :ref:`gettingstarted` Guide.
+  * REQUIRED ACTION: The App setup screen has moved to the Add-on. If you had previously set firewall credentials
+    or a WildFire API key in the App setup screen, you'll need to set them again in the Add-on
+    setup screen.  See :ref:`initialsetup` in the updated :ref:`gettingstarted` Guide.
+    You may delete the file ``$SPLUNK_HOME/etc/apps/SplunkforPaloAltoNetworks/local/passwords.conf``
+    to remove the credentails from the App, since they are no longer used.
   * Datamodel acceleration might rebuild itself after installation due to updated constraints
   * Eventtype pan_threat no longer includes these log_subtypes: url, data, file, and wildfire.
     You might need to update custom searches or panels you created that leverage
