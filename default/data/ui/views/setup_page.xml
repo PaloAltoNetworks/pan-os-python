@@ -1,0 +1,10 @@
+<dashboard script="setup.js" stylesheet="setup.css" hideAppBar="true" hideEdit="true" isDashboard="false">
+  <label>Palo Alto Networks Configuration</label>
+  <row>
+    <panel>
+      <html>
+        <div id="setup_page_container"/>
+      </html>
+    </panel>
+  </row>
+</dashboard>
