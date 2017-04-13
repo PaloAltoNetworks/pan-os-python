@@ -23,3 +23,5 @@ git-repositories/
 
 # VI files
 *.un~
+#sublime
+sftp-config.json
