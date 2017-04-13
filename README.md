@@ -6,7 +6,7 @@ Copyright (C) 2012-2016 Palo Alto Networks Inc. All Rights Reserved.
 
 * **App Homepage:** https://splunkbase.splunk.com/app/491
 * **Authors:** Brian Torres-Gil and Paul Nguyen - Palo Alto Networks
-* **App Version:** 5.3.1
+* **App Version:** 5.4.0
 * **Required Add-on (TA) Version:** Splunk_TA_paloalto 3.7.x
 
 ### Description ###
