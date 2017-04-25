@@ -39,3 +39,8 @@ Optionally, you can clone the github repository to install the app.
 From the directory `$SPLUNK_HOME/etc/apps/`, type the following command:
 
     git clone https://github.com/PaloAltoNetworks/Splunk_TA_paloalto.git Splunk_TA_paloalto
+    
+### Libraries Included ###
+
+**Pan-Python:** [Github] (https://github.com/kevinsteves/pan-python)
+**PanDevice:** [Github] (https://github.com/PaloAltoNetworks/pandevice)
