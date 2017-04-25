@@ -19,5 +19,6 @@ The latest documentation is available at http://pansplunk.readthedocs.io
    universal_forwarder
    faq
    troubleshoot
+   trial_demo
    support
    release_notes
