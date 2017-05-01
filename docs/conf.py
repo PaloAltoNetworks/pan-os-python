@@ -52,6 +52,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               ]
 
+# Suppress warnings about nonlocal images
+suppress_warnings = ['image.nonlocal_uri']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

@@ -15,7 +15,6 @@ Contents:
    usage
    examples
    contributing
-   authors
    history
    reference
 

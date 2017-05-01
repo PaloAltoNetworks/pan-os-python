@@ -14,7 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 """Objects module contains objects that exist in the 'Objects' tab in the firewall GUI"""
 
@@ -47,6 +46,7 @@ class AddressObject(VersionedPanObject):
                 * fqdn
         description (str): Description of this object
         tag (list): Administrative tags
+
     """
     ROOT = Root.VSYS
     SUFFIX = ENTRY
@@ -72,6 +72,15 @@ class AddressObject(VersionedPanObject):
 
 
 class AddressGroup(VersionedPanObject):
+    """Address Group
+
+    Args:
+        static_value (list): Values for a static address group
+        dynamic_value (str): Registered-ip tags for a dynamic address group
+        description (str): Description of this object
+        tag (list): Administrative tags (not to be confused with registered-ip tags)
+
+    """
     ROOT = Root.VSYS
     SUFFIX = ENTRY
 
@@ -159,6 +168,7 @@ class ServiceObject(VersionedPanObject):
         destination_port (str): Destination port of the service
         description (str): Description of this object
         tag (list): Administrative tags
+
     """
     ROOT = Root.VSYS
     SUFFIX = ENTRY
@@ -192,6 +202,7 @@ class ServiceGroup(VersionedPanObject):
         name (str): Name of the object
         value (list): List of service values
         tag (list): Administrative tags
+
     """
     ROOT = Root.VSYS
     SUFFIX = ENTRY
@@ -226,7 +237,7 @@ class ApplicationObject(VersionedPanObject):
         timeout (int): Default timeout
         tcp_timeout (int): TCP timeout
         udp_timeout (int): UDP timeout
-        tcp_half_closed_timeout (int): TCP half closed timeout 
+        tcp_half_closed_timeout (int): TCP half closed timeout
         tcp_time_wait_timeout (int): TCP wait time timeout
         evasive_behavior (bool): Applicaiton is actively evasive
         consume_big_bandwidth (bool): Application uses large bandwidth
@@ -235,15 +246,16 @@ class ApplicationObject(VersionedPanObject):
         has_known_vulnerability (bool): Application has known vulnerabilities
         tunnel_other_application (bool):
         tunnel_applications (list): List of tunneled applications
-        prone_to_misuse (bool): 
-        pervasive_use (bool): 
-        file_type_ident (bool): 
-        virus_ident (bool): 
-        data_ident (bool): 
+        prone_to_misuse (bool):
+        pervasive_use (bool):
+        file_type_ident (bool):
+        virus_ident (bool):
+        data_ident (bool):
         description (str): Description of this object
         tag (list): Administrative tags
-    
+
     Please refer to https://applipedia.paloaltonetworks.com/ for more info on these params
+
     """
     ROOT = Root.VSYS
     SUFFIX = ENTRY
@@ -329,6 +341,7 @@ class ApplicationGroup(VersionedPanObject):
         name (str): Name of the object
         value (list): List of application values
         tag (list): Administrative tags
+
     """
     ROOT = Root.VSYS
     SUFFIX = ENTRY
@@ -355,18 +368,19 @@ class ApplicationFilter(VersionedPanObject):
         name (str): Name of the object
         category (list): Application category
         subcategory (list): Application subcategory
-        technology (list): Application technology 
+        technology (list): Application technology
         risk (list): Application risk
-        evasive (bool): 
-        excessive_bandwidth_use (bool): 
-        prone_to_misuse (bool): 
-        is_saas (bool): 
-        transfers_files (bool): 
-        tunnels_other_apps (bool): 
-        used_by_malware (bool): 
-        has_known_vulnerabilities (bool): 
-        pervasive (bool): 
+        evasive (bool):
+        excessive_bandwidth_use (bool):
+        prone_to_misuse (bool):
+        is_saas (bool):
+        transfers_files (bool):
+        tunnels_other_apps (bool):
+        used_by_malware (bool):
+        has_known_vulnerabilities (bool):
+        pervasive (bool):
         tag (list): Administrative tags
+
     """
     ROOT = Root.VSYS
     SUFFIX = ENTRY
@@ -408,18 +422,19 @@ class ApplicationFilter(VersionedPanObject):
             'tag', path='tag', vartype='member'))
 
         self._params = tuple(params)
-    
+
 
 class ApplicationContainer(VersionedPanObject):
     """ApplicationContainer object
 
     This is a special class that is used in the predefined module.
     It acts much like an ApplicationGroup object but exists only
-    in the predefined context. It is more or less a way that 
+    in the predefined context. It is more or less a way that
     Palo Alto groups predefined applications together.
 
     Args:
         applications (list): List of memeber applications
+
     """
     ROOT = Root.VSYS
     SUFFIX = ENTRY

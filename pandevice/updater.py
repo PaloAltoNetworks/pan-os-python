@@ -14,7 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 """Device updater handles software versions and updates for devices"""
 
@@ -248,6 +247,7 @@ class SoftwareUpdater(Updater):
         """Check if current version can directly upgrade to target version
 
         :returns True if a direct upgrade is possible, False if not
+
         """
         if issubclass(type(current_version), basestring):
             current_version = PanOSVersion(current_version)

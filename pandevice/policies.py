@@ -14,7 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 """Policies module contains policies and rules that exist in the 'Policies' tab in the firewall GUI"""
 
@@ -36,6 +35,7 @@ class Rulebase(VersionedPanObject):
 
     Firewall only.  For Panorama, use :class:`pandevice.policies.PreRulebase` or
     :class:`pandevice.policies.PostRulebase`.
+
     """
     ROOT = Root.VSYS
     CHILDTYPES = (
@@ -51,6 +51,7 @@ class PreRulebase(Rulebase):
     """Pre-rulebase for a Panorama
 
     Panorama only.  For Firewall, use :class:`pandevice.policies.Rulebase`.
+
     """
     def _setup(self):
         self._xpaths.add_profile(value='/pre-rulebase')
@@ -60,6 +61,7 @@ class PostRulebase(Rulebase):
     """Post-rulebase for a Panorama
 
     Panorama only.  For Firewall, use :class:`pandevice.policies.Rulebase`.
+
     """
     def _setup(self):
         self._xpaths.add_profile(value='/post-rulebase')
@@ -106,10 +108,11 @@ class SecurityRule(VersionedPanObject):
         file_blocking (str): File Blocking Security Profile
         wildfire_analysis (str): Wildfire Analysis Security Profile
         data_filtering (str): Data Filtering Security Profile
-        negate_target (bool): Target all but the listed target firewalls 
+        negate_target (bool): Target all but the listed target firewalls
             (applies to panorama/device groups only)
-        target (list): Apply this policy to the listed firewalls only 
+        target (list): Apply this policy to the listed firewalls only
             (applies to panorama/device groups only)
+
     """
     # TODO: Add QoS variables
     SUFFIX = ENTRY
@@ -180,6 +183,7 @@ class SecurityRule(VersionedPanObject):
 
         self._params = tuple(params)
 
+
 class NatRule(VersionedPanObject):
     """NAT Rule
 
@@ -189,10 +193,10 @@ class NatRule(VersionedPanObject):
     There are groupings of parameters that give hints to the sections that
     they contribute towards:
 
-        * source_translation_
-        * source_translation_fallback_
-        * source_translation_static
-        * destination_translation_
+        * source_translation_<etc>
+        * source_translation_fallback_<etc>
+        * source_translation_static_<etc>
+        * destination_translation_<etc>
 
     Args:
         name (str): Name of the rule

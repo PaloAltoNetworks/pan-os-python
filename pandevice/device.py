@@ -14,8 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
-
 """Device module contains objects that exist in the 'Device' tab in the firewall GUI"""
 
 from base import PanObject, Root, MEMBER, ENTRY
@@ -88,7 +86,6 @@ class Vsys(PanObject):
             or a list of :class:`pandevice.network.Interface` objects
 
     """
-
     XPATH = "/vsys"
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
@@ -122,6 +119,7 @@ class NTPServer(PanObject):
 
     Args:
         address (str): The IP address of the NTP server
+
     """
     # TODO: Add authentication
     # TODO: Add PAN-OS pre-7.0 support
@@ -147,6 +145,7 @@ class NTPServerPrimary(NTPServer):
 
     Args:
         address (str): IP address or hostname of NTP server
+
     """
     XPATH = "/ntp-servers/primary-ntp-server"
 
@@ -158,6 +157,7 @@ class NTPServerSecondary(NTPServer):
 
     Args:
         address (str): IP address or hostname of NTP server
+
     """
     XPATH = "/ntp-servers/secondary-ntp-server"
 
@@ -184,7 +184,6 @@ class SystemSettings(PanObject):
         update_server (str): IP or hostname of the update server
 
     """
-
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/system"
     HA_SYNC = False

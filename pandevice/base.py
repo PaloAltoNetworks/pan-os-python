@@ -14,7 +14,6 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 
 """Base object classes for inheritence by other classes"""
@@ -653,8 +652,7 @@ class PanObject(object):
 
         return (varpath, value, var)
 
-    def refresh(self, running_config=False, xml=None,
-                refresh_children=True, exceptions=True):
+    def refresh(self, running_config=False, refresh_children=True, exceptions=True, xml=None):
         """Refresh all variables and child objects from the device.
 
         Args:
@@ -984,6 +982,7 @@ class PanObject(object):
 
         Returns:
             int:  the index of the first matching child
+
         """
         if class_type is None:
             class_type = type(self)
@@ -1254,6 +1253,7 @@ class PanObject(object):
 
         For example, set_zone() would set the zone for an interface by creating a reference from
         the zone to the interface. If the desired reference already exists then nothing happens.
+
         """
         device = self.nearest_pandevice()
         if refresh:
@@ -1266,12 +1266,12 @@ class PanObject(object):
                 references = getattr(obj, reference_var)
                 if references is None:
                     continue
-                elif hasattr(self, "__iter__") and self in references:
+                elif hasattr(references, "__iter__") and self in references:
                     if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
                     references.remove(self)
                     if update: obj.update(reference_var)
-                elif hasattr(self, "__iter__") and str(self) in references:
+                elif hasattr(references, "__iter__") and str(self) in references:
                     if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
                     references.remove(str(self))
@@ -1290,7 +1290,6 @@ class PanObject(object):
                 if update: obj.update(reference_var)
             elif hasattr(var, "__iter__") and self not in var and str(self) not in var:
                 var.append(self)
-                setattr(obj, reference_var, var)
                 if update: obj.update(reference_var)
             elif hasattr(var, "__iter__"):
                 # The reference already exists so do nothing
@@ -1434,6 +1433,7 @@ class VersioningSupport(object):
     Versions of the value are added in ascending order using ``add_profile()``,
     then can be retrieved by using ``_get_versioned_value()``.  You can specify
     how the retrieved value is cast by overriding ``_cast_version_value()``.
+
     """
     def __init__(self):
         self.__profiles = []
@@ -1605,6 +1605,7 @@ class VersionedPanObject(PanObject):
         If you want this to have versioned parameters, be sure to
         set a `_params` variable here.  It should be a tuple of
         :class:`pandevice.base.VersionedParamPath` objects.
+
         """
         pass
 
@@ -2004,6 +2005,7 @@ class VarPath(object):
         order (int): The order of this variable relative to other variables in this constructor of the
             class that contains this variables. Defaults to 100, set variable order to less than or
             greater than 100 to alter the order of the variables.
+
     """
     def __init__(self, path, variable=None, vartype=None, default=None, xmldefault=None, condition=None, order=100):
         self.path = path
@@ -2423,8 +2425,7 @@ class VsysImportMixin(object):
 
 
 class VsysOperations(VersionedPanObject):
-    """Modify PanObject methods to set vsys import configuration.
-    """
+    """Modify PanObject methods to set vsys import configuration."""
     CHILDMETHODS = ('create', 'apply', 'delete')
 
     def __init__(self, *args, **kwargs):
@@ -2470,6 +2471,7 @@ class VsysOperations(VersionedPanObject):
 
         Args:
             vsys (str): Override the vsys
+
         """
         if vsys is None:
             vsys = self.vsys
@@ -2485,6 +2487,7 @@ class VsysOperations(VersionedPanObject):
 
         Args:
             vsys (str): Override the vsys
+
         """
         if vsys is None:
             vsys = self.vsys
@@ -2512,6 +2515,7 @@ class VsysOperations(VersionedPanObject):
 
         Returns:
             Vsys: The vsys for this interface after the operation completes
+
         """
         param_name = self.XPATH_IMPORT.split('/')[-1]
 
@@ -2867,7 +2871,7 @@ class PanDevice(PanObject):
                     suspect_error = 'URLError: reason: [Errno 54] Connection reset by peer'
                     if e.message == suspect_error:
                         min_openssl_version = ['1', '0', '1']
-                        help_url = 'https://www.paloaltonetworks.com/documentation/80/pan-os/pan-os-release-notes/pan-os-8-0-release-information/changes-to-default-behavior#19035'
+                        help_url = 'http://pandevice.readthedocs.io/en/latest/usage.html#connecting-to-pan-os-8-0'
                         try:
                             # Examples:
                             #   OpenSSL 1.0.2j  26 Sep 2016
@@ -3063,6 +3067,7 @@ class PanDevice(PanObject):
 
         Returns:
             A string containing the API key
+
         """
         self._logger.debug("Getting API Key from %s for user %s" %
                            (self.hostname, self._api_username))
@@ -3402,6 +3407,7 @@ class PanDevice(PanObject):
         Returns:
             list: self and self.ha_peer in a list. If there is not ha_peer, then
                 a single item list containing only self is returned.
+
         """
         return [fw for fw in [self, self.ha_peer] if fw is not None]
 

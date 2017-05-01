@@ -14,14 +14,8 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
-
-"""Palo Alto Networks device and firewall objects.
-
-For performing common tasks on Palo Alto Networks devices.
-"""
-
+"""Palo Alto Networks Firewall object"""
 
 # import modules
 import re
@@ -59,6 +53,7 @@ class Firewall(PanDevice):
         is_virtual (bool): Physical or Virtual firewall
         timeout: The timeout for asynchronous jobs
         interval: The interval to check asynchronous jobs
+
     """
     XPATH = "/devices"
     ROOT = Root.MGTCONFIG
@@ -225,6 +220,7 @@ class Firewall(PanDevice):
         """Save all the shared system info, plus firewall specific info.
 
         Invoked during "refresh_system_info()"
+
         """
         super(Firewall, self)._save_system_info(system_info)
         self.multi_vsys = system_info['system']['multi-vsys'] == 'on'
