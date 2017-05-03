@@ -23,8 +23,7 @@
     <input type="text" token="user">
       <label>Source User</label>
       <default/>
-      <prefix>log.user="</prefix>
-      <suffix>"</suffix>
+      <prefix>log.user=</prefix>
     </input>
     <input type="text" token="dest_hostname">
       <label>Destination Hostname</label>

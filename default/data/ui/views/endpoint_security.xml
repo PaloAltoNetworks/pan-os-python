@@ -17,8 +17,7 @@
     <input type="text" token="user">
       <label>User</label>
       <default/>
-      <prefix>log.user="</prefix>
-      <suffix>"</suffix>
+      <prefix>log.user=</prefix>
     </input>
     <input type="text" token="src">
       <label>Hostname</label>
