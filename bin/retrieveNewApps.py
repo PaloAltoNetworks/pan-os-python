@@ -78,7 +78,7 @@ def retrieveNewApps():
     # Create a urllib2 opener
     opener = createOpener()
     # URL for WildFire cloud API
-    newAppUrl = 'http://ww2.paloaltonetworks.com/iphone/NewApps.aspx'
+    newAppUrl = 'https://ww2.paloaltonetworks.com/iphone/NewApps.aspx'
     # Create a request object
     newAppReq = urllib2.Request(newAppUrl)
     # Make the request
