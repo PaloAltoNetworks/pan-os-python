@@ -1121,6 +1121,9 @@ class PanObject(object):
         """
         instances = []
 
+        if xml is None:
+            return []
+
         # Get the objects from the xml at this level
         if self.SUFFIX is None:
             objects = [xml]
