@@ -3,6 +3,17 @@
 History
 =======
 
+0.4.1
+-----
+
+Released: 2017-05-12
+
+Status: Alpha
+
+- Add: Support new HA error added in PAN-OS 7.1
+- Fix: Issue where existing references are sometimes removed when adding a new reference
+- Fix: AttributeError on None when refreshing device-groups and none exist yet
+
 0.4.0
 -----
 

@@ -1121,6 +1121,9 @@ class PanObject(object):
         """
         instances = []
 
+        if xml is None:
+            return []
+
         # Get the objects from the xml at this level
         if self.SUFFIX is None:
             objects = [xml]
@@ -1266,12 +1269,12 @@ class PanObject(object):
                 references = getattr(obj, reference_var)
                 if references is None:
                     continue
-                elif hasattr(self, "__iter__") and self in references:
+                elif hasattr(references, "__iter__") and self in references:
                     if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
                     references.remove(self)
                     if update: obj.update(reference_var)
-                elif hasattr(self, "__iter__") and str(self) in references:
+                elif hasattr(references, "__iter__") and str(self) in references:
                     if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
                     references.remove(str(self))
@@ -1290,7 +1293,6 @@ class PanObject(object):
                 if update: obj.update(reference_var)
             elif hasattr(var, "__iter__") and self not in var and str(self) not in var:
                 var.append(self)
-                setattr(obj, reference_var, var)
                 if update: obj.update(reference_var)
             elif hasattr(var, "__iter__"):
                 # The reference already exists so do nothing
@@ -2744,7 +2746,7 @@ class PanDevice(PanObject):
 
     class XapiWrapper(pan.xapi.PanXapi):
         #This is a confusing class used for catching exceptions and faults.
-        # TODO: comment the hell out of it!
+        # TODO: comment this class
 
         CONNECTION_EXCEPTIONS = (
             err.PanConnectionTimeout, err.PanURLError,
@@ -3537,8 +3539,14 @@ class PanDevice(PanObject):
             line = response.find("./msg/line")
             if line is None:
                 raise err.PanDeviceError("Unable to syncronize configuration, no response from firewall")
-            if line.text.startswith("successfully sync'd running configuration to HA peer"):
+            elif line.text.startswith("successfully sync'd running configuration to HA peer"):
+                # PAN-OS 7.0
                 return True
+            elif line.text.startswith("HA synchronization job has been queued on peer. "
+                                      "Please check job status on peer."):
+                # PAN-OS 7.1
+                # Wait until synchronization done
+                return self.watch_op("show high-availability state", "group/running-sync", "synchronized")
             else:
                 raise err.PanDeviceError("Unable to syncronize configuration: %s" % line.text)
         else:

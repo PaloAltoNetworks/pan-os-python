@@ -311,11 +311,12 @@ class Panorama(base.PanDevice):
 
         # Combine the config XML and operational command XML to get a complete picture
         # of the device groups
-        for dg_entry in devicegroup_configxml:
-            for fw_entry in dg_entry.find('devices'):
-                fw_entry_op = devicegroup_opxml.find("entry/devices/entry[@name='%s']" % fw_entry.get("name"))
-                if fw_entry_op is not None:
-                    pandevice.xml_combine(fw_entry, fw_entry_op)
+        if devicegroup_configxml is not None:
+            for dg_entry in devicegroup_configxml:
+                for fw_entry in dg_entry.find('devices'):
+                    fw_entry_op = devicegroup_opxml.find("entry/devices/entry[@name='%s']" % fw_entry.get("name"))
+                    if fw_entry_op is not None:
+                        pandevice.xml_combine(fw_entry, fw_entry_op)
 
         dg = DeviceGroup()
         dg.parent = self
