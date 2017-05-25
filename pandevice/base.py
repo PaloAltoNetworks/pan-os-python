@@ -2006,12 +2006,13 @@ class VarPath(object):
             'XML Path': self.path,
         }
 
-    def _set_inner_xml_tag_text(self, elm, value):
+    def _set_inner_xml_tag_text(self, elm, value, sha1=False):
         """Sets the final elm's .text as appropriate given the vartype.
 
         Args:
             elm (xml.etree.ElementTree.Element): The element whose .text to set.
             value (various): The value to put in the .text, conforming to the vartype of this parameter.
+            sha1 (bool): This variable is ignored for classic objects
 
         """
         # Create an element containing the value in the instance variable
@@ -2148,7 +2149,7 @@ class ParamPath(object):
             e.append(child)
             e = child
 
-        self._set_inner_xml_tag_text(e, value)
+        self._set_inner_xml_tag_text(e, value, sha1)
 
         return elm
 
@@ -2243,12 +2244,13 @@ class ParamPath(object):
         # Pull the value, properly formatted, from this last element
         self.parse_value_from_xml_last_tag(e, settings)
 
-    def _set_inner_xml_tag_text(self, elm, value):
+    def _set_inner_xml_tag_text(self, elm, value, sha1=False):
         """Sets the final elm's .text as appropriate given the vartype.
 
         Args:
             elm (xml.etree.ElementTree.Element): The element whose .text to set.
             value (various): The value to put in the .text, conforming to the vartype of this parameter.
+            sha1 (bool): For encrypted fields, if the text should be set to a password hash (True) or left as a basestring (False)
 
         """
         # Format the element text appropriately
