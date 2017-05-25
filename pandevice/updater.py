@@ -14,19 +14,15 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 """Device updater handles software versions and updates for devices"""
 
-import logging
-from distutils.version import LooseVersion
-
+from pandevice import getlogger
 from pan.config import PanConfig
 import pandevice.errors as err
+from pandevice import PanOSVersion
 
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger = getlogger(__name__)
 
 
 class Updater(object):
@@ -34,7 +30,7 @@ class Updater(object):
 
     def __init__(self, pandevice):
         # create a class logger
-        self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self._logger = getlogger(__name__ + "." + self.__class__.__name__)
         self.pandevice = pandevice
         self.versions = {}
 
@@ -251,6 +247,7 @@ class SoftwareUpdater(Updater):
         """Check if current version can directly upgrade to target version
 
         :returns True if a direct upgrade is possible, False if not
+
         """
         if issubclass(type(current_version), basestring):
             current_version = PanOSVersion(current_version)
@@ -376,46 +373,3 @@ class ContentUpdater(Updater):
         self.download(version, sync_to_peer=sync_to_peer, sync=True)
         # Install the software upgrade
         self.install(version, sync_to_peer=sync_to_peer, skip_commit=skip_commit, sync=sync)
-
-
-class PanOSVersion(LooseVersion):
-    """LooseVersion with convenience properties to access version components"""
-    @property
-    def major(self):
-        return self.version[0]
-
-    @property
-    def minor(self):
-        return self.version[1]
-
-    @property
-    def patch(self):
-        try:
-            patch = self.version[2]
-        except KeyError:
-            patch = 0
-        return patch
-
-    @property
-    def prerelease(self):
-        try:
-            prerelease = "".join(map(self.version[4:6]))
-        except KeyError:
-            prerelease = None
-        return prerelease
-
-    @property
-    def prerelease_type(self):
-        try:
-            prerelease_type = self.version[4]
-        except KeyError:
-            prerelease_type = None
-        return prerelease_type
-
-    @property
-    def prerelease_num(self):
-        try:
-            prerelease_num = self.version[5]
-        except KeyError:
-            prerelease_num = None
-        return prerelease_num

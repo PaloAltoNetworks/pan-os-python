@@ -7,8 +7,9 @@ Networks devices (including Next-generation Firewalls and Panorama) using the
 device API that is object oriented and conceptually similar to interaction
 with the device via the GUI or CLI.
 
+* Documentation: http://pandevice.readthedocs.io
+* Overview: http://paloaltonetworks.github.io/pandevice
 * Free software: ISC License
-* Documentation: http://pandevice.readthedocs.org
 
 -----
 
@@ -96,16 +97,30 @@ Some operational commands have methods to refresh the variables in an object::
     # populates the version, serial, and model variables from the live device
     fw.refresh_system_info()
 
+See more examples in the `Usage Guide`_.
+
+
+Contributors
+------------
+
+- Brian Torres-Gil - `github <https://github.com/btorresgil>`__
+- Garfield Freeman - `github <https://github.com/shinmog>`__
+- John Anderson - `github <https://github.com/lampwins>`__
+
+Thank you to Kevin Steves, creator of the pan-python library:
+    https://github.com/kevinsteves/pan-python
+
 
 .. _pan-python: http://github.com/kevinsteves/pan-python
-.. _Configuration Tree: http://pandevice.readthedocs.org/en/latest/configtree.html
+.. _Configuration Tree: http://pandevice.readthedocs.io/en/latest/configtree.html
+.. _Usage Guide: http://pandevice.readthedocs.io/en/latest/usage.html
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pandevice.svg
     :target: https://pypi.python.org/pypi/pandevice
     :alt: Latest version released on PyPi
 
 .. |rtd| image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
-    :target: http://pandevice.readthedocs.org/en/latest/?badge=latest
+    :target: http://pandevice.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
 .. |coverage| image:: https://img.shields.io/coveralls/PaloAltoNetworks/pandevice/master.svg?label=coverage

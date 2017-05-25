@@ -14,11 +14,8 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
-
 
 """Panorama and all Panorama related objects"""
-
 
 # import modules
 import logging
@@ -27,8 +24,10 @@ from copy import deepcopy
 
 # import other parts of this pandevice package
 import pandevice
+from pandevice import getlogger
 import base
 import firewall
+import policies
 import errors as err
 from base import VarPath as Var
 from base import PanObject, Root, MEMBER, ENTRY
@@ -36,9 +35,7 @@ from pandevice import yesno
 
 import pan.commit
 
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger = getlogger(__name__)
 
 
 class DeviceGroup(PanObject):
@@ -65,6 +62,11 @@ class DeviceGroup(PanObject):
         "objects.AddressGroup",
         "policies.PreRulebase",
         "policies.PostRulebase",
+        "objects.ServiceObject",
+        "objects.ServiceGroup",
+        "objects.ApplicationObject",
+        "objects.ApplicationGroup",
+        "objects.ApplicationFilter",
     )
 
     @classmethod
@@ -93,15 +95,11 @@ class Panorama(base.PanDevice):
         interval: The interval to check asynchronous jobs
 
     """
-
+    FIREWALL_CLASS = firewall.Firewall
     NAME = "hostname"
     CHILDTYPES = (
         "panorama.DeviceGroup",
         "firewall.Firewall",
-        "objects.AddressObject",
-        "objects.AddressGroup",
-        "policies.PreRulebase",
-        "policies.PostRulebase",
     )
 
     def __init__(self,
@@ -132,7 +130,6 @@ class Panorama(base.PanDevice):
             xml.etree.ElementTree: The result of the operational command. May also return a string of XML if xml=True
 
         """
-
         # TODO: Support device-group and template scope
         return super(Panorama, self).op(cmd, vsys=None, xml=xml, cmd_xml=cmd_xml, extra_qs=extra_qs, retry_on_peer=retry_on_peer)
 
@@ -160,7 +157,7 @@ class Panorama(base.PanDevice):
             dict: Commit results
 
         """
-        self._logger.debug("Commit-all initiated on device: %s" % (self.hostname,))
+        self._logger.debug("Commit-all initiated on device: %s" % (self.id,))
 
         if cmd is None:
             # XXX: This only works on PAN-OS 7.0+
@@ -220,7 +217,7 @@ class Panorama(base.PanDevice):
             If 'include_device_groups' is False, returns a list containing new Firewall instances.
 
         """
-        logger.debug(self.hostname + ": refresh_devices called")
+        logger.debug(self.id + ": refresh_devices called")
         try:
             # Test if devices is iterable
             test_iterable = iter(devices)
@@ -241,19 +238,28 @@ class Panorama(base.PanDevice):
         # Filter to only requested devices
         if devices:
             filtered_devices_xml = ET.Element("devices")
-            for serial, vsys in [(d.serial, d.vsys) for d in devices]:
+            for device in devices:
+                serial = str(device)
                 if serial is None:
                     continue
                 entry = devices_xml.find("entry[@name='%s']" % serial)
                 if entry is None:
-                    raise err.PanDeviceError("Can't find device with serial %s attached to Panorama at %s" %
-                                             (serial, self.hostname))
+                    if only_connected:
+                        raise err.PanNotConnectedOnPanorama("Can't find device with serial %s attached and connected"
+                                                 " to Panorama at %s" % (serial, self.id))
+                    else:
+                        raise err.PanNotAttachedOnPanorama("Can't find device with serial %s attached to Panorama at %s" %
+                                                 (serial, self.id))
                 multi_vsys = yesno(entry.findtext("multi-vsys"))
+                try:
+                    vsys = device.vsys
+                except AttributeError:
+                    continue
                 # Create entry if needed
                 if filtered_devices_xml.find("entry[@name='%s']" % serial) is None:
                     entry_copy = deepcopy(entry)
-                    # If multivsys firewall with vsys defined, erase all vsys in filtered
-                    if multi_vsys and vsys != "shared" and vsys is not None:
+                    # If looking for specific vsys, erase all vsys in filtered entry
+                    if vsys != "shared" and vsys is not None:
                         entry_copy.remove(entry_copy.find("vsys"))
                         ET.SubElement(entry_copy, "vsys")
                     filtered_devices_xml.append(entry_copy)
@@ -261,10 +267,9 @@ class Panorama(base.PanDevice):
                 if vsys != "shared" and vsys is not None:
                     vsys_entry = entry.find("vsys/entry[@name='%s']" % vsys)
                     if vsys_entry is None:
-                        raise err.PanDeviceError("Can't find device with serial %s and"
-                                                 " vsys %s attached to Panorama at %s" %
-                                                 (serial, vsys, self.hostname)
-                                                 )
+                        raise err.PanNotAttachedOnPanorama("Can't find device with serial %s and"
+                                                           " vsys %s attached to Panorama at %s" %
+                                                           (serial, vsys, self.id))
                     vsys_section = filtered_devices_xml.find("entry[@name='%s']/vsys" % serial)
                     vsys_section.append(vsys_entry)
             devices_xml = filtered_devices_xml
@@ -278,16 +283,18 @@ class Panorama(base.PanDevice):
                 for vsys_entry in entry.findall("vsys/entry"):
                     new_vsys_device = deepcopy(entry)
                     new_vsys_device.set("name", serial)
-                    ET.SubElement(new_vsys_device, "vsysid").text = vsys_entry.get("name")
-                    ET.SubElement(new_vsys_device, "vsysname").text = vsys_entry.findtext("display-name")
+                    ET.SubElement(new_vsys_device, "vsys_id").text = vsys_entry.get("name")
+                    ET.SubElement(new_vsys_device, "vsys_name").text = vsys_entry.findtext("display-name")
                     devices_xml.append(new_vsys_device)
 
         # Create firewall instances
-        firewall_instances = firewall.Firewall.refreshall_from_xml(devices_xml, refresh_children=not expand_vsys)
+        tmp_fw = self.FIREWALL_CLASS()
+        firewall_instances = tmp_fw.refreshall_from_xml(
+            devices_xml, refresh_children=not expand_vsys)
 
         if not include_device_groups:
             if add:
-                self.removeall(firewall.Firewall)
+                self.removeall(self.FIREWALL_CLASS)
                 self.extend(firewall_instances)
             return firewall_instances
 
@@ -304,49 +311,71 @@ class Panorama(base.PanDevice):
 
         # Combine the config XML and operational command XML to get a complete picture
         # of the device groups
-        pandevice.xml_combine(devicegroup_opxml, devicegroup_configxml)
+        for dg_entry in devicegroup_configxml:
+            for fw_entry in dg_entry.find('devices'):
+                fw_entry_op = devicegroup_opxml.find("entry/devices/entry[@name='%s']" % fw_entry.get("name"))
+                if fw_entry_op is not None:
+                    pandevice.xml_combine(fw_entry, fw_entry_op)
 
-        devicegroup_instances = DeviceGroup.refreshall_from_xml(devicegroup_opxml, refresh_children=False)
+        dg = DeviceGroup()
+        dg.parent = self
+        devicegroup_instances = dg.refreshall_from_xml(
+            devicegroup_configxml, refresh_children=False)
 
         for dg in devicegroup_instances:
-            dg_serials = [entry.get("name") for entry in devicegroup_opxml.findall("entry[@name='%s']/devices/entry" % dg.name)]
+            dg_serials = [entry.get("name") for entry in devicegroup_configxml.findall("entry[@name='%s']/devices/entry" % dg.name)]
             # Find firewall with each serial
             for dg_serial in dg_serials:
-                all_dg_vsys = [entry.get("name") for entry in devicegroup_opxml.findall(
+                # Skip devices not requested
+                if devices and dg_serial not in [str(f) for f in devices]:
+                    continue
+                all_dg_vsys = [entry.get("name") for entry in devicegroup_configxml.findall(
                     "entry[@name='%s']/devices/entry[@name='%s']/vsys/entry" % (dg.name, dg_serial))]
                 # Collect the firewall serial entry to get current status information
-                fw_entry = devicegroup_opxml.find("entry[@name='%s']/devices/entry[@name='%s']" % (dg.name, dg_serial))
+                fw_entry = devicegroup_configxml.find("entry[@name='%s']/devices/entry[@name='%s']" % (dg.name, dg_serial))
                 if not all_dg_vsys:
                     # This is a single-context firewall, assume vsys1
                     all_dg_vsys = ["vsys1"]
                 for dg_vsys in all_dg_vsys:
+                    # Check if this is a requested vsys in devices argument
+                    if devices:
+                        try:
+                            requested_vsys = [f.vsys for f in devices]
+                        except AttributeError:
+                            # Passed in string serials, no vsys, so get all vsys
+                            pass
+                        else:
+                            if "shared" not in requested_vsys and dg_vsys not in requested_vsys:
+                                # A specific vsys was requested, and this isn't it, skip
+                                continue
                     fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
                     if fw is None:
                         # It's possible for device-groups to reference a serial/vsys that doesn't exist
                         # In this case, create the FW instance
                         if not only_connected:
-                            fw = firewall.Firewall(serial=dg_serial, vsys=dg_vsys)
+                            fw = self.FIREWALL_CLASS(serial=dg_serial, vsys=dg_vsys)
                             dg.add(fw)
                     else:
                         # Move the firewall to the device-group
                         dg.add(fw)
                         firewall_instances.remove(fw)
-                        fw.state.connected = yesno(fw_entry.findtext("connected"))
-                        fw.state.unsupported_version = yesno(fw_entry.findtext("unsupported-version"))
-                        fw.state.set_shared_policy_synced(fw_entry.findtext("shared-policy-status"))
+                        shared_policy_status = fw_entry.findtext("shared-policy-status")
+                        if shared_policy_status is None:
+                            shared_policy_status = fw_entry.findtext("vsys/entry[@name='%s']/shared-policy-status" % dg_vsys)
+                        fw.state.set_shared_policy_synced(shared_policy_status)
 
         if add:
             for dg in devicegroup_instances:
                 found_dg = self.find(dg.name, DeviceGroup)
                 if found_dg is not None:
                     # Move the firewalls to the existing devicegroup
-                    found_dg.removeall(firewall.Firewall)
+                    found_dg.removeall(self.FIREWALL_CLASS)
                     found_dg.extend(dg.children)
                 else:
                     # Devicegroup doesn't exist, add it
                     self.add(dg)
             # Add firewalls that are not in devicegroups
-            self.removeall(firewall.Firewall)
+            self.removeall(self.FIREWALL_CLASS)
             self.extend(firewall_instances)
 
         return firewall_instances + devicegroup_instances

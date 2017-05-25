@@ -285,3 +285,37 @@ The vsys itself can be created and deleted using the standard configuration tree
 
     vsys2.create()
     vsys3.delete()
+
+Connecting to PAN-OS 8.0
+------------------------
+
+Starting in PAN-OS 8.0, the default TLS version has changed from 1.0 to 1.1 to enhance the security of
+the management connection. This can cause connection problems for systems with older OpenSSL versions
+that don't support TLS 1.1, such as MacOSX Sierra. TLS 1.1 is supported in OpenSSL 1.0.1 and higher.
+
+**Suggestions for connecting to PAN-OS 8.0**
+
+**Options 1:**
+
+If using OSX, install `homebrew`_, then use homebrew to install python.  Python from homebrew will come with an updated
+OpenSSL version, and it is best practice to install it anyway to prevent pollution of your system python.
+
+After installing homebrew using the `instructions`_ on their website, type the following in an OSX termainal
+to install python::
+
+    brew install python
+
+**Option 2:**
+
+Upgrade OpenSSL using your OS package manager. For example, in Ubuntu you would type `apt-get install openssl`.
+If a newer OpenSSL is not available, upgrade the OS distribution to a newer version. The procedure will differ
+depending on your OS distro. Please refer to the instructions for upgrading your OS.
+
+**Option 3:**
+
+Set the firewall minimum TLS version back to TLS 1.0. To do this, in the Device tab, create a self-signed CA certificate
+on the firewall and assign it to a new SSL/TLS Service Profile with the Minimum TLS version set to TLS 1.0. Then,
+assign the SSL/TLS Server Profile to the management interface at Device tab -> Setup -> Management -> General Settings.
+
+.. _homebrew: https://brew.sh
+.. _instructions: https://brew.sh

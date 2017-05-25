@@ -24,12 +24,16 @@ Example scripts
 
 .. automodule:: examples.upgrade
 
-`View the code <https://github.com/PaloAltoNetworks/pandevice/blob/master/examples/upgrade.py>`_
+`View the code in upgrade.py <https://github.com/PaloAltoNetworks/pandevice/blob/master/examples/upgrade.py>`_
 
 .. automodule:: examples.userid
 
-`View the code <https://github.com/PaloAltoNetworks/pandevice/blob/master/examples/userid.py>`_
+`View the code in userid.py <https://github.com/PaloAltoNetworks/pandevice/blob/master/examples/userid.py>`_
 
 .. automodule:: examples.dyn_address_group
 
-`View the code <https://github.com/PaloAltoNetworks/pandevice/blob/master/examples/dyn_address_group.py>`_
+`View the code in dyn_address_group.py <https://github.com/PaloAltoNetworks/pandevice/blob/master/examples/dyn_address_group.py>`_
+
+.. automodule:: examples.ensure_security_rule
+
+`View the code in ensure_security_rule.py <https://github.com/PaloAltoNetworks/pandevice/blob/master/examples/ensure_security_rule.py>`_

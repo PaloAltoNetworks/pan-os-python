@@ -14,20 +14,16 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
-
 """Device module contains objects that exist in the 'Device' tab in the firewall GUI"""
 
-import logging
 from base import PanObject, Root, MEMBER, ENTRY
 from base import VarPath as Var
 
 # import other parts of this pandevice package
+from pandevice import getlogger
 import errors as err
 
-# set logging to nullhandler to prevent exceptions if logging not enabled
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger = getlogger(__name__)
 
 
 class VsysResources(PanObject):
@@ -90,7 +86,6 @@ class Vsys(PanObject):
             or a list of :class:`pandevice.network.Interface` objects
 
     """
-
     XPATH = "/vsys"
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
@@ -124,6 +119,7 @@ class NTPServer(PanObject):
 
     Args:
         address (str): The IP address of the NTP server
+
     """
     # TODO: Add authentication
     # TODO: Add PAN-OS pre-7.0 support
@@ -149,6 +145,7 @@ class NTPServerPrimary(NTPServer):
 
     Args:
         address (str): IP address or hostname of NTP server
+
     """
     XPATH = "/ntp-servers/primary-ntp-server"
 
@@ -160,6 +157,7 @@ class NTPServerSecondary(NTPServer):
 
     Args:
         address (str): IP address or hostname of NTP server
+
     """
     XPATH = "/ntp-servers/secondary-ntp-server"
 
@@ -172,7 +170,7 @@ class SystemSettings(PanObject):
     Args:
         hostname (str): The hostname of the device
         domain (str): The domain of the device
-        ip-address (str): Management interface IP address
+        ip_address (str): Management interface IP address
         netmask (str): Management interface netmask
         default_gateway (str): Management interface default gateway
         ipv6_address (str): Management interface IPv6 address
@@ -182,14 +180,12 @@ class SystemSettings(PanObject):
         timezone (str): Device timezone
         panorama (str): IP address of primary Panorama
         panorama2 (str):  IP address of secondary Panorama
-        login-banner (str): Login banner text
-        update-server (str): IP or hostname of the update server
+        login_banner (str): Login banner text
+        update_server (str): IP or hostname of the update server
 
     """
-
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/system"
-    NAME = "hostname"
     HA_SYNC = False
     CHILDTYPES = (
         "device.NTPServerPrimary",

@@ -14,20 +14,20 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 """pandevice library is a framework for interacting with Palo Alto Networks devices
 
-Documentation available at http://pandevice.readthedocs.org
+Documentation available at http://pandevice.readthedocs.io
 
 """
 
-__author__ = 'Brian Torres-Gil'
-__email__ = 'btorres-gil@paloaltonetworks.com'
-__version__ = '0.3.5'
+__author__ = 'Palo Alto Networks'
+__email__ = 'techpartners@paloaltonetworks.com'
+__version__ = '0.4.0'
 
 
 import logging
+from distutils.version import LooseVersion  # Used by PanOSVersion class
 
 try:
     import pan
@@ -42,26 +42,25 @@ if not hasattr(logging, 'NullHandler'):
             pass
     logging.NullHandler = NullHandler
 
-# set logging to nullhandler to prevent exceptions if logging not enabled
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
 
-# XPaths
-XPATH_SHARED = "/config/shared"
-XPATH_DEVICE = "/config/devices/entry[@name='localhost.localdomain']"
-XPATH_NETWORK = XPATH_DEVICE + "/network"
+def getlogger(name=__name__):
+    import types
+    logger_instance = logging.getLogger(name)
+    # Add nullhandler to prevent exceptions in python 2.6
+    logger_instance.addHandler(logging.NullHandler())
+    # Add convenience methods for logging
+    logger_instance.debug1 = types.MethodType(
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG1, msg, *args, **kwargs), logger_instance)
+    logger_instance.debug2 = types.MethodType(
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG2, msg, *args, **kwargs), logger_instance)
+    logger_instance.debug3 = types.MethodType(
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG3, msg, *args, **kwargs), logger_instance)
+    logger_instance.debug4 = types.MethodType(
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG4, msg, *args, **kwargs), logger_instance)
+    return logger_instance
 
-XPATH_INTERFACES = "/config/devices/entry[@name='localhost.localdomain']/network/interface"
-XPATH_ETHERNET = "/config/devices/entry[@name='localhost.localdomain']/network/interface/ethernet"
-XPATH_VLAN = "/config/devices/entry[@name='localhost.localdomain']/network/vlan"
-XPATH_VWIRE = "/config/devices/entry[@name='localhost.localdomain']/network/virtual-wire"
-XPATH_ZONE = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone"
-XPATH_VROUTER = "/config/devices/entry[@name='localhost.localdomain']/network/virtual-router"
-XPATH_DEFAULT_VROUTER = "/config/devices/entry[@name='localhost.localdomain']/network/virtual-router/entry[@name='default']"
-XPATH_DEFAULT_VROUTER_INTERFACES = "/config/devices/entry[@name='localhost.localdomain']/network/virtual-router/entry[@name='default']/interface"
-XPATH_VSYS_IMPORT_NETWORK = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/import/network"
-XPATH_DEVICE_GROUPS = "/config/devices/entry[@name='localhost.localdomain']/device-group"
-XPATH_DEVICECONFIG_SYSTEM = "/config/devices/entry[@name='localhost.localdomain']/deviceconfig/system"
+
+logger = getlogger(__name__)
 
 
 # Enumerator type
@@ -88,6 +87,73 @@ pan.DEBUG2 = pan.DEBUG1 - 1
 pan.DEBUG3 = pan.DEBUG2 - 1
 
 
+class PanOSVersion(LooseVersion):
+    """LooseVersion with convenience properties to access version components"""
+    @property
+    def major(self):
+        return self.version[0]
+
+    @property
+    def minor(self):
+        return self.version[1]
+
+    @property
+    def patch(self):
+        try:
+            patch = self.version[2]
+        except IndexError:
+            patch = 0
+        return patch
+
+    @property
+    def mainrelease(self):
+        return self.version[0:3]
+
+    @property
+    def subrelease(self):
+        try:
+            subrelease = str(self.version[4]) + str(self.version[5])
+        except IndexError:
+            subrelease = None
+        return subrelease
+
+    @property
+    def subrelease_type(self):
+        try:
+            subrelease_type = self.version[4]
+        except IndexError:
+            subrelease_type = None
+        return subrelease_type
+
+    @property
+    def subrelease_num(self):
+        try:
+            subrelease_num = self.version[5]
+        except IndexError:
+            subrelease_num = None
+        return subrelease_num
+
+    def __repr__ (self):
+        return "PanOSVersion ('%s')" % str(self)
+
+    def __cmp__ (self, other):
+        if isinstance(other, basestring):
+            other = PanOSVersion(other)
+
+        # Compare subreleases if number part of version is the same
+        if cmp(self.mainrelease, other.mainrelease) == 0:
+            if self.subrelease_type == 'c' and other.subrelease_type != 'c':
+                return -1
+            elif self.subrelease_type == 'b' and other.subrelease is None:
+                return -1
+            elif self.subrelease_type != 'c' and other.subrelease_type == 'c':
+                return 1
+            elif self.subrelease is None and other.subrelease_type == 'b':
+                return 1
+
+        return cmp(self.version, other.version)
+
+
 # Convenience methods used internally by module
 # Do not use these methods outside the module
 
@@ -109,12 +175,39 @@ def string_or_list(value):
         "string" -> [string]
         ("t1", "t2") -> ["t1", "t2"]
         ["l1", "l2"] -> ["l1", "l2"]
+        None -> None
 
     """
     if value is None:
         return None
     else:
         return list(value) if "__iter__" in dir(value) else [value]
+
+
+def string_or_list_or_none(value):
+    """Return a list containing value
+
+    This method allows flexibility in class __init__ arguments,
+    allowing you to pass a string, object, list, tuple, or None.
+    In all cases, a list will be returned.
+
+    Args:
+        value: a string, object, list, tuple, or None
+
+    Returns:
+        list
+
+    Examples:
+        "string" -> [string]
+        ("t1", "t2") -> ["t1", "t2"]
+        ["l1", "l2"] -> ["l1", "l2"]
+        None -> []
+
+    """
+    if value is None:
+        return []
+    else:
+        return string_or_list(value)
 
 
 def convert_if_int(string):

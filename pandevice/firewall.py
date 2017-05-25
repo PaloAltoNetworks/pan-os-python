@@ -14,14 +14,8 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
-
-"""Palo Alto Networks device and firewall objects.
-
-For performing common tasks on Palo Alto Networks devices.
-"""
-
+"""Palo Alto Networks Firewall object"""
 
 # import modules
 import re
@@ -29,17 +23,17 @@ import logging
 import xml.etree.ElementTree as ET
 from decimal import Decimal
 
+from pandevice import getlogger
 from pandevice import device
+from pandevice import yesno
 
 # import other parts of this pandevice package
 import errors as err
 from base import PanDevice, Root, ENTRY
 from base import VarPath as Var
-import userid
 
-# set logging to nullhandler to prevent exceptions if logging not enabled
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+
+logger = getlogger(__name__)
 
 
 class Firewall(PanDevice):
@@ -59,6 +53,7 @@ class Firewall(PanDevice):
         is_virtual (bool): Physical or Virtual firewall
         timeout: The timeout for asynchronous jobs
         interval: The interval to check asynchronous jobs
+
     """
     XPATH = "/devices"
     ROOT = Root.MGTCONFIG
@@ -71,6 +66,11 @@ class Firewall(PanDevice):
         "ha.HighAvailability",
         "objects.AddressObject",
         "objects.AddressGroup",
+        "objects.ServiceObject",
+        "objects.ServiceGroup",
+        "objects.ApplicationObject",
+        "objects.ApplicationGroup",
+        "objects.ApplicationFilter",
         "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",
@@ -79,6 +79,8 @@ class Firewall(PanDevice):
         "network.VlanInterface",
         "network.Vlan",
         "network.VirtualRouter",
+        "network.ManagementProfile",
+        "network.VirtualWire",
     )
 
     def __init__(self,
@@ -120,21 +122,12 @@ class Firewall(PanDevice):
         self.state = FirewallState()
         """Panorama state variables refreshed by Panorama"""
 
-        # Create a User-ID subsystem
-        self.userid = userid.UserId(self)
-        """User-ID subsystem
-
-        See Also: :class:`pandevice.userid`
-
-        """
-
     def __repr__(self):
         return "<%s %s %s at 0x%x>" % (type(self).__name__, repr(self.id), repr(self.vsys), id(self))
 
     @property
     def id(self):
-        id = self.serial if self.serial is not None else self.hostname
-        return id if id is not None else '<no-id>'
+        return self.serial or self.hostname or '<no-id>'
 
     @property
     def vsys(self):
@@ -223,27 +216,14 @@ class Firewall(PanDevice):
         else:
             return super(Firewall, self).generate_xapi()
 
-    def refresh_system_info(self):
-        """Refresh system information variables
+    def _save_system_info(self, system_info):
+        """Save all the shared system info, plus firewall specific info.
 
-        Variables refreshed:
+        Invoked during "refresh_system_info()"
 
-        - version
-        - platform
-        - serial
-        - multi_vsys
-
-        Returns:
-            tuple: version, platform, serial
         """
-        system_info = self.show_system_info()
-
-        self.version = system_info['system']['sw-version']
-        self.platform = system_info['system']['model']
-        self.serial = system_info['system']['serial']
-        self.multi_vsys = True if system_info['system']['multi-vsys'] == "on" else False
-
-        return self.version, self.platform, self.serial
+        super(Firewall, self)._save_system_info(system_info)
+        self.multi_vsys = system_info['system']['multi-vsys'] == 'on'
 
     def element(self):
         if self.serial is None:
@@ -275,7 +255,7 @@ class Firewall(PanDevice):
             return
         # This is a firewall under a panorama or devicegroup
         panorama = self.panorama()
-        logger.debug(panorama.hostname + ": create called on %s object \"%s\"" % (type(self), getattr(self, self.NAME)))
+        logger.debug(panorama.hostname + ": create called on %s object \"%s\"" % (type(self), self.uid))
         panorama.set_config_changed()
         element = self.element_str()
         panorama.xapi.set(self.xpath_short(), element)
@@ -306,7 +286,7 @@ class Firewall(PanDevice):
             panorama.set_config_changed()
             panorama.xapi.delete(self.xpath())
         if self.parent is not None:
-            self.parent.remove_by_name(getattr(self, self.NAME), type(self))
+            self.parent.remove_by_name(self.uid, type(self))
 
     def create_vsys(self):
         """Create the vsys on the live device that this Firewall object represents"""
@@ -323,31 +303,35 @@ class Firewall(PanDevice):
             self.set_config_changed()
             self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys, retry_on_peer=True)
 
-    @classmethod
-    def refreshall_from_xml(cls, xml, refresh_children=False, variables=None):
+    def refreshall_from_xml(self, xml, refresh_children=False, variables=None):
         if len(xml) == 0:
             return []
         if variables is not None:
-            return super(Firewall, cls).refreshall_from_xml(xml, refresh_children, variables)
+            return super(Firewall, self).refreshall_from_xml(
+                xml, refresh_children, variables)
         op_vars = (
             Var("serial"),
-            Var("ip-address", "hostname"),
             Var("ip-address", "management_ip"),
             Var("sw-version", "version"),
             Var("multi-vsys", vartype="bool"),
-            Var("vsysid", "vsys", default="vsys1"),
-            Var("vsysname", "vsys_name"),
+            Var("vsys_id", "vsys", default="vsys1"),
+            Var("vsys_name"),
             Var("ha/state/peer/serial", "serial_ha_peer"),
+            Var("connected", "state.connected"),
         )
         if len(xml[0]) > 1:
             # This is a 'show devices' op command
-            firewall_instances = super(Firewall, cls).refreshall_from_xml(xml, refresh_children=False, variables=op_vars)
+            firewall_instances = super(Firewall, self).refreshall_from_xml(
+                xml, refresh_children=False, variables=op_vars)
             # Add system settings to firewall instances
             for fw in firewall_instances:
                 entry = xml.find("entry[@name='%s']" % fw.serial)
                 system = fw.find_or_create(None, device.SystemSettings)
                 system.hostname = entry.findtext("hostname")
                 system.ip_address = entry.findtext("ip-address")
+                # Add state
+                fw.state.connected = yesno(entry.findtext("connected"))
+                fw.state.unsupported_version = yesno(entry.findtext("unsupported-version"))
         else:
             # This is a config command
             # For each vsys, instantiate a new firewall
@@ -357,9 +341,11 @@ class Firewall(PanDevice):
                 all_vsys = entry.findall("vsys/entry")
                 if all_vsys:
                     for vsys in all_vsys:
-                        firewall_instances.append(cls(serial=entry.get("name"), vsys=vsys.get("name")))
+                        firewall_instances.append(Firewall(
+                            serial=entry.get("name"), vsys=vsys.get("name")))
                 else:
-                    firewall_instances.append(cls(serial=entry.get("name")))
+                    firewall_instances.append(Firewall(
+                        serial=entry.get("name")))
         return firewall_instances
 
     def show_system_resources(self):
@@ -402,7 +388,7 @@ class FirewallState(object):
             self.shared_policy_synced = True
         elif sync_status == "Out of Sync":
             self.shared_policy_synced = False
-        elif sync_status is None:
+        elif not sync_status:
             self.shared_policy_synced = None
         else:
             raise err.PanDeviceError("Unknown shared policy status: %s" % str(sync_status))
