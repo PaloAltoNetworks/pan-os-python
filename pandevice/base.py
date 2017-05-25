@@ -399,7 +399,7 @@ class PanObject(object):
                         nextelement = ET.SubElement(nextelement, section)
             if missing_replacement:
                 continue
-            var._set_last_xml_tag_value(nextelement, value)
+            var._set_inner_xml_tag_text(nextelement, value)
         self.xml_merge(root, self._subelements())
         return root
 
@@ -564,7 +564,7 @@ class PanObject(object):
             # Variable has a new value.
             element_tag = path.split("/")[-1]
             element = ET.Element(element_tag)
-            var_path._set_last_xml_tag_value(element, value)
+            var_path._set_inner_xml_tag_text(element, value)
             device.xapi.edit(xpath, ET.tostring(element),
                              retry_on_peer=self.HA_SYNC)
 
@@ -2004,7 +2004,14 @@ class VarPath(object):
             'XML Path': self.path,
         }
 
-    def _set_last_xml_tag_value(self, elm, value):
+    def _set_inner_xml_tag_text(self, elm, value):
+        """Sets the final elm's .text as appropriate given the vartype.
+
+        Args:
+            elm (xml.etree.ElementTree.Element): The element whose .text to set.
+            value (various): The value to put in the .text, conforming to the vartype of this parameter.
+
+        """
         # Create an element containing the value in the instance variable
         if self.vartype == "member":
             for member in pandevice.string_or_list(value):
@@ -2139,7 +2146,7 @@ class ParamPath(object):
             e.append(child)
             e = child
 
-        self._set_last_xml_tag_value(e, value)
+        self._set_inner_xml_tag_text(e, value)
 
         return elm
 
@@ -2234,7 +2241,14 @@ class ParamPath(object):
         # Pull the value, properly formatted, from this last element
         self.parse_value_from_xml_last_tag(e, settings)
 
-    def _set_last_xml_tag_value(self, elm, value):
+    def _set_inner_xml_tag_text(self, elm, value):
+        """Sets the final elm's .text as appropriate given the vartype.
+
+        Args:
+            elm (xml.etree.ElementTree.Element): The element whose .text to set.
+            value (various): The value to put in the .text, conforming to the vartype of this parameter.
+
+        """
         # Format the element text appropriately
         if self.vartype == 'member':
             for v in self._value_as_list(value):
