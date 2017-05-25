@@ -17,25 +17,24 @@
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
 """
-upgrade.py
-==========
+userid.py
+=========
 
-This script upgrades a Palo Alto Networks firewall or Panorama to the
-specified version. It takes care of all intermediate upgrades and reboots.
+Update User-ID by adding or removing a user-to-ip mapping on the firewall
 
 **Usage**::
 
-    upgrade.py [-h] [-v] [-q] [-n] hostname username password version
+    userid.py [-h] [-v] [-q] hostname username password action user ip
 
 **Examples**:
 
-Upgrade a firewall at 10.0.0.1 to PAN-OS 7.0.0::
+Send a User-ID login event to a firewall at 10.0.0.1::
 
-    $ python upgrade.py 10.0.0.1 admin password 7.0.0
+    $ python userid.py 10.0.0.1 admin password login exampledomain/user1 4.4.4.4
 
-Upgrade a Panorama at 172.16.4.4 to the latest Panorama version::
+Send a User-ID logout event to a firewall at 172.16.4.4::
 
-    $ python upgrade.py 172.16.4.4 admin password latest
+    $ python userid.py 172.16.4.4 admin password logout user2 5.1.2.2
 
 """
 
@@ -50,21 +49,23 @@ curpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(curpath, os.pardir)]
 
 from pandevice.base import PanDevice
+from pandevice.panorama import Panorama
 
 
 def main():
 
     # Get command line arguments
-    parser = argparse.ArgumentParser(description="Upgrade a Palo Alto Networks Firewall or Panorama to the specified version")
+    parser = argparse.ArgumentParser(description="Update User-ID by adding or removing a user-to-ip mapping")
     parser.add_argument('-v', '--verbose', action='count', help="Verbose (-vv for extra verbose)")
     parser.add_argument('-q', '--quiet', action='store_true', help="No output")
-    parser.add_argument('-n', '--dryrun', action='store_true', help="Print what would happen, but don't perform upgrades")
     # Palo Alto Networks related arguments
     fw_group = parser.add_argument_group('Palo Alto Networks Device')
-    fw_group.add_argument('hostname', help="Hostname of Firewall or Panorama")
-    fw_group.add_argument('username', help="Username for Firewall or Panorama")
-    fw_group.add_argument('password', help="Password for Firewall or Panorama")
-    fw_group.add_argument('version', help="The target PAN-OS/Panorama version (eg. 7.0.0 or latest)")
+    fw_group.add_argument('hostname', help="Hostname of Firewall")
+    fw_group.add_argument('username', help="Username for Firewall")
+    fw_group.add_argument('password', help="Password for Firewall")
+    fw_group.add_argument('action', help="The action of the user. Must be 'login' or 'logout'.")
+    fw_group.add_argument('user', help="The username of the user")
+    fw_group.add_argument('ip', help="The IP address of the user")
     args = parser.parse_args()
 
     ### Set up logger
@@ -83,14 +84,31 @@ def main():
         logging.basicConfig(format=logging_format, level=logging_level)
 
     # Connect to the device and determine its type (Firewall or Panorama).
-    # This is important to know what version to upgrade to next.
     device = PanDevice.create_from_device(args.hostname,
                                           args.username,
                                           args.password,
                                           )
 
-    # Perform the upgrades in sequence with reboots between each upgrade
-    device.software.upgrade_to_version(args.version, args.dryrun)
+    logging.debug("Detecting type of device")
+
+    # Panorama does not have a userid API, so exit.
+    # You can use the userid API on a firewall with the Panorama 'target'
+    # parameter by creating a Panorama object first, then create a
+    # Firewall object with the 'panorama' and 'serial' variables populated.
+    if issubclass(type(device), Panorama):
+        logging.error("Connected to a Panorama, but user-id API is not possible on Panorama.  Exiting.")
+        sys.exit(1)
+
+    if args.action == "login":
+        logging.debug("Login user %s at IP %s" % (args.user, args.ip))
+        device.userid.login(args.user, args.ip)
+    elif args.action == "logout":
+        logging.debug("Logout user %s at IP %s" % (args.user, args.ip))
+        device.userid.logout(args.user, args.ip)
+    else:
+        raise StandardError("Unknown action: %s.  Must be 'login' or 'logout'." % args.action)
+
+    logging.debug("Done")
 
 
 # Call the main() function to begin the program if not
