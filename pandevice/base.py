@@ -399,33 +399,7 @@ class PanObject(object):
                         nextelement = ET.SubElement(nextelement, section)
             if missing_replacement:
                 continue
-            # Create an element containing the value in the instance variable
-            if var.vartype == "member":
-                for member in pandevice.string_or_list(value):
-                    ET.SubElement(nextelement, 'member').text = str(member)
-            elif var.vartype == "entry":
-                try:
-                    # Value is an array
-                    for entry in pandevice.string_or_list(value):
-                        ET.SubElement(nextelement, 'entry', {'name': str(entry)})
-                except TypeError:
-                    # Value is not an array
-                    ET.SubElement(nextelement, 'entry', {'name': str(value)})
-            elif var.vartype == "exist":
-                if value:
-                    ET.SubElement(nextelement, var.variable)
-            elif var.vartype == "bool":
-                nextelement.text = yesno(value)
-            elif var.path.find("|") != -1:
-                # This is an element variable,
-                # it has already been created
-                # so do nothing
-                pass
-            elif var.vartype == "none":
-                # There is no variable, so don't try to populate it
-                pass
-            else:
-                nextelement.text = str(value)
+            var._set_last_xml_tag_value(nextelement, value)
         self.xml_merge(root, self._subelements())
         return root
 
@@ -583,18 +557,14 @@ class PanObject(object):
         path, value, var_path = self._get_param_specific_info(variable)
         xpath = '{0}/{1}'.format(self.xpath(), path)
 
-        # Perform the operation
         if value is None:
+            # Value is None, so delete it from the live device.
             device.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
         else:
+            # Variable has a new value.
             element_tag = path.split("/")[-1]
             element = ET.Element(element_tag)
-            if var_path.vartype == "member":
-                for member in pandevice.string_or_list(value):
-                    ET.SubElement(element, 'member').text = str(member)
-            else:
-                # Regular text variables
-                element.text = value
+            var_path._set_last_xml_tag_value(element, value)
             device.xapi.edit(xpath, ET.tostring(element),
                              retry_on_peer=self.HA_SYNC)
 
@@ -2034,6 +2004,35 @@ class VarPath(object):
             'XML Path': self.path,
         }
 
+    def _set_last_xml_tag_value(self, elm, value):
+        # Create an element containing the value in the instance variable
+        if self.vartype == "member":
+            for member in pandevice.string_or_list(value):
+                ET.SubElement(elm, 'member').text = str(member)
+        elif self.vartype == "entry":
+            try:
+                # Value is an array
+                for entry in pandevice.string_or_list(value):
+                    ET.SubElement(elm, 'entry', {'name': str(entry)})
+            except TypeError:
+                # Value is not an array
+                ET.SubElement(elm, 'entry', {'name': str(value)})
+        elif self.vartype == "exist":
+            if value:
+                ET.SubElement(elm, self.variable)
+        elif self.vartype == "bool":
+            elm.text = yesno(value)
+        elif self.path.find("|") != -1:
+            # This is an element variable,
+            # it has already been created
+            # so do nothing
+            pass
+        elif self.vartype == "none":
+            # There is no variable, so don't try to populate it
+            pass
+        else:
+            elm.text = str(value)
+
 
 class ParamPath(object):
     """Configuration parameter within the object.
@@ -2140,27 +2139,7 @@ class ParamPath(object):
             e.append(child)
             e = child
 
-        # Format the element text appropriately
-        if self.vartype == 'member':
-            for v in self._value_as_list(value):
-                ET.SubElement(e, 'member').text = v
-        elif self.vartype == 'entry':
-            for v in self._value_as_list(value):
-                ET.SubElement(e, 'entry', {'name': v})
-        elif self.vartype == 'exist':
-            if value:
-                ET.SubElement(e, self.param)
-        elif self.vartype == 'yesno':
-            e.text = 'yes' if value else 'no'
-        elif self.vartype == 'stub' or '{{{0}}}'.format(
-                    self.param) == self.path.split('/')[-1]:
-            pass
-        elif self.vartype == 'int':
-            e.text = str(int(value))
-        elif self.vartype == 'encrypted' and sha1:
-            e.text = self._sha1_hash(str(value))
-        else:
-            e.text = str(value)
+        self._set_last_xml_tag_value(e, value)
 
         return elm
 
@@ -2254,6 +2233,29 @@ class ParamPath(object):
 
         # Pull the value, properly formatted, from this last element
         self.parse_value_from_xml_last_tag(e, settings)
+
+    def _set_last_xml_tag_value(self, elm, value):
+        # Format the element text appropriately
+        if self.vartype == 'member':
+            for v in self._value_as_list(value):
+                ET.SubElement(elm, 'member').text = v
+        elif self.vartype == 'entry':
+            for v in self._value_as_list(value):
+                ET.SubElement(elm, 'entry', {'name': v})
+        elif self.vartype == 'exist':
+            if value:
+                ET.SubElement(elm, self.param)
+        elif self.vartype == 'yesno':
+            elm.text = 'yes' if value else 'no'
+        elif self.vartype == 'stub' or '{{{0}}}'.format(
+                    self.param) == self.path.split('/')[-1]:
+            pass
+        elif self.vartype == 'int':
+            elm.text = str(int(value))
+        elif self.vartype == 'encrypted' and sha1:
+            elm.text = self._sha1_hash(str(value))
+        else:
+            elm.text = str(value)
 
     def parse_value_from_xml_last_tag(self, elm, settings):
         """Actually do the parsing for this parameter.
