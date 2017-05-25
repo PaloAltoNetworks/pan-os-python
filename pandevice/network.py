@@ -970,6 +970,9 @@ class AggregateInterface(PhysicalInterface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+        enable_dhcp (bool): Enable DHCP on this interface
+        create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
+        dhcp_default_route_metric (int): Metric for the DHCP default route
 
     """
     ALLOW_SET_VLAN = True
@@ -1034,6 +1037,17 @@ class AggregateInterface(PhysicalInterface):
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
+        params.append(VersionedParamPath(
+            'enable_dhcp', path='{mode}/dhcp-client/enable',
+            vartype='yesno', condition={'mode': 'layer3'}))
+        params.append(VersionedParamPath(
+            'create_dhcp_default_route',
+            path='{mode}/dhcp-client/create-default-route',
+            vartype='yesno', condition={'mode': 'layer3'}))
+        params.append(VersionedParamPath(
+            'dhcp_default_route_metric',
+            path='{mode}/dhcp-client/default-route-metric',
+            vartype='int', condition={'mode': 'layer3'}))
 
         self._params = tuple(params)
 
