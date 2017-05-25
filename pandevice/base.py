@@ -2746,7 +2746,7 @@ class PanDevice(PanObject):
 
     class XapiWrapper(pan.xapi.PanXapi):
         #This is a confusing class used for catching exceptions and faults.
-        # TODO: comment the hell out of it!
+        # TODO: comment this class
 
         CONNECTION_EXCEPTIONS = (
             err.PanConnectionTimeout, err.PanURLError,
