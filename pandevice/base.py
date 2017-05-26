@@ -2070,9 +2070,6 @@ class ParamPath(object):
         self.condition = condition or {}
         self.values = values or []
 
-        if self.path is None:
-            self.path = self.param.replace('_', '-')
-
     def about(self, version_header=None):
         """Returns information about this ParamPath as a dict."""
         info = {
