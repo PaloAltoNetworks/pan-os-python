@@ -92,6 +92,7 @@ class SharedDeviceGroup(DeviceGroup):
     XPATH = "/config/shared"
     ROOT = None
     SUFFIX = None
+    NAME = "shared"
 
     def xpath(self):
         """Overide to allow special access to the shared namespace.
@@ -144,7 +145,6 @@ class Panorama(base.PanDevice):
         # create a shared device group instance
         self.shared = SharedDeviceGroup()
         self.shared.parent = self
-        self.shared.name = 'Shared'
 
     def refresh(self, running_config=False, refresh_children=True, exceptions=True, xml=None):
         """Overide to also refresh the SharedDeviceGroup instance
