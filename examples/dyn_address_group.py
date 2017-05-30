@@ -106,10 +106,10 @@ def main():
         sys.exit(1)
 
     if args.clear:
-        device.userid.clear_all_registered_ip()
+        device.userid.clear_registered_ip()
 
     if args.list:
-        all_tags_by_ip = device.userid.get_all_registered_ip()
+        all_tags_by_ip = device.userid.get_registered_ip()
         try:
             # Print the tags for the requested IP
             logging.info(all_tags_by_ip[args.ip])
@@ -118,10 +118,10 @@ def main():
             logging.info("No tags for IP: %s" % args.ip)
 
     if args.unregister:
-        device.userid.unregister(args.ip, args.tags.split(','))
+        device.userid.unregister(args.ip, args.unregister.split(','))
 
     if args.register:
-        device.userid.register(args.ip, args.tags.split(','))
+        device.userid.register(args.ip, args.register.split(','))
 
 
 # Call the main() function to begin the program if not
