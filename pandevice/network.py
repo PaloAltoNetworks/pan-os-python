@@ -707,12 +707,12 @@ class Layer3Subinterface(Subinterface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
@@ -914,13 +914,13 @@ class EthernetInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='{mode}/adjust-tcp-mss/ipv4-mss-adjustment',
             vartype='int', condition={'mode': 'layer3'})
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='{mode}/adjust-tcp-mss/ipv6-mss-adjustment',
@@ -1028,12 +1028,12 @@ class AggregateInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
@@ -1105,12 +1105,12 @@ class VlanInterface(Interface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
@@ -1176,12 +1176,12 @@ class LoopbackInterface(Interface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
@@ -1239,12 +1239,12 @@ class TunnelInterface(Interface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')

@@ -15,6 +15,7 @@
 import mock
 import unittest
 import uuid
+import xml.etree.ElementTree as ET
 
 import pan.xapi
 import pandevice.base as Base
@@ -1155,3 +1156,55 @@ class TestPanObject(unittest.TestCase):
     # Skip refreshall_from_xml
 
     # Skip _parse_xml
+
+class TestParamPath(unittest.TestCase):
+    def setUp(self):
+        self.elm = ET.Element('myroot')
+
+    def test_element_for_exclude_returns_none(self):
+        settings = {'baz': 'jack'}
+        p = Base.ParamPath('baz', path='foo/bar', vartype=None,
+                           condition=None, values=None, exclude=True)
+
+        result = p.element(self.elm, settings, False)
+
+        self.assertIsNone(result)
+
+    def test_element_path_has_variable(self):
+        p = Base.ParamPath('baz', path='{mode}/bar/baz', vartype=None,
+                           condition=None, values=None)
+        settings = {'baz': 'jack', 'mode': 'layer3'}
+
+        result = p.element(self.elm, settings, False)
+        self.assertIsNotNone(result)
+
+        elm = result.find('./layer3/bar/baz')
+        self.assertIsNotNone(elm, msg='Failed: elm = {0}'.format(ET.tostring(result)))
+        self.assertEqual(settings['baz'], elm.text)
+
+    def test_element_for_vartype_member_for_string(self):
+        p = Base.ParamPath('baz', path='foo/bar/baz', vartype='member',
+                           condition=None, values=None)
+        settings = {'baz': 'jack'}
+
+        result = p.element(self.elm, settings, False)
+        self.assertIsNotNone(result)
+
+        elm = result.findall('./foo/bar/baz/member')
+        self.assertTrue(elm)
+        self.assertEqual(1, len(elm))
+        self.assertEqual(settings['baz'], elm[0].text)
+
+    def test_element_for_vartype_member_for_list(self):
+        p = Base.ParamPath('baz', path='foo/bar/baz', vartype='member',
+                           condition=None, values=None)
+        settings = {'baz': ['jack', 'john', 'jane', 'margret']}
+
+        result = p.element(self.elm, settings, False)
+        self.assertIsNotNone(result)
+
+        elms = result.findall('./foo/bar/baz/member')
+        self.assertEqual(len(settings['baz']), len(elms))
+
+        for elm in elms:
+            self.assertTrue(elm.text in settings['baz'])
