@@ -36,9 +36,10 @@ from pandevice import yesno
 import pan.xapi
 import pan.commit
 from pan.config import PanConfig
-import errors as err
-import updater
-import userid
+import pandevice.errors as err
+import pandevice.updater
+import pandevice.userid
+from pandevice.__init__ import PanOSVersion
 
 logger = pandevice.getlogger(__name__)
 
@@ -1297,6 +1298,7 @@ class PanObject(object):
         return root
 
     def _merge_elements(self, root, elm):
+        #TODO: Understand this method!
         class dicthash(dict):
             def __hash__(self):
                 return hash(tuple(sorted(self.items())))
@@ -1427,6 +1429,27 @@ class VersioningSupport(object):
 
         """
         # TODO(gfreeman): use pandevice versioning
+        """
+        if version is None:
+            pan_version = PanOSVersion("0.0.0")
+        else:
+            version_tuple = tuple(int(x) for x in
+                                  version.split('-')[0].split('.'))
+            if len(version_tuple) != 3:
+                msg = '{0} profile version {1} not formatted as X.Y.Z'
+                raise ValueError(msg.format(self.param, version))
+            else:
+                pan_version = PanOSVersion(version)
+            if self.__profiles[0][0] > pan_version.mainrelease:
+                msg = 'Cannot add version {0} support after version {1}'
+                raise ValueError(msg.format(
+                    pan_version.mainrelease, self.__profiles[0][0].mainrelease))
+            self.__profiles.insert(0, (pan_version, value))
+
+            return self
+
+
+        """
         if version is None:
             version_tuple = (0, 0, 0)
         else:
@@ -1520,7 +1543,7 @@ class VersionedPanObject(PanObject):
             currently resides, as well as the versioning.
 
     """
-    _UNKNOWN_PANOS_VERSION = (sys.maxint, 0, 0)
+    _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
     _DEFAULT_NAME = None
 
     def __init__(self, *args, **kwargs):

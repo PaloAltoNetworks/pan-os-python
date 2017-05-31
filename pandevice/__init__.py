@@ -66,7 +66,7 @@ logger = getlogger(__name__)
 # Enumerator type
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
-    reverse = dict((value, key) for key, value in enums.iteritems())
+    reverse = dict([(v, k) for (k, v) in enums.items()]) #iteritems no longer supported
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
@@ -136,6 +136,41 @@ class PanOSVersion(LooseVersion):
     def __repr__ (self):
         return "PanOSVersion ('%s')" % str(self)
 
+    def __lt__(self, other):
+        other = stringToVersion(other)
+        for (x, y) in zip(self.mainrelease, other.mainrelease):
+            if x < y:
+                return True
+            if x > y:
+                return False
+        if self.subrelease_type == 'h' and other.subrelease_type != 'h':
+            return False
+        if self.subrelease_type != 'c' and other.subrelease_type == 'c':
+            return False
+        elif self.subrelease is None and other.subrelease_type == 'b':
+            return False
+        return True
+
+    def __ge__(self, other):
+        return not self.__lt__(other)
+
+    def __eq__(self, other):
+        other = stringToVersion(other)
+        for (x, y) in zip(self.mainrelease, other.mainrelease):
+            if x != y:
+                return False
+        return self.subrelease == other.subrelease and self.subrelease_type == other.subrelease_type
+
+    def __gt__(self, other):
+        return self.__ge__(other) and not self.__eq__(other)
+
+    def __le__(self, other):
+        return self.__lt__(other) or self.__eq__(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    """
     def __cmp__ (self, other):
         if isinstance(other, basestring):
             other = PanOSVersion(other)
@@ -152,8 +187,17 @@ class PanOSVersion(LooseVersion):
                 return 1
 
         return cmp(self.version, other.version)
+        """
 
-
+def stringToVersion(other):
+    #Ugly Hack. basestring and unicode no longer keywords
+    try:
+        if isinstance(other, basestring):
+            other = PanOSVersion(other)
+    except NameError:
+        if isinstance(other, str):
+            other = PanOSVersion(other)
+    return other
 # Convenience methods used internally by module
 # Do not use these methods outside the module
 
@@ -180,8 +224,15 @@ def string_or_list(value):
     """
     if value is None:
         return None
-    else:
-        return list(value) if "__iter__" in dir(value) else [value]
+    if isinstance(value, str):
+        return [value]
+    #Ugly Hack. See above
+    try:
+        if isinstance(value, unicode):
+            return [value]
+    except NameError:
+        pass
+    return list(value) if "__iter__" in dir(value) else [value]
 
 
 def string_or_list_or_none(value):
