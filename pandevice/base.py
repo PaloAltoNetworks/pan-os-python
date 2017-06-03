@@ -1399,6 +1399,145 @@ class PanObject(object):
 
         return ans
 
+    def create_type(self, cType):
+        """Bulk create all children of the specified type.
+
+        Note:  child type search is non-recursive.
+
+        Args:
+            cType: a class type
+
+        """
+        dev = self.nearest_pandevice()
+        logger.debug('{0}: {1} called on {2} object "{3}" for type {4}'.format(
+            dev.id, 'create_type', self.__class__.__name__, self.uid, cType))
+        dev.set_config_changed()
+        if self.HA_SYNC:
+            dev = dev.active()
+        objs = self.findall(cType, False)
+        if not objs:
+            return
+
+        # All the same type of object, just need the first one to operate on.
+        o = objs[0]
+
+        # The new root tag is the last tag in the xpath, while the new xpath
+        # is what remains.
+        xpath_tokens = o.xpath_short().split('/')
+        new_root = xpath_tokens.pop()
+        xpath = '/'.join(xpath_tokens)
+
+        # Append all children of type cType.
+        shared_root = ET.Element(new_root)
+        for x in objs:
+            shared_root.append(x.element())
+
+        # Perform the create.
+        dev.xapi.set(xpath, ET.tostring(shared_root),
+                     retry_on_peer=self.HA_SYNC)
+
+        # If this is shared vsys or not an importable objects, we're done.
+        if self.vsys == "shared" or not hasattr(o, 'xpath_import_base'):
+            return
+
+        # It's an importable, now do the import for everything.
+        xpath_tokens = o.xpath_import_base().split('/')
+        new_root = xpath_tokens.pop()
+
+        # Form the xpath from what remains of the xpath.
+        xpath = '/'.join(xpath_tokens)
+
+        # Append objects as members to the new root.
+        shared_root = ET.Element(new_root)
+        for x in objs:
+            ET.SubElement(shared_root, "member").text = x.uid
+
+        # Perform the import.
+        dev.xapi.set(xpath, ET.tostring(shared_root),
+                     retry_on_peer=self.HA_SYNC)
+
+    def apply_type(self, cType):
+        """Bulk apply all children of the specified type.
+
+        Note:  child type search is non-recursive.
+
+        Args:
+            cType: a class type
+
+        """
+        dev = self.nearest_pandevice()
+        logger.debug('{0}: {1} called on {2} object "{3}" for type {4}'.format(
+            dev.id, 'apply_type', self.__class__.__name__, self.uid, cType))
+        dev.set_config_changed()
+        if self.HA_SYNC:
+            dev = dev.active()
+        objs = self.findall(cType, False)
+        if not objs:
+            return
+
+        # All the same type of object, just need the first one to operate on.
+        o = objs[0]
+
+        # The new root tag is the last tag in the xpath, while the new xpath
+        # is what remains.
+        xpath = o.xpath_short()
+        new_root = xpath.split('/')[-1]
+
+        # Append all children of type cType.
+        shared_root = ET.Element(new_root)
+        for x in objs:
+            shared_root.append(x.element())
+
+        # Perform the create.
+        dev.xapi.edit(xpath, ET.tostring(shared_root),
+                      retry_on_peer=self.HA_SYNC)
+
+    def delete_type(self, cType):
+        """Bulk delete all children of the specified type.
+
+        Note:  child type search is non-recursive.
+
+        Args:
+            cType: a class type
+
+        """
+        dev = self.nearest_pandevice()
+        logger.debug('{0}: {1} called on {2} object "{3}" for type {4}'.format(
+            dev.id, 'delete_type', self.__class__.__name__, self.uid, cType))
+        dev.set_config_changed()
+        if self.HA_SYNC:
+            dev = dev.active()
+        objs = self.findall(cType, False)
+        if not objs:
+            return
+
+        # All the same type of object, just need the first one to operate on.
+        o = objs[0]
+
+        # This operation is only supported for entry/member objects.
+        if o.SUFFIX not in (ENTRY, MEMBER):
+            raise ValueError('delete_type requires member or entry')
+
+        # Unimport first if this is an imported object.
+        if self.vsys != 'shared' and hasattr(o, 'xpath_import_base'):
+            members = ' or '.join("text()='{0}'".format(x.uid) for x in objs)
+            xpath = '{0}/member[{1}]'.format(o.xpath_import_base(), members)
+            dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
+
+        # Now perform the bulk delete.
+        xpath = o._parent_xpath() + o.XPATH
+        if o.SUFFIX == ENTRY:
+            entries = ' or '.join("@name='{0}'".format(x.uid) for x in objs)
+            xpath += '/entry[{0}]'.format(entries)
+        elif o.SUFFIX == MEMBER:
+            members = ' or '.join("text()='{0}'".format(x.uid) for x in objs)
+            xpath += '/member[{0}]'.format(members)
+        dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
+
+        # Remove each object from self, just like delete().
+        for x in objs:
+            self.remove(x)
+
 
 class VersioningSupport(object):
     """A class that supports getting version specific values of something.
@@ -2500,10 +2639,14 @@ class VsysOperations(VersionedPanObject):
             vsys = self.vsys
 
         if vsys != "shared" and self.XPATH_IMPORT is not None:
-            xpath = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
+            xpath = self.xpath_import_base()
             element = '<member>{0}</member>'.format(self.uid)
             device = self.nearest_pandevice()
             device.active().xapi.set(xpath, element, retry_on_peer=True)
+
+    def xpath_import_base(self):
+        return "{0}/import{1}".format(
+            self.xpath_vsys(), self.XPATH_IMPORT)
 
     def delete_import(self, vsys=None):
         """Delete a vsys import for the object
@@ -2516,8 +2659,8 @@ class VsysOperations(VersionedPanObject):
             vsys = self.vsys
 
         if vsys != "shared" and self.XPATH_IMPORT is not None:
-            xpath = "{0}/import{1}/member[text()='{2}']".format(
-                self.xpath_vsys(), self.XPATH_IMPORT, self.uid)
+            xpath = "{0}/member[text()='{1}']".format(
+                self.xpath_import_base(), self.uid)
             device = self.nearest_pandevice()
             device.active().xapi.delete(xpath, retry_on_peer=True)
 
