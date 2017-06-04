@@ -13,6 +13,8 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import unittest
+import sys
+sys.path.append('../')
 
 import pandevice
 import pandevice.firewall
@@ -49,3 +51,6 @@ class TestFirewall(unittest.TestCase):
         ret_val = fw.id
 
         self.assertEqual(expected, ret_val)
+
+if __name__=='__main__':
+    unittest.main()

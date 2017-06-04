@@ -70,6 +70,13 @@ def enum(*sequential, **named):
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
+def isstring(arg):
+    try:
+        return isinstance(arg, basestring)
+    except NameError:
+        return isinstance(arg, str) or isinstance(arg, bytes)
+
+
 # Create more debug logging levels
 DEBUG1 = logging.DEBUG -1
 DEBUG2 = DEBUG1 - 1
@@ -190,13 +197,8 @@ class PanOSVersion(LooseVersion):
         """
 
 def stringToVersion(other):
-    #Ugly Hack. basestring and unicode no longer keywords
-    try:
-        if isinstance(other, basestring):
-            other = PanOSVersion(other)
-    except NameError:
-        if isinstance(other, str):
-            other = PanOSVersion(other)
+    if isstring(other):
+        other = PanOSVersion(other)
     return other
 # Convenience methods used internally by module
 # Do not use these methods outside the module
@@ -224,14 +226,8 @@ def string_or_list(value):
     """
     if value is None:
         return None
-    if isinstance(value, str):
-        return [value]
-    #Ugly Hack. See above
-    try:
-        if isinstance(value, unicode):
-            return [value]
-    except NameError:
-        pass
+    if isstring(value):
+        return [value,]
     return list(value) if "__iter__" in dir(value) else [value]
 
 

@@ -31,14 +31,14 @@ import base64
 import hashlib
 
 import pandevice
-from pandevice import yesno
+from pandevice import yesno, isstring, string_or_list
 
 import pan.xapi
 import pan.commit
 from pan.config import PanConfig
 import pandevice.errors as err
-import pandevice.updater
-import pandevice.userid
+import pandevice.updater as updater
+import pandevice.userid as userid
 from pandevice.__init__ import PanOSVersion
 
 logger = pandevice.getlogger(__name__)
@@ -411,7 +411,10 @@ class PanObject(object):
             str: XML form of this object and its children
 
         """
-        return ET.tostring(self.element())
+        val = ET.tostring(self.element())
+        if isinstance(val, bytes) and not isinstance(val, str):
+            val = val.decode(encoding='UTF-8')
+        return val
 
     def _root_element(self):
         if self.SUFFIX == ENTRY:
@@ -654,7 +657,7 @@ class PanObject(object):
         else:
             # Classic object
             variables = type(self)._parse_xml(xml)
-            for var, value in variables.iteritems():
+            for var, value in variables.items():
                 setattr(self, var, value)
 
         # Refresh children objects if requested
@@ -732,7 +735,7 @@ class PanObject(object):
             next_element.append(obj)
             # Refresh the requested variable
             variables = type(self)._parse_xml(root)
-            for var, value in variables.iteritems():
+            for var, value in variables.items():
                 if var == variable:
                     setattr(self, var, value)
 
@@ -1197,7 +1200,7 @@ class PanObject(object):
                     # Create a list of all the possible paths
                     option_paths = {opt: re.sub(r"\([\w\d|-]*\)", opt, path) for opt in options}
                     found = False
-                    for opt, opt_path in option_paths.iteritems():
+                    for opt, opt_path in option_paths.items():
                         match = xml.find(opt_path)
                         if match is not None:
                             vardict[var.variable] = cls._convert_var(opt, var.vartype)
@@ -1298,7 +1301,6 @@ class PanObject(object):
         return root
 
     def _merge_elements(self, root, elm):
-        #TODO: Understand this method!
         class dicthash(dict):
             def __hash__(self):
                 return hash(tuple(sorted(self.items())))
@@ -1471,6 +1473,7 @@ class VersioningSupport(object):
 
         # Return self for chained invocations
         return self
+
 
     def _get_versioned_value(self, panos_version):
         """Returns version specific value.
@@ -1731,12 +1734,13 @@ class VersionedPanObject(PanObject):
         """
         ans = self._root_element()
         paths, stubs, settings = self._build_element_info()
-
-        self.xml_merge(ans, itertools.chain(
-                (p.element(self._root_element(), settings) for p in paths),
-                (s.element(self._root_element(), settings) for s in stubs),
-                self._subelements(),
-        ))
+        #Trouble here???
+        x = list((p.element(self._root_element(), settings) for p in paths))
+        y = list((s.element(self._root_element(), settings) for s in stubs))
+        z = list(self._subelements())
+        c = itertools.chain(x, y, z)
+        self.xml_merge(ans, c
+        )
 
         return ans
 
@@ -1896,7 +1900,11 @@ class VersionedPanObject(PanObject):
 
     def element_str(self):
         """The XML form of this object (and its children) as a string."""
-        return ET.tostring(self.element())
+        val = ET.tostring(self.element())
+        # Ugly Hack
+        if isinstance(val, bytes) and not isinstance(val, str):
+            val = val.decode(encoding='UTF-8')
+        return val
 
     def __getattr__(self, name):
         params = super(VersionedPanObject, self).__getattribute__('_params')
@@ -2117,7 +2125,7 @@ class ParamPath(object):
             self.__class__.__name__, self.param, id(self))
 
     def _value_as_list(self, value):
-        if hasattr(value, '__iter__'):
+        if hasattr(value, '__iter__') and not isstring(value):
             for v in value:
                 yield str(v)
         else:
@@ -2159,7 +2167,6 @@ class ParamPath(object):
                 return None
 
         e = elm
-
         # Build the element
         for token in self.path.split('/'):
             if not token:
@@ -2429,7 +2436,7 @@ class VsysImportMixin(object):
             Vsys: The vsys for this interface after the operation completes
 
         """
-        import device
+        import pandevice.device as device
         if refresh and running_config:
             raise ValueError("Can't refresh vsys from running config in set_vsys method")
         if refresh:
@@ -2707,7 +2714,7 @@ class PanDevice(PanObject):
 
         # create a predefined object subsystem
         # avoid a premature import
-        import predefined
+        import pandevice.predefined as predefined
         self.predefined = predefined.Predefined(self)
         """Predefined object subsystem
 
@@ -2757,8 +2764,8 @@ class PanDevice(PanObject):
 
         """
         # Create generic PanDevice to connect and get information
-        import firewall
-        import panorama
+        import pandevice.firewall as firewall
+        import pandevice.panorama as panorama
         device = PanDevice(hostname,
                            api_username,
                            api_password,
@@ -3679,7 +3686,12 @@ class PanDevice(PanObject):
             cmd = cmd.cmd()
         elif isinstance(cmd, ET.Element):
             cmd = ET.tostring(cmd)
-        elif isinstance(cmd, basestring):
+        if isinstance(cmd, str):
+            pass
+        try:
+            if isinstance(cmd, unicode):
+                pass
+        except NameError:
             pass
         else:
             cmd = ET.Element("commit")
@@ -3947,8 +3959,8 @@ class PanDevice(PanObject):
                 messages = job['details']['line']
             except KeyError:
                 messages = []
-        if issubclass(messages.__class__, basestring):
-            messages = [messages]
+        #TODO: Use string_or_list helper function
+        messages = string_or_list(messages)
         # Create the results dict
         result = {
             'success': success,

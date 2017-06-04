@@ -19,13 +19,13 @@
 
 # import modules
 from pandevice import getlogger
-from base import PanObject, Root, MEMBER, ENTRY
-from base import VarPath as Var
+from pandevice.base import PanObject, Root, MEMBER, ENTRY
+from pandevice.base import VarPath as Var
 from pandevice.base import VersionedPanObject
 from pandevice.base import VersionedParamPath
 
 # import other parts of this pandevice package
-import errors as err
+import pandevice.errors as err
 
 logger = getlogger(__name__)
 

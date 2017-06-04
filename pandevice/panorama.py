@@ -25,12 +25,12 @@ from copy import deepcopy
 # import other parts of this pandevice package
 import pandevice
 from pandevice import getlogger
-import base
-import firewall
-import policies
-import errors as err
-from base import VarPath as Var
-from base import PanObject, Root, MEMBER, ENTRY
+import pandevice.base as base
+import pandevice.firewall as firewall
+import pandevice.policies as policies
+import pandevice.errors as err
+from pandevice.base import VarPath as Var
+from pandevice.base import PanObject, Root, MEMBER, ENTRY
 from pandevice import yesno
 
 import pan.commit
