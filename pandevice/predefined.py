@@ -21,7 +21,7 @@ from pandevice import getlogger
 import pandevice.errors as err
 from pan.xapi import PanXapiError
 from pandevice.updater import PanOSVersion
-import objects
+import pandevice.objects as objects
 
 logger = getlogger(__name__)
 

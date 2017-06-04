@@ -11,11 +11,16 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-import mock
+try:
+    import unittest.mock as mock
+except ImportError:
+    import mock
 import unittest
+import sys
+sys.path.append('../')
 
 import pan.xapi
+
 import pandevice.base as Base
 import pandevice.device
 import pandevice.errors as Err
@@ -167,6 +172,7 @@ class TestElementStr_7_0(unittest.TestCase):
     # 2) VirtualRouter with StaticRoute child
     def test_element_str_from_virtualrouter_with_sr_parent(self):
         '''StaticRoute > VirtualRouter'''
+        self.maxDiff = None
         expected = ''.join([
             '<entry name="default"><interface><member>ethernet1/3</member>',
             '</interface><routing-table><ip><static-route>',
@@ -189,6 +195,7 @@ class TestElementStr_7_0(unittest.TestCase):
 
     # 3) EthernetInterface
     def test_element_str_from_ethernetinterface(self):
+        self.maxDiff = None
         expected = ''.join([
             '<entry name="ethernet1/1"><layer3><ip><entry name="10.1.1.1" />',
             '</ip></layer3><link-speed>1000</link-speed><link-duplex>auto',
@@ -205,6 +212,7 @@ class TestElementStr_7_0(unittest.TestCase):
 
     def test_element_str_from_ethernetinterface_in_en_l3s_arp(self):
         '''EthernetInterface > Layer3Subinterface > Arp'''
+        self.maxDiff = None
         expected = ''.join([
             '<entry name="ethernet1/1"><layer3><ip>',
             '<entry name="10.3.6.12" /></ip><units>',
@@ -242,7 +250,7 @@ class TestElementStr_7_0(unittest.TestCase):
         eio = pandevice.network.EthernetInterface(
             'ethernet1/1', 'aggregate-group', '10.3.6.12',
             aggregate_group='ae1')
-        
+
         ret_val = eio.element_str()
 
         self.assertEqual(expected, ret_val)
@@ -656,3 +664,6 @@ class TestXpaths_7_0(unittest.TestCase):
         ret_val = ao.xpath_short()
 
         self.assertEqual(expected, ret_val)
+
+if __name__=='__main__':
+    unittest.main()

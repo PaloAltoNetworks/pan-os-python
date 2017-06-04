@@ -11,10 +11,14 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-import mock
+try:
+    import unittest.mock as mock
+except ImportError:
+    import mock
 import unittest
 import uuid
+import sys
+sys.path.append('../')
 
 import pan.xapi
 import pandevice.base as Base
@@ -519,7 +523,7 @@ class TestPanObject(unittest.TestCase):
         spec = {
             '_check_child_methods.return_value': None,
         }
-        for x in xrange(3):
+        for x in range(3):
             m = mock.Mock(**spec)
             self.obj.children.append(m)
 
@@ -535,7 +539,7 @@ class TestPanObject(unittest.TestCase):
         spec = {
             '_check_child_methods.return_value': None,
         }
-        for x in xrange(3):
+        for x in range(3):
             m = mock.Mock(**spec)
             self.obj.children.append(m)
 
@@ -565,7 +569,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = 'uid'
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock(**spec)
             self.obj.children.append(child)
 
@@ -599,7 +603,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = 'uid'
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock(**spec)
             self.obj.children.append(child)
 
@@ -631,7 +635,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath_short = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = 'uid'
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock(**spec)
             self.obj.children.append(child)
 
@@ -665,7 +669,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath_short = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = 'uid'
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock()
             self.obj.children.append(child)
 
@@ -695,7 +699,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         m_uid.return_value = 'uid'
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock(**spec)
             self.obj.children.append(child)
 
@@ -725,7 +729,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         m_uid.return_value = Uid
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock(**spec)
             self.obj.children.append(child)
 
@@ -757,7 +761,7 @@ class TestPanObject(unittest.TestCase):
         m_pandevice = mock.Mock(**spec)
         self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock()
 
     # Skip update
@@ -1155,3 +1159,5 @@ class TestPanObject(unittest.TestCase):
     # Skip refreshall_from_xml
 
     # Skip _parse_xml
+if __name__=='__main__':
+    unittest.main()

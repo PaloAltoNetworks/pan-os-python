@@ -22,16 +22,16 @@ import re
 import logging
 import xml.etree.ElementTree as ET
 import pandevice
-from base import PanObject, Root, MEMBER, ENTRY, VsysImportMixin
-from base import VarPath as Var
-from pandevice import getlogger
+from pandevice.base import PanObject, Root, MEMBER, ENTRY, VsysImportMixin
+from pandevice.base import VarPath as Var
+from pandevice import getlogger, string_or_list
 from pandevice import device
 from pandevice.base import VersionedPanObject
 from pandevice.base import VersionedParamPath
 from pandevice.base import VsysOperations
 
 # import other parts of this pandevice package
-import errors as err
+import pandevice.errors as err
 
 logger = getlogger(__name__)
 
@@ -62,7 +62,7 @@ def interface(name, *args, **kwargs):
     elif name.startswith("ethernet") or name.startswith("ae"):
         # Subinterface
         # Get mode from args
-        args = list(args)
+        args = string_or_list(args)
         if len(args) > 0:
             mode = args[0]
             del args[0]
@@ -368,7 +368,7 @@ class Interface(VsysOperations):
 
             # Convert strings to integers, if they are integers
             entry.update((k, pandevice.convert_if_int(v))
-                         for k, v in entry.iteritems())
+                         for k, v in entry.items())
 
             # If empty dictionary (no results) it usually means the interface is not
             # configured, so return None
