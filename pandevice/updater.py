@@ -250,9 +250,9 @@ class SoftwareUpdater(Updater):
 
         """
         if isstring(current_version):
-            current_version = PanOSVersion(version)
+            current_version = PanOSVersion(current_version)
         if isstring(target_version):
-            target_version = PanOSVersion(version)
+            target_version = PanOSVersion(target_version)
 
         # Upgrade the patch version
         # eg. 6.0.2 -> 6.0.3

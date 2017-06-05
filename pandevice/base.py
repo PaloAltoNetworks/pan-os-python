@@ -3665,12 +3665,7 @@ class PanDevice(PanObject):
             cmd = cmd.cmd()
         elif isinstance(cmd, ET.Element):
             cmd = ET.tostring(cmd)
-        if isinstance(cmd, str):
-            pass
-        try:
-            if isinstance(cmd, unicode):
-                pass
-        except NameError:
+        elif isstring(cmd):
             pass
         else:
             cmd = ET.Element("commit")
@@ -3749,7 +3744,10 @@ class PanDevice(PanObject):
             dict: Job result
 
         """
-        import httplib
+        try:
+            import http.client as httplib
+        except ImportError:
+            import httplib
         if interval is not None:
             try:
                 interval = float(interval)
