@@ -1431,27 +1431,6 @@ class VersioningSupport(object):
 
         """
         # TODO(gfreeman): use pandevice versioning
-        """
-        if version is None:
-            pan_version = PanOSVersion("0.0.0")
-        else:
-            version_tuple = tuple(int(x) for x in
-                                  version.split('-')[0].split('.'))
-            if len(version_tuple) != 3:
-                msg = '{0} profile version {1} not formatted as X.Y.Z'
-                raise ValueError(msg.format(self.param, version))
-            else:
-                pan_version = PanOSVersion(version)
-            if self.__profiles[0][0] > pan_version.mainrelease:
-                msg = 'Cannot add version {0} support after version {1}'
-                raise ValueError(msg.format(
-                    pan_version.mainrelease, self.__profiles[0][0].mainrelease))
-            self.__profiles.insert(0, (pan_version, value))
-
-            return self
-
-
-        """
         if version is None:
             version_tuple = (0, 0, 0)
         else:
@@ -3847,8 +3826,10 @@ class PanDevice(PanObject):
 
     def syncreboot(self, interval=5.0, timeout=600):
         """Block until reboot completes and return version of device"""
-
-        import httplib
+        try:
+            import http.client as httplib
+        except ImportError:
+            import httplib
 
         # Validate interval and convert it to float
         if interval is not None:
