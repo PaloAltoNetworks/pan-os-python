@@ -177,24 +177,6 @@ class PanOSVersion(LooseVersion):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    """
-    def __cmp__ (self, other):
-        if isinstance(other, basestring):
-            other = PanOSVersion(other)
-
-        # Compare subreleases if number part of version is the same
-        if cmp(self.mainrelease, other.mainrelease) == 0:
-            if self.subrelease_type == 'c' and other.subrelease_type != 'c':
-                return -1
-            elif self.subrelease_type == 'b' and other.subrelease is None:
-                return -1
-            elif self.subrelease_type != 'c' and other.subrelease_type == 'c':
-                return 1
-            elif self.subrelease is None and other.subrelease_type == 'b':
-                return 1
-
-        return cmp(self.version, other.version)
-        """
 
 def stringToVersion(other):
     if isstring(other):
