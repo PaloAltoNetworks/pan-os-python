@@ -7,7 +7,7 @@ from pandevice import network
 class TestZones(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
         state.obj = network.Zone(
-            state.random_name(),
+            testlib.random_name(),
             mode='layer3',
         )
         fw.add(state.obj)
@@ -31,7 +31,7 @@ class TestVlan(testlib.FwFlow):
 
     def setup_state_obj(self, fw, state):
         state.obj = network.Vlan(
-            state.random_name(), state.eths[0],
+            testlib.random_name(), state.eths[0],
         )
         fw.add(state.obj)
 
@@ -55,13 +55,13 @@ class TestEthernetInterfaceArp(testlib.FwFlow):
         state.eth = testlib.get_available_interfaces(fw)[0]
 
         state.eth_obj = network.EthernetInterface(
-            state.eth, 'layer3', state.random_ip('/24'))
+            state.eth, 'layer3', testlib.random_ip('/24'))
         fw.add(state.eth_obj)
         state.eth_obj.create()
 
     def setup_state_obj(self, fw, state):
         state.obj = network.EthernetInterfaceArp(
-            state.random_ip(), '00:30:48:52:ab:cd')
+            testlib.random_ip(), '00:30:48:52:ab:cd')
         state.eth_obj.add(state.obj)
 
     def update_state_obj(self, fw, state):
@@ -87,7 +87,7 @@ class TestVirtualWire(testlib.FwFlow):
 
     def setup_state_obj(self, fw, state):
         state.obj = network.VirtualWire(
-            state.random_name(),
+            testlib.random_name(),
             tag=random.randint(1, 4000),
             interface1=state.eths[0],
             interface2=state.eths[1],
@@ -116,7 +116,7 @@ class TestVirtualWire(testlib.FwFlow):
 class TestL3Subinterface(testlib.FwFlow):
     def create_dependencies(self, fw, state):
         state.management_profile = network.ManagementProfile(
-            state.random_name(), ping=True)
+            testlib.random_name(), ping=True)
         state.eth = None
 
         fw.add(state.management_profile)
@@ -124,7 +124,7 @@ class TestL3Subinterface(testlib.FwFlow):
 
         state.eth = testlib.get_available_interfaces(fw)[0]
         state.parent = network.EthernetInterface(
-            state.eth, 'layer3', ip=state.random_ip('/24'),
+            state.eth, 'layer3', ip=testlib.random_ip('/24'),
         )
         fw.add(state.parent)
         state.parent.create()
@@ -133,7 +133,7 @@ class TestL3Subinterface(testlib.FwFlow):
         tag = random.randint(1, 4000)
         name = '{0}.{1}'.format(state.eth, tag)
         state.obj = network.Layer3Subinterface(
-            name, tag, state.random_ip('/24'), False,
+            name, tag, testlib.random_ip('/24'), False,
             state.management_profile, random.randint(576, 1500),
             True, None, 'This is my subeth',
             random.randint(40, 300), random.randint(60, 300),
@@ -142,7 +142,7 @@ class TestL3Subinterface(testlib.FwFlow):
 
     def update_state_obj(self, fw, state):
         state.obj.comment = 'Update the comment'
-        state.obj.ip = state.random_ip('/24')
+        state.obj.ip = testlib.random_ip('/24')
 
     def cleanup_dependencies(self, fw, state):
         try:
@@ -191,7 +191,7 @@ class TestL3EthernetInterface(testlib.FwFlow):
 
         state.eth = testlib.get_available_interfaces(fw)[0]
         state.management_profiles = [
-            network.ManagementProfile(state.random_name(), ping=True,
+            network.ManagementProfile(testlib.random_name(), ping=True,
                                       ssh=True, https=False)
             for x in range(2)
         ]
@@ -201,7 +201,7 @@ class TestL3EthernetInterface(testlib.FwFlow):
 
     def setup_state_obj(self, fw, state):
         state.obj = network.EthernetInterface(
-            state.eth, 'layer3', state.random_ip('/24'),
+            state.eth, 'layer3', testlib.random_ip('/24'),
             ipv6_enabled=False,
             management_profile=state.management_profiles[0],
             mtu=random.randint(600, 1500),
@@ -235,7 +235,7 @@ class TestL2EthernetInterface(testlib.FwFlow):
 
         state.eth = testlib.get_available_interfaces(fw)[0]
         state.management_profiles = [
-            network.ManagementProfile(state.random_name(), ping=True,
+            network.ManagementProfile(testlib.random_name(), ping=True,
                                       ssh=True, https=False)
             for x in range(2)
         ]
@@ -266,23 +266,23 @@ class TestL2EthernetInterface(testlib.FwFlow):
 
 class TestStaticRoute(testlib.FwFlow):
     def create_dependencies(self, fw, state):
-        state.vr = network.VirtualRouter(state.random_name())
+        state.vr = network.VirtualRouter(testlib.random_name())
         fw.add(state.vr)
         state.vr.create()
 
     def setup_state_obj(self, fw, state):
         state.obj = network.StaticRoute(
-            state.random_name(),
-            destination=state.random_ip('/32'),
+            testlib.random_name(),
+            destination=testlib.random_ip('/32'),
             nexthop_type='ip-address',
-            nexthop=state.random_ip(),
+            nexthop=testlib.random_ip(),
             admin_dist=random.randint(10, 240),
             metric=random.randint(1, 65535),
         )
         state.vr.add(state.obj)
 
     def update_state_obj(self, fw, state):
-        state.obj.destination = state.random_ip('/32')
+        state.obj.destination = testlib.random_ip('/32')
         state.obj.nexthop_type = 'discard'
         state.obj.nexthop = None
 
@@ -300,13 +300,13 @@ class TestVirtualRouter(testlib.FwFlow):
         state.eth = testlib.get_available_interfaces(fw)[0]
 
         state.eth_obj = network.EthernetInterface(
-            state.eth, 'layer3', state.random_ip('/24'))
+            state.eth, 'layer3', testlib.random_ip('/24'))
         fw.add(state.eth_obj)
         state.eth_obj.create()
 
     def setup_state_obj(self, fw, state):
         state.obj = network.VirtualRouter(
-            state.random_name(),
+            testlib.random_name(),
             interface=state.eth,
             ad_static=random.randint(10, 240),
             ad_static_ipv6=random.randint(10, 240),
@@ -338,11 +338,11 @@ class OspfFlow(testlib.FwFlow):
 
         for e in state.eths:
             state.eth_objs.append(network.EthernetInterface(
-                e, 'layer3', state.random_ip('/24')))
+                e, 'layer3', testlib.random_ip('/24')))
             fw.add(state.eth_objs[-1])
             state.eth_objs[-1].create()
 
-        state.vr = network.VirtualRouter(state.random_name(), state.eths)
+        state.vr = network.VirtualRouter(testlib.random_name(), state.eths)
         fw.add(state.vr)
         state.vr.create()
 
@@ -360,17 +360,17 @@ class OspfFlow(testlib.FwFlow):
 
 class TestRedistributionProfile(OspfFlow):
     def setup_state_obj(self, fw, state):
-        some_ip = state.random_ip()
+        some_ip = testlib.random_ip()
 
         # TODO(gfreeman) - add bgp_filter_* params
         state.obj = network.RedistributionProfile(
-            state.random_name(),
+            testlib.random_name(),
             priority=random.randint(1, 255),
             action='no-redist',
             filter_type=['ospf', 'static', 'connect'],
             filter_interface=random.choice(state.eths),
-            filter_destination=state.random_ip(),
-            filter_nexthop=state.random_ip(),
+            filter_destination=testlib.random_ip(),
+            filter_nexthop=testlib.random_ip(),
             ospf_filter_pathtype=('intra-area', 'ext-1'),
             ospf_filter_area=some_ip,
             ospf_filter_tag=some_ip,
@@ -395,7 +395,7 @@ class TestRedistributionProfile(OspfFlow):
 class TestManagementProfile(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
         state.obj = network.ManagementProfile(
-            state.random_name(),
+            testlib.random_name(),
             ping=True,
             telnet=False,
             ssh=True,

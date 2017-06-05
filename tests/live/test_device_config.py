@@ -1,6 +1,7 @@
 import pytest
 
 from pandevice import device
+from tests.live import testlib
 
 
 class TestDeviceConfig(object):
@@ -25,7 +26,7 @@ class TestDeviceConfig(object):
 
         # Change the hostname
         self.toggle_object_variable(state.dco, 'hostname',
-                                    state.random_name())
+                                    testlib.random_name())
 
     def test_03_update_secondary_dns(self, dev, state_map):
         state = state_map.setdefault(dev)
@@ -34,7 +35,7 @@ class TestDeviceConfig(object):
 
         # Toggle the secondary ip address
         self.toggle_object_variable(state.dco, 'dns_secondary',
-                                    state.random_ip())
+                                    testlib.random_ip())
 
     def test_04_create_ntp(self, dev, state_map):
         state = state_map.setdefault(dev)
@@ -53,10 +54,10 @@ class TestDeviceConfig(object):
         state.restore_ntp = False
         if primary is None:
             state.ntp_obj = device.NTPServerPrimary(
-                address=state.random_ip())
+                address=testlib.random_ip())
         elif secondary is None:
             state.ntp_obj = device.NTPServerSecondary(
-                address=state.random_ip())
+                address=testlib.random_ip())
         else:
             state.created_ntp = True
             state.restore_ntp = True
@@ -75,7 +76,7 @@ class TestDeviceConfig(object):
             pytest.xfail('failed to create ntp in previous step')
 
         self.toggle_object_variable(state.ntp_obj, 'address',
-                                    state.random_ip())
+                                    testlib.random_ip())
 
     def test_06_delete_ntp(self, dev, state_map):
         state = state_map.setdefault(dev)

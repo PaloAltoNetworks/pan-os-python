@@ -1,3 +1,4 @@
+from __future__ import print_function
 import random
 
 import pytest
@@ -5,12 +6,27 @@ import pytest
 from pandevice import network
 
 
+def random_name():
+    return ''.join(
+        random.choice('abcdefghijklmnopqrstuvwxyz')
+        for x in range(10)
+    )
+
+def random_ip(netmask=None):
+    return '{0}.{1}.{2}.{3}{4}'.format(
+        random.randint(2, 200),
+        random.randint(1, 220),
+        random.randint(1, 220),
+        1 if netmask is not None else random.randint(1, 220),
+        netmask or '',
+    )
+
 def get_available_interfaces(con, num=1):
     ifaces = network.EthernetInterface.refreshall(con, add=False)
     ifaces = set(x.name for x in ifaces)
 
-    all_interfaces = set(
-        'ethernet1/{0}'.format(x) for x in xrange(1, 10))
+    all_interfaces = set('ethernet1/{0}'.format(x)
+                         for x in range(1, 10))
     available = all_interfaces.difference(ifaces)
 
     ans = []
@@ -30,7 +46,7 @@ class FwFlow(object):
         try:
             self.create_dependencies(fw, state)
         except Exception as e:
-            print 'SETUP ERROR: {0}'.format(e)
+            print('SETUP ERROR: {0}'.format(e))
             state.err = True
             pytest.skip('Setup failed')
 
@@ -95,7 +111,8 @@ class DevFlow(object):
 
         try:
             self.create_dependencies(dev, state)
-        except Exception:
+        except Exception as e:
+            print('SETUP ERROR: {0}'.format(e))
             state.err = True
             pytest.skip('Setup failed')
 
@@ -162,7 +179,8 @@ class PanoFlow(object):
 
         try:
             self.create_dependencies(pano, state)
-        except Exception:
+        except Exception as e:
+            print('SETUP ERROR: {0}'.format(e))
             state.err = True
             pytest.skip('Setup failed')
 

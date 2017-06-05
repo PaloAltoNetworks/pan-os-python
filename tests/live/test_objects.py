@@ -5,8 +5,8 @@ from tests.live import testlib
 class TestAddressObject(testlib.DevFlow):
     def setup_state_obj(self, dev, state):
         state.obj = objects.AddressObject(
-            state.random_name(),
-            value=state.random_ip(),
+            testlib.random_name(),
+            value=testlib.random_ip(),
             type='ip-netmask',
             description='This is a test',
         )
@@ -19,7 +19,7 @@ class TestAddressObject(testlib.DevFlow):
 class TestStaticAddressGroup(testlib.DevFlow):
     def create_dependencies(self, dev, state):
         state.aos = [
-            objects.AddressObject(state.random_name(), state.random_ip())
+            objects.AddressObject(testlib.random_name(), testlib.random_ip())
             for x in range(4)
         ]
         for x in state.aos:
@@ -28,7 +28,7 @@ class TestStaticAddressGroup(testlib.DevFlow):
 
     def setup_state_obj(self, dev, state):
         state.obj = objects.AddressGroup(
-            state.random_name(), [x.name for x in state.aos[:2]],
+            testlib.random_name(), [x.name for x in state.aos[:2]],
         )
         dev.add(state.obj)
 
@@ -45,9 +45,9 @@ class TestStaticAddressGroup(testlib.DevFlow):
 class TestDynamicAddressGroup(testlib.DevFlow):
     def create_dependencies(self, dev, state):
         state.tags = [
-            objects.Tag(state.random_name(),
+            objects.Tag(testlib.random_name(),
                         color='color{0}'.format(x),
-                        comments=state.random_name())
+                        comments=testlib.random_name())
             for x in range(1, 5)
         ]
         for x in state.tags:
@@ -56,7 +56,7 @@ class TestDynamicAddressGroup(testlib.DevFlow):
 
     def setup_state_obj(self, dev, state):
         state.obj = objects.AddressGroup(
-            state.random_name(),
+            testlib.random_name(),
             dynamic_value="'{0}' or '{1}'".format(
                 state.tags[0].name, state.tags[1].name),
             description='This is my description',
@@ -80,7 +80,7 @@ class TestDynamicAddressGroup(testlib.DevFlow):
 class TestTag(testlib.DevFlow):
     def setup_state_obj(self, dev, state):
         state.obj = objects.Tag(
-            state.random_name(),
+            testlib.random_name(),
             color='color1',
             comments='My new tag',
         )
@@ -88,12 +88,12 @@ class TestTag(testlib.DevFlow):
 
     def update_state_obj(self, dev, state):
         state.obj.color = 'color5'
-        state.obj.comments = state.random_name()
+        state.obj.comments = testlib.random_name()
 
 class TestServiceObject(testlib.DevFlow):
     def setup_state_obj(self, dev, state):
         state.obj = objects.ServiceObject(
-            state.random_name(),
+            testlib.random_name(),
             protocol='tcp',
             source_port='1025-65535',
             destination_port='80,443,8080',
@@ -110,7 +110,7 @@ class TestServiceGroup(testlib.DevFlow):
         state.tag = None
         state.services = [
             objects.ServiceObject(
-                state.random_name(),
+                testlib.random_name(),
                 'tcp' if x % 2 == 0 else 'udp',
                 destination_port=2000 + x,
                 description='Service {0}'.format(x))
@@ -119,13 +119,13 @@ class TestServiceGroup(testlib.DevFlow):
         for x in state.services:
             dev.add(x)
             x.create()
-        state.tag = objects.Tag(state.random_name(), 'color5')
+        state.tag = objects.Tag(testlib.random_name(), 'color5')
         dev.add(state.tag)
         state.tag.create()
 
     def setup_state_obj(self, dev, state):
         state.obj = objects.ServiceGroup(
-            state.random_name(),
+            testlib.random_name(),
             [x.name for x in state.services[:2]],
             tag=state.tag.name,
         )

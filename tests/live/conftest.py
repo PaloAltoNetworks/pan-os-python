@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import random
 
@@ -47,7 +48,7 @@ def init():
         panos = os.environ['PANORAMAS'].split()
         fws = os.environ['FIREWALLS'].split()
     except KeyError as e:
-        print 'NOT RUNNING LIVE TESTS - missing "{0}"'.format(e)
+        print('NOT RUNNING LIVE TESTS - missing "{0}"'.format(e))
         return
 
     # Add each panorama to the live_devices.
@@ -142,18 +143,7 @@ def pytest_report_header(config):
 
 # Define a state fixture.
 class State(object):
-    def random_name(self):
-        return ''.join(
-            random.choice('abcdefghijklmnopqrstuvwxyz')
-            for x in xrange(10)
-        )
-
-    def random_ip(self, netmask=None):
-        return '{0}.{1}.{2}.{3}{4}'.format(
-            random.randint(2, 200), random.randint(1, 254),
-            random.randint(1, 254), random.randint(1, 220),
-            netmask if netmask else '',
-        )
+    pass
 
 class StateMap(object):
     def __init__(self):
@@ -165,9 +155,7 @@ class StateMap(object):
 
 @pytest.fixture(scope='class')
 def state_map(request):
-    print 'Creating state'
     yield StateMap()
-    print 'Deleting state'
 
 # Define parametrized fixtures.
 @pytest.fixture(
