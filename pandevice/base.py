@@ -2091,15 +2091,17 @@ class ParamPath(object):
             enforced in any way from the user's perspective when setting
             parameters, but these values are referenced when parsing any XML
             returned from a live device.
+        exclude (bool): Exclude this param from the resultant XML.
 
     """
     def __init__(self, param, path=None, vartype=None,
-                 condition=None, values=None):
+                 condition=None, values=None, exclude=False):
         self.param = param
         self.path = path
         self.vartype = vartype
         self.condition = condition or {}
         self.values = values or []
+        self.exclude = exclude
 
         if self.path is None:
             self.path = self.param.replace('_', '-')
@@ -2148,7 +2150,7 @@ class ParamPath(object):
         value = settings.get(self.param)
 
         # Check if this should return None instead of an element
-        if self.path is None:
+        if self.exclude:
             return None
         elif value is None and self.vartype != 'stub':
             return None
