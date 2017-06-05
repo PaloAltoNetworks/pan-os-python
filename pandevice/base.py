@@ -1713,7 +1713,6 @@ class VersionedPanObject(PanObject):
         """
         ans = self._root_element()
         paths, stubs, settings = self._build_element_info()
-        #Trouble here???
 
         self.xml_merge(ans, itertools.chain(
                 (p.element(self._root_element(), settings) for p in paths),
@@ -1881,7 +1880,6 @@ class VersionedPanObject(PanObject):
     def element_str(self):
         """The XML form of this object (and its children) as a string."""
         val = ET.tostring(self.element())
-        # Ugly Hack
         if isinstance(val, bytes) and not isinstance(val, str):
             val = val.decode(encoding='UTF-8')
         return val
