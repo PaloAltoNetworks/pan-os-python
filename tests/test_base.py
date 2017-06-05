@@ -18,8 +18,7 @@ except ImportError:
 import unittest
 import uuid
 import xml.etree.ElementTree as ET
-import sys
-sys.path.append('../')
+
 
 import pan.xapi
 import pandevice.base as Base

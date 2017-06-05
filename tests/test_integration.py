@@ -16,8 +16,7 @@ try:
 except ImportError:
     import mock
 import unittest
-import sys
-sys.path.append('../')
+
 
 import pan.xapi
 

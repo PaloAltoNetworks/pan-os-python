@@ -5,8 +5,7 @@ except ImportError:
 import unittest
 import xml.etree.ElementTree as ET
 
-import sys
-sys.path.append('../')
+
 
 import pandevice.base
 import pandevice.network

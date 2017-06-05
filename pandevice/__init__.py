@@ -156,7 +156,9 @@ class PanOSVersion(LooseVersion):
             return False
         elif self.subrelease is None and other.subrelease_type == 'b':
             return False
-        return True
+        elif self.subrelease_type == other.subrelease_type and self.subrelease_type:
+            return self.subrelease_num < other.subrelease_num
+        return not self.__eq__(other)
 
     def __ge__(self, other):
         return not self.__lt__(other)
