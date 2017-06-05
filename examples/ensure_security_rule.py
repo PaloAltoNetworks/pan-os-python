@@ -34,9 +34,9 @@ import pandevice.firewall
 import pandevice.policies
 
 
-HOSTNAME = '10.5.174.102'
-USERNAME = 'pandevice'
-PASSWORD = 'pandevice'
+HOSTNAME = '127.0.0.1'
+USERNAME = 'admin'
+PASSWORD = 'admin'
 
 
 def main():
