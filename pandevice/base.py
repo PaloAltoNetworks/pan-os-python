@@ -1714,12 +1714,13 @@ class VersionedPanObject(PanObject):
         ans = self._root_element()
         paths, stubs, settings = self._build_element_info()
         #Trouble here???
-        x = list((p.element(self._root_element(), settings) for p in paths))
-        y = list((s.element(self._root_element(), settings) for s in stubs))
-        z = list(self._subelements())
-        c = itertools.chain(x, y, z)
-        self.xml_merge(ans, c
-        )
+
+        self.xml_merge(ans, itertools.chain(
+                (p.element(self._root_element(), settings) for p in paths),
+                (s.element(self._root_element(), settings) for s in stubs),
+                self._subelements(),
+
+        ))
 
         return ans
 
@@ -2784,10 +2785,10 @@ class PanDevice(PanObject):
         def __init__(self, *args, **kwargs):
             self.pan_device = kwargs.pop('pan_device', None)
             pan.xapi.PanXapi.__init__(self, *args, **kwargs)
-
+            pred = lambda x: inspect.ismethod(x) or inspect.isfunction(x)
             for name, method in inspect.getmembers(
                     pan.xapi.PanXapi,
-                    inspect.ismethod):
+                    pred):
                 # Ignore hidden methods
                 if name[0] == "_":
                     continue
@@ -2804,6 +2805,7 @@ class PanDevice(PanObject):
                 wrapper_method = PanDevice.XapiWrapper.make_method(name, method)
 
                 # Create method matching each public method of the base class
+                #PanDevice.XapiWrapper
                 setattr(PanDevice.XapiWrapper, name, wrapper_method)
 
         @classmethod
