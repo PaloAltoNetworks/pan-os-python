@@ -66,7 +66,7 @@ logger = getlogger(__name__)
 # Enumerator type
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
-    reverse = dict([(v, k) for (k, v) in enums.items()]) #iteritems no longer supported
+    reverse = dict(((v, k) for (k, v) in enums.items()))
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
@@ -165,10 +165,9 @@ class PanOSVersion(LooseVersion):
 
     def __eq__(self, other):
         other = stringToVersion(other)
-        for (x, y) in zip(self.mainrelease, other.mainrelease):
-            if x != y:
-                return False
-        return self.subrelease == other.subrelease and self.subrelease_type == other.subrelease_type
+        if self.mainrelease != other.mainrelease:
+            return False
+        return self.subrelease == other.subrelease
 
     def __gt__(self, other):
         return self.__ge__(other) and not self.__eq__(other)
