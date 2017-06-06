@@ -26,9 +26,9 @@ import pan.xapi
 from pandevice import getlogger, isstring
 from pandevice.base import PanObject, PanDevice, Root, MEMBER, ENTRY
 from pandevice.base import VarPath as Var
+from pandevice import  network, firewall
 import pandevice.errors as err
-import pandevice.network as network
-import pandevice.firewall as firewall
+
 
 logger = getlogger(__name__)
 
