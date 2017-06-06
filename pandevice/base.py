@@ -37,9 +37,7 @@ import pan.xapi
 import pan.commit
 from pan.config import PanConfig
 import pandevice.errors as err
-import pandevice.updater as updater
-import pandevice.userid as userid
-from pandevice.__init__ import PanOSVersion
+from pandevice import updater, userid
 
 logger = pandevice.getlogger(__name__)
 
@@ -412,7 +410,7 @@ class PanObject(object):
 
         """
         val = ET.tostring(self.element())
-        if isinstance(val, bytes) and not isinstance(val, str):
+        if hasattr(val, "hex"):
             val = val.decode(encoding='UTF-8')
         return val
 
@@ -1718,7 +1716,6 @@ class VersionedPanObject(PanObject):
                 (p.element(self._root_element(), settings) for p in paths),
                 (s.element(self._root_element(), settings) for s in stubs),
                 self._subelements(),
-
         ))
 
         return ans
@@ -1880,7 +1877,7 @@ class VersionedPanObject(PanObject):
     def element_str(self):
         """The XML form of this object (and its children) as a string."""
         val = ET.tostring(self.element())
-        if isinstance(val, bytes) and not isinstance(val, str):
+        if hasattr(val, "hex"):
             val = val.decode(encoding='UTF-8')
         return val
 
@@ -2103,7 +2100,9 @@ class ParamPath(object):
             self.__class__.__name__, self.param, id(self))
 
     def _value_as_list(self, value):
-        if hasattr(value, '__iter__') and not isstring(value):
+        if isstring(value):
+            yield value
+        elif hasattr(value, '__iter__'):
             for v in value:
                 yield str(v)
         else:
@@ -2414,7 +2413,7 @@ class VsysImportMixin(object):
             Vsys: The vsys for this interface after the operation completes
 
         """
-        import pandevice.device as device
+        from pandevice import device
         if refresh and running_config:
             raise ValueError("Can't refresh vsys from running config in set_vsys method")
         if refresh:
@@ -2692,7 +2691,7 @@ class PanDevice(PanObject):
 
         # create a predefined object subsystem
         # avoid a premature import
-        import pandevice.predefined as predefined
+        from pandevice import predefined
         self.predefined = predefined.Predefined(self)
         """Predefined object subsystem
 
@@ -2742,8 +2741,7 @@ class PanDevice(PanObject):
 
         """
         # Create generic PanDevice to connect and get information
-        import pandevice.firewall as firewall
-        import pandevice.panorama as panorama
+        from pandevice import firewall, panorama
         device = PanDevice(hostname,
                            api_username,
                            api_password,
@@ -2803,7 +2801,6 @@ class PanDevice(PanObject):
                 wrapper_method = PanDevice.XapiWrapper.make_method(name, method)
 
                 # Create method matching each public method of the base class
-                #PanDevice.XapiWrapper
                 setattr(PanDevice.XapiWrapper, name, wrapper_method)
 
         @classmethod
@@ -3938,8 +3935,8 @@ class PanDevice(PanObject):
                 messages = job['details']['line']
             except KeyError:
                 messages = []
-        #TODO: Use string_or_list helper function
-        messages = string_or_list(messages)
+        if isstring(messages):
+            messages = string_or_list(messages)
         # Create the results dict
         result = {
             'success': success,

@@ -12,12 +12,10 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 try:
-    import unittest.mock as mock
+    import unittest.mock
 except ImportError:
     import mock
 import unittest
-
-
 import pan.xapi
 
 import pandevice.base as Base

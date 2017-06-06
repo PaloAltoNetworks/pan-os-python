@@ -14,7 +14,6 @@
 
 import unittest
 
-
 import pandevice
 import pandevice.firewall
 

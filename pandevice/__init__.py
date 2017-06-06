@@ -74,7 +74,7 @@ def isstring(arg):
     try:
         return isinstance(arg, basestring)
     except NameError:
-        return isinstance(arg, str) or isinstance(arg, bytes)
+        return isinstance(arg, str)
 
 
 # Create more debug logging levels

@@ -1,10 +1,9 @@
 try:
-    import unittest.mock as mock
+    import unittest.mock
 except ImportError:
     import mock
 import unittest
 import xml.etree.ElementTree as ET
-
 
 
 import pandevice.base
