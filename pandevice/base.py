@@ -409,10 +409,10 @@ class PanObject(object):
             str: XML form of this object and its children
 
         """
-        val = ET.tostring(self.element())
-        if hasattr(val, "hex"):
-            val = val.decode(encoding='UTF-8')
-        return val
+        try:
+            return ET.tostring(self.element(), encoding='unicode')
+        except LookupError:
+            return ET.tostring(self.element())
 
     def _root_element(self):
         if self.SUFFIX == ENTRY:
@@ -1451,7 +1451,6 @@ class VersioningSupport(object):
         # Return self for chained invocations
         return self
 
-
     def _get_versioned_value(self, panos_version):
         """Returns version specific value.
 
@@ -1876,10 +1875,10 @@ class VersionedPanObject(PanObject):
 
     def element_str(self):
         """The XML form of this object (and its children) as a string."""
-        val = ET.tostring(self.element())
-        if hasattr(val, "hex"):
-            val = val.decode(encoding='UTF-8')
-        return val
+        try:
+            return ET.tostring(self.element(), encoding='unicode')
+        except LookupError:
+            return ET.tostring(self.element())
 
     def __getattr__(self, name):
         params = super(VersionedPanObject, self).__getattribute__('_params')

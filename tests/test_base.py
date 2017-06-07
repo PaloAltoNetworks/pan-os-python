@@ -440,7 +440,7 @@ class TestPanObject(unittest.TestCase):
 
         self.assertEqual(Tostring_Value, ret_val)
         self.obj.element.assert_called_once_with()
-        m_ET.tostring.assert_called_once_with(Element_Value)
+        m_ET.tostring.assert_called_once_with(Element_Value, encoding='unicode')
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
     @mock.patch('pandevice.base.ET')

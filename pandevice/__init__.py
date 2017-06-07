@@ -183,6 +183,8 @@ def stringToVersion(other):
     if isstring(other):
         other = PanOSVersion(other)
     return other
+
+
 # Convenience methods used internally by module
 # Do not use these methods outside the module
 
