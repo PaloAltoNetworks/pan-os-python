@@ -1208,3 +1208,75 @@ class TestParamPath(unittest.TestCase):
 
         for elm in elms:
             self.assertTrue(elm.text in settings['baz'])
+
+class ParentClass1(object):
+    pass
+
+class ParentClass2(object):
+    pass
+
+class UnassociatedParent(object):
+    pass
+
+class TestParentAwareXpath(unittest.TestCase):
+    DEFAULT_PATH_1 = '/default/path/1'
+    DEFAULT_PATH_2 = '/default/path/2'
+    SPECIFIED_PATH_1 = '/some/specific/path/1'
+    SPECIFIED_PATH_2 = '/some/specific/path/2'
+
+    def setUp(self):
+        self.obj = Base.ParentAwareXpath()
+        self.obj.add_profile(value=self.DEFAULT_PATH_1)
+        self.obj.add_profile('1.0.0', self.DEFAULT_PATH_2)
+        self.obj.add_profile(None, self.SPECIFIED_PATH_1,
+                             'ParentClass1', 'ParentClass2')
+        self.obj.add_profile('2.0.0', self.SPECIFIED_PATH_2,
+                             'ParentClass1', 'ParentClass2')
+
+    def test_old_default_xpath(self):
+        parent = UnassociatedParent()
+
+        self.assertEqual(
+            self.DEFAULT_PATH_1,
+            self.obj._get_versioned_value(
+                (0, 5, 0), parent))
+
+    def test_new_default_xpath(self):
+        parent = UnassociatedParent()
+
+        self.assertEqual(
+            self.DEFAULT_PATH_2,
+            self.obj._get_versioned_value(
+                (1, 0, 0), parent))
+
+    def test_old_specefied_xpath_for_class1(self):
+        parent = ParentClass1()
+
+        self.assertEqual(
+            self.SPECIFIED_PATH_1,
+            self.obj._get_versioned_value(
+                (0, 5, 0), parent))
+
+    def test_new_specefied_xpath_for_class1(self):
+        parent = ParentClass1()
+
+        self.assertEqual(
+            self.SPECIFIED_PATH_2,
+            self.obj._get_versioned_value(
+                (2, 0, 0), parent))
+
+    def test_old_specefied_xpath_for_class2(self):
+        parent = ParentClass2()
+
+        self.assertEqual(
+            self.SPECIFIED_PATH_1,
+            self.obj._get_versioned_value(
+                (0, 0, 0), parent))
+
+    def test_new_specefied_xpath_for_class2(self):
+        parent = ParentClass2()
+
+        self.assertEqual(
+            self.SPECIFIED_PATH_2,
+            self.obj._get_versioned_value(
+                (5, 0, 0), parent))

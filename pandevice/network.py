@@ -192,13 +192,17 @@ class IPv6Address(VersionedPanObject):
         auto_config_flag (bool):
 
     """
-    XPATH = "/ipv6/address"
     SUFFIX = ENTRY
     NAME = "address"
 
     def _setup(self):
         # xpaths
+        # Non-mode interface xpaths
         self._xpaths.add_profile(value='/ipv6/address')
+        # Mode interface xpaths (mode: layer3)
+        self._xpaths.add_profile(
+            None, '/layer3/ipv6/address',
+            'EthernetInterface', 'AggregateInterface')
 
         # params
         params = []
@@ -446,14 +450,15 @@ class Interface(VsysOperations):
         self.delete()
 
 
-class SubinterfaceArp(VersionedPanObject):
+class Arp(VersionedPanObject):
     """Static ARP Mapping
 
-    Can be added to subinterfaces in 'layer3' mode
+    Can be added to various interfaces.
 
     Args:
         ip (str): The IP address
         hw_address (str): The MAC address for the static ARP
+        interface (str): The interface (when attached to VlanInterface only)
 
     """
     SUFFIX = ENTRY
@@ -461,32 +466,22 @@ class SubinterfaceArp(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/arp')
+        # Interface xpaths
+        self._xpaths.add_profile(value='/layer3/arp')
+        # Subinterface xpaths
+        self._xpaths.add_profile(
+            None, '/arp',
+            'Layer3Subinterface')
 
         # params
         params = []
 
         params.append(VersionedParamPath(
             'hw_address', path='hw-address'))
+        params.append(VersionedParamPath(
+            'interface', path='interface'))
 
         self._params = tuple(params)
-
-
-class EthernetInterfaceArp(SubinterfaceArp):
-    """Static ARP Mapping
-
-    Can be added to interfaces in 'layer3' mode
-
-    Args:
-        ip (str): The IP address
-        hw_address (str): The MAC address for the static ARP
-
-    """
-    def _setup(self):
-        super(EthernetInterfaceArp, self)._setup()
-
-        # xpaths
-        self._xpaths.add_profile(value='/layer3/arp')
 
 
 class VirtualWire(VersionedPanObject):
@@ -669,7 +664,7 @@ class Layer3Subinterface(Subinterface):
     DEFAULT_MODE = 'layer3'
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.SubinterfaceArp",
+        "network.Arp",
         "network.ManagementProfile",
     )
 
@@ -847,7 +842,7 @@ class EthernetInterface(PhysicalInterface):
         "network.Layer3Subinterface",
         "network.Layer2Subinterface",
         "network.IPv6Address",
-        "network.EthernetInterfaceArp",
+        "network.Arp",
         "network.ManagementProfile",
     )
 
@@ -980,7 +975,7 @@ class AggregateInterface(PhysicalInterface):
         "network.Layer3Subinterface",
         "network.Layer2Subinterface",
         "network.IPv6Address",
-        "network.EthernetInterfaceArp",
+        "network.Arp",
         "network.ManagementProfile",
     )
 
@@ -1072,7 +1067,7 @@ class VlanInterface(Interface):
     """
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.EthernetInterfaceArp",
+        "network.Arp",
         "network.ManagementProfile",
     )
 
@@ -1143,7 +1138,6 @@ class LoopbackInterface(Interface):
     """
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.EthernetInterfaceArp",
         "network.ManagementProfile",
     )
 
@@ -1206,7 +1200,6 @@ class TunnelInterface(Interface):
     """
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.EthernetInterfaceArp",
         "network.ManagementProfile",
     )
 

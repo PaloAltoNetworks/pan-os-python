@@ -1500,6 +1500,59 @@ class VersionedStubs(VersioningSupport):
         return ans
 
 
+class ParentAwareXpath(object):
+    """Class to handle xpaths of objects.
+
+    Some objects have a different xpath based on where in the tree they are
+    located.  This class allows you configure various xpaths that can vary
+    both on version and what the parent class is.
+
+    If no explicit parent is specified, then the global parent of `None' is
+    assumed.
+
+    """
+    def __init__(self):
+        self.settings = {}
+
+    def add_profile(self, version=None, value=None, *parents):
+        """Adds support for the given versions, specific to the parents.
+
+        If no parents are specified, then a parent of ``None`` is assumed,
+        which is the global parent type.
+
+        **Version support per parent must be in ascending order.**
+
+        Args:
+            version (str): The version number (default: '0.0.0').
+            value (str): The xpath setting.
+            parents (str): The parent classes this version/value is valid for.
+
+        """
+        if not parents:
+            parents = [None, ]
+
+        for p in parents:
+            self.settings.setdefault(p, VersioningSupport())
+            self.settings[p].add_profile(version, value)
+
+    def _get_versioned_value(self, panos_version, parent):
+        """Gets the xpath for this version/parent combination.
+
+        Args:
+            panos_version (tuple): The version as (x, y, z) tuple.
+            parent: The parent class for this VersionedPanObject
+
+        Returns:
+            string.  The xpath.
+
+        """
+        key = parent.__class__.__name__
+        if key not in self.settings:
+            key = None
+
+        return self.settings[key]._get_versioned_value(panos_version)
+
+
 class VersionedPanObject(PanObject):
     """Base class for all versioned package objects.
 
@@ -1533,7 +1586,7 @@ class VersionedPanObject(PanObject):
             setattr(self, self.NAME, name or self._DEFAULT_NAME)
         self.parent = None
         self.children = []
-        self._xpaths = VersioningSupport()
+        self._xpaths = ParentAwareXpath()
         self._stubs = VersionedStubs()
 
         self._setup()
@@ -1904,7 +1957,7 @@ class VersionedPanObject(PanObject):
     def XPATH(self):
         """Returns the version specific xpath of this object."""
         panos_version = self.retrieve_panos_version()
-        return self._xpaths._get_versioned_value(panos_version)
+        return self._xpaths._get_versioned_value(panos_version, self.parent)
 
 
 class VersionedParamPath(VersioningSupport):
