@@ -31,14 +31,15 @@ import base64
 import hashlib
 
 import pandevice
-from pandevice import yesno
+from pandevice import yesno, isstring, string_or_list
 
 import pan.xapi
 import pan.commit
 from pan.config import PanConfig
-import errors as err
-import updater
-import userid
+import pandevice.errors as err
+import pandevice.updater as updater
+import pandevice.userid as userid
+from pandevice.__init__ import PanOSVersion
 
 logger = pandevice.getlogger(__name__)
 
@@ -410,7 +411,10 @@ class PanObject(object):
             str: XML form of this object and its children
 
         """
-        return ET.tostring(self.element())
+        val = ET.tostring(self.element())
+        if isinstance(val, bytes) and not isinstance(val, str):
+            val = val.decode(encoding='UTF-8')
+        return val
 
     def _root_element(self):
         if self.SUFFIX == ENTRY:
@@ -653,7 +657,7 @@ class PanObject(object):
         else:
             # Classic object
             variables = type(self)._parse_xml(xml)
-            for var, value in variables.iteritems():
+            for var, value in variables.items():
                 setattr(self, var, value)
 
         # Refresh children objects if requested
@@ -731,7 +735,7 @@ class PanObject(object):
             next_element.append(obj)
             # Refresh the requested variable
             variables = type(self)._parse_xml(root)
-            for var, value in variables.iteritems():
+            for var, value in variables.items():
                 if var == variable:
                     setattr(self, var, value)
 
@@ -1196,7 +1200,7 @@ class PanObject(object):
                     # Create a list of all the possible paths
                     option_paths = {opt: re.sub(r"\([\w\d|-]*\)", opt, path) for opt in options}
                     found = False
-                    for opt, opt_path in option_paths.iteritems():
+                    for opt, opt_path in option_paths.items():
                         match = xml.find(opt_path)
                         if match is not None:
                             vardict[var.variable] = cls._convert_var(opt, var.vartype)
@@ -1588,6 +1592,7 @@ class VersioningSupport(object):
         # Return self for chained invocations
         return self
 
+
     def _get_versioned_value(self, panos_version):
         """Returns version specific value.
 
@@ -1659,7 +1664,7 @@ class VersionedPanObject(PanObject):
             currently resides, as well as the versioning.
 
     """
-    _UNKNOWN_PANOS_VERSION = (sys.maxint, 0, 0)
+    _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
     _DEFAULT_NAME = None
 
     def __init__(self, *args, **kwargs):
@@ -1847,11 +1852,13 @@ class VersionedPanObject(PanObject):
         """
         ans = self._root_element()
         paths, stubs, settings = self._build_element_info()
+        #Trouble here???
 
         self.xml_merge(ans, itertools.chain(
                 (p.element(self._root_element(), settings) for p in paths),
                 (s.element(self._root_element(), settings) for s in stubs),
                 self._subelements(),
+
         ))
 
         return ans
@@ -2012,7 +2019,11 @@ class VersionedPanObject(PanObject):
 
     def element_str(self):
         """The XML form of this object (and its children) as a string."""
-        return ET.tostring(self.element())
+        val = ET.tostring(self.element())
+        # Ugly Hack
+        if isinstance(val, bytes) and not isinstance(val, str):
+            val = val.decode(encoding='UTF-8')
+        return val
 
     def __getattr__(self, name):
         params = super(VersionedPanObject, self).__getattribute__('_params')
@@ -2233,7 +2244,7 @@ class ParamPath(object):
             self.__class__.__name__, self.param, id(self))
 
     def _value_as_list(self, value):
-        if hasattr(value, '__iter__'):
+        if hasattr(value, '__iter__') and not isstring(value):
             for v in value:
                 yield str(v)
         else:
@@ -2275,7 +2286,6 @@ class ParamPath(object):
                 return None
 
         e = elm
-
         # Build the element
         for token in self.path.split('/'):
             if not token:
@@ -2545,7 +2555,7 @@ class VsysImportMixin(object):
             Vsys: The vsys for this interface after the operation completes
 
         """
-        import device
+        import pandevice.device as device
         if refresh and running_config:
             raise ValueError("Can't refresh vsys from running config in set_vsys method")
         if refresh:
@@ -2827,7 +2837,7 @@ class PanDevice(PanObject):
 
         # create a predefined object subsystem
         # avoid a premature import
-        import predefined
+        import pandevice.predefined as predefined
         self.predefined = predefined.Predefined(self)
         """Predefined object subsystem
 
@@ -2877,8 +2887,8 @@ class PanDevice(PanObject):
 
         """
         # Create generic PanDevice to connect and get information
-        import firewall
-        import panorama
+        import pandevice.firewall as firewall
+        import pandevice.panorama as panorama
         device = PanDevice(hostname,
                            api_username,
                            api_password,
@@ -2918,10 +2928,10 @@ class PanDevice(PanObject):
         def __init__(self, *args, **kwargs):
             self.pan_device = kwargs.pop('pan_device', None)
             pan.xapi.PanXapi.__init__(self, *args, **kwargs)
-
+            pred = lambda x: inspect.ismethod(x) or inspect.isfunction(x)
             for name, method in inspect.getmembers(
                     pan.xapi.PanXapi,
-                    inspect.ismethod):
+                    pred):
                 # Ignore hidden methods
                 if name[0] == "_":
                     continue
@@ -2938,6 +2948,7 @@ class PanDevice(PanObject):
                 wrapper_method = PanDevice.XapiWrapper.make_method(name, method)
 
                 # Create method matching each public method of the base class
+                #PanDevice.XapiWrapper
                 setattr(PanDevice.XapiWrapper, name, wrapper_method)
 
         @classmethod
@@ -3799,7 +3810,7 @@ class PanDevice(PanObject):
             cmd = cmd.cmd()
         elif isinstance(cmd, ET.Element):
             cmd = ET.tostring(cmd)
-        elif isinstance(cmd, basestring):
+        elif isstring(cmd):
             pass
         else:
             cmd = ET.Element("commit")
@@ -3878,7 +3889,10 @@ class PanDevice(PanObject):
             dict: Job result
 
         """
-        import httplib
+        try:
+            import http.client as httplib
+        except ImportError:
+            import httplib
         if interval is not None:
             try:
                 interval = float(interval)
@@ -3955,8 +3969,10 @@ class PanDevice(PanObject):
 
     def syncreboot(self, interval=5.0, timeout=600):
         """Block until reboot completes and return version of device"""
-
-        import httplib
+        try:
+            import http.client as httplib
+        except ImportError:
+            import httplib
 
         # Validate interval and convert it to float
         if interval is not None:
@@ -4067,8 +4083,8 @@ class PanDevice(PanObject):
                 messages = job['details']['line']
             except KeyError:
                 messages = []
-        if issubclass(messages.__class__, basestring):
-            messages = [messages]
+        #TODO: Use string_or_list helper function
+        messages = string_or_list(messages)
         # Create the results dict
         result = {
             'success': success,

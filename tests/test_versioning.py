@@ -1,6 +1,12 @@
-import mock
+try:
+    import unittest.mock as mock
+except ImportError:
+    import mock
 import unittest
 import xml.etree.ElementTree as ET
+
+import sys
+sys.path.append('../')
 
 import pandevice.base
 import pandevice.network
@@ -274,3 +280,6 @@ class TestVersionedObject(unittest.TestCase):
         self.assertRaises(
             ValueError,
             self.obj.add_profile, '5.5.5', 'foo')
+
+if __name__=='__main__':
+    unittest.main()
