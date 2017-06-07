@@ -425,7 +425,7 @@ class TestPanObject(unittest.TestCase):
 
     # Skip element()
 
-    @mock.patch('pandevice.base.ET')
+    @mock.patch('pandevice.ET')
     def test_element_str(self, m_ET):
         Element_Value = 42
         self.obj.element = mock.Mock(return_value=Element_Value)

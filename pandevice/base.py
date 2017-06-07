@@ -31,7 +31,7 @@ import base64
 import hashlib
 
 import pandevice
-from pandevice import yesno, isstring, string_or_list
+from pandevice import yesno, isstring, string_or_list, et_tostring
 
 import pan.xapi
 import pan.commit
@@ -409,10 +409,7 @@ class PanObject(object):
             str: XML form of this object and its children
 
         """
-        try:
-            return ET.tostring(self.element(), encoding='unicode')
-        except LookupError:
-            return ET.tostring(self.element())
+        return et_tostring(self.element())
 
     def _root_element(self):
         if self.SUFFIX == ENTRY:
@@ -567,7 +564,7 @@ class PanObject(object):
             element_tag = path.split("/")[-1]
             element = ET.Element(element_tag)
             var_path._set_inner_xml_tag_text(element, value)
-            device.xapi.edit(xpath, ET.tostring(element),
+            device.xapi.edit(xpath, et_tostring(element),
                              retry_on_peer=self.HA_SYNC)
 
     def _get_param_specific_info(self, variable):
@@ -981,7 +978,7 @@ class PanObject(object):
             device.xml_combine(element, [obj.element(), ])
         # Apply the element to the xpath
         device.set_config_changed()
-        device.xapi.edit(xpath, ET.tostring(element), retry_on_peer=cls.HA_SYNC)
+        device.xapi.edit(xpath, et_tostring(element), retry_on_peer=cls.HA_SYNC)
         for obj in objects:
             obj._check_child_methods("apply")
 
@@ -1768,7 +1765,7 @@ class VersionedPanObject(PanObject):
         self_element = self.comparison_element(compare_children)
         other_element = panobject.comparison_element(compare_children)
 
-        return ET.tostring(self_element) == ET.tostring(other_element)
+        return et_tostring(self_element) == et_tostring(other_element)
 
     def _get_param_specific_info(self, param):
         """Gets a tuple of info for the given parameter.
@@ -1875,10 +1872,7 @@ class VersionedPanObject(PanObject):
 
     def element_str(self):
         """The XML form of this object (and its children) as a string."""
-        try:
-            return ET.tostring(self.element(), encoding='unicode')
-        except LookupError:
-            return ET.tostring(self.element())
+        return et_tostring(self.element())
 
     def __getattr__(self, name):
         params = super(VersionedPanObject, self).__getattribute__('_params')
@@ -2998,7 +2992,7 @@ class PanDevice(PanObject):
         """
         element = self.xapi.op(cmd, vsys, cmd_xml, extra_qs, retry_on_peer=retry_on_peer)
         if xml:
-            return ET.tostring(element)
+            return et_tostring(element)
         else:
             return element
 
@@ -3303,7 +3297,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(et_tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is already held", str(e)):
                 raise
@@ -3325,7 +3319,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "admin")
             subel.text = admin
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(et_tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is not currently held", str(e)):
                 raise
@@ -3347,7 +3341,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(et_tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config for scope (shared|vsys\d) is currently locked", str(e)) and \
                     not re.match(r"You already own a config lock for scope", str(e)):
@@ -3367,7 +3361,7 @@ class PanDevice(PanObject):
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "remove")
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(et_tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config is not currently locked for scope (shared|vsys\d)", str(e)):
                 raise
@@ -3660,7 +3654,7 @@ class PanDevice(PanObject):
         if isinstance(cmd, pan.commit.PanCommit):
             cmd = cmd.cmd()
         elif isinstance(cmd, ET.Element):
-            cmd = ET.tostring(cmd)
+            cmd = et_tostring(cmd)
         elif isstring(cmd):
             pass
         else:
@@ -3668,7 +3662,7 @@ class PanDevice(PanObject):
             if exclude is not None:
                 excluded = ET.SubElement(cmd, "partial")
                 excluded = ET.SubElement(excluded, exclude)
-            cmd = ET.tostring(cmd)
+            cmd = et_tostring(cmd)
         logger.debug(self.id + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s" % (str(commit_all),
                                                                                                        str(sync),
                                                                                                        str(sync_all),

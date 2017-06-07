@@ -28,6 +28,7 @@ __version__ = '0.4.1'
 
 import logging
 from distutils.version import LooseVersion  # Used by PanOSVersion class
+import xml.etree.ElementTree as ET
 
 try:
     import pan
@@ -75,6 +76,13 @@ def isstring(arg):
         return isinstance(arg, basestring)
     except NameError:
         return isinstance(arg, str) or isinstance(arg, bytes)
+
+# Designed to replace naked called to ET.tostring()
+def et_tostring(arg):
+    try:
+        return ET.tostring(arg, encoding='unicode')
+    except LookupError:
+        return ET.tostring(arg)
 
 
 # Create more debug logging levels
