@@ -2211,9 +2211,6 @@ class ParamPath(object):
         self.values = values or []
         self.exclude = exclude
 
-        if self.path is None:
-            self.path = self.param.replace('_', '-')
-
     def about(self, version_header=None):
         """Returns information about this ParamPath as a dict."""
         info = {
