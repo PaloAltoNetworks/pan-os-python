@@ -201,8 +201,8 @@ class IPv6Address(VersionedPanObject):
         self._xpaths.add_profile(value='/ipv6/address')
         # Mode interface xpaths (mode: layer3)
         self._xpaths.add_profile(
-            None, '/layer3/ipv6/address',
-            'EthernetInterface', 'AggregateInterface')
+            value='/layer3/ipv6/address',
+            parents=('EthernetInterface', 'AggregateInterface'))
 
         # params
         params = []
@@ -470,8 +470,8 @@ class Arp(VersionedPanObject):
         self._xpaths.add_profile(value='/layer3/arp')
         # Subinterface xpaths
         self._xpaths.add_profile(
-            None, '/arp',
-            'Layer3Subinterface')
+            value='/arp',
+            parents=('Layer3Subinterface', ))
 
         # params
         params = []
@@ -1246,6 +1246,20 @@ class TunnelInterface(Interface):
 
 
 class StaticRoute(VersionedPanObject):
+    """Static Route
+
+    Add to a :class:`pandevice.network.VirtualRouter` instance.
+
+    Args:
+        name (str): The name
+        destination (str): Destination network
+        nexthop_type (str): ip-address or discard
+        nexthop (str): Next hop IP address
+        interface (str): Next hop interface
+        admin_dist (str): Administrative distance
+        metric (int): Metric (Default: 10)
+
+    """
     SUFFIX = ENTRY
 
     def _setup_xpaths(self):
@@ -1280,11 +1294,12 @@ class StaticRouteV6(StaticRoute):
     Add to a :class:`pandevice.network.VirtualRouter` instance.
 
     Args:
+        name (str): The name
         destination (str): Destination network
         nexthop_type (str): ip-address or discard
         nexthop (str): Next hop IP address
         interface (str): Next hop interface
-        admin-dist (str): Administrative distance
+        admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
 
     """

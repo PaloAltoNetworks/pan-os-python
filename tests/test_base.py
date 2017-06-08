@@ -1228,10 +1228,10 @@ class TestParentAwareXpath(unittest.TestCase):
         self.obj = Base.ParentAwareXpath()
         self.obj.add_profile(value=self.DEFAULT_PATH_1)
         self.obj.add_profile('1.0.0', self.DEFAULT_PATH_2)
-        self.obj.add_profile(None, self.SPECIFIED_PATH_1,
-                             'ParentClass1', 'ParentClass2')
+        self.obj.add_profile(value=self.SPECIFIED_PATH_1,
+                             parents=('ParentClass1', 'ParentClass2'))
         self.obj.add_profile('2.0.0', self.SPECIFIED_PATH_2,
-                             'ParentClass1', 'ParentClass2')
+                             ('ParentClass1', 'ParentClass2'))
 
     def test_old_default_xpath(self):
         parent = UnassociatedParent()

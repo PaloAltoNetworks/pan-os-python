@@ -1514,7 +1514,7 @@ class ParentAwareXpath(object):
     def __init__(self):
         self.settings = {}
 
-    def add_profile(self, version=None, value=None, *parents):
+    def add_profile(self, version=None, value=None, parents=None):
         """Adds support for the given versions, specific to the parents.
 
         If no parents are specified, then a parent of ``None`` is assumed,
@@ -1525,11 +1525,11 @@ class ParentAwareXpath(object):
         Args:
             version (str): The version number (default: '0.0.0').
             value (str): The xpath setting.
-            parents (str): The parent classes this version/value is valid for.
+            parents (list/tuple): The parent classes this version/value is valid for.
 
         """
-        if not parents:
-            parents = [None, ]
+        if parents is None:
+            parents = (None, )
 
         for p in parents:
             self.settings.setdefault(p, VersioningSupport())
