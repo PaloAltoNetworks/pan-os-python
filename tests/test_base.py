@@ -425,7 +425,7 @@ class TestPanObject(unittest.TestCase):
 
     # Skip element()
 
-    @mock.patch('pandevice.ET')
+    @mock.patch('pandevice.base.ET')
     def test_element_str(self, m_ET):
         Element_Value = 42
         self.obj.element = mock.Mock(return_value=Element_Value)
@@ -440,7 +440,7 @@ class TestPanObject(unittest.TestCase):
 
         self.assertEqual(Tostring_Value, ret_val)
         self.obj.element.assert_called_once_with()
-        m_ET.tostring.assert_called_once_with(Element_Value, encoding='unicode')
+        m_ET.tostring.assert_called_once_with(Element_Value, encoding='utf-8')
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
     @mock.patch('pandevice.base.ET')
