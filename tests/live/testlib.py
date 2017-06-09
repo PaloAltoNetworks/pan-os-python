@@ -1,4 +1,3 @@
-from __future__ import print_function
 import random
 
 import pytest
@@ -14,10 +13,10 @@ def random_name():
 
 def random_ip(netmask=None):
     return '{0}.{1}.{2}.{3}{4}'.format(
-        random.randint(2, 200),
-        random.randint(1, 220),
-        random.randint(1, 220),
-        1 if netmask is not None else random.randint(1, 220),
+        random.randint(11, 150),
+        random.randint(1, 200),
+        random.randint(1, 200),
+        1 if netmask is not None else random.randint(2, 200),
         netmask or '',
     )
 

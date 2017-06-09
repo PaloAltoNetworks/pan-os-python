@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os
 import random
 
@@ -6,8 +5,7 @@ import pytest
 
 from pandevice import firewall
 from pandevice import panorama
-from pandevice import objects
-from pandevice import network
+
 
 live_devices = {}
 one_fw_per_version = []
