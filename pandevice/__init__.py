@@ -212,8 +212,8 @@ def string_or_list(value):
     if value is None:
         return None
     if isstring(value):
-        return [value,]
-    return list(value) if "__iter__" in dir(value) else [value]
+        return [value, ]
+    return list(value) if "__iter__" in dir(value) else [value, ]
 
 
 def string_or_list_or_none(value):
