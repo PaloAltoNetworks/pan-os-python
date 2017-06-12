@@ -13,6 +13,7 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import mock
+import sys
 import unittest
 import uuid
 import xml.etree.ElementTree as ET
@@ -1209,16 +1210,25 @@ class TestParamPath(unittest.TestCase):
         for elm in elms:
             self.assertTrue(elm.text in settings['baz'])
 
-class ParentClass1(object):
+
+class Abouter(object):
+    def __init__(self, mode='layer3'):
+        self.mode = mode
+
+    def _about_object(self):
+        return {'mode': self.mode}
+
+class ParentClass1(Abouter):
     pass
 
-class ParentClass2(object):
+class ParentClass2(Abouter):
     pass
 
-class UnassociatedParent(object):
+class UnassociatedParent(Abouter):
     pass
 
-class TestParentAwareXpath(unittest.TestCase):
+
+class TestParentAwareXpathBasics(unittest.TestCase):
     DEFAULT_PATH_1 = '/default/path/1'
     DEFAULT_PATH_2 = '/default/path/2'
     SPECIFIED_PATH_1 = '/some/specific/path/1'
@@ -1280,3 +1290,100 @@ class TestParentAwareXpath(unittest.TestCase):
             self.SPECIFIED_PATH_2,
             self.obj._get_versioned_value(
                 (5, 0, 0), parent))
+
+    def test_no_parent_gets_newest_version(self):
+        parent = None
+
+        self.assertEqual(
+            self.DEFAULT_PATH_2,
+            self.obj._get_versioned_value(
+                Base.VersionedPanObject._UNKNOWN_PANOS_VERSION, parent))
+
+    def test_no_fallback_raises_value_error(self):
+        parent = None
+        obj = Base.ParentAwareXpath()
+        obj.add_profile(
+            parents=('ParentClass1', ),
+            value='/some/path',
+        )
+
+        self.assertRaises(
+            ValueError,
+            obj._get_versioned_value,
+            (1, 0, 0), parent)
+
+
+class TestParentAwareXpathWithParams(unittest.TestCase):
+    OLD_LAYER3_PATH = '/units/layer3/old'
+    NEW_LAYER3_PATH = '/units/layer3/new'
+    OLD_LAYER2_PATH = '/units/layer2/old'
+    NEW_LAYER2_PATH = '/units/layer2/new'
+
+    def setUp(self):
+        self.obj = Base.ParentAwareXpath()
+        self.obj.add_profile(
+            parents=('ParentClass1', None),
+            value=self.OLD_LAYER3_PATH)
+        self.obj.add_profile(
+            version='1.0.0',
+            parents=('ParentClass1', None),
+            value=self.NEW_LAYER3_PATH)
+        self.obj.add_profile(
+            parents=('ParentClass1', ),
+            parent_param='mode',
+            parent_param_values=['junk', 'layer2'],
+            value=self.OLD_LAYER2_PATH)
+        self.obj.add_profile(
+            version='2.0.0',
+            parents=('ParentClass1', ),
+            parent_param='mode',
+            parent_param_values=['junk', 'layer2'],
+            value=self.NEW_LAYER2_PATH)
+
+    def test_old_default_path(self):
+        parent = UnassociatedParent('foo')
+
+        self.assertEqual(
+            self.OLD_LAYER3_PATH,
+            self.obj._get_versioned_value(
+                (0, 5, 0), parent))
+
+    def test_known_parent_and_param_for_old_l3_path(self):
+        parent = ParentClass1()
+
+        self.assertEqual(
+            self.OLD_LAYER3_PATH,
+            self.obj._get_versioned_value(
+                (0, 5, 0), parent))
+
+    def test_known_parent_and_param_for_new_l3_path(self):
+        parent = ParentClass1()
+
+        self.assertEqual(
+            self.NEW_LAYER3_PATH,
+            self.obj._get_versioned_value(
+                (1, 5, 0), parent))
+
+    def test_known_parent_and_param_for_old_l2_path(self):
+        parent = ParentClass1('layer2')
+
+        self.assertEqual(
+            self.OLD_LAYER2_PATH,
+            self.obj._get_versioned_value(
+                (0, 1, 0), parent))
+
+    def test_known_parent_and_param_for_new_l2_path(self):
+        parent = ParentClass1('layer2')
+
+        self.assertEqual(
+            self.NEW_LAYER2_PATH,
+            self.obj._get_versioned_value(
+                (5, 1, 0), parent))
+
+    def test_no_parent_gets_newest_default(self):
+        parent = None
+
+        self.assertEqual(
+            self.NEW_LAYER3_PATH,
+            self.obj._get_versioned_value(
+                Base.VersionedPanObject._UNKNOWN_PANOS_VERSION, parent))

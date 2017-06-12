@@ -1513,8 +1513,10 @@ class ParentAwareXpath(object):
     """
     def __init__(self):
         self.settings = {}
+        self.parent_params = []
 
-    def add_profile(self, version=None, value=None, parents=None):
+    def add_profile(self, version=None, value=None, parents=None,
+                    parent_param=None, parent_param_values=None):
         """Adds support for the given versions, specific to the parents.
 
         If no parents are specified, then a parent of ``None`` is assumed,
@@ -1526,31 +1528,60 @@ class ParentAwareXpath(object):
             version (str): The version number (default: '0.0.0').
             value (str): The xpath setting.
             parents (list/tuple): The parent classes this version/value is valid for.
+            parent_param (str): Parent param to key off of.
+            parent_param_values (list): Values of the parent param to key off of.
 
         """
         if parents is None:
             parents = (None, )
 
+        if parent_param not in self.parent_params:
+            # None is always a fallback, so make sure None as a
+            # parent param is last.
+            index = -1 if parent_param is not None else len(
+                self.parent_params)
+            self.parent_params.insert(index, parent_param)
+
+        if parent_param_values is None:
+            parent_param_values = [None, ]
+
         for p in parents:
-            self.settings.setdefault(p, VersioningSupport())
-            self.settings[p].add_profile(version, value)
+            for ppv in parent_param_values:
+                combo = (p, parent_param, ppv)
+                self.settings.setdefault(combo, VersioningSupport())
+                self.settings[combo].add_profile(version, value)
 
     def _get_versioned_value(self, panos_version, parent):
         """Gets the xpath for this version/parent combination.
 
         Args:
             panos_version (tuple): The version as (x, y, z) tuple.
-            parent: The parent class for this VersionedPanObject
+            parent: The self.parent for this VersionedPanObject.
 
         Returns:
             string.  The xpath.
 
-        """
-        key = parent.__class__.__name__
-        if key not in self.settings:
-            key = None
+        Raises:
+            ValueError if no applicable xpath is found.
 
-        return self.settings[key]._get_versioned_value(panos_version)
+        """
+        parents = [None, ]
+        parent_settings = {}
+        if parent is not None:
+            parents = [parent.__class__.__name__, None]
+            parent_settings = parent._about_object()
+
+        for p in parents:
+            for parent_param in self.parent_params:
+                combo = (p, parent_param,
+                         parent_settings.get(parent_param, None))
+                try:
+                    return self.settings[combo]._get_versioned_value(
+                        panos_version)
+                except KeyError:
+                    pass
+
+        raise ValueError('No applicable combination found for xpath')
 
 
 class VersionedPanObject(PanObject):
