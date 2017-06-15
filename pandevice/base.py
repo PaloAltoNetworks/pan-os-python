@@ -2917,7 +2917,7 @@ class PanDevice(PanObject):
         def __init__(self, *args, **kwargs):
             self.pan_device = kwargs.pop('pan_device', None)
             pan.xapi.PanXapi.__init__(self, *args, **kwargs)
-            pred = lambda x: inspect.ismethod(x) or inspect.isfunction(x)
+            pred = lambda x: inspect.ismethod(x) or inspect.isfunction(x) # inspect.ismethod needed for Python2, inspect.isfunction needed for Python3
             for name, method in inspect.getmembers(
                     pan.xapi.PanXapi,
                     pred):

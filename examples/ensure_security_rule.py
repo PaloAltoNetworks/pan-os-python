@@ -27,12 +27,12 @@ checks to make sure that the desired rule is present.  If it is there, then
 the script ends.  If not, it is created, and then a commit is performed.
 """
 
-
+import sys
 
 import pandevice
 import pandevice.firewall
 import pandevice.policies
-import sys
+
 
 HOSTNAME = '127.0.0.1'
 USERNAME = 'admin'
