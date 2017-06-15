@@ -1432,7 +1432,7 @@ class PanObject(object):
             shared_root.append(x.element())
 
         # Perform the create.
-        dev.xapi.set(xpath, ET.tostring(shared_root),
+        dev.xapi.set(xpath, ET.tostring(shared_root, encoding='utf-8'),
                      retry_on_peer=self.HA_SYNC)
 
         # If this is shared vsys or not an importable objects, we're done.
@@ -1452,7 +1452,7 @@ class PanObject(object):
             ET.SubElement(shared_root, "member").text = x.uid
 
         # Perform the import.
-        dev.xapi.set(xpath, ET.tostring(shared_root),
+        dev.xapi.set(xpath, ET.tostring(shared_root, encoding='utf-8'),
                      retry_on_peer=self.HA_SYNC)
 
     def apply_type(self, cType):
@@ -1488,7 +1488,7 @@ class PanObject(object):
             shared_root.append(x.element())
 
         # Perform the create.
-        dev.xapi.edit(xpath, ET.tostring(shared_root),
+        dev.xapi.edit(xpath, ET.tostring(shared_root, encoding='utf-8'),
                       retry_on_peer=self.HA_SYNC)
 
     def delete_type(self, cType):
