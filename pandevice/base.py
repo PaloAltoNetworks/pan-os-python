@@ -1638,6 +1638,90 @@ class VersionedStubs(VersioningSupport):
         return ans
 
 
+class ParentAwareXpath(object):
+    """Class to handle xpaths of objects.
+
+    Some objects have a different xpath based on where in the tree they are
+    located.  This class allows you configure various xpaths that can vary
+    both on version and what the parent class is.
+
+    If no explicit parent is specified, then the global parent of `None' is
+    assumed.
+
+    """
+    def __init__(self):
+        self.settings = {}
+        self.parent_params = []
+
+    def add_profile(self, version=None, value=None, parents=None,
+                    parent_param=None, parent_param_values=None):
+        """Adds support for the given versions, specific to the parents.
+
+        If no parents are specified, then a parent of ``None`` is assumed,
+        which is the global parent type.
+
+        **Version support per parent must be in ascending order.**
+
+        Args:
+            version (str): The version number (default: '0.0.0').
+            value (str): The xpath setting.
+            parents (list/tuple): The parent classes this version/value is valid for.
+            parent_param (str): Parent param to key off of.
+            parent_param_values (list): Values of the parent param to key off of.
+
+        """
+        if parents is None:
+            parents = (None, )
+
+        if parent_param not in self.parent_params:
+            # None is always a fallback, so make sure None as a
+            # parent param is last.
+            index = -1 if parent_param is not None else len(
+                self.parent_params)
+            self.parent_params.insert(index, parent_param)
+
+        if parent_param_values is None:
+            parent_param_values = [None, ]
+
+        for p in parents:
+            for ppv in parent_param_values:
+                combo = (p, parent_param, ppv)
+                self.settings.setdefault(combo, VersioningSupport())
+                self.settings[combo].add_profile(version, value)
+
+    def _get_versioned_value(self, panos_version, parent):
+        """Gets the xpath for this version/parent combination.
+
+        Args:
+            panos_version (tuple): The version as (x, y, z) tuple.
+            parent: The self.parent for this VersionedPanObject.
+
+        Returns:
+            string.  The xpath.
+
+        Raises:
+            ValueError if no applicable xpath is found.
+
+        """
+        parents = [None, ]
+        parent_settings = {}
+        if parent is not None:
+            parents = [parent.__class__.__name__, None]
+            parent_settings = parent._about_object()
+
+        for p in parents:
+            for parent_param in self.parent_params:
+                combo = (p, parent_param,
+                         parent_settings.get(parent_param, None))
+                try:
+                    return self.settings[combo]._get_versioned_value(
+                        panos_version)
+                except KeyError:
+                    pass
+
+        raise ValueError('No applicable combination found for xpath')
+
+
 class VersionedPanObject(PanObject):
     """Base class for all versioned package objects.
 
@@ -1671,7 +1755,7 @@ class VersionedPanObject(PanObject):
             setattr(self, self.NAME, name or self._DEFAULT_NAME)
         self.parent = None
         self.children = []
-        self._xpaths = VersioningSupport()
+        self._xpaths = ParentAwareXpath()
         self._stubs = VersionedStubs()
 
         self._setup()
@@ -2042,7 +2126,7 @@ class VersionedPanObject(PanObject):
     def XPATH(self):
         """Returns the version specific xpath of this object."""
         panos_version = self.retrieve_panos_version()
-        return self._xpaths._get_versioned_value(panos_version)
+        return self._xpaths._get_versioned_value(panos_version, self.parent)
 
 
 class VersionedParamPath(VersioningSupport):

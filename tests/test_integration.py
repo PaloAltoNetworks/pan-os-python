@@ -216,8 +216,7 @@ class TestElementStr_7_0(unittest.TestCase):
             b'</hw-address></entry></arp></entry></units></layer3></entry>',
         ])
 
-        ao = pandevice.network.SubinterfaceArp('10.5.10.15',
-                                               '00:30:48:52:cd:dc')
+        ao = pandevice.network.Arp('10.5.10.15', '00:30:48:52:cd:dc')
         l3so = pandevice.network.Layer3Subinterface(
             'ethernet1/1.355', 355, '10.20.30.40/24',
             mtu=1500, adjust_tcp_mss=True)
@@ -458,7 +457,7 @@ class TestXpaths_7_0(unittest.TestCase):
             "/arp/entry[@name='arp object']",
         ])
 
-        ao = pandevice.network.SubinterfaceArp('arp object')
+        ao = pandevice.network.Arp('arp object')
         l3so = pandevice.network.Layer3Subinterface('Layer3 Subint Object')
         eio = pandevice.network.EthernetInterface('Eth Interface Object')
         fw = pandevice.firewall.Firewall('fw')
@@ -480,7 +479,7 @@ class TestXpaths_7_0(unittest.TestCase):
             "/arp",
         ])
 
-        ao = pandevice.network.SubinterfaceArp('arp object')
+        ao = pandevice.network.Arp('arp object')
         l3so = pandevice.network.Layer3Subinterface('Layer3 Subint Object')
         eio = pandevice.network.EthernetInterface('Eth Interface Object')
         fw = pandevice.firewall.Firewall('fw')
