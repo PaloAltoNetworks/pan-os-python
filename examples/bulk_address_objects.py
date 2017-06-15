@@ -20,7 +20,7 @@ bulk_address_objects.py
 
 Use bulk operations to create / delete hundreds of firewall Address Objects.
 
-NOTE: Please update the interface, hostname, and auth credentials variables
+NOTE: Please update the hostname and auth credentials variables
       before running.
 
 This script will create a large number of address objects on the firewall
