@@ -13,7 +13,6 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import mock
-import sys
 import unittest
 import uuid
 import xml.etree.ElementTree as ET
