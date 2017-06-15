@@ -31,14 +31,13 @@ import base64
 import hashlib
 
 import pandevice
-from pandevice import yesno
+from pandevice import yesno, isstring, string_or_list
 
 import pan.xapi
 import pan.commit
 from pan.config import PanConfig
-import errors as err
-import updater
-import userid
+import pandevice.errors as err
+from pandevice import updater, userid
 
 logger = pandevice.getlogger(__name__)
 
@@ -410,7 +409,7 @@ class PanObject(object):
             str: XML form of this object and its children
 
         """
-        return ET.tostring(self.element())
+        return ET.tostring(self.element(), encoding='utf-8')
 
     def _root_element(self):
         if self.SUFFIX == ENTRY:
@@ -565,7 +564,7 @@ class PanObject(object):
             element_tag = path.split("/")[-1]
             element = ET.Element(element_tag)
             var_path._set_inner_xml_tag_text(element, value)
-            device.xapi.edit(xpath, ET.tostring(element),
+            device.xapi.edit(xpath, ET.tostring(element, encoding='utf-8'),
                              retry_on_peer=self.HA_SYNC)
 
     def _get_param_specific_info(self, variable):
@@ -653,7 +652,7 @@ class PanObject(object):
         else:
             # Classic object
             variables = type(self)._parse_xml(xml)
-            for var, value in variables.iteritems():
+            for var, value in variables.items():
                 setattr(self, var, value)
 
         # Refresh children objects if requested
@@ -731,7 +730,7 @@ class PanObject(object):
             next_element.append(obj)
             # Refresh the requested variable
             variables = type(self)._parse_xml(root)
-            for var, value in variables.iteritems():
+            for var, value in variables.items():
                 if var == variable:
                     setattr(self, var, value)
 
@@ -979,7 +978,7 @@ class PanObject(object):
             device.xml_combine(element, [obj.element(), ])
         # Apply the element to the xpath
         device.set_config_changed()
-        device.xapi.edit(xpath, ET.tostring(element), retry_on_peer=cls.HA_SYNC)
+        device.xapi.edit(xpath, ET.tostring(element, encoding='utf-8'), retry_on_peer=cls.HA_SYNC)
         for obj in objects:
             obj._check_child_methods("apply")
 
@@ -1196,7 +1195,7 @@ class PanObject(object):
                     # Create a list of all the possible paths
                     option_paths = {opt: re.sub(r"\([\w\d|-]*\)", opt, path) for opt in options}
                     found = False
-                    for opt, opt_path in option_paths.iteritems():
+                    for opt, opt_path in option_paths.items():
                         match = xml.find(opt_path)
                         if match is not None:
                             vardict[var.variable] = cls._convert_var(opt, var.vartype)
@@ -1743,7 +1742,7 @@ class VersionedPanObject(PanObject):
             currently resides, as well as the versioning.
 
     """
-    _UNKNOWN_PANOS_VERSION = (sys.maxint, 0, 0)
+    _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
     _DEFAULT_NAME = None
 
     def __init__(self, *args, **kwargs):
@@ -1989,7 +1988,7 @@ class VersionedPanObject(PanObject):
         self_element = self.comparison_element(compare_children)
         other_element = panobject.comparison_element(compare_children)
 
-        return ET.tostring(self_element) == ET.tostring(other_element)
+        return ET.tostring(self_element, encoding='utf-8') == ET.tostring(other_element, encoding='utf-8')
 
     def _get_param_specific_info(self, param):
         """Gets a tuple of info for the given parameter.
@@ -2096,7 +2095,7 @@ class VersionedPanObject(PanObject):
 
     def element_str(self):
         """The XML form of this object (and its children) as a string."""
-        return ET.tostring(self.element())
+        return ET.tostring(self.element(), encoding='utf-8')
 
     def __getattr__(self, name):
         params = super(VersionedPanObject, self).__getattribute__('_params')
@@ -2317,7 +2316,9 @@ class ParamPath(object):
             self.__class__.__name__, self.param, id(self))
 
     def _value_as_list(self, value):
-        if hasattr(value, '__iter__'):
+        if isstring(value):
+            yield value
+        elif hasattr(value, '__iter__'):
             for v in value:
                 yield str(v)
         else:
@@ -2359,7 +2360,6 @@ class ParamPath(object):
                 return None
 
         e = elm
-
         # Build the element
         for token in self.path.split('/'):
             if not token:
@@ -2629,7 +2629,7 @@ class VsysImportMixin(object):
             Vsys: The vsys for this interface after the operation completes
 
         """
-        import device
+        from pandevice import device
         if refresh and running_config:
             raise ValueError("Can't refresh vsys from running config in set_vsys method")
         if refresh:
@@ -2911,7 +2911,7 @@ class PanDevice(PanObject):
 
         # create a predefined object subsystem
         # avoid a premature import
-        import predefined
+        from pandevice import predefined
         self.predefined = predefined.Predefined(self)
         """Predefined object subsystem
 
@@ -2961,8 +2961,7 @@ class PanDevice(PanObject):
 
         """
         # Create generic PanDevice to connect and get information
-        import firewall
-        import panorama
+        from pandevice import firewall, panorama
         device = PanDevice(hostname,
                            api_username,
                            api_password,
@@ -3002,10 +3001,10 @@ class PanDevice(PanObject):
         def __init__(self, *args, **kwargs):
             self.pan_device = kwargs.pop('pan_device', None)
             pan.xapi.PanXapi.__init__(self, *args, **kwargs)
-
+            pred = lambda x: inspect.ismethod(x) or inspect.isfunction(x) # inspect.ismethod needed for Python2, inspect.isfunction needed for Python3
             for name, method in inspect.getmembers(
                     pan.xapi.PanXapi,
-                    inspect.ismethod):
+                    pred):
                 # Ignore hidden methods
                 if name[0] == "_":
                     continue
@@ -3220,7 +3219,7 @@ class PanDevice(PanObject):
         """
         element = self.xapi.op(cmd, vsys, cmd_xml, extra_qs, retry_on_peer=retry_on_peer)
         if xml:
-            return ET.tostring(element)
+            return ET.tostring(element, encoding='utf-8')
         else:
             return element
 
@@ -3525,7 +3524,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is already held", str(e)):
                 raise
@@ -3547,7 +3546,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "admin")
             subel.text = admin
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is not currently held", str(e)):
                 raise
@@ -3569,7 +3568,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config for scope (shared|vsys\d) is currently locked", str(e)) and \
                     not re.match(r"You already own a config lock for scope", str(e)):
@@ -3589,7 +3588,7 @@ class PanDevice(PanObject):
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "remove")
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config is not currently locked for scope (shared|vsys\d)", str(e)):
                 raise
@@ -3882,15 +3881,15 @@ class PanDevice(PanObject):
         if isinstance(cmd, pan.commit.PanCommit):
             cmd = cmd.cmd()
         elif isinstance(cmd, ET.Element):
-            cmd = ET.tostring(cmd)
-        elif isinstance(cmd, basestring):
+            cmd = ET.tostring(cmd, encoding='utf-8')
+        elif isstring(cmd):
             pass
         else:
             cmd = ET.Element("commit")
             if exclude is not None:
                 excluded = ET.SubElement(cmd, "partial")
                 excluded = ET.SubElement(excluded, exclude)
-            cmd = ET.tostring(cmd)
+            cmd = ET.tostring(cmd, encoding='utf-8')
         logger.debug(self.id + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s" % (str(commit_all),
                                                                                                        str(sync),
                                                                                                        str(sync_all),
@@ -3962,7 +3961,10 @@ class PanDevice(PanObject):
             dict: Job result
 
         """
-        import httplib
+        try:
+            import http.client as httplib
+        except ImportError:
+            import httplib
         if interval is not None:
             try:
                 interval = float(interval)
@@ -4039,8 +4041,10 @@ class PanDevice(PanObject):
 
     def syncreboot(self, interval=5.0, timeout=600):
         """Block until reboot completes and return version of device"""
-
-        import httplib
+        try:
+            import http.client as httplib
+        except ImportError:
+            import httplib
 
         # Validate interval and convert it to float
         if interval is not None:
@@ -4151,8 +4155,8 @@ class PanDevice(PanObject):
                 messages = job['details']['line']
             except KeyError:
                 messages = []
-        if issubclass(messages.__class__, basestring):
-            messages = [messages]
+        if isstring(messages):
+            messages = string_or_list(messages)
         # Create the results dict
         result = {
             'success': success,

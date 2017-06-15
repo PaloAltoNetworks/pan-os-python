@@ -353,7 +353,7 @@ class UserId(object):
         """
         addresses = self.get_registered_ip(ip, tags, prefix)
         self.batch_start()
-        for ip, tags in addresses.iteritems():
+        for ip, tags in addresses.items():
             self.unregister(ip, tags)
         self.batch_end()
 
@@ -380,7 +380,7 @@ class UserId(object):
         requested_list = deepcopy(ip_tags_pairs)
         self.batch_start()
         # Handle unregistrations
-        for ip, tags in device_list.iteritems():
+        for ip, tags in device_list.items():
             if ip not in requested_list:
                 # The IP is not requested, unregister it and all its tags
                 self.unregister(ip, tags)
@@ -396,8 +396,8 @@ class UserId(object):
                         # Tag already exists on device, so don't re-register it
                         requested_list[ip].remove(tag)
         # Remove ip's with no tags left to register
-        requested_list = {ip: tags for ip, tags in requested_list.iteritems() if tags}
+        requested_list = {ip: tags for ip, tags in requested_list.items() if tags}
         # Handle registrations
-        for ip, tags in requested_list.iteritems():
+        for ip, tags in requested_list.items():
             self.register(ip, tags)
         self.batch_end()

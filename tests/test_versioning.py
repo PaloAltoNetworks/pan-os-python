@@ -1,4 +1,7 @@
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 import unittest
 import xml.etree.ElementTree as ET
 
@@ -274,3 +277,6 @@ class TestVersionedObject(unittest.TestCase):
         self.assertRaises(
             ValueError,
             self.obj.add_profile, '5.5.5', 'foo')
+
+if __name__=='__main__':
+    unittest.main()

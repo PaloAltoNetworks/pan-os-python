@@ -49,3 +49,6 @@ class TestFirewall(unittest.TestCase):
         ret_val = fw.id
 
         self.assertEqual(expected, ret_val)
+
+if __name__=='__main__':
+    unittest.main()
