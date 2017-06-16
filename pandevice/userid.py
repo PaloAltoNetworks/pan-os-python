@@ -110,10 +110,13 @@ class UserId(object):
 
     def send(self, uidmessage):
         """Send a uidmessage to the User-ID API of a firewall
+        
         Used for adhoc User-ID API calls that are not supported by other
         methods in this class. This method cannot be batched.
+        
         Args:
             uidmessage (str): The UID Message in XML to send to the firewall
+            
         """
         if self._batch:
             return
@@ -132,11 +135,15 @@ class UserId(object):
 
     def login(self, user, ip):
         """Login a single user
+        
         Maps a user to an IP address
+        
         This method can be batched with batch_start() and batch_end().
+        
         Args:
             user (str): a username
             ip (str): an ip address
+            
         """
         root, payload = self._create_uidmessage()
         login = payload.find("login")
@@ -147,10 +154,13 @@ class UserId(object):
 
     def logins(self, users):
         """Login multiple users in the same API call
+        
         This method can be batched with batch_start() and batch_end().
+        
         Args:
             users: a list of sets of user/ip mappings
                    eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
+                   
         """
         if not users:
             return
@@ -165,10 +175,13 @@ class UserId(object):
     def logout(self, user, ip):
         """Logout a single user
         Removes a mapping of a user to an IP address
+        
         This method can be batched with batch_start() and batch_end().
+        
         Args:
             user (str): a username
             ip (str): an ip address
+            
         """
         root, payload = self._create_uidmessage()
         logout = payload.find("logout")
@@ -179,10 +192,13 @@ class UserId(object):
 
     def logouts(self, users):
         """Logout multiple users in the same API call
+        
         This method can be batched with batch_start() and batch_end().
+        
         Arguments:
             users: a list of sets of user/ip mappings
                    eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
+                   
         """
         if not users:
             return
@@ -196,10 +212,13 @@ class UserId(object):
 
     def register(self, ip, tags):
         """Register an ip tag for a Dynamic Address Group
+        
         This method can be batched with batch_start() and batch_end().
+        
         Args:
             ip (:obj:`list` or :obj:`str`): IP address(es) to tag
             tags (:obj:`list` or :obj:`str`): The tag(s) for the IP address
+            
         """
         root, payload = self._create_uidmessage()
         register = payload.find("register")
@@ -222,10 +241,13 @@ class UserId(object):
 
     def unregister(self, ip, tags):
         """Unregister an ip tag for a Dynamic Address Group
+        
         This method can be batched with batch_start() and batch_end().
+        
         Args:
             ip (:obj:`list` or :obj:`str`): IP address(es) with the tag to remove
             tags (:obj:`list` or :obj:`str`): The tag(s) to remove from the IP address
+            
         """
         root, payload = self._create_uidmessage()
         unregister = payload.find("unregister")
