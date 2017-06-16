@@ -263,9 +263,9 @@ class Administrator(VersionedPanObject):
         device_admin_read_only (bool): Admin type - device admin, read only
         vsys (list/str): Physical firewalls: the vsys this admin should manage
         vsys_device (str): The device specification for the vsys admin (default: localhost.localdomain)
-        password_hash (encrypted str): The encrypted password
         vsys_read_only (list/str): Physical firewalls: the vsys this read only admin should manage
         vsys_read_only_device (str): The device specification for the vsys_read_only admin (default: localhost.localdomain)
+        password_hash (encrypted str): The encrypted password
         password_profile (str): The password profile for this user
 
     """
