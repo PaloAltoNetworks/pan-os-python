@@ -18,6 +18,8 @@
 
 from pandevice.base import PanObject, Root, MEMBER, ENTRY
 from pandevice.base import VarPath as Var
+from pandevice.base import VersionedPanObject
+from pandevice.base import VersionedParamPath
 
 # import other parts of this pandevice package
 from pandevice import getlogger
@@ -210,3 +212,118 @@ class SystemSettings(PanObject):
             Var("login-banner"),
             Var("update-server"),
         )
+
+
+class PasswordProfile(VersionedPanObject):
+    """Password profile object
+
+    Args:
+        name (str): Password profile name
+        expiration (int): Number of days until the password expires
+        warning (int): Number of days warning before password expires
+        login_count (int): Post expiration admin login count
+        grace_period (int): Post expiration grace period
+
+    """
+    ROOT = Root.MGTCONFIG
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/password-profile')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'expiration', vartype='int',
+            path='password-change/expiration-period'))
+        params.append(VersionedParamPath(
+            'warning', vartype='int',
+            path='password-change/expiration-warning-period'))
+        params.append(VersionedParamPath(
+            'login_count', vartype='int',
+            path='password-change/post-expiration-admin-login-count'))
+        params.append(VersionedParamPath(
+            'grace_period', vartype='int',
+            path='password-change/post-expiration-grace-period'))
+
+        self._params = tuple(params)
+
+
+class Administrator(VersionedPanObject):
+    """Administrator object
+
+    Args:
+        name (str): Admin name
+        superuser (bool): Admin type - superuser
+        superuser_read_only (bool): Admin type - superuser, read only
+        panorama_admin (bool): Panonrama - a panorama admin only
+        device_admin (bool): Admin type - device admin
+        device_admin_read_only (bool): Admin type - device admin, read only
+        vsys (list/str): Physical firewalls: the vsys this admin should manage
+        vsys_device (str): The device specification for the vsys admin (default: localhost.localdomain)
+        password_hash (encrypted str): The encrypted password
+        vsys_read_only (list/str): Physical firewalls: the vsys this read only admin should manage
+        vsys_read_only_device (str): The device specification for the vsys_read_only admin (default: localhost.localdomain)
+        password_profile (str): The password profile for this user
+
+    """
+    ROOT = Root.MGTCONFIG
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/users')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'superuser', vartype='yesno',
+            path='permissions/role-based/superuser'))
+        params.append(VersionedParamPath(
+            'superuser_read_only', vartype='yesno',
+            path='permissions/role-based/superreader'))
+        params.append(VersionedParamPath(
+            'panorama_admin', vartype='yesno',
+            path='permissions/role-based/panorama-admin'))
+        params.append(VersionedParamPath(
+            'device_admin', vartype='exist', exist_tag='deviceadmin',
+            path='permissions/role-based'))
+        params.append(VersionedParamPath(
+            'device_admin_read_only', vartype='exist',
+            exist_tag='devicereader', path='permissions/role-based'))
+        params.append(VersionedParamPath(
+            'vsys', vartype='member',
+            path='permissions/role-based/vsysadmin/entry vsys_device/vsys'))
+        params.append(VersionedParamPath(
+            'vsys_device', exclude=True, vartype='entry',
+            path='permissions/role-based/vsysadmin',
+            default='localhost.localdomain'))
+        params.append(VersionedParamPath(
+            'vsys_read_only', vartype='member',
+            path='permissions/role-based/vsysreader' +
+                 '/entry vsys_read_only_device/vsys'))
+        params.append(VersionedParamPath(
+            'vsys_read_only_device', exclude=True, vartype='entry',
+            path='permissions/role-based/vsysreader',
+            default='localhost.localdomain'))
+        params.append(VersionedParamPath(
+            'password_hash', path='phash', vartype='encrypted'))
+        params.append(VersionedParamPath(
+            'password_profile', path='password-profile'))
+
+        self._params = tuple(params)
+
+    def change_password(self, new_password):
+        """Update the password.
+
+        **Modifies the live device**
+
+        Args:
+            new_password (str): The new password for this user.
+
+        """
+        self.password_hash = self.request_password_hash(new_password)
+        self.update('password_hash')

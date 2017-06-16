@@ -99,3 +99,126 @@ class TestDeviceConfig(object):
 
     def test_99_removeall(self, dev, state_map):
         dev.removeall()
+
+
+class TestPasswordProfile(testlib.DevFlow):
+    def setup_state_obj(self, dev, state):
+        state.obj = device.PasswordProfile(
+            testlib.random_name(), 0, 0, 0, 0)
+        dev.add(state.obj)
+
+    def update_state_obj(self, dev, state):
+        state.obj.expiration = 120
+        state.obj.warning = 15
+        state.obj.login_count = 1
+        state.obj.grace_period = 15
+
+
+class TestFirewallAdministrator(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        state.profiles = []
+        for x in range(2):
+            state.profiles.append(device.PasswordProfile(
+                testlib.random_name(), x, x, x, x))
+            fw.add(state.profiles[x])
+
+        fw.create_type(device.PasswordProfile)
+
+    def setup_state_obj(self, fw, state):
+        state.obj = device.Administrator(
+            testlib.random_name(),
+            superuser=True,
+            password_profile=state.profiles[0])
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.password_profile = state.profiles[1]
+
+    def test_05_superuser_read_only(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        state.obj.superuser = None
+        state.obj.superuser_read_only = True
+
+        state.obj.apply()
+
+    def test_06_device_admin(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        state.obj.superuser_read_only = None
+        state.obj.device_admin = True
+
+        state.obj.apply()
+
+    def test_07_device_admin_read_only(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        state.obj.device_admin = None
+        state.obj.device_admin_read_only = True
+
+        state.obj.apply()
+
+    def test_08_set_password(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        # Set the password
+        state.obj.change_password('secret')
+
+        # Now verify the change by trying to login
+        new_fw = fw.__class__(
+            fw.hostname, state.obj.uid, 'secret')
+        new_fw.refresh_system_info()
+
+    def delete_dependencies(self, fw, state):
+        fw.delete_type(device.PasswordProfile)
+
+
+class TestPanoramaAdministrator(testlib.PanoFlow):
+    def create_dependencies(self, pano, state):
+        state.profiles = []
+        for x in range(2):
+            state.profiles.append(device.PasswordProfile(
+                testlib.random_name(), x, x, x, x))
+            pano.add(state.profiles[x])
+
+        pano.create_type(device.PasswordProfile)
+
+    def setup_state_obj(self, pano, state):
+        state.obj = device.Administrator(
+            testlib.random_name(),
+            superuser=True,
+            password_profile=state.profiles[0])
+        pano.add(state.obj)
+
+    def update_state_obj(self, pano, state):
+        state.obj.password_profile = state.profiles[1]
+
+    def test_05_superuser_read_only(self, pano, state_map):
+        state = self.sanity(pano, state_map)
+
+        state.obj.superuser = None
+        state.obj.superuser_read_only = True
+
+        state.obj.apply()
+
+    def test_06_panorama_admin(self, pano, state_map):
+        state = self.sanity(pano, state_map)
+
+        state.obj.superuser_read_only = None
+        state.obj.panorama_admin = True
+
+        state.obj.apply()
+
+    def test_07_set_password(self, pano, state_map):
+        state = self.sanity(pano, state_map)
+
+        # Set the password
+        state.obj.change_password('secret')
+
+        # Now verify the change by trying to login
+        new_pano = pano.__class__(
+            pano.hostname, state.obj.uid, 'secret')
+        new_pano.refresh_system_info()
+
+    def delete_dependencies(self, pano, state):
+        pano.delete_type(device.PasswordProfile)

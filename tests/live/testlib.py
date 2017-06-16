@@ -52,10 +52,15 @@ class FwFlow(object):
     def create_dependencies(self, fw, state):
         pass
 
-    def test_02_create(self, fw, state_map):
+    def sanity(self, fw, state_map):
         state = state_map.setdefault(fw)
         if state.err:
             state.fail_func('prereq failed')
+
+        return state
+
+    def test_02_create(self, fw, state_map):
+        state = self.sanity(fw, state_map)
 
         state.fail_func = pytest.xfail
         state.err = True
@@ -67,16 +72,12 @@ class FwFlow(object):
         pass
 
     def test_03_refreshall(self, fw, state_map):
-        state = state_map.setdefault(fw)
-        if state.err:
-            state.fail_func('prereq failed')
+        state = self.sanity(fw, state_map)
 
         state.obj.refreshall(state.obj.parent, add=False)
 
     def test_04_update(self, fw, state_map):
-        state = state_map.setdefault(fw)
-        if state.err:
-            state.fail_func('prereq failed')
+        state = self.sanity(fw, state_map)
 
         self.update_state_obj(fw, state)
         state.obj.apply()
@@ -84,10 +85,8 @@ class FwFlow(object):
     def update_state_obj(self, fw, state):
         pass
 
-    def test_05_delete(self, fw, state_map):
-        state = state_map.setdefault(fw)
-        if state.err:
-            state.fail_func('prereq failed')
+    def test_97_delete(self, fw, state_map):
+        state = self.sanity(fw, state_map)
 
         state.obj.delete()
 
@@ -118,10 +117,15 @@ class DevFlow(object):
     def create_dependencies(self, dev, state):
         pass
 
-    def test_02_create(self, dev, state_map):
+    def sanity(self, dev, state_map):
         state = state_map.setdefault(dev)
         if state.err:
             state.fail_func('prereq failed')
+
+        return state
+
+    def test_02_create(self, dev, state_map):
+        state = self.sanity(dev, state_map)
 
         state.fail_func = pytest.xfail
         state.err = True
@@ -133,16 +137,12 @@ class DevFlow(object):
         pass
 
     def test_03_refreshall(self, dev, state_map):
-        state = state_map.setdefault(dev)
-        if state.err:
-            state.fail_func('prereq failed')
+        state = self.sanity(dev, state_map)
 
         state.obj.refreshall(state.obj.parent, add=False)
 
     def test_04_update(self, dev, state_map):
-        state = state_map.setdefault(dev)
-        if state.err:
-            state.fail_func('prereq failed')
+        state = self.sanity(dev, state_map)
 
         self.update_state_obj(dev, state)
         state.obj.apply()
@@ -150,17 +150,13 @@ class DevFlow(object):
     def update_state_obj(self, dev, state):
         pass
 
-    def test_05_delete(self, dev, state_map):
-        state = state_map.setdefault(dev)
-        if state.err:
-            state.fail_func('prereq failed')
+    def test_97_delete(self, dev, state_map):
+        state = self.sanity(dev, state_map)
 
         state.obj.delete()
 
     def test_98_cleanup_dependencies(self, dev, state_map):
         state = state_map.setdefault(dev)
-        if state.err:
-            state.fail_func('prereq failed')
 
         self.cleanup_dependencies(dev, state)
 
@@ -169,6 +165,7 @@ class DevFlow(object):
 
     def test_99_removeall(self, dev, state_map):
         dev.removeall()
+
 
 class PanoFlow(object):
     def test_01_setup_dependencies(self, pano, state_map):
@@ -186,10 +183,15 @@ class PanoFlow(object):
     def create_dependencies(self, pano, state):
         pass
 
-    def test_02_create(self, pano, state_map):
+    def sanity(self, pano, state_map):
         state = state_map.setdefault(pano)
         if state.err:
             state.fail_func('prereq failed')
+
+        return state
+
+    def test_02_create(self, pano, state_map):
+        state = self.sanity(pano, state_map)
 
         state.fail_func = pytest.xfail
         state.err = True
@@ -201,16 +203,12 @@ class PanoFlow(object):
         pass
 
     def test_03_refreshall(self, pano, state_map):
-        state = state_map.setdefault(pano)
-        if state.err:
-            state.fail_func('prereq failed')
+        state = self.sanity(pano, state_map)
 
         state.obj.refreshall(state.obj.parent, add=False)
 
     def test_04_update(self, pano, state_map):
-        state = state_map.setdefault(pano)
-        if state.err:
-            state.fail_func('prereq failed')
+        state = self.sanity(pano, state_map)
 
         self.update_state_obj(pano, state)
         state.obj.apply()
@@ -218,17 +216,13 @@ class PanoFlow(object):
     def update_state_obj(self, pano, state):
         pass
 
-    def test_05_delete(self, pano, state_map):
-        state = state_map.setdefault(pano)
-        if state.err:
-            state.fail_func('prereq failed')
+    def test_97_delete(self, pano, state_map):
+        state = self.sanity(pano, state_map)
 
         state.obj.delete()
 
     def test_98_cleanup_dependencies(self, pano, state_map):
         state = state_map.setdefault(pano)
-        if state.err:
-            state.fail_func('prereq failed')
 
         self.cleanup_dependencies(pano, state)
 
