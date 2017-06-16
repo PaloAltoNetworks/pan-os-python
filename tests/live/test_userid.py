@@ -1,5 +1,6 @@
 import pytest
 import time
+import random
 
 from tests.live import testlib
 from pandevice import base
@@ -32,6 +33,7 @@ class TestUserID_FW(object):
         fw.userid.logouts(state.multi_user)
 
     def test_05_register_str(self, fw, state_map):
+        fw.userid.clear_registered_ip()
         state = state_map.setdefault(fw)
         ip, tag = testlib.random_ip(), testlib.random_name()
         fw.userid.register(ip, tag)
@@ -42,9 +44,60 @@ class TestUserID_FW(object):
         if not state.single_register:
             raise Exception("No single_register")
         ip, tag = state.single_register
-        fw.userid.unregister(ip, tag)
+        fw.userid.unregister(ip, (tag, "aaaaaaa"))
+        assert fw.userid.get_registered_ip() == {}
+
+    def test_07_error(self, fw):
+        fw.userid.clear_registered_ip()
+        ips = [testlib.random_ip() for x in range(10)]
+        tags = [testlib.random_name() for i in range(10)]
+        fw.userid.register(ips, tags)
+        fw.userid.unregister(ips, tags[9])
+        original = fw.userid.get_registered_ip()
+        new_tags = tags[0:9]
+        new_tags.append("aaaaaa")
+        fw.userid.unregister(ips[0], new_tags)
+        mod1 = fw.userid.get_registered_ip()
+        assert len(original.keys()) == len(mod1.keys()) + 1
+
+    def test_03_looper(self, fw, state_map):
+        fw.userid.clear_registered_ip()
+        ips = [testlib.random_ip() for x in range(10)]
+        tags = [testlib.random_name() for x in range(10)]
+        tag_set = set(tags)
+        one_ip = random.choice(ips)
+
+        print(ips)
+        print(tags)
+        assert len(fw.userid.get_registered_ip()) == 0
+
+        for num in range(1, 6):
+            print('Loop {0}...'.format(num))
+
+            # Register stuff
+            fw.userid.register(ips, tags)
+            ans = fw.userid.get_registered_ip()
+            for ip in ips:
+                assert ip in ans
+                assert set(ans[ip]) == set(tag_set)
+
+            # Unregister one at random
+            fw.userid.unregister(ips, random.choice(tags))
+            ans = fw.userid.get_registered_ip()
+            assert len(ans[one_ip]) == 9
+
+            # Unregister one more at random
+            fw.userid.unregister(ips, random.choice(tags))
+            ans = fw.userid.get_registered_ip()
+            assert len(ans[one_ip]) in (8, 9)
+
+            # Unregister everything, which includes already deleted things
+            fw.userid.unregister(ips, tags)
+            ans = fw.userid.get_registered_ip()
+            assert ans == {}
 
     def test_07_register_lst(self, fw, state_map):
+        fw.userid.clear_registered_ip()
         state = state_map.setdefault(fw)
         ips = [testlib.random_ip() for x in range(10)]
         tags = [testlib.random_name() for i in range(15)]
@@ -98,21 +151,24 @@ class TestUserID_FW(object):
         ips, tags = state.multi_register_02
         original = list(fw.userid.get_registered_ip())
         fw.userid.clear_registered_ip(ips[0], tags[0])
-        mod1 = list(fw.userid.get_registered_ip())
+        mod1 = fw.userid.get_registered_ip()
+        assert tags[0] not in mod1[ips[0]]
         fw.userid.clear_registered_ip(ips[0:4], tags[0:5])
-        mod2 = list(fw.userid.get_registered_ip())
+        mod2 = fw.userid.get_registered_ip()
+        #assert all([all([tag not in mod2[ip] for tag in tags[0:5]) for ip in ips[0:4]])
         fw.userid.clear_registered_ip(ips[0:4], tags)
-        mod3 = list(fw.userid.get_registered_ip())
+        mod3 = fw.userid.get_registered_ip()
         fw.userid.clear_registered_ip(ips, tags[0:7])
-        mod4 = list(fw.userid.get_registered_ip())
+        mod4 = fw.userid.get_registered_ip()
+        #assert
         fw.userid.clear_registered_ip()
-        mod5 = list(fw.userid.get_registered_ip())
-        assert len(mod3) < len(mod2)
-        assert len(mod3) < len(mod1)
-        assert len(mod3) < len(original)
+        mod5 = fw.userid.get_registered_ip()
+        assert set(mod3) < set(mod2)
+        assert set(mod3) < set(mod1)
+        assert set(mod3) < set(original)
         assert len(mod5) == 0
 
-    def test_11_batch(self, fw, state_map):
+    def test_11_batch(self, fw):
         fw.userid.clear_registered_ip() #Fresh start
         fw.userid.batch_start()
         users = [(testlib.random_name(), testlib.random_ip()) for i in range(5)]
@@ -138,3 +194,62 @@ class TestUserID_FW(object):
         if not state.uid:
             raise Exception("No UID")
         fw.userid.send(state.uid[0]) #State.uid returns length-two tuple of XML elements
+
+    def test_14_unregister_lst(self, fw):
+        fw.userid.clear_registered_ip()
+        ips = [testlib.random_ip() for x in range(10)]
+        tags = [testlib.random_name() for y in range(10)]
+        fw.userid.register(ips, tags)
+        original = fw.userid.get_registered_ip()
+
+        fw.userid.unregister(ips[0], tags[0])
+        mod1 = fw.userid.get_registered_ip()
+        assert original.keys() == mod1.keys()
+        assert len(original[ips[0]]) == len(mod1[ips[0]]) + 1
+        assert set(original[ips[0]]) - set(mod1[ips[0]]) == set([tags[0], ])
+
+        fw.userid.unregister(ips[1], tags[2:5])
+        mod2 = fw.userid.get_registered_ip()
+        assert original.keys() == mod2.keys()
+        assert len(original[ips[1]]) == len(mod2[ips[1]]) + 3
+        assert set(original[ips[1]]) - set(mod2[ips[1]]) == set(tags[2:5])
+
+        fw.userid.unregister(ips[2:4], tags[2])
+        mod3 = fw.userid.get_registered_ip()
+        assert original.keys() == mod3.keys()
+        assert all([len(original[ip]) == len(mod3[ip]) + 1 for ip in ips[2:4]])
+        assert all([set(original[ip]) - set(mod3[ip]) == set([tags[2], ]) for ip in ips[2:4]])
+
+        fw.userid.unregister(ips[4:6], tags[3:5])
+        mod4 = fw.userid.get_registered_ip()
+        assert original.keys() == mod4.keys()
+        assert all([set(original[ip]) - set(mod4[ip]) == set(tags[3:5]) for ip in ips[4:6]])
+
+        fw.userid.unregister(ips, tags[9])
+        mod5 = fw.userid.get_registered_ip()
+        assert original.keys() == mod5.keys()
+        assert all([set(mod4[ip]) - set(mod5[ip]) == set([tags[9], ]) for ip in ips])
+
+        fw.userid.unregister(ips[8], tags[0:9])
+        mod6 = fw.userid.get_registered_ip()
+        assert set(original.keys()) > set(mod6.keys())
+        assert set(original.keys()) - set(mod6.keys()) == set([ips[8], ])
+
+        new_ips = list(mod6.keys())
+        fw.userid.unregister(new_ips, tags[5:7])
+        mod7 = fw.userid.get_registered_ip()
+        assert mod6.keys() == mod7.keys()
+        assert all([set(mod6[ip]) - set(mod7[ip]) == set(tags[5:7]) for ip in new_ips])
+
+        fw.userid.clear_registered_ip()
+        fw.userid.register(ips, tags)
+        fw.userid.unregister(ips[0:5], tags)
+        mod8 = fw.userid.get_registered_ip()
+        assert set(original.keys()) > set(mod8.keys())
+        assert set(original.keys()) - set(mod8.keys()) == set(ips[0:5])
+
+        fw.userid.clear_registered_ip()
+        fw.userid.register(ips, tags)
+        fw.userid.unregister(ips, tags)
+        empty = fw.userid.get_registered_ip()
+        assert empty == {}
