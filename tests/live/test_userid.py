@@ -109,28 +109,37 @@ class TestUserID_FW(object):
         if not state.multi_register_01:
             raise Exception("Multi register not set")
         ips, tags = state.multi_register_01
-        test1 = set(fw.userid.get_registered_ip())
-        assert test1 == set(ips)
-        test2 = set(fw.userid.get_registered_ip(
+        test1 = fw.userid.get_registered_ip()
+        assert set(test1) == set(ips)
+        for x in ips:
+            assert set(test1[x]) == set(tags)
+        test2 = fw.userid.get_registered_ip(
                     ips[0:3], tags
-        ))
-        assert test2 == set(ips[0:3])
-        test3 = set(fw.userid.get_registered_ip(
+        )
+        assert set(test2) == set(ips[0:3])
+        for i in ips[0:3]:
+            assert set(test2[i]) == set(tags)
+        test3 = fw.userid.get_registered_ip(
                     ips[0:3], tags[0:5]
-        ))
-        assert test3 == set(ips[0:3])
-        test4 = set(fw.userid.get_registered_ip(
+        )
+        assert set(test3) == set(ips[0:3])
+        for i in ips[0:3]:
+            assert set(test3[i]) == set(tags[0:5])
+        test4 = fw.userid.get_registered_ip(
                     ips, tags[0:5]
-        ))
-        assert test4 == set(ips)
-        test5 = set(fw.userid.get_registered_ip(ips[0], tags[0]))
-        assert test5 == set([ips[0], ])
+        )
+        assert set(test4) == set(ips)
+        for x in ips:
+            assert set(test4[x]) == set(tags[0:5])
+        test5 = fw.userid.get_registered_ip(ips[0], tags[0])
+        assert list(test5.keys()) == [ips[0], ]
+        assert test5[ips[0]] == [tags[0], ]
         tests = [test1, test2, test3, test4, test5]
         assert len(test5) != 0
-        assert all([test1 >= x for x in tests])
-        assert all([x >= test5 for x in tests])
-        assert test2 >= test3
-        assert test4 >= test3
+        assert all([set(test1) >= set(x) for x in tests])
+        assert all([set(x) >= set(test5) for x in tests])
+        assert set(test2) >= set(test3)
+        assert set(test4) >= set(test3)
 
     def test_09_audit_registered_ip(self, fw, state_map):
         state = state_map.setdefault(fw)
@@ -155,12 +164,13 @@ class TestUserID_FW(object):
         assert tags[0] not in mod1[ips[0]]
         fw.userid.clear_registered_ip(ips[0:4], tags[0:5])
         mod2 = fw.userid.get_registered_ip()
-        #assert all([all([tag not in mod2[ip] for tag in tags[0:5]) for ip in ips[0:4]])
+        assert all([all([tag not in mod2[ip] for tag in tags[0:5]]) for ip in ips[0:4]])
         fw.userid.clear_registered_ip(ips[0:4], tags)
         mod3 = fw.userid.get_registered_ip()
+        assert set(original) - set(mod3) == set(ips[0:4])
         fw.userid.clear_registered_ip(ips, tags[0:7])
         mod4 = fw.userid.get_registered_ip()
-        #assert
+        assert all(all([tag not in mod4[ip] for tag in tags[0:7]]) for ip in ips[4:])
         fw.userid.clear_registered_ip()
         mod5 = fw.userid.get_registered_ip()
         assert set(mod3) < set(mod2)
@@ -169,7 +179,7 @@ class TestUserID_FW(object):
         assert len(mod5) == 0
 
     def test_11_batch(self, fw):
-        fw.userid.clear_registered_ip() #Fresh start
+        fw.userid.clear_registered_ip()
         fw.userid.batch_start()
         users = [(testlib.random_name(), testlib.random_ip()) for i in range(5)]
         fw.userid.logins(users)
