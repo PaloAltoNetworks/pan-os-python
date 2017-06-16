@@ -108,15 +108,12 @@ class UserId(object):
             self.send(uid_message)
         self._batch_uidmessage = deepcopy(self._uidmessage)
 
-    def send(self, uidmessage, ips=[], tags=[]):
+    def send(self, uidmessage):
         """Send a uidmessage to the User-ID API of a firewall
-
         Used for adhoc User-ID API calls that are not supported by other
         methods in this class. This method cannot be batched.
-
         Args:
             uidmessage (str): The UID Message in XML to send to the firewall
-
         """
         if self._batch:
             return
@@ -128,19 +125,6 @@ class UserId(object):
                 # Check if this is just an error about duplicates or nonexistant tags
                 # If so, ignore the error. Most operations don't care about this.
                 message = str(e)
-                if message.endswith("does not exist, ignore unreg"):
-                    nonexistant = {}
-                    for line in message.split("\n"):
-                        tag_index = line.find("tag ")
-                        ip_index = line.find("ip ")
-                        if tag_index == -1 or ip_index == -1:
-                            return
-                        tag = line[(tag_index + 4):].split()[0]
-                        ip = line[(ip_index + 3):].split()[0]
-                        nonexistant[ip] = tag
-                    self.unregister(ips, tags, nonexistant)
-                    #print(message.split("\n"))
-                    #print(nonexistant)
                 if self.ignore_dup_errors and (message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg")):
                     return
                 else:
@@ -148,15 +132,11 @@ class UserId(object):
 
     def login(self, user, ip):
         """Login a single user
-
         Maps a user to an IP address
-
         This method can be batched with batch_start() and batch_end().
-
         Args:
             user (str): a username
             ip (str): an ip address
-
         """
         root, payload = self._create_uidmessage()
         login = payload.find("login")
@@ -167,13 +147,10 @@ class UserId(object):
 
     def logins(self, users):
         """Login multiple users in the same API call
-
         This method can be batched with batch_start() and batch_end().
-
         Args:
             users: a list of sets of user/ip mappings
                    eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
-
         """
         if not users:
             return
@@ -187,15 +164,11 @@ class UserId(object):
 
     def logout(self, user, ip):
         """Logout a single user
-
         Removes a mapping of a user to an IP address
-
         This method can be batched with batch_start() and batch_end().
-
         Args:
             user (str): a username
             ip (str): an ip address
-
         """
         root, payload = self._create_uidmessage()
         logout = payload.find("logout")
@@ -206,13 +179,10 @@ class UserId(object):
 
     def logouts(self, users):
         """Logout multiple users in the same API call
-
         This method can be batched with batch_start() and batch_end().
-
         Arguments:
             users: a list of sets of user/ip mappings
                    eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
-
         """
         if not users:
             return
@@ -226,13 +196,10 @@ class UserId(object):
 
     def register(self, ip, tags):
         """Register an ip tag for a Dynamic Address Group
-
         This method can be batched with batch_start() and batch_end().
-
         Args:
             ip (:obj:`list` or :obj:`str`): IP address(es) to tag
             tags (:obj:`list` or :obj:`str`): The tag(s) for the IP address
-
         """
         root, payload = self._create_uidmessage()
         register = payload.find("register")
@@ -253,45 +220,22 @@ class UserId(object):
                 member.text = tag
         self.send(root)
 
-    def unregister(self, ip, tags, nonexistant=None):
+    def unregister(self, ip, tags):
         """Unregister an ip tag for a Dynamic Address Group
-
         This method can be batched with batch_start() and batch_end().
-
         Args:
             ip (:obj:`list` or :obj:`str`): IP address(es) with the tag to remove
             tags (:obj:`list` or :obj:`str`): The tag(s) to remove from the IP address
-
         """
         root, payload = self._create_uidmessage()
         unregister = payload.find("unregister")
         if unregister is None:
             unregister = ET.SubElement(payload, "unregister")
-        ip = sorted(list(set(string_or_list(ip))))
-        tags = sorted(list(set(string_or_list(tags))))
+        ip = list(set(string_or_list(ip)))
+        tags = list(set(string_or_list(tags)))
         if not tags:
             return
         tags = [self.prefix+t for t in tags]
-        if nonexistant:
-            for nonip in nonexistant.keys():
-                if not nonexistant[nonip]:
-                    continue
-                try:
-                    index = tags.index(nonexistant[nonip])
-                except ValueError:
-                    continue
-                new_tags = tags[(index + 1):]
-                if not new_tags:
-                    return
-                tagelement = unregister.find("./entry[@ip='%s']/tag" % nonip)
-                if tagelement is None:
-                    entry = ET.SubElement(unregister, "entry", {"ip": nonip})
-                    tagelement = ET.SubElement(entry, "tag")
-                for tag in new_tags:
-                    member = ET.SubElement(tagelement, "member")
-                    member.text = tag
-            self.send(root, ip, tags)
-            return
         for c_ip in ip:
             tagelement = unregister.find("./entry[@ip='%s']/tag" % c_ip)
             if tagelement is None:
@@ -300,7 +244,7 @@ class UserId(object):
             for tag in tags:
                 member = ET.SubElement(tagelement, "member")
                 member.text = tag
-        self.send(root, ip, tags)
+        self.send(root)
 
     def get_registered_ip(self, ip=None, tags=None, prefix=None):
         """Return registered/tagged addresses
