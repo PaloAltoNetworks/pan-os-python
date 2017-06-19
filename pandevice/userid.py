@@ -108,7 +108,7 @@ class UserId(object):
             self.send(uid_message)
         self._batch_uidmessage = deepcopy(self._uidmessage)
 
-    def send(self, uidmessage, ips=[], tags=[]):
+    def send(self, uidmessage, ips=(), tags=()):
         """Send a uidmessage to the User-ID API of a firewall
 
         Used for adhoc User-ID API calls that are not supported by other
@@ -128,6 +128,7 @@ class UserId(object):
                 # Check if this is just an error about duplicates or nonexistant tags
                 # If so, ignore the error. Most operations don't care about this.
                 message = str(e)
+
                 if message.endswith("does not exist, ignore unreg"):
                     nonexistant = {}
                     for line in message.split("\n"):
@@ -138,9 +139,7 @@ class UserId(object):
                         tag = line[(tag_index + 4):].split()[0]
                         ip = line[(ip_index + 3):].split()[0]
                         nonexistant[ip] = tag
-                    self.unregister(ips, tags, nonexistant)
-                    #print(message.split("\n"))
-                    #print(nonexistant)
+                    self._filtered_unregister(ips, tags, nonexistant)
                 if self.ignore_dup_errors and (message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg")):
                     return
                 else:
@@ -253,7 +252,39 @@ class UserId(object):
                 member.text = tag
         self.send(root)
 
-    def unregister(self, ip, tags, nonexistant=None):
+    def _filtered_unregister(self, ip, tags, filter_out=None):
+        """Unregister an ip tag for a Dynamic Address Group if ip/tag pair not in filter_out"""
+        root, payload = self._create_uidmessage()
+        unregister = payload.find("unregister")
+        if unregister is None:
+            unregister = ET.SubElement(payload, "unregister")
+        ip = sorted(list(set(string_or_list(ip))))
+        tags = sorted(list(set(string_or_list(tags))))
+        if not tags:
+            return
+        tags = [self.prefix+t for t in tags]
+        if filter_out is None:
+            filter_out = {}
+        for nonip in filter_out.keys():
+            if not filter_out[nonip]:
+                continue
+            try:
+                index = tags.index(filter_out[nonip])
+            except ValueError:
+                continue
+            new_tags = tags[(index + 1):]
+            if not new_tags:
+                return
+            tagelement = unregister.find("./entry[@ip='%s']/tag" % nonip)
+            if tagelement is None:
+                entry = ET.SubElement(unregister, "entry", {"ip": nonip})
+                tagelement = ET.SubElement(entry, "tag")
+            for tag in new_tags:
+                member = ET.SubElement(tagelement, "member")
+                member.text = tag
+        self.send(root, ip, tags)
+
+    def unregister(self, ip, tags):
         """Unregister an ip tag for a Dynamic Address Group
 
         This method can be batched with batch_start() and batch_end().
@@ -272,26 +303,6 @@ class UserId(object):
         if not tags:
             return
         tags = [self.prefix+t for t in tags]
-        if nonexistant:
-            for nonip in nonexistant.keys():
-                if not nonexistant[nonip]:
-                    continue
-                try:
-                    index = tags.index(nonexistant[nonip])
-                except ValueError:
-                    continue
-                new_tags = tags[(index + 1):]
-                if not new_tags:
-                    return
-                tagelement = unregister.find("./entry[@ip='%s']/tag" % nonip)
-                if tagelement is None:
-                    entry = ET.SubElement(unregister, "entry", {"ip": nonip})
-                    tagelement = ET.SubElement(entry, "tag")
-                for tag in new_tags:
-                    member = ET.SubElement(tagelement, "member")
-                    member.text = tag
-            self.send(root, ip, tags)
-            return
         for c_ip in ip:
             tagelement = unregister.find("./entry[@ip='%s']/tag" % c_ip)
             if tagelement is None:
