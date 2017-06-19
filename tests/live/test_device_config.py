@@ -169,7 +169,7 @@ class TestFirewallAdministrator(testlib.FwFlow):
             fw.hostname, state.obj.uid, 'secret')
         new_fw.refresh_system_info()
 
-    def delete_dependencies(self, fw, state):
+    def cleanup_dependencies(self, fw, state):
         fw.delete_type(device.PasswordProfile)
 
 
@@ -220,5 +220,5 @@ class TestPanoramaAdministrator(testlib.PanoFlow):
             pano.hostname, state.obj.uid, 'secret')
         new_pano.refresh_system_info()
 
-    def delete_dependencies(self, pano, state):
+    def cleanup_dependencies(self, pano, state):
         pano.delete_type(device.PasswordProfile)
