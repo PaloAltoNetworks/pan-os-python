@@ -256,6 +256,8 @@ class Administrator(VersionedPanObject):
 
     Args:
         name (str): Admin name
+        authentication_profile (str): The authentication profile
+        web_client_cert_only (bool): Use only client certificate authentication (Web)
         superuser (bool): Admin type - superuser
         superuser_read_only (bool): Admin type - superuser, read only
         panorama_admin (bool): Panonrama - a panorama admin only
@@ -265,6 +267,8 @@ class Administrator(VersionedPanObject):
         vsys_device (str): The device specification for the vsys admin (default: localhost.localdomain)
         vsys_read_only (list/str): Physical firewalls: the vsys this read only admin should manage
         vsys_read_only_device (str): The device specification for the vsys_read_only admin (default: localhost.localdomain)
+        ssh_public_key (str): Use Public Key Authentication (SSH)
+        role_profile (str): The role based profile
         password_hash (encrypted str): The encrypted password
         password_profile (str): The password profile for this user
 
@@ -279,6 +283,11 @@ class Administrator(VersionedPanObject):
         # params
         params = []
 
+        params.append(VersionedParamPath(
+            'authentication_profile', path='authentication-profile'))
+        params.append(VersionedParamPath(
+            'web_client_cert_only', vartype='yesno',
+            path='client-certificate-only'))
         params.append(VersionedParamPath(
             'superuser', vartype='yesno',
             path='permissions/role-based/superuser'))
@@ -309,6 +318,10 @@ class Administrator(VersionedPanObject):
             'vsys_read_only_device', exclude=True, vartype='entry',
             path='permissions/role-based/vsysreader',
             default='localhost.localdomain'))
+        params.append(VersionedParamPath(
+            'ssh_public_key', path='public-key'))
+        params.append(VersionedParamPath(
+            'role_profile', path='permissions/role-based/custom/profile'))
         params.append(VersionedParamPath(
             'password_hash', path='phash', vartype='encrypted'))
         params.append(VersionedParamPath(
