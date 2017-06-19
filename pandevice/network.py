@@ -211,9 +211,9 @@ class IPv6Address(VersionedPanObject):
             'enable_on_interface', vartype='yesno',
             path='enable-on-interface'))
         params.append(VersionedParamPath(
-            'prefix', vartype='exist', path='', exist_tag='prefix'))
+            'prefix', vartype='exist', path='prefix'))
         params.append(VersionedParamPath(
-            'anycast', vartype='exist', path='', exist_tag='anycast'))
+            'anycast', vartype='exist', path='anycast'))
         params.append(VersionedParamPath(
             'advertise_enabled', vartype='yesno',
             path='advertise/enable'))

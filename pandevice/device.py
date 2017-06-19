@@ -296,11 +296,11 @@ class Administrator(VersionedPanObject):
             'panorama_admin', vartype='yesno',
             path='permissions/role-based/panorama-admin'))
         params.append(VersionedParamPath(
-            'device_admin', vartype='exist', exist_tag='deviceadmin',
-            path='permissions/role-based'))
+            'device_admin', vartype='exist',
+            path='permissions/role-based/deviceadmin'))
         params.append(VersionedParamPath(
             'device_admin_read_only', vartype='exist',
-            exist_tag='devicereader', path='permissions/role-based'))
+            path='permissions/role-based/devicereader'))
         params.append(VersionedParamPath(
             'vsys', vartype='member',
             path='permissions/role-based/vsysadmin/entry vsys_device/vsys'))
@@ -336,5 +336,6 @@ class Administrator(VersionedPanObject):
             new_password (str): The new password for this user.
 
         """
-        self.password_hash = self.request_password_hash(new_password)
+        dev = self.nearest_pandevice()
+        self.password_hash = dev.request_password_hash(new_password)
         self.update('password_hash')
