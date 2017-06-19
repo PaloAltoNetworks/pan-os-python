@@ -129,10 +129,10 @@ class TestUserID_FW(object):
         assert get5[ips[0]] == [tags[0], ]
         gets = [state.get1, state.get2, state.get3, state.get4, state.get5]
         assert len(get5) != 0
-        assert all([set(state.get1) >= set(x) for x in gets])
-        assert all([set(x) >= set(get5) for x in gets])
-        assert set(state.get2) >= set(state.get3)
-        assert set(state.get4) >= set(state.get3)
+        assert all([set(state.get1).issuperset(set(x)) for x in gets])
+        assert all([set(x).issuperset(set(get5)) for x in gets])
+        assert set(state.get2).issuperset(set(state.get3))
+        assert set(state.get4).issuperset(set(state.get3))
 
     def test_10_audit_registered_ip(self, fw, state_map):
         state = state_map.setdefault(fw)
@@ -190,9 +190,9 @@ class TestUserID_FW(object):
 
     def test_11f_clear_registered_ip_sanity(self, fw, state_map):
         state = state_map.setdefault(fw)
-        assert set(state.clear3).issubset(set(state.clear2))
-        assert set(state.clear3).issubset(set(state.clear1))
-        assert set(state.clear3).issubset(set(state.original))
+        assert set(state.clear3).issubset(set(state.clear2)) and set(state.clear3) != set(state.clear2)
+        assert set(state.clear3).issubset(set(state.clear1)) and set(state.clear3) != set(state.clear1)
+        assert set(state.clear3).issubset(set(state.original)) and set(state.clear3) != set(state.original)
 
     def test_12_batch(self, fw):
         fw.userid.clear_registered_ip()
@@ -282,7 +282,7 @@ class TestUserID_FW(object):
         fw.userid.unregister(ips[8], tags)
         unreg6 = fw.userid.get_registered_ip()
         state.unreg6 = unreg6
-        assert set(state.original.keys()).issuperset(set(unreg6.keys()))
+        assert set(state.original.keys()).issuperset(set(unreg6.keys())) and set(state.original.keys()) != set(unreg6.keys())
         assert set(state.original.keys()) - set(unreg6.keys()) == set([ips[8], ])
 
     def test_15g_unregister_ip_subset_tag(self, fw, state_map):
@@ -301,7 +301,7 @@ class TestUserID_FW(object):
         fw.userid.register(ips, tags)
         fw.userid.unregister(ips[0:5], tags)
         unreg8 = fw.userid.get_registered_ip()
-        assert set(state.original.keys()).issuperset(set(unreg8.keys()))
+        assert set(state.original.keys()).issuperset(set(unreg8.keys())) and set(state.original.keys()) != set(unreg8.keys())
         assert set(state.original.keys()) - set(unreg8.keys()) == set(ips[0:5])
 
     def test_15i_unregister_sanity(self, fw, state_map):
@@ -324,7 +324,7 @@ class TestUserID_FW(object):
         fw.userid.clear_registered_ip()
         fw.userid.register(["1.2.3.4", "5.5.5.5"], "hello")
         fw.userid.register("5.5.5.5", "bye")
-        fw.userid.unregister(["1.2.3.4", "5.5.5.5"], ["hello", "bye", "apple", "arty"])
+        fw.userid.unregister(["1.2.3.4", "5.5.5.5"], ("hello", "bye", "apple", "cat"))
         assert fw.userid.get_registered_ip() == {}
 
     def test_16c_unregister_single_ip_redundant_tag(self, fw):
