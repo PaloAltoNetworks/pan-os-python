@@ -202,14 +202,17 @@ class TestUserID_FW(object):
         ips = [testlib.random_ip() for x in range(5)]
         tags = [testlib.random_name() for y in range(5)]
         fw.userid.register(ips, tags)
-        fw.userid.unregister(ips[2], tags[4])
+        fw.userid.unregister(ips[1], tags[3])
+        fw.userid.unregister(ips[0:2], tags[3:4])
         fw.userid.get_registered_ip(ips[0:3], tags[2:4])
         new_ips = [testlib.random_ip() for x in range(3)]
         new_tags = [testlib.random_name() for y in range(3)]
         fw.userid.audit_registered_ip(dict([(ip, tuple(new_tags)) for ip in new_ips]))
         fw.userid.get_registered_ip()
+        new_tags.extend(["hello", "apple"])
         fw.userid.unregister(new_ips, new_tags)
         fw.userid.batch_end()
+        assert fw.userid.get_registered_ip() == {}
 
     def test_13_uidmessage(self, fw, state_map):
         state = state_map.setdefault(fw)
