@@ -2407,7 +2407,7 @@ class ParamPath(object):
                 in the XML.
 
         """
-        if not self.path and self.vartype != 'exist':
+        if not self.path:
             # No path, so this is just a parameter ParamPath
             return
 
