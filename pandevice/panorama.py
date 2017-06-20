@@ -95,8 +95,10 @@ class Panorama(base.PanDevice):
     FIREWALL_CLASS = firewall.Firewall
     NAME = "hostname"
     CHILDTYPES = (
-        "panorama.DeviceGroup",
+        "device.Administrator",
+        "device.PasswordProfile",
         "firewall.Firewall",
+        "panorama.DeviceGroup",
     )
 
     def __init__(self,

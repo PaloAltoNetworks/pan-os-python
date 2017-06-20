@@ -49,7 +49,7 @@ class TestVlan(testlib.FwFlow):
 # Interface - inherited by other interface objects
 # SubinterfaceArp
 
-class TestEthernetInterfaceArp(testlib.FwFlow):
+class TestArpOnEthernetInterface(testlib.FwFlow):
     def create_dependencies(self, fw, state):
         state.eth_obj = None
         state.eth = testlib.get_available_interfaces(fw)[0]
@@ -60,7 +60,7 @@ class TestEthernetInterfaceArp(testlib.FwFlow):
         state.eth_obj.create()
 
     def setup_state_obj(self, fw, state):
-        state.obj = network.EthernetInterfaceArp(
+        state.obj = network.Arp(
             testlib.random_ip(), '00:30:48:52:ab:cd')
         state.eth_obj.add(state.obj)
 
@@ -68,11 +68,10 @@ class TestEthernetInterfaceArp(testlib.FwFlow):
         state.obj.hw_address = '00:30:48:52:12:9a'
 
     def cleanup_dependencies(self, fw, state):
-        if state.eth_obj is not None:
-            try:
-                state.eth_obj.delete()
-            except Exception:
-                pass
+        try:
+            state.eth_obj.delete()
+        except Exception:
+            pass
 
 class TestVirtualWire(testlib.FwFlow):
     def create_dependencies(self, fw, state):

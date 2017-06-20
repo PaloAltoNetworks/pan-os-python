@@ -2361,7 +2361,10 @@ class ParamPath(object):
 
         e = elm
         # Build the element
-        for token in self.path.split('/'):
+        tokens = self.path.split('/')
+        if self.vartype == 'exist':
+            del(tokens[-1])
+        for token in tokens:
             if not token:
                 continue
             if token.startswith('entry '):
@@ -2422,7 +2425,10 @@ class ParamPath(object):
                 return None
 
         e = xml
-        for p in self.path.split('/'):
+        tokens = self.path.split('/')
+        if self.vartype == 'exist':
+            del(tokens[-1])
+        for p in tokens:
             # Skip this path part if there is no path part
             if not p:
                 continue
@@ -2487,7 +2493,8 @@ class ParamPath(object):
                 ET.SubElement(elm, 'entry', {'name': v})
         elif self.vartype == 'exist':
             if value:
-                ET.SubElement(elm, self.param)
+                exist_tag = self.path.split('/')[-1]
+                ET.SubElement(elm, exist_tag)
         elif self.vartype == 'yesno':
             elm.text = 'yes' if value else 'no'
         elif self.vartype == 'stub' or '{{{0}}}'.format(
@@ -2522,7 +2529,8 @@ class ParamPath(object):
             settings[self.param] = [x.attrib['name']
                                     for x in elm.findall('entry')]
         elif self.vartype == 'exist':
-            ans = elm.find('./{0}'.format(elm.tag))
+            exist_tag = self.path.split('/')[-1]
+            ans = elm.find('./{0}'.format(exist_tag))
             settings[self.param] = True if ans is not None else False
         elif self.vartype == 'yesno':
             if elm.text == 'yes':
@@ -4348,3 +4356,26 @@ class PanDevice(PanObject):
             raise err.PanActivateFeatureAuthCodeError(
                 result.get('./msg/line').text,
                 pan_device=self)
+
+    def request_password_hash(self, value):
+        """Request a password hash from the live device.
+
+        This function does not modify the live device, but it does
+        interact with the live device to generate the password hash.
+
+        Args:
+            value (str): The password
+
+        Returns:
+            str: A hashed version of the password provided.
+
+        Raises:
+            ValueError: If the password hash is not found.
+
+        """
+        result = self.op('request password-hash password "{0}"'.format(value))
+        elm = result.find('./result/phash')
+        if elm is None:
+            raise ValueError('No password hash in response')
+
+        return elm.text

@@ -139,6 +139,27 @@ def pytest_report_header(config):
 
     return ans
 
+# Order tests alphabetically.  This is needed because by default pytest gets
+# the tests of the current class, executes them, then walks the inheritance
+# to get parent tests, which is not what we want.
+def pytest_collection_modifyitems(items):
+    grouping = {}
+    lookup = {}
+    reordered = []
+
+    for x in items:
+        location, tc = x.nodeid.rsplit('::', 1)
+        lookup[(location, tc)] = x
+        grouping.setdefault(location, [])
+        grouping[location].append(tc)
+
+    for location in sorted(grouping.keys()):
+        tests = sorted(grouping[location])
+        for tc in tests:
+            reordered.append(lookup[(location, tc)])
+
+    items[:] = reordered
+
 # Define a state fixture.
 class State(object):
     pass

@@ -63,6 +63,8 @@ class Firewall(PanDevice):
         "device.Vsys",
         "device.VsysResources",
         "device.SystemSettings",
+        "device.PasswordProfile",
+        "device.Administrator",
         "ha.HighAvailability",
         "objects.AddressObject",
         "objects.AddressGroup",

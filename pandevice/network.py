@@ -1191,11 +1191,8 @@ class TunnelInterface(Interface):
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
-        adjust_tcp_mss (bool): Adjust TCP MSS
         netflow_profile (NetflowProfile): Netflow profile
         comment (str): The interface's comment
-        ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
-        ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
 
     """
     CHILDTYPES = (
@@ -1223,24 +1220,9 @@ class TunnelInterface(Interface):
         params.append(VersionedParamPath(
             'mtu', path='mtu', vartype='int'))
         params.append(VersionedParamPath(
-            'adjust_tcp_mss', path='adjust-tcp-mss', vartype='yesno'))
-        params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno', path='adjust-tcp-mss/enable')
-        params.append(VersionedParamPath(
             'netflow_profile', path='netflow-profile'))
         params.append(VersionedParamPath(
             'comment', path='comment'))
-        params.append(VersionedParamPath(
-            'ipv4_mss_adjust', exclude=True))
-        params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
-        params.append(VersionedParamPath(
-            'ipv6_mss_adjust', exclude=True))
-        params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
 
         self._params = tuple(params)
 
