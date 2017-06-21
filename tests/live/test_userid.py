@@ -1,5 +1,4 @@
 import pytest
-import time
 import random
 
 from tests.live import testlib
@@ -32,20 +31,42 @@ class TestUserID_FW(object):
             raise Exception("User not logged in yet")
         fw.userid.logouts(state.multi_user)
 
-    def test_05_register_str(self, fw, state_map):
+    def test_05a_register_str(self, fw, state_map):
         fw.userid.clear_registered_ip()
         state = state_map.setdefault(fw)
         ip, tag = testlib.random_ip(), testlib.random_name()
         fw.userid.register(ip, tag)
         state.single_register = [ip, tag]
 
-    def test_06_unregister_str(self, fw, state_map):
+    def test_05b_register_single_reduntant(self, fw, state_map):
         state = state_map.setdefault(fw)
         if not state.single_register:
             raise Exception("No single_register")
         ip, tag = state.single_register
-        fw.userid.unregister(ip, (tag, "aaaaaaa"))
-        assert fw.userid.get_registered_ip() == {}
+        fw.userid.register(ip, ("zigzag", tag, "apple"))
+        result = fw.userid.get_registered_ip()
+        assert len(result[ip]) == 3
+        state.single_register = [ip, ["zigzag", tag, "apple"]]
+
+    def test_05c_register_multiple_reduntant(self, fw, state_map):
+        state = state_map.setdefault(fw)
+        ip = testlib.random_ip()
+        tag = testlib.random_name()
+        fw.userid.register(ip, tag)
+        ips = ["0.1.0.0", ip, "149.199.199.199"]
+        fw.userid.register(ips, ["aaaaaaaa", tag, "zzzzzzzz"])
+        result = fw.userid.get_registered_ip()
+        for addr in ips:
+            assert len(result[addr]) == 3
+
+    def test_06_unregister_str(self, fw, state_map):
+        state = state_map.setdefault(fw)
+        if not state.single_register:
+            raise Exception("No single_register")
+        ip, tags = state.single_register
+        fw.userid.unregister(ip, tags)
+        result = fw.userid.get_registered_ip()
+        assert ip not in result.keys()
 
     def test_07_error(self, fw):
         fw.userid.clear_registered_ip()
@@ -340,3 +361,9 @@ class TestUserID_FW(object):
         fw.userid.register("8.8.8.8", ["peanut"])
         fw.userid.unregister("1.2.3.4", ["apple", "goodbye"])
         assert fw.userid.get_registered_ip() == {"8.8.8.8": ["peanut"]}
+
+    def test_16e_unregister_exception(self, fw):
+        fw.userid.clear_registered_ip()
+        fw.userid.register("1.2.3.4", "hello")
+        with pytest.raises(Exception) as e_info:
+            fw.userid.unregister("1.2.3.4", ["apple", "hello"], exceptions=True)

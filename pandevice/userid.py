@@ -108,7 +108,7 @@ class UserId(object):
             self.send(uid_message)
         self._batch_uidmessage = deepcopy(self._uidmessage)
 
-    def send(self, uidmessage, ips=(), tags=()):
+    def send(self, uidmessage, ips=(), tags=(), exceptions=False):
         """Send a uidmessage to the User-ID API of a firewall
 
         Used for adhoc User-ID API calls that are not supported by other
@@ -129,7 +129,7 @@ class UserId(object):
                 # If so, ignore the error. Most operations don't care about this.
                 message = str(e)
 
-                if message.endswith("does not exist, ignore unreg"):
+                if message.endswith("does not exist, ignore unreg") and not exceptions:
                     nonexistant = {}
                     for line in message.split("\n"):
                         tag_index = line.find("tag ")
@@ -139,8 +139,10 @@ class UserId(object):
                         tag = line[(tag_index + 4):].split()[0]
                         ip = line[(ip_index + 3):].split()[0]
                         nonexistant[ip] = tag
+                    print(message)
+                    print(nonexistant)
                     self._filtered_unregister(ips, tags, nonexistant)
-                if self.ignore_dup_errors and (message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg")):
+                if self.ignore_dup_errors and (message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg")) and not exceptions:
                     return
                 else:
                     raise e
@@ -250,7 +252,7 @@ class UserId(object):
             for tag in tags:
                 member = ET.SubElement(tagelement, "member")
                 member.text = tag
-        self.send(root)
+        self.send(root, ip, tags)
 
     def _filtered_unregister(self, ip, tags, filter_out=None):
         """Unregister an ip tag for a Dynamic Address Group if ip/tag pair not in filter_out"""
@@ -284,7 +286,7 @@ class UserId(object):
                 member.text = tag
         self.send(root, ip, tags)
 
-    def unregister(self, ip, tags):
+    def unregister(self, ip, tags, exceptions=False):
         """Unregister an ip tag for a Dynamic Address Group
 
         This method can be batched with batch_start() and batch_end().
@@ -311,7 +313,7 @@ class UserId(object):
             for tag in tags:
                 member = ET.SubElement(tagelement, "member")
                 member.text = tag
-        self.send(root, ip, tags)
+        self.send(root, ip, tags, exceptions)
 
     def get_registered_ip(self, ip=None, tags=None, prefix=None):
         """Return registered/tagged addresses
