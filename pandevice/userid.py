@@ -139,8 +139,6 @@ class UserId(object):
                         tag = line[(tag_index + 4):].split()[0]
                         ip = line[(ip_index + 3):].split()[0]
                         nonexistant[ip] = tag
-                    print(message)
-                    print(nonexistant)
                     self._filtered_unregister(ips, tags, nonexistant)
                 if self.ignore_dup_errors and (message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg")) and not exceptions:
                     return
