@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/PaloAltoNetworks-BD/pandevice/issues.
+Report bugs at https://github.com/PaloAltoNetworks/pandevice/issues.
 
 If you are reporting a bug, please include:
 
@@ -30,7 +30,7 @@ is open to whoever wants to implement it.
 Implement Features
 ~~~~~~~~~~~~~~~~~~
 
-Look through the GitHub issues for features. Anything tagged with "feature"
+Look through the GitHub issues for features. Anything tagged with "enhancement"
 is open to whoever wants to implement it.
 
 Write Documentation
@@ -43,7 +43,7 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/PaloAltoNetworks-BD/pandevice/issues.
+The best way to send feedback is to file an issue at https://github.com/PaloAltoNetworks/pandevice/issues.
 
 If you are proposing a feature:
 
@@ -99,8 +99,8 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 2.7, 3.3, and 3.4, and for PyPy. Check
-   https://travis-ci.org/PaloAltoNetworks-BD/pandevice/pull_requests
+3. The pull request should work for Python 2.7 and for PyPy. Check
+   https://travis-ci.org/PaloAltoNetworks/pandevice/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 Tips

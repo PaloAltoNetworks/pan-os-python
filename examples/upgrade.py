@@ -16,7 +16,28 @@
 
 # Author: Brian Torres-Gil <btorres-gil@paloaltonetworks.com>
 
-"""Device updater handles software versions and updates for devices"""
+"""
+upgrade.py
+==========
+
+This script upgrades a Palo Alto Networks firewall or Panorama to the
+specified version. It takes care of all intermediate upgrades and reboots.
+
+**Usage**::
+
+    upgrade.py [-h] [-v] [-q] [-n] hostname username password version
+
+**Examples**:
+
+Upgrade a firewall at 10.0.0.1 to PAN-OS 7.0.0::
+
+    $ python upgrade.py 10.0.0.1 admin password 7.0.0
+
+Upgrade a Panorama at 172.16.4.4 to the latest Panorama version::
+
+    $ python upgrade.py 172.16.4.4 admin password latest
+
+"""
 
 __author__ = 'btorres-gil'
 
@@ -66,7 +87,7 @@ def main():
     device = PanDevice.create_from_device(args.hostname,
                                           args.username,
                                           args.password,
-                                          classify_exceptions=True)
+                                          )
 
     # Perform the upgrades in sequence with reboots between each upgrade
     device.software.upgrade_to_version(args.version, args.dryrun)
