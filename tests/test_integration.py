@@ -11,11 +11,13 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 import unittest
-
 import pan.xapi
+
 import pandevice.base as Base
 import pandevice.device
 import pandevice.errors as Err
@@ -123,25 +125,25 @@ class TestElementStr_7_0(unittest.TestCase):
 
     # 1) HighAvailability with HA1 and HA2 children
     def test_element_str_from_highavailability_with_ha1_and_ha2_children(self):
-        expected = ''.join([
-            '<high-availability><enabled>yes</enabled><group><entry name="1">',
-            '<description>my ha conf description</description>',
-            '<configuration-synchronization><enabled>yes</enabled>',
-            '</configuration-synchronization><peer-ip>10.5.1.5</peer-ip>',
-            '<mode><active-passive><passive-link-state>passive state',
-            '</passive-link-state></active-passive></mode>',
-            '<state-synchronization><enabled>no</enabled><ha2-keep-alive>',
-            '<enabled>yes</enabled><action>ha2 do stuff</action><threshold>',
-            '2</threshold></ha2-keep-alive></state-synchronization></entry>',
-            '</group><interface><ha1><ip-address>10.5.1.1</ip-address>',
-            '<netmask>255.255.255.0</netmask><port>ethernet1/6</port>',
-            '<gateway>10.5.1.2</gateway><link-speed>1000</link-speed>',
-            '<link-duplex>auto</link-duplex><monitor-hold-time>7',
-            '</monitor-hold-time></ha1><ha1-backup /><ha2>',
-            '<ip-address>10.6.1.1</ip-address><netmask>255.255.255.0',
-            '</netmask><port>ethernet1/7</port><gateway>10.6.1.2</gateway>',
-            '<link-speed>1000</link-speed><link-duplex>auto</link-duplex>',
-            '</ha2><ha2-backup /><ha3 /></interface></high-availability>',
+        expected = b''.join([
+            b'<high-availability><enabled>yes</enabled><group><entry name="1">',
+            b'<description>my ha conf description</description>',
+            b'<configuration-synchronization><enabled>yes</enabled>',
+            b'</configuration-synchronization><peer-ip>10.5.1.5</peer-ip>',
+            b'<mode><active-passive><passive-link-state>passive state',
+            b'</passive-link-state></active-passive></mode>',
+            b'<state-synchronization><enabled>no</enabled><ha2-keep-alive>',
+            b'<enabled>yes</enabled><action>ha2 do stuff</action><threshold>',
+            b'2</threshold></ha2-keep-alive></state-synchronization></entry>',
+            b'</group><interface><ha1><ip-address>10.5.1.1</ip-address>',
+            b'<netmask>255.255.255.0</netmask><port>ethernet1/6</port>',
+            b'<gateway>10.5.1.2</gateway><link-speed>1000</link-speed>',
+            b'<link-duplex>auto</link-duplex><monitor-hold-time>7',
+            b'</monitor-hold-time></ha1><ha1-backup /><ha2>',
+            b'<ip-address>10.6.1.1</ip-address><netmask>255.255.255.0',
+            b'</netmask><port>ethernet1/7</port><gateway>10.6.1.2</gateway>',
+            b'<link-speed>1000</link-speed><link-duplex>auto</link-duplex>',
+            b'</ha2><ha2-backup /><ha3 /></interface></high-availability>',
         ])
 
         h1o = pandevice.ha.HA1(
@@ -167,13 +169,13 @@ class TestElementStr_7_0(unittest.TestCase):
     # 2) VirtualRouter with StaticRoute child
     def test_element_str_from_virtualrouter_with_sr_parent(self):
         '''StaticRoute > VirtualRouter'''
-        expected = ''.join([
-            '<entry name="default"><interface><member>ethernet1/3</member>',
-            '</interface><routing-table><ip><static-route>',
-            '<entry name="my static route"><destination>0.0.0.0/0',
-            '</destination><nexthop><ip-address>192.168.5.1</ip-address>',
-            '</nexthop><interface>ethernet1/4</interface><metric>10</metric>',
-            '</entry></static-route></ip></routing-table></entry>',
+        expected = b''.join([
+            b'<entry name="default"><interface><member>ethernet1/3</member>',
+            b'</interface><routing-table><ip><static-route>',
+            b'<entry name="my static route"><destination>0.0.0.0/0',
+            b'</destination><nexthop><ip-address>192.168.5.1</ip-address>',
+            b'</nexthop><interface>ethernet1/4</interface><metric>10</metric>',
+            b'</entry></static-route></ip></routing-table></entry>',
         ])
 
         vro = pandevice.network.VirtualRouter('default', 'ethernet1/3')
@@ -189,10 +191,10 @@ class TestElementStr_7_0(unittest.TestCase):
 
     # 3) EthernetInterface
     def test_element_str_from_ethernetinterface(self):
-        expected = ''.join([
-            '<entry name="ethernet1/1"><layer3><ip><entry name="10.1.1.1" />',
-            '</ip></layer3><link-speed>1000</link-speed><link-duplex>auto',
-            '</link-duplex><link-state>auto</link-state></entry>',
+        expected = b''.join([
+            b'<entry name="ethernet1/1"><layer3><ip><entry name="10.1.1.1" />',
+            b'</ip></layer3><link-speed>1000</link-speed><link-duplex>auto',
+            b'</link-duplex><link-state>auto</link-state></entry>',
         ])
 
         o = pandevice.network.EthernetInterface(
@@ -200,23 +202,21 @@ class TestElementStr_7_0(unittest.TestCase):
             link_duplex='auto', link_state='auto')
 
         o_str = o.element_str()
-
         self.assertEqual(expected, o_str)
 
     def test_element_str_from_ethernetinterface_in_en_l3s_arp(self):
         '''EthernetInterface > Layer3Subinterface > Arp'''
-        expected = ''.join([
-            '<entry name="ethernet1/1"><layer3><ip>',
-            '<entry name="10.3.6.12" /></ip><units>',
-            '<entry name="ethernet1/1.355"><tag>355</tag><ip>',
-            '<entry name="10.20.30.40/24" /></ip><mtu>1500</mtu>',
-            '<adjust-tcp-mss>yes</adjust-tcp-mss><arp>',
-            '<entry name="10.5.10.15"><hw-address>00:30:48:52:cd:dc',
-            '</hw-address></entry></arp></entry></units></layer3></entry>',
+        expected = b''.join([
+            b'<entry name="ethernet1/1"><layer3><ip>',
+            b'<entry name="10.3.6.12" /></ip><units>',
+            b'<entry name="ethernet1/1.355"><tag>355</tag><ip>',
+            b'<entry name="10.20.30.40/24" /></ip><mtu>1500</mtu>',
+            b'<adjust-tcp-mss>yes</adjust-tcp-mss><arp>',
+            b'<entry name="10.5.10.15"><hw-address>00:30:48:52:cd:dc',
+            b'</hw-address></entry></arp></entry></units></layer3></entry>',
         ])
 
-        ao = pandevice.network.SubinterfaceArp('10.5.10.15',
-                                               '00:30:48:52:cd:dc')
+        ao = pandevice.network.Arp('10.5.10.15', '00:30:48:52:cd:dc')
         l3so = pandevice.network.Layer3Subinterface(
             'ethernet1/1.355', 355, '10.20.30.40/24',
             mtu=1500, adjust_tcp_mss=True)
@@ -235,14 +235,14 @@ class TestElementStr_7_0(unittest.TestCase):
         self.assertEqual(expected, ret_val)
 
     def test_element_str_from_ethernetinterface_for_aggregate_group(self):
-        expected = ''.join([
-            '<entry name="ethernet1/1"><aggregate-group>ae1',
-            '</aggregate-group></entry>',
+        expected = b''.join([
+            b'<entry name="ethernet1/1"><aggregate-group>ae1',
+            b'</aggregate-group></entry>',
         ])
         eio = pandevice.network.EthernetInterface(
             'ethernet1/1', 'aggregate-group', '10.3.6.12',
             aggregate_group='ae1')
-        
+
         ret_val = eio.element_str()
 
         self.assertEqual(expected, ret_val)
@@ -255,9 +255,9 @@ class TestElementStr_7_0(unittest.TestCase):
     * parent is pano / device group
     """
     def test_element_str_from_firewall_with_pano_parent_and_systemsettings_child(self):
-        expected = ''.join([
-            '<entry name="Serial"><vsys>',
-            '<entry name="vsys1" /></vsys></entry>',
+        expected = b''.join([
+            b'<entry name="Serial"><vsys>',
+            b'<entry name="vsys1" /></vsys></entry>',
         ])
 
         fw = pandevice.firewall.Firewall(
@@ -289,9 +289,9 @@ class TestElementStr_7_0(unittest.TestCase):
             fw.element_str)
 
     def test_element_str_from_firewall_with_dg_pano_parents_and_multi_vsys(self):
-        expected = ''.join([
-            '<entry name="serial"><vsys><entry name="vsys3" />',
-            '</vsys></entry>',
+        expected = b''.join([
+            b'<entry name="serial"><vsys><entry name="vsys3" />',
+            b'</vsys></entry>',
         ])
 
         fw = pandevice.firewall.Firewall(
@@ -309,17 +309,16 @@ class TestElementStr_7_0(unittest.TestCase):
 
     # 5) AddressObject
     def test_element_str_from_addressobject(self):
-        expected = ''.join([
-            '<entry name="webserver"><ip-netmask>192.168.1.100</ip-netmask>',
-            '<description>Intranet web server</description><tag><member>',
-            'https</member><member>http</member></tag></entry>',
+        expected = b''.join([
+            b'<entry name="webserver"><ip-netmask>192.168.1.100</ip-netmask>',
+            b'<description>Intranet web server</description><tag><member>',
+            b'https</member><member>http</member></tag></entry>',
         ])
         o = pandevice.objects.AddressObject(
             'webserver', '192.168.1.100', description='Intranet web server',
             tag=['https', 'http'])
 
         o_str = o.element_str()
-
         self.assertEqual(expected, o_str)
 
 
@@ -458,7 +457,7 @@ class TestXpaths_7_0(unittest.TestCase):
             "/arp/entry[@name='arp object']",
         ])
 
-        ao = pandevice.network.SubinterfaceArp('arp object')
+        ao = pandevice.network.Arp('arp object')
         l3so = pandevice.network.Layer3Subinterface('Layer3 Subint Object')
         eio = pandevice.network.EthernetInterface('Eth Interface Object')
         fw = pandevice.firewall.Firewall('fw')
@@ -480,7 +479,7 @@ class TestXpaths_7_0(unittest.TestCase):
             "/arp",
         ])
 
-        ao = pandevice.network.SubinterfaceArp('arp object')
+        ao = pandevice.network.Arp('arp object')
         l3so = pandevice.network.Layer3Subinterface('Layer3 Subint Object')
         eio = pandevice.network.EthernetInterface('Eth Interface Object')
         fw = pandevice.firewall.Firewall('fw')
@@ -656,3 +655,6 @@ class TestXpaths_7_0(unittest.TestCase):
         ret_val = ao.xpath_short()
 
         self.assertEqual(expected, ret_val)
+
+if __name__=='__main__':
+    unittest.main()

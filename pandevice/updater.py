@@ -20,7 +20,7 @@
 from pandevice import getlogger
 from pan.config import PanConfig
 import pandevice.errors as err
-from pandevice import PanOSVersion
+from pandevice import PanOSVersion, isstring
 
 logger = getlogger(__name__)
 
@@ -95,7 +95,7 @@ class SoftwareUpdater(Updater):
         return current_version
 
     def download_install(self, version, load_config=None, sync=False):
-        if issubclass(type(version), basestring):
+        if isstring(version):
             version = PanOSVersion(version)
         # Get list of software if needed
         if not self.versions:
@@ -121,7 +121,7 @@ class SoftwareUpdater(Updater):
         return result
 
     def download_install_reboot(self, version, load_config=None, sync=False):
-        if issubclass(type(version), basestring):
+        if isstring(version):
             version = PanOSVersion(version)
         self.download_install(version, load_config, sync=True)
         # Reboot the device
@@ -213,7 +213,7 @@ class SoftwareUpdater(Updater):
 
 
     def _next_major_version(self, version):
-        if issubclass(type(version), basestring):
+        if isstring(version):
             version = PanOSVersion(version)
         next_version = PanOSVersion(str(version.major+1)+".0.0")
         # Account for lack of PAN-OS 7.0.0
@@ -223,7 +223,7 @@ class SoftwareUpdater(Updater):
 
     def _next_minor_version(self, version):
         from pandevice.firewall import Firewall
-        if issubclass(type(version), basestring):
+        if isstring(version):
             next_version = PanOSVersion(version)
         if version.minor == 1:
             next_version = PanOSVersion(str(version.major+1)+".0.0")
@@ -238,7 +238,7 @@ class SoftwareUpdater(Updater):
         return next_version
 
     def _next_patch_version(self, version):
-        if issubclass(type(version), basestring):
+        if isstring(version):
             version = PanOSVersion(version)
         next_version = PanOSVersion(str(version.major)+str(version.minor)+str(version.patch+1))
         return next_version
@@ -249,9 +249,9 @@ class SoftwareUpdater(Updater):
         :returns True if a direct upgrade is possible, False if not
 
         """
-        if issubclass(type(current_version), basestring):
+        if isstring(current_version):
             current_version = PanOSVersion(current_version)
-        if issubclass(type(target_version), basestring):
+        if isstring(target_version):
             target_version = PanOSVersion(target_version)
 
         # Upgrade the patch version

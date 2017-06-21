@@ -28,9 +28,9 @@ from pandevice import device
 from pandevice import yesno
 
 # import other parts of this pandevice package
-import errors as err
-from base import PanDevice, Root, ENTRY
-from base import VarPath as Var
+import pandevice.errors as err
+from pandevice.base import PanDevice, Root, ENTRY
+from pandevice.base import VarPath as Var
 
 
 logger = getlogger(__name__)
@@ -63,6 +63,8 @@ class Firewall(PanDevice):
         "device.Vsys",
         "device.VsysResources",
         "device.SystemSettings",
+        "device.PasswordProfile",
+        "device.Administrator",
         "ha.HighAvailability",
         "objects.AddressObject",
         "objects.AddressGroup",

@@ -24,14 +24,11 @@ from copy import deepcopy
 
 # import other parts of this pandevice package
 import pandevice
-from pandevice import getlogger
-import base
-import firewall
-import policies
-import errors as err
-from base import VarPath as Var
-from base import PanObject, Root, MEMBER, ENTRY
-from pandevice import yesno
+from pandevice import getlogger, yesno
+from pandevice import base, firewall, policies
+import pandevice.errors as err
+from pandevice.base import VarPath as Var
+from pandevice.base import PanObject, Root, MEMBER, ENTRY
 
 import pan.commit
 
@@ -98,8 +95,10 @@ class Panorama(base.PanDevice):
     FIREWALL_CLASS = firewall.Firewall
     NAME = "hostname"
     CHILDTYPES = (
-        "panorama.DeviceGroup",
+        "device.Administrator",
+        "device.PasswordProfile",
         "firewall.Firewall",
+        "panorama.DeviceGroup",
     )
 
     def __init__(self,

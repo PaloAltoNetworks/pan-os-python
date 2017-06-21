@@ -31,14 +31,13 @@ import base64
 import hashlib
 
 import pandevice
-from pandevice import yesno
+from pandevice import yesno, isstring, string_or_list
 
 import pan.xapi
 import pan.commit
 from pan.config import PanConfig
-import errors as err
-import updater
-import userid
+import pandevice.errors as err
+from pandevice import updater, userid
 
 logger = pandevice.getlogger(__name__)
 
@@ -399,33 +398,7 @@ class PanObject(object):
                         nextelement = ET.SubElement(nextelement, section)
             if missing_replacement:
                 continue
-            # Create an element containing the value in the instance variable
-            if var.vartype == "member":
-                for member in pandevice.string_or_list(value):
-                    ET.SubElement(nextelement, 'member').text = str(member)
-            elif var.vartype == "entry":
-                try:
-                    # Value is an array
-                    for entry in pandevice.string_or_list(value):
-                        ET.SubElement(nextelement, 'entry', {'name': str(entry)})
-                except TypeError:
-                    # Value is not an array
-                    ET.SubElement(nextelement, 'entry', {'name': str(value)})
-            elif var.vartype == "exist":
-                if value:
-                    ET.SubElement(nextelement, var.variable)
-            elif var.vartype == "bool":
-                nextelement.text = yesno(value)
-            elif var.path.find("|") != -1:
-                # This is an element variable,
-                # it has already been created
-                # so do nothing
-                pass
-            elif var.vartype == "none":
-                # There is no variable, so don't try to populate it
-                pass
-            else:
-                nextelement.text = str(value)
+            var._set_inner_xml_tag_text(nextelement, value)
         self.xml_merge(root, self._subelements())
         return root
 
@@ -436,7 +409,7 @@ class PanObject(object):
             str: XML form of this object and its children
 
         """
-        return ET.tostring(self.element())
+        return ET.tostring(self.element(), encoding='utf-8')
 
     def _root_element(self):
         if self.SUFFIX == ENTRY:
@@ -583,19 +556,15 @@ class PanObject(object):
         path, value, var_path = self._get_param_specific_info(variable)
         xpath = '{0}/{1}'.format(self.xpath(), path)
 
-        # Perform the operation
         if value is None:
+            # Value is None, so delete it from the live device.
             device.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
         else:
+            # Variable has a new value.
             element_tag = path.split("/")[-1]
             element = ET.Element(element_tag)
-            if var_path.vartype == "member":
-                for member in pandevice.string_or_list(value):
-                    ET.SubElement(element, 'member').text = str(member)
-            else:
-                # Regular text variables
-                element.text = value
-            device.xapi.edit(xpath, ET.tostring(element),
+            var_path._set_inner_xml_tag_text(element, value)
+            device.xapi.edit(xpath, ET.tostring(element, encoding='utf-8'),
                              retry_on_peer=self.HA_SYNC)
 
     def _get_param_specific_info(self, variable):
@@ -683,7 +652,7 @@ class PanObject(object):
         else:
             # Classic object
             variables = type(self)._parse_xml(xml)
-            for var, value in variables.iteritems():
+            for var, value in variables.items():
                 setattr(self, var, value)
 
         # Refresh children objects if requested
@@ -761,7 +730,7 @@ class PanObject(object):
             next_element.append(obj)
             # Refresh the requested variable
             variables = type(self)._parse_xml(root)
-            for var, value in variables.iteritems():
+            for var, value in variables.items():
                 if var == variable:
                     setattr(self, var, value)
 
@@ -1009,7 +978,7 @@ class PanObject(object):
             device.xml_combine(element, [obj.element(), ])
         # Apply the element to the xpath
         device.set_config_changed()
-        device.xapi.edit(xpath, ET.tostring(element), retry_on_peer=cls.HA_SYNC)
+        device.xapi.edit(xpath, ET.tostring(element, encoding='utf-8'), retry_on_peer=cls.HA_SYNC)
         for obj in objects:
             obj._check_child_methods("apply")
 
@@ -1226,7 +1195,7 @@ class PanObject(object):
                     # Create a list of all the possible paths
                     option_paths = {opt: re.sub(r"\([\w\d|-]*\)", opt, path) for opt in options}
                     found = False
-                    for opt, opt_path in option_paths.iteritems():
+                    for opt, opt_path in option_paths.items():
                         match = xml.find(opt_path)
                         if match is not None:
                             vardict[var.variable] = cls._convert_var(opt, var.vartype)
@@ -1429,6 +1398,145 @@ class PanObject(object):
 
         return ans
 
+    def create_type(self, cType):
+        """Bulk create all children of the specified type.
+
+        Note:  child type search is non-recursive.
+
+        Args:
+            cType: a class type
+
+        """
+        dev = self.nearest_pandevice()
+        logger.debug('{0}: {1} called on {2} object "{3}" for type {4}'.format(
+            dev.id, 'create_type', self.__class__.__name__, self.uid, cType))
+        dev.set_config_changed()
+        if self.HA_SYNC:
+            dev = dev.active()
+        objs = self.findall(cType, False)
+        if not objs:
+            return
+
+        # All the same type of object, just need the first one to operate on.
+        o = objs[0]
+
+        # The new root tag is the last tag in the xpath, while the new xpath
+        # is what remains.
+        xpath_tokens = o.xpath_short().split('/')
+        new_root = xpath_tokens.pop()
+        xpath = '/'.join(xpath_tokens)
+
+        # Append all children of type cType.
+        shared_root = ET.Element(new_root)
+        for x in objs:
+            shared_root.append(x.element())
+
+        # Perform the create.
+        dev.xapi.set(xpath, ET.tostring(shared_root, encoding='utf-8'),
+                     retry_on_peer=self.HA_SYNC)
+
+        # If this is shared vsys or not an importable objects, we're done.
+        if self.vsys == "shared" or not hasattr(o, 'xpath_import_base'):
+            return
+
+        # It's an importable, now do the import for everything.
+        xpath_tokens = o.xpath_import_base().split('/')
+        new_root = xpath_tokens.pop()
+
+        # Form the xpath from what remains of the xpath.
+        xpath = '/'.join(xpath_tokens)
+
+        # Append objects as members to the new root.
+        shared_root = ET.Element(new_root)
+        for x in objs:
+            ET.SubElement(shared_root, "member").text = x.uid
+
+        # Perform the import.
+        dev.xapi.set(xpath, ET.tostring(shared_root, encoding='utf-8'),
+                     retry_on_peer=self.HA_SYNC)
+
+    def apply_type(self, cType):
+        """Bulk apply all children of the specified type.
+
+        Note:  child type search is non-recursive.
+
+        Args:
+            cType: a class type
+
+        """
+        dev = self.nearest_pandevice()
+        logger.debug('{0}: {1} called on {2} object "{3}" for type {4}'.format(
+            dev.id, 'apply_type', self.__class__.__name__, self.uid, cType))
+        dev.set_config_changed()
+        if self.HA_SYNC:
+            dev = dev.active()
+        objs = self.findall(cType, False)
+        if not objs:
+            return
+
+        # All the same type of object, just need the first one to operate on.
+        o = objs[0]
+
+        # The new root tag is the last tag in the xpath, while the new xpath
+        # is what remains.
+        xpath = o.xpath_short()
+        new_root = xpath.split('/')[-1]
+
+        # Append all children of type cType.
+        shared_root = ET.Element(new_root)
+        for x in objs:
+            shared_root.append(x.element())
+
+        # Perform the create.
+        dev.xapi.edit(xpath, ET.tostring(shared_root, encoding='utf-8'),
+                      retry_on_peer=self.HA_SYNC)
+
+    def delete_type(self, cType):
+        """Bulk delete all children of the specified type.
+
+        Note:  child type search is non-recursive.
+
+        Args:
+            cType: a class type
+
+        """
+        dev = self.nearest_pandevice()
+        logger.debug('{0}: {1} called on {2} object "{3}" for type {4}'.format(
+            dev.id, 'delete_type', self.__class__.__name__, self.uid, cType))
+        dev.set_config_changed()
+        if self.HA_SYNC:
+            dev = dev.active()
+        objs = self.findall(cType, False)
+        if not objs:
+            return
+
+        # All the same type of object, just need the first one to operate on.
+        o = objs[0]
+
+        # This operation is only supported for entry/member objects.
+        if o.SUFFIX not in (ENTRY, MEMBER):
+            raise ValueError('delete_type requires member or entry')
+
+        # Unimport first if this is an imported object.
+        if self.vsys != 'shared' and hasattr(o, 'xpath_import_base'):
+            members = ' or '.join("text()='{0}'".format(x.uid) for x in objs)
+            xpath = '{0}/member[{1}]'.format(o.xpath_import_base(), members)
+            dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
+
+        # Now perform the bulk delete.
+        xpath = o._parent_xpath() + o.XPATH
+        if o.SUFFIX == ENTRY:
+            entries = ' or '.join("@name='{0}'".format(x.uid) for x in objs)
+            xpath += '/entry[{0}]'.format(entries)
+        elif o.SUFFIX == MEMBER:
+            members = ' or '.join("text()='{0}'".format(x.uid) for x in objs)
+            xpath += '/member[{0}]'.format(members)
+        dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
+
+        # Remove each object from self, just like delete().
+        for x in objs:
+            self.remove(x)
+
 
 class VersioningSupport(object):
     """A class that supports getting version specific values of something.
@@ -1530,6 +1638,90 @@ class VersionedStubs(VersioningSupport):
         return ans
 
 
+class ParentAwareXpath(object):
+    """Class to handle xpaths of objects.
+
+    Some objects have a different xpath based on where in the tree they are
+    located.  This class allows you configure various xpaths that can vary
+    both on version and what the parent class is.
+
+    If no explicit parent is specified, then the global parent of `None' is
+    assumed.
+
+    """
+    def __init__(self):
+        self.settings = {}
+        self.parent_params = []
+
+    def add_profile(self, version=None, value=None, parents=None,
+                    parent_param=None, parent_param_values=None):
+        """Adds support for the given versions, specific to the parents.
+
+        If no parents are specified, then a parent of ``None`` is assumed,
+        which is the global parent type.
+
+        **Version support per parent must be in ascending order.**
+
+        Args:
+            version (str): The version number (default: '0.0.0').
+            value (str): The xpath setting.
+            parents (list/tuple): The parent classes this version/value is valid for.
+            parent_param (str): Parent param to key off of.
+            parent_param_values (list): Values of the parent param to key off of.
+
+        """
+        if parents is None:
+            parents = (None, )
+
+        if parent_param not in self.parent_params:
+            # None is always a fallback, so make sure None as a
+            # parent param is last.
+            index = -1 if parent_param is not None else len(
+                self.parent_params)
+            self.parent_params.insert(index, parent_param)
+
+        if parent_param_values is None:
+            parent_param_values = [None, ]
+
+        for p in parents:
+            for ppv in parent_param_values:
+                combo = (p, parent_param, ppv)
+                self.settings.setdefault(combo, VersioningSupport())
+                self.settings[combo].add_profile(version, value)
+
+    def _get_versioned_value(self, panos_version, parent):
+        """Gets the xpath for this version/parent combination.
+
+        Args:
+            panos_version (tuple): The version as (x, y, z) tuple.
+            parent: The self.parent for this VersionedPanObject.
+
+        Returns:
+            string.  The xpath.
+
+        Raises:
+            ValueError if no applicable xpath is found.
+
+        """
+        parents = [None, ]
+        parent_settings = {}
+        if parent is not None:
+            parents = [parent.__class__.__name__, None]
+            parent_settings = parent._about_object()
+
+        for p in parents:
+            for parent_param in self.parent_params:
+                combo = (p, parent_param,
+                         parent_settings.get(parent_param, None))
+                try:
+                    return self.settings[combo]._get_versioned_value(
+                        panos_version)
+                except KeyError:
+                    pass
+
+        raise ValueError('No applicable combination found for xpath')
+
+
 class VersionedPanObject(PanObject):
     """Base class for all versioned package objects.
 
@@ -1550,7 +1742,7 @@ class VersionedPanObject(PanObject):
             currently resides, as well as the versioning.
 
     """
-    _UNKNOWN_PANOS_VERSION = (sys.maxint, 0, 0)
+    _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
     _DEFAULT_NAME = None
 
     def __init__(self, *args, **kwargs):
@@ -1563,7 +1755,7 @@ class VersionedPanObject(PanObject):
             setattr(self, self.NAME, name or self._DEFAULT_NAME)
         self.parent = None
         self.children = []
-        self._xpaths = VersioningSupport()
+        self._xpaths = ParentAwareXpath()
         self._stubs = VersionedStubs()
 
         self._setup()
@@ -1796,7 +1988,7 @@ class VersionedPanObject(PanObject):
         self_element = self.comparison_element(compare_children)
         other_element = panobject.comparison_element(compare_children)
 
-        return ET.tostring(self_element) == ET.tostring(other_element)
+        return ET.tostring(self_element, encoding='utf-8') == ET.tostring(other_element, encoding='utf-8')
 
     def _get_param_specific_info(self, param):
         """Gets a tuple of info for the given parameter.
@@ -1903,7 +2095,7 @@ class VersionedPanObject(PanObject):
 
     def element_str(self):
         """The XML form of this object (and its children) as a string."""
-        return ET.tostring(self.element())
+        return ET.tostring(self.element(), encoding='utf-8')
 
     def __getattr__(self, name):
         params = super(VersionedPanObject, self).__getattribute__('_params')
@@ -1934,7 +2126,7 @@ class VersionedPanObject(PanObject):
     def XPATH(self):
         """Returns the version specific xpath of this object."""
         panos_version = self.retrieve_panos_version()
-        return self._xpaths._get_versioned_value(panos_version)
+        return self._xpaths._get_versioned_value(panos_version, self.parent)
 
 
 class VersionedParamPath(VersioningSupport):
@@ -2036,6 +2228,43 @@ class VarPath(object):
             'XML Path': self.path,
         }
 
+    def _set_inner_xml_tag_text(self, elm, value, sha1=False):
+        """Sets the final elm's .text as appropriate given the vartype.
+
+        Args:
+            elm (xml.etree.ElementTree.Element): The element whose .text to set.
+            value (various): The value to put in the .text, conforming to the vartype of this parameter.
+            sha1 (bool): This variable is ignored for classic objects
+
+        """
+        # Create an element containing the value in the instance variable
+        if self.vartype == "member":
+            for member in pandevice.string_or_list(value):
+                ET.SubElement(elm, 'member').text = str(member)
+        elif self.vartype == "entry":
+            try:
+                # Value is an array
+                for entry in pandevice.string_or_list(value):
+                    ET.SubElement(elm, 'entry', {'name': str(entry)})
+            except TypeError:
+                # Value is not an array
+                ET.SubElement(elm, 'entry', {'name': str(value)})
+        elif self.vartype == "exist":
+            if value:
+                ET.SubElement(elm, self.variable)
+        elif self.vartype == "bool":
+            elm.text = yesno(value)
+        elif self.path.find("|") != -1:
+            # This is an element variable,
+            # it has already been created
+            # so do nothing
+            pass
+        elif self.vartype == "none":
+            # There is no variable, so don't try to populate it
+            pass
+        else:
+            elm.text = str(value)
+
 
 class ParamPath(object):
     """Configuration parameter within the object.
@@ -2053,15 +2282,17 @@ class ParamPath(object):
             enforced in any way from the user's perspective when setting
             parameters, but these values are referenced when parsing any XML
             returned from a live device.
+        exclude (bool): Exclude this param from the resultant XML.
 
     """
     def __init__(self, param, path=None, vartype=None,
-                 condition=None, values=None):
+                 condition=None, values=None, exclude=False):
         self.param = param
         self.path = path
         self.vartype = vartype
         self.condition = condition or {}
         self.values = values or []
+        self.exclude = exclude
 
         if self.path is None:
             self.path = self.param.replace('_', '-')
@@ -2085,7 +2316,9 @@ class ParamPath(object):
             self.__class__.__name__, self.param, id(self))
 
     def _value_as_list(self, value):
-        if hasattr(value, '__iter__'):
+        if isstring(value):
+            yield value
+        elif hasattr(value, '__iter__'):
             for v in value:
                 yield str(v)
         else:
@@ -2110,7 +2343,7 @@ class ParamPath(object):
         value = settings.get(self.param)
 
         # Check if this should return None instead of an element
-        if self.path is None:
+        if self.exclude:
             return None
         elif value is None and self.vartype != 'stub':
             return None
@@ -2127,9 +2360,11 @@ class ParamPath(object):
                 return None
 
         e = elm
-
         # Build the element
-        for token in self.path.split('/'):
+        tokens = self.path.split('/')
+        if self.vartype == 'exist':
+            del(tokens[-1])
+        for token in tokens:
             if not token:
                 continue
             if token.startswith('entry '):
@@ -2142,27 +2377,7 @@ class ParamPath(object):
             e.append(child)
             e = child
 
-        # Format the element text appropriately
-        if self.vartype == 'member':
-            for v in self._value_as_list(value):
-                ET.SubElement(e, 'member').text = v
-        elif self.vartype == 'entry':
-            for v in self._value_as_list(value):
-                ET.SubElement(e, 'entry', {'name': v})
-        elif self.vartype == 'exist':
-            if value:
-                ET.SubElement(e, self.param)
-        elif self.vartype == 'yesno':
-            e.text = 'yes' if value else 'no'
-        elif self.vartype == 'stub' or '{{{0}}}'.format(
-                    self.param) == self.path.split('/')[-1]:
-            pass
-        elif self.vartype == 'int':
-            e.text = str(int(value))
-        elif self.vartype == 'encrypted' and sha1:
-            e.text = self._sha1_hash(str(value))
-        else:
-            e.text = str(value)
+        self._set_inner_xml_tag_text(e, value, sha1)
 
         return elm
 
@@ -2210,7 +2425,10 @@ class ParamPath(object):
                 return None
 
         e = xml
-        for p in self.path.split('/'):
+        tokens = self.path.split('/')
+        if self.vartype == 'exist':
+            del(tokens[-1])
+        for p in tokens:
             # Skip this path part if there is no path part
             if not p:
                 continue
@@ -2257,6 +2475,38 @@ class ParamPath(object):
         # Pull the value, properly formatted, from this last element
         self.parse_value_from_xml_last_tag(e, settings)
 
+    def _set_inner_xml_tag_text(self, elm, value, sha1=False):
+        """Sets the final elm's .text as appropriate given the vartype.
+
+        Args:
+            elm (xml.etree.ElementTree.Element): The element whose .text to set.
+            value (various): The value to put in the .text, conforming to the vartype of this parameter.
+            sha1 (bool): For encrypted fields, if the text should be set to a password hash (True) or left as a basestring (False)
+
+        """
+        # Format the element text appropriately
+        if self.vartype == 'member':
+            for v in self._value_as_list(value):
+                ET.SubElement(elm, 'member').text = v
+        elif self.vartype == 'entry':
+            for v in self._value_as_list(value):
+                ET.SubElement(elm, 'entry', {'name': v})
+        elif self.vartype == 'exist':
+            if value:
+                exist_tag = self.path.split('/')[-1]
+                ET.SubElement(elm, exist_tag)
+        elif self.vartype == 'yesno':
+            elm.text = 'yes' if value else 'no'
+        elif self.vartype == 'stub' or '{{{0}}}'.format(
+                    self.param) == self.path.split('/')[-1]:
+            pass
+        elif self.vartype == 'int':
+            elm.text = str(int(value))
+        elif self.vartype == 'encrypted' and sha1:
+            elm.text = self._sha1_hash(str(value))
+        else:
+            elm.text = str(value)
+
     def parse_value_from_xml_last_tag(self, elm, settings):
         """Actually do the parsing for this parameter.
 
@@ -2279,7 +2529,8 @@ class ParamPath(object):
             settings[self.param] = [x.attrib['name']
                                     for x in elm.findall('entry')]
         elif self.vartype == 'exist':
-            ans = elm.find('./{0}'.format(elm.tag))
+            exist_tag = self.path.split('/')[-1]
+            ans = elm.find('./{0}'.format(exist_tag))
             settings[self.param] = True if ans is not None else False
         elif self.vartype == 'yesno':
             if elm.text == 'yes':
@@ -2386,7 +2637,7 @@ class VsysImportMixin(object):
             Vsys: The vsys for this interface after the operation completes
 
         """
-        import device
+        from pandevice import device
         if refresh and running_config:
             raise ValueError("Can't refresh vsys from running config in set_vsys method")
         if refresh:
@@ -2480,10 +2731,14 @@ class VsysOperations(VersionedPanObject):
             vsys = self.vsys
 
         if vsys != "shared" and self.XPATH_IMPORT is not None:
-            xpath = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
+            xpath = self.xpath_import_base()
             element = '<member>{0}</member>'.format(self.uid)
             device = self.nearest_pandevice()
             device.active().xapi.set(xpath, element, retry_on_peer=True)
+
+    def xpath_import_base(self):
+        return "{0}/import{1}".format(
+            self.xpath_vsys(), self.XPATH_IMPORT)
 
     def delete_import(self, vsys=None):
         """Delete a vsys import for the object
@@ -2496,8 +2751,8 @@ class VsysOperations(VersionedPanObject):
             vsys = self.vsys
 
         if vsys != "shared" and self.XPATH_IMPORT is not None:
-            xpath = "{0}/import{1}/member[text()='{2}']".format(
-                self.xpath_vsys(), self.XPATH_IMPORT, self.uid)
+            xpath = "{0}/member[text()='{1}']".format(
+                self.xpath_import_base(), self.uid)
             device = self.nearest_pandevice()
             device.active().xapi.delete(xpath, retry_on_peer=True)
 
@@ -2664,7 +2919,7 @@ class PanDevice(PanObject):
 
         # create a predefined object subsystem
         # avoid a premature import
-        import predefined
+        from pandevice import predefined
         self.predefined = predefined.Predefined(self)
         """Predefined object subsystem
 
@@ -2714,8 +2969,7 @@ class PanDevice(PanObject):
 
         """
         # Create generic PanDevice to connect and get information
-        import firewall
-        import panorama
+        from pandevice import firewall, panorama
         device = PanDevice(hostname,
                            api_username,
                            api_password,
@@ -2755,10 +3009,10 @@ class PanDevice(PanObject):
         def __init__(self, *args, **kwargs):
             self.pan_device = kwargs.pop('pan_device', None)
             pan.xapi.PanXapi.__init__(self, *args, **kwargs)
-
+            pred = lambda x: inspect.ismethod(x) or inspect.isfunction(x) # inspect.ismethod needed for Python2, inspect.isfunction needed for Python3
             for name, method in inspect.getmembers(
                     pan.xapi.PanXapi,
-                    inspect.ismethod):
+                    pred):
                 # Ignore hidden methods
                 if name[0] == "_":
                     continue
@@ -2973,7 +3227,7 @@ class PanDevice(PanObject):
         """
         element = self.xapi.op(cmd, vsys, cmd_xml, extra_qs, retry_on_peer=retry_on_peer)
         if xml:
-            return ET.tostring(element)
+            return ET.tostring(element, encoding='utf-8')
         else:
             return element
 
@@ -3278,7 +3532,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is already held", str(e)):
                 raise
@@ -3300,7 +3554,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "admin")
             subel.text = admin
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is not currently held", str(e)):
                 raise
@@ -3322,7 +3576,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config for scope (shared|vsys\d) is currently locked", str(e)) and \
                     not re.match(r"You already own a config lock for scope", str(e)):
@@ -3342,7 +3596,7 @@ class PanDevice(PanObject):
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "remove")
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config is not currently locked for scope (shared|vsys\d)", str(e)):
                 raise
@@ -3635,15 +3889,15 @@ class PanDevice(PanObject):
         if isinstance(cmd, pan.commit.PanCommit):
             cmd = cmd.cmd()
         elif isinstance(cmd, ET.Element):
-            cmd = ET.tostring(cmd)
-        elif isinstance(cmd, basestring):
+            cmd = ET.tostring(cmd, encoding='utf-8')
+        elif isstring(cmd):
             pass
         else:
             cmd = ET.Element("commit")
             if exclude is not None:
                 excluded = ET.SubElement(cmd, "partial")
                 excluded = ET.SubElement(excluded, exclude)
-            cmd = ET.tostring(cmd)
+            cmd = ET.tostring(cmd, encoding='utf-8')
         logger.debug(self.id + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s" % (str(commit_all),
                                                                                                        str(sync),
                                                                                                        str(sync_all),
@@ -3715,7 +3969,10 @@ class PanDevice(PanObject):
             dict: Job result
 
         """
-        import httplib
+        try:
+            import http.client as httplib
+        except ImportError:
+            import httplib
         if interval is not None:
             try:
                 interval = float(interval)
@@ -3792,8 +4049,10 @@ class PanDevice(PanObject):
 
     def syncreboot(self, interval=5.0, timeout=600):
         """Block until reboot completes and return version of device"""
-
-        import httplib
+        try:
+            import http.client as httplib
+        except ImportError:
+            import httplib
 
         # Validate interval and convert it to float
         if interval is not None:
@@ -3904,8 +4163,8 @@ class PanDevice(PanObject):
                 messages = job['details']['line']
             except KeyError:
                 messages = []
-        if issubclass(messages.__class__, basestring):
-            messages = [messages]
+        if isstring(messages):
+            messages = string_or_list(messages)
         # Create the results dict
         result = {
             'success': success,
@@ -4097,3 +4356,26 @@ class PanDevice(PanObject):
             raise err.PanActivateFeatureAuthCodeError(
                 result.get('./msg/line').text,
                 pan_device=self)
+
+    def request_password_hash(self, value):
+        """Request a password hash from the live device.
+
+        This function does not modify the live device, but it does
+        interact with the live device to generate the password hash.
+
+        Args:
+            value (str): The password
+
+        Returns:
+            str: A hashed version of the password provided.
+
+        Raises:
+            ValueError: If the password hash is not found.
+
+        """
+        result = self.op('request password-hash password "{0}"'.format(value))
+        elm = result.find('./result/phash')
+        if elm is None:
+            raise ValueError('No password hash in response')
+
+        return elm.text

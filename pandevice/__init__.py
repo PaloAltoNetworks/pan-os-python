@@ -66,9 +66,16 @@ logger = getlogger(__name__)
 # Enumerator type
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
-    reverse = dict((value, key) for key, value in enums.iteritems())
+    reverse = dict(((v, k) for (k, v) in enums.items()))
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
+
+def isstring(arg):
+    try:
+        return isinstance(arg, basestring)
+    except NameError:
+        return isinstance(arg, str) or isinstance(arg, bytes)
+
 
 # Create more debug logging levels
 DEBUG1 = logging.DEBUG -1
@@ -136,22 +143,46 @@ class PanOSVersion(LooseVersion):
     def __repr__ (self):
         return "PanOSVersion ('%s')" % str(self)
 
-    def __cmp__ (self, other):
-        if isinstance(other, basestring):
-            other = PanOSVersion(other)
+    def __lt__(self, other):
+        other = stringToVersion(other)
+        for (x, y) in zip(self.mainrelease, other.mainrelease):
+            if x < y:
+                return True
+            if x > y:
+                return False
+        if self.subrelease_type == 'h' and other.subrelease_type != 'h':
+            return False
+        if self.subrelease_type != 'c' and other.subrelease_type == 'c':
+            return False
+        elif self.subrelease is None and other.subrelease_type == 'b':
+            return False
+        elif self.subrelease_type == other.subrelease_type and self.subrelease_type:
+            return self.subrelease_num < other.subrelease_num
+        return not self.__eq__(other)
 
-        # Compare subreleases if number part of version is the same
-        if cmp(self.mainrelease, other.mainrelease) == 0:
-            if self.subrelease_type == 'c' and other.subrelease_type != 'c':
-                return -1
-            elif self.subrelease_type == 'b' and other.subrelease is None:
-                return -1
-            elif self.subrelease_type != 'c' and other.subrelease_type == 'c':
-                return 1
-            elif self.subrelease is None and other.subrelease_type == 'b':
-                return 1
+    def __ge__(self, other):
+        return not self.__lt__(other)
 
-        return cmp(self.version, other.version)
+    def __eq__(self, other):
+        other = stringToVersion(other)
+        if self.mainrelease != other.mainrelease:
+            return False
+        return self.subrelease == other.subrelease
+
+    def __gt__(self, other):
+        return self.__ge__(other) and not self.__eq__(other)
+
+    def __le__(self, other):
+        return self.__lt__(other) or self.__eq__(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+def stringToVersion(other):
+    if isstring(other):
+        other = PanOSVersion(other)
+    return other
 
 
 # Convenience methods used internally by module
@@ -180,8 +211,9 @@ def string_or_list(value):
     """
     if value is None:
         return None
-    else:
-        return list(value) if "__iter__" in dir(value) else [value]
+    if isstring(value):
+        return [value, ]
+    return list(value) if "__iter__" in dir(value) else [value, ]
 
 
 def string_or_list_or_none(value):

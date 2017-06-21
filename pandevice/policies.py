@@ -19,13 +19,13 @@
 
 # import modules
 from pandevice import getlogger
-from base import PanObject, Root, MEMBER, ENTRY
-from base import VarPath as Var
+from pandevice.base import PanObject, Root, MEMBER, ENTRY
+from pandevice.base import VarPath as Var
 from pandevice.base import VersionedPanObject
 from pandevice.base import VersionedParamPath
 
 # import other parts of this pandevice package
-import errors as err
+import pandevice.errors as err
 
 logger = getlogger(__name__)
 
@@ -131,13 +131,13 @@ class SecurityRule(VersionedPanObject):
         )
         for var_name, path in any_defaults:
             params.append(VersionedParamPath(
-                var_name, default='any', vartype='member', path=path))
+                var_name, default=['any', ], vartype='member', path=path))
 
         params.append(VersionedParamPath(
             'service', default='application-default',
             vartype='member', path='service'))
         params.append(VersionedParamPath(
-            'category', default='any', vartype='member', path='category'))
+            'category', default=['any', ], vartype='member', path='category'))
         params.append(VersionedParamPath(
             'action', path='action'))
         params.append(VersionedParamPath(
@@ -258,7 +258,7 @@ class NatRule(VersionedPanObject):
             'nat_type', path='nat-type', default='ipv4',
             values=('ipv4', 'nat64', 'nptv6')))
         params.append(VersionedParamPath(
-            'fromzone', default='any', vartype='member', path='from'))
+            'fromzone', default=['any', ], vartype='member', path='from'))
         params.append(VersionedParamPath(
             'tozone', vartype='member', path='to'))
         params.append(VersionedParamPath(
@@ -266,9 +266,9 @@ class NatRule(VersionedPanObject):
         params.append(VersionedParamPath(
             'service', default='any', path='service'))
         params.append(VersionedParamPath(
-            'source', default='any', vartype='member', path='source'))
+            'source', default=['any', ], vartype='member', path='source'))
         params.append(VersionedParamPath(
-            'destination', default='any',
+            'destination', default=['any', ],
             vartype='member', path='destination'))
         params.append(VersionedParamPath(
             'source_translation_type',
