@@ -92,7 +92,7 @@ class Firewall(PanDevice):
                  api_key=None,
                  serial=None,
                  port=443,
-                 vsys='vsys1',  # vsys# or 'shared'
+                 vsys=None,  # 'vsys#', 'shared', or None
                  is_virtual=None,
                  multi_vsys=None,
                  *args,
@@ -136,7 +136,7 @@ class Firewall(PanDevice):
         # Check if attribute exists because this could be called during
         # init of the object before 'shared' exists.
         if hasattr(self, "shared") and self.shared:
-            return "shared"
+            return None
         else:
             return self._vsys
 
@@ -151,30 +151,13 @@ class Firewall(PanDevice):
     def xpath_vsys(self):
         if self.vsys == "shared":
             return "/config/shared"
+        elif self.vsys is None:
+            return "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']"
         else:
             return "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='%s']" % self.vsys
 
     def xpath_panorama(self):
         raise err.PanDeviceError("Attempt to modify Panorama configuration on non-Panorama device")
-
-    def _parent_xpath(self):
-        from pandevice import panorama
-        if self.parent is None:
-            # self with no parent
-            if self.vsys == "shared":
-                parent_xpath = self.xpath_root(Root.DEVICE)
-            else:
-                parent_xpath = self.xpath_root(Root.VSYS)
-        elif isinstance(self.parent, panorama.Panorama):
-            # Parent is Firewall or Panorama
-            parent_xpath = self.parent.xpath_root(self.ROOT)
-        else:
-            try:
-                # Bypass xpath of HAPairs
-                parent_xpath = self.parent.xpath_bypass()
-            except AttributeError:
-                parent_xpath = self.parent.xpath()
-        return parent_xpath
 
     def op(self, cmd=None, vsys=None, xml=False, cmd_xml=True, extra_qs=None, retry_on_peer=False):
         """Perform operational command on this Firewall

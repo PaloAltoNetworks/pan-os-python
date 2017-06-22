@@ -100,10 +100,22 @@ class Vsys(PanObject):
         )
 
     def xpath_vsys(self):
-        if self.name == "shared" or self.name is None:
+        if self.name == "shared":
             return "/config/shared"
+        elif self.name is None:
+            return "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']"
         else:
             return "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='%s']" % self.name
+
+    def _build_xpath(self, root):
+        if root == Root.VSYS:
+            return super(Vsys, self)._build_xpath(root)
+        else:
+            # If original object is not a VSYS Root, then bypass the vsys part of the xpath
+            if self.parent is None:
+                return ""
+            else:
+                return self.parent._build_xpath(root)
 
     @property
     def vsys(self):

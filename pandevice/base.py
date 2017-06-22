@@ -133,7 +133,12 @@ class PanObject(object):
 
         """
         if self.parent is not None:
-            return self.parent.vsys
+            vsys = self.parent.vsys
+            if vsys is None and self.ROOT == Root.VSYS:
+                return 'vsys1'
+            else:
+                return vsys
+
 
     @vsys.setter
     def vsys(self, value):
@@ -301,14 +306,17 @@ class PanObject(object):
 
     def _parent_xpath(self):
         if self.parent is None:
-            # self with no parent
-            parent_xpath = ""
-        elif hasattr(self.parent, 'xpath_root'):
-            # Parent is Firewall or Panorama
-            parent_xpath = self.parent.xpath_root(self.ROOT)
+            return ""
         else:
-            parent_xpath = self.parent.xpath()
+            return self.parent._build_xpath(self.ROOT)
 
+    def _build_xpath(self, root):
+        if self.parent is None:
+            # self with no parent
+            return ""
+        parent_xpath = self.parent._build_xpath(root) + self.XPATH
+        if self.SUFFIX is not None:
+            parent_xpath += self.SUFFIX % (self.uid, )
         return parent_xpath
 
     def xpath_vsys(self):
@@ -1436,7 +1444,7 @@ class PanObject(object):
                      retry_on_peer=self.HA_SYNC)
 
         # If this is shared vsys or not an importable objects, we're done.
-        if self.vsys == "shared" or not hasattr(o, 'xpath_import_base'):
+        if self.vsys == "shared" or self.vsys is None or not hasattr(o, 'xpath_import_base'):
             return
 
         # It's an importable, now do the import for everything.
@@ -1518,7 +1526,7 @@ class PanObject(object):
             raise ValueError('delete_type requires member or entry')
 
         # Unimport first if this is an imported object.
-        if self.vsys != 'shared' and hasattr(o, 'xpath_import_base'):
+        if self.vsys != 'shared' and self.vsys is not None and hasattr(o, 'xpath_import_base'):
             members = ' or '.join("text()='{0}'".format(x.uid) for x in objs)
             xpath = '{0}/member[{1}]'.format(o.xpath_import_base(), members)
             dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
@@ -2552,6 +2560,7 @@ class ParamPath(object):
 class VsysOperations(VersionedPanObject):
     """Modify PanObject methods to set vsys import configuration."""
     CHILDMETHODS = ('create', 'apply', 'delete')
+    IMPORT_BY_DEFAULT = False
 
     def __init__(self, *args, **kwargs):
         self._xpath_imports = VersioningSupport()
@@ -2582,10 +2591,10 @@ class VsysOperations(VersionedPanObject):
         return self._create_apply_child()
 
     def _create_apply_child(self):
-        # Don't do anything if this object has an interface in ha or ag mode
+        # Remove vsys import if this object has an interface in ha or ag mode
         if str(getattr(self, "mode", None)) in ("ha", "aggregate-group"):
             self.set_vsys(None, refresh=True, update=True)
-        else:
+        elif self.IMPORT_BY_DEFAULT:
             self.create_import()
 
     def child_delete(self):
@@ -2601,7 +2610,7 @@ class VsysOperations(VersionedPanObject):
         if vsys is None:
             vsys = self.vsys
 
-        if vsys != "shared" and self.XPATH_IMPORT is not None:
+        if vsys != "shared" and vsys is not None and self.XPATH_IMPORT is not None:
             xpath = self.xpath_import_base()
             element = '<member>{0}</member>'.format(self.uid)
             device = self.nearest_pandevice()
@@ -2621,7 +2630,7 @@ class VsysOperations(VersionedPanObject):
         if vsys is None:
             vsys = self.vsys
 
-        if vsys != "shared" and self.XPATH_IMPORT is not None:
+        if vsys != "shared" and vsys is not None and self.XPATH_IMPORT is not None:
             xpath = "{0}/member[text()='{1}']".format(
                 self.xpath_import_base(), self.uid)
             device = self.nearest_pandevice()
@@ -2678,7 +2687,7 @@ class VsysOperations(VersionedPanObject):
         # Filter out instances that are not in this vlan's imports
         device = parent.nearest_pandevice()
         api_action = device.xapi.show if running_config else device.xapi.get
-        if parent.vsys != "shared" and class_instance.XPATH_IMPORT is not None:
+        if parent.vsys != "shared" and parent.vsys is not None and class_instance.XPATH_IMPORT is not None:
             imports = []
             xpath = '{0}/import{1}'.format(
                 parent.xpath_vsys(), class_instance.XPATH_IMPORT)
@@ -3156,9 +3165,8 @@ class PanDevice(PanObject):
         if scope not in self.config_changed:
             self.config_changed.append(scope)
 
-    def _parent_xpath(self):
-        parent_xpath = self.xpath_root(self.ROOT)
-        return parent_xpath
+    def _build_xpath(self, root):
+        return self.xpath_root(root)
 
     def xpath_root(self, root_type):
         if root_type == Root.DEVICE:

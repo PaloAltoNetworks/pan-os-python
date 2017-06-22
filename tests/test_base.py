@@ -360,34 +360,19 @@ class TestPanObject(unittest.TestCase):
 
         self.assertEqual('', ret_val)
 
-    def test_parent_xpath_for_xpath_root_parent(self):
-        '''If the parent has "xpath_root()", then use that.'''
-        Path = '/foo/bar'
-
-        spec = {
-            'xpath_root.return_value': Path,
-        }
-        self.obj.parent = mock.Mock(**spec)
-
-        ret_val = self.obj._parent_xpath()
-
-        self.assertEqual(Path, ret_val)
-        self.obj.parent.xpath_root.assert_called_once_with(
-            self.obj.ROOT)
-
     def test_parent_xpath_for_xpath_parent(self):
         '''Default case for parent xpath.'''
         Path = '/hello/world'
 
         spec = {
-            'xpath.return_value': Path,
+            '_build_xpath.return_value': Path,
         }
-        self.obj.parent = mock.Mock(spec=['xpath', ], **spec)
+        self.obj.parent = mock.Mock(spec=['_build_xpath', ], **spec)
 
         ret_val = self.obj._parent_xpath()
 
         self.assertEqual(Path, ret_val)
-        self.obj.parent.xpath.assert_called_once_with()
+        self.obj.parent._build_xpath.assert_called_once_with(0)
 
     def test_xpath_vsys_without_parent(self):
         ret_val = self.obj.xpath_vsys()
