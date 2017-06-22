@@ -108,7 +108,8 @@ class Tag(VersionedPanObject):
 
     Args:
         name (str): Name of the tag
-        color (str): Color ID or name (eg. 'color1', 'color4', 'purple')
+        color (str): Color ID (eg. 'color1', 'color4', etc). You can
+            use :func:`~pandevice.objects.Tag.color_code` to generate the ID.
         comments (str): Comments
 
     """
@@ -128,6 +129,53 @@ class Tag(VersionedPanObject):
             'comments', path='comments'))
 
         self._params = tuple(params)
+
+    @staticmethod
+    def color_code(color_name):
+        """Returns the color code for a color
+
+        Args:
+            color_name (str): One of the following colors:
+
+                    * red
+                    * green
+                    * blue
+                    * yellow
+                    * copper
+                    * orange
+                    * purple
+                    * gray
+                    * light green
+                    * cyan
+                    * light gray
+                    * blue gray
+                    * lime
+                    * black
+                    * gold
+                    * brown
+
+        """
+        colors = {
+            'red':         1,
+            'green':       2,
+            'blue':        3,
+            'yellow':      4,
+            'copper':      5,
+            'orange':      6,
+            'purple':      7,
+            'gray':        8,
+            'light green': 9,
+            'cyan':        10,
+            'light gray':  11,
+            'blue gray':   12,
+            'lime':        13,
+            'black':       14,
+            'gold':        15,
+            'brown':       16,
+        }
+        if color_name not in colors:
+            raise ValueError("Color '{0}' is not valid".format(color_name))
+        return "color"+str(colors[color_name])
 
 
 class ServiceObject(VersionedPanObject):
