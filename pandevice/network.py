@@ -22,7 +22,7 @@ import re
 import logging
 import xml.etree.ElementTree as ET
 import pandevice
-from pandevice.base import PanObject, Root, MEMBER, ENTRY, VsysImportMixin
+from pandevice.base import PanObject, Root, MEMBER, ENTRY
 from pandevice.base import VarPath as Var
 from pandevice import getlogger, string_or_list
 from pandevice import device
