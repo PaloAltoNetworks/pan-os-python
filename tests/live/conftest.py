@@ -14,6 +14,7 @@ one_panorama_per_version = []
 ha_pairs = []
 panorama_fw_combinations = []
 
+
 def desc(pano=None, fw=None):
     ans = []
     if pano is not None:
@@ -23,6 +24,7 @@ def desc(pano=None, fw=None):
     if fw is not None:
         ans.append('{0}.{1}NGFW'.format(*fw))
     return ''.join(ans)
+
 
 def init():
     '''
@@ -122,6 +124,7 @@ def init():
 # Invoke the init() to set globals for our tests.
 init()
 
+
 def pytest_report_header(config):
     if not one_device_type_per_version:
         ans = [
@@ -138,6 +141,7 @@ def pytest_report_header(config):
             ans.append(' '.join(line))
 
     return ans
+
 
 # Order tests alphabetically.  This is needed because by default pytest gets
 # the tests of the current class, executes them, then walks the inheritance
@@ -160,9 +164,11 @@ def pytest_collection_modifyitems(items):
 
     items[:] = reordered
 
+
 # Define a state fixture.
 class State(object):
     pass
+
 
 class StateMap(object):
     def __init__(self):
@@ -172,9 +178,11 @@ class StateMap(object):
         key = tuple(d.hostname for d in x)
         return self.config.setdefault(key, State())
 
+
 @pytest.fixture(scope='class')
 def state_map(request):
     yield StateMap()
+
 
 # Define parametrized fixtures.
 @pytest.fixture(
@@ -185,6 +193,7 @@ def state_map(request):
 def fw(request):
     return request.param
 
+
 @pytest.fixture(
     scope='session',
     params=[x[0] for x in one_device_type_per_version],
@@ -193,6 +202,7 @@ def fw(request):
 def dev(request):
     return request.param
 
+
 @pytest.fixture(
     scope='session',
     params=[x[0] for x in one_panorama_per_version],
@@ -200,6 +210,7 @@ def dev(request):
 )
 def pano(request):
     return request.param
+
 
 @pytest.fixture(
     scope='session',

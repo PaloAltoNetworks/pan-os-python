@@ -114,7 +114,10 @@ class PanObject(object):
         return self.uid
 
     def __repr__(self):
-        return "<%s %s at 0x%x>" % (type(self).__name__, repr(getattr(self, self.NAME, None)), id(self))
+        return '<{0}{1} {2:#x}>'.format(
+            type(self).__name__,
+            ' {0}'.format(self.uid) if self.uid else '',
+            id(self))
 
     @classmethod
     def variables(cls):
