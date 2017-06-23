@@ -495,9 +495,10 @@ class TestXpaths_7_0(unittest.TestCase):
 
     # Firewall tests
     def test_edit_xpath_from_firewall(self):
+        # This is not a valid xpath, but its what should happen
+        # if there is no parent
         expected = ''.join([
-            "/config/devices/entry[@name='localhost.localdomain']",
-            "/vsys/entry[@name='vsys2']/devices/entry[@name='serial']",
+            "/devices/entry[@name='serial']",
         ])
 
         fw = pandevice.firewall.Firewall(
@@ -508,9 +509,10 @@ class TestXpaths_7_0(unittest.TestCase):
         self.assertEqual(expected, ret_val)
 
     def test_set_xpath_from_firewall(self):
+        # This is not a valid xpath, but its what should happen
+        # if there is no parent
         expected = ''.join([
-            "/config/devices/entry[@name='localhost.localdomain']",
-            "/vsys/entry[@name='vsys2']/devices",
+            "/devices",
         ])
 
         fw = pandevice.firewall.Firewall(
