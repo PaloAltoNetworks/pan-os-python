@@ -148,7 +148,7 @@ class Vlan(VsysOperations):
 
     Args:
         interface (list): List of interface names
-        virtual-interface (VlanInterface): The layer3 vlan interface for this vlan
+        virtual-interface (VlanInterface): The layer2 vlan interface for this vlan
 
     """
     SUFFIX = ENTRY
@@ -666,7 +666,6 @@ class Layer3Subinterface(Subinterface):
     CHILDTYPES = (
         "network.IPv6Address",
         "network.Arp",
-        "network.ManagementProfile",
     )
 
     def _setup(self):
@@ -844,7 +843,6 @@ class EthernetInterface(PhysicalInterface):
         "network.Layer2Subinterface",
         "network.IPv6Address",
         "network.Arp",
-        "network.ManagementProfile",
     )
 
     def _setup(self):
@@ -869,10 +867,6 @@ class EthernetInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'ipv6_enabled', path='{mode}/ipv6/enabled', vartype='yesno',
             condition={'mode': 'layer3'}))
-        params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno', condition={'mode': 'layer3'},
-            path='{mode}/ipv6/neighbor-discovery/router-advertisement/enable')
         params.append(VersionedParamPath(
             'management_profile', path='{mode}/interface-management-profile',
             condition={'mode': 'layer3'}))
@@ -977,7 +971,6 @@ class AggregateInterface(PhysicalInterface):
         "network.Layer2Subinterface",
         "network.IPv6Address",
         "network.Arp",
-        "network.ManagementProfile",
     )
 
     def _setup(self):
@@ -1069,7 +1062,6 @@ class VlanInterface(Interface):
     CHILDTYPES = (
         "network.IPv6Address",
         "network.Arp",
-        "network.ManagementProfile",
     )
 
     def _setup(self):
@@ -1139,7 +1131,6 @@ class LoopbackInterface(Interface):
     """
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.ManagementProfile",
     )
 
     def _setup(self):
@@ -1198,7 +1189,6 @@ class TunnelInterface(Interface):
     """
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.ManagementProfile",
     )
 
     def _setup(self):
@@ -1245,12 +1235,11 @@ class StaticRoute(VersionedPanObject):
     """
     SUFFIX = ENTRY
 
-    def _setup_xpaths(self):
+    def _setup(self):
+        # xpaths
         self._xpaths.add_profile(value='/routing-table/ip/static-route')
 
-    def _setup(self):
-        self._setup_xpaths()
-
+        # params
         params = []
 
         params.append(VersionedParamPath(
@@ -1260,18 +1249,18 @@ class StaticRoute(VersionedPanObject):
             values=['discard', 'ip-address'],
             path='nexthop/{nexthop_type}'))
         params.append(VersionedParamPath(
-            'nexthop', path='nexthop/ip-address'))
+            'nexthop', path='nexthop/{nexthop_type}'))
         params.append(VersionedParamPath(
             'interface', path='interface'))
         params.append(VersionedParamPath(
-            'admin_dist', path='admin-dist'))
+            'admin_dist', vartype='int', path='admin-dist'))
         params.append(VersionedParamPath(
             'metric', default=10, vartype='int', path='metric'))
 
         self._params = tuple(params)
 
 
-class StaticRouteV6(StaticRoute):
+class StaticRouteV6(VersionedPanObject):
     """IPV6 Static Route
 
     Add to a :class:`pandevice.network.VirtualRouter` instance.
@@ -1286,9 +1275,31 @@ class StaticRouteV6(StaticRoute):
         metric (int): Metric (Default: 10)
 
     """
-    def _setup_xpaths(self):
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
         self._xpaths.add_profile(value='/routing-table/ipv6/static-route')
 
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'destination', path='destination'))
+        params.append(VersionedParamPath(
+            'nexthop_type', default='ipv6-address',
+            values=['discard', 'ipv6-address'],
+            path='nexthop/{nexthop_type}'))
+        params.append(VersionedParamPath(
+            'nexthop', path='nexthop/{nexthop_type}'))
+        params.append(VersionedParamPath(
+            'interface', path='interface'))
+        params.append(VersionedParamPath(
+            'admin_dist', vartype='int', path='admin-dist'))
+        params.append(VersionedParamPath(
+            'metric', default=10, vartype='int', path='metric'))
+
+        self._params = tuple(params)
 
 class VirtualRouter(VsysOperations):
     """Virtual router
@@ -1317,11 +1328,13 @@ class VirtualRouter(VsysOperations):
     )
 
     def _setup(self):
+        # xpaths
         self._xpaths.add_profile(value='/network/virtual-router')
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/virtual-router')
 
+        # params
         params = []
 
         params.append(VersionedParamPath(
@@ -1379,15 +1392,18 @@ class RedistributionProfile(VersionedPanObject):
         params.append(VersionedParamPath(
             'filter_nexthop', path='filter/nexthop', vartype='member'))
         params.append(VersionedParamPath(
-            'ospf_filter_pathtype', path='filter/ospf/path-type', vartype='member'))
+            'ospf_filter_pathtype', path='filter/ospf/path-type',
+            vartype='member'))
         params.append(VersionedParamPath(
             'ospf_filter_area', path='filter/ospf/area', vartype='member'))
         params.append(VersionedParamPath(
             'ospf_filter_tag', path='filter/ospf/tag', vartype='member'))
         params.append(VersionedParamPath(
-            'bgp_filter_community', path='filter/bgp/community', vartype='member'))
+            'bgp_filter_community', path='filter/bgp/community',
+            vartype='member'))
         params.append(VersionedParamPath(
-            'bgp_filter_extended_community', path='filter/bgp/extended-community', vartype='member'))
+            'bgp_filter_extended_community',
+            path='filter/bgp/extended-community', vartype='member'))
 
         self._params = tuple(params)
 
@@ -1434,19 +1450,25 @@ class Ospf(VersionedPanObject):
             'rfc1583', vartype='yesno'))
         # TODO: Add flood prevention
         params.append(VersionedParamPath(
-            'spf_calculation_delay', path='timers/spf-calculation-delay', vartype='int'))
+            'spf_calculation_delay', path='timers/spf-calculation-delay',
+            vartype='int'))
         params.append(VersionedParamPath(
             'lsa_interval', path='timers/lsa-interval', vartype='int'))
         params.append(VersionedParamPath(
-            'graceful_restart_enable', path='graceful-restart/enable', vartype='yesno'))
+            'graceful_restart_enable', path='graceful-restart/enable',
+            vartype='yesno'))
         params.append(VersionedParamPath(
-            'gr_grace_period', path='graceful-restart/grace-period', vartype='int'))
+            'gr_grace_period', path='graceful-restart/grace-period',
+            vartype='int'))
         params.append(VersionedParamPath(
-            'gr_helper_enable', path='graceful-restart/helper-enable', vartype='yesno'))
+            'gr_helper_enable', path='graceful-restart/helper-enable',
+            vartype='yesno'))
         params.append(VersionedParamPath(
-            'gr_strict_lsa_checking', path='graceful-restart/strict-LSA-checking', vartype='yesno'))
+            'gr_strict_lsa_checking',
+            path='graceful-restart/strict-LSA-checking', vartype='yesno'))
         params.append(VersionedParamPath(
-            'gr_max_neighbor_restart_time', path='graceful-restart/max-neighbor-restart-time', vartype='int'))
+            'gr_max_neighbor_restart_time',
+            path='graceful-restart/max-neighbor-restart-time', vartype='int'))
 
         self._params = tuple(params)
 
@@ -1476,7 +1498,8 @@ class OspfArea(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'type', default='normal', values=['normal', 'stub', 'nssa'], path='type/{type}'))
+            'type', default='normal', values=['normal', 'stub', 'nssa'],
+            path='type/{type}'))
         params.append(VersionedParamPath(
             'accept_summary',
             condition={'type': ['stub', 'nssa']},
@@ -1490,7 +1513,9 @@ class OspfArea(VersionedPanObject):
             path='type/{type}/default-route/{default_route_advertise}'))
         params.append(VersionedParamPath(
             'default_route_advertise_metric',
-            condition={'type': ['stub', 'nssa'], 'default_route_advertise': 'advertise'},
+            condition={
+                'type': ['stub', 'nssa'],
+                'default_route_advertise': 'advertise'},
             path='type/{type}/default-route/advertise/metric',
             vartype='int'))
         params.append(VersionedParamPath(
@@ -1519,7 +1544,8 @@ class OspfRange(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'mode', default='advertise', values=['advertise', 'suppress'], path='{mode}'))
+            'mode', default='advertise', values=['advertise', 'suppress'],
+            path='{mode}'))
 
         self._params = tuple(params)
 
@@ -1535,12 +1561,13 @@ class OspfNssaExternalRange(VersionedPanObject):
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/nssa-ext-range')
+        self._xpaths.add_profile(value='/type/nssa/nssa-ext-range')
 
         params = []
 
         params.append(VersionedParamPath(
-            'mode', default='advertise', values=['advertise', 'suppress'], path='{mode}'))
+            'mode', default='advertise', values=['advertise', 'suppress'],
+            path='{mode}'))
 
         self._params = tuple(params)
 
@@ -1578,7 +1605,8 @@ class OspfAreaInterface(VersionedPanObject):
         params.append(VersionedParamPath(
             'passive', vartype='yesno'))
         params.append(VersionedParamPath(
-            'link_type', default='broadcast', values=['broadcast', 'p2p', 'p2mp'], path='link-type/{link_type}'))
+            'link_type', default='broadcast',
+            values=['broadcast', 'p2p', 'p2mp'], path='link-type/{link_type}'))
         params.append(VersionedParamPath(
             'metric', vartype='int'))
         params.append(VersionedParamPath(
@@ -1615,7 +1643,7 @@ class OspfNeighbor(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'metric', vartype='int'))
+            'metric', vartype='int', exclude=True))
 
         self._params = tuple(params)
 

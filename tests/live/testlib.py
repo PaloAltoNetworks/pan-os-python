@@ -20,6 +20,23 @@ def random_ip(netmask=None):
         netmask or '',
     )
 
+def random_ipv6(ending=None):
+    if ending is None:
+        return ':'.join(
+            '{0:04x}'.format(random.randint(1, 65535))
+            for x in range(8)
+        )
+    else:
+        return '{0:04x}:{1:04x}:{2:04x}:{3:04x}::{4}'.format(
+            random.randint(1, 65535), random.randint(1, 65535),
+            random.randint(1, 65535), random.randint(1, 65535), ending)
+
+def random_mac():
+    return ':'.join(
+        '{0:02x}'.format(random.randint(0, 255))
+        for x in range(6)
+    )
+
 def get_available_interfaces(con, num=1):
     ifaces = network.EthernetInterface.refreshall(con, add=False)
     ifaces = set(x.name for x in ifaces)
@@ -74,7 +91,8 @@ class FwFlow(object):
     def test_03_refreshall(self, fw, state_map):
         state = self.sanity(fw, state_map)
 
-        state.obj.refreshall(state.obj.parent, add=False)
+        objs = state.obj.refreshall(state.obj.parent, add=False)
+        assert len(objs) >= 1
 
     def test_04_update(self, fw, state_map):
         state = self.sanity(fw, state_map)
@@ -139,7 +157,8 @@ class DevFlow(object):
     def test_03_refreshall(self, dev, state_map):
         state = self.sanity(dev, state_map)
 
-        state.obj.refreshall(state.obj.parent, add=False)
+        objs = state.obj.refreshall(state.obj.parent, add=False)
+        assert len(objs) >= 1
 
     def test_04_update(self, dev, state_map):
         state = self.sanity(dev, state_map)
@@ -205,7 +224,8 @@ class PanoFlow(object):
     def test_03_refreshall(self, pano, state_map):
         state = self.sanity(pano, state_map)
 
-        state.obj.refreshall(state.obj.parent, add=False)
+        objs = state.obj.refreshall(state.obj.parent, add=False)
+        assert len(objs) >= 1
 
     def test_04_update(self, pano, state_map):
         state = self.sanity(pano, state_map)
