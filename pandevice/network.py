@@ -148,7 +148,7 @@ class Vlan(VsysOperations):
 
     Args:
         interface (list): List of interface names
-        virtual-interface (VlanInterface): The layer2 vlan interface for this vlan
+        virtual-interface (VlanInterface): The layer3 vlan interface for this vlan
 
     """
     SUFFIX = ENTRY

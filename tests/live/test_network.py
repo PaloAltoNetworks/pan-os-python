@@ -66,11 +66,17 @@ class TestVlan(testlib.FwFlow):
             state.eth_objs.append(network.EthernetInterface(
                 eth, 'layer2'))
             fw.add(state.eth_objs[-1])
-            state.eth_objs[-1].create()
+        fw.create_type(network.EthernetInterface)
+
+        state.vlan_interface = network.VlanInterface(
+            'vlan.{0}'.format(random.randint(100, 200)))
+        fw.add(state.vlan_interface)
+        state.vlan_interface.create()
 
     def setup_state_obj(self, fw, state):
         state.obj = network.Vlan(
             testlib.random_name(), state.eths[0],
+            state.vlan_interface.uid,
         )
         fw.add(state.obj)
 
@@ -78,11 +84,15 @@ class TestVlan(testlib.FwFlow):
         state.obj.interface = state.eths[1]
 
     def cleanup_dependencies(self, fw, state):
-        for x in state.eth_objs:
-            try:
-                x.delete()
-            except Exception:
-                pass
+        try:
+            state.vlan_interface.delete()
+        except Exception:
+            pass
+
+        try:
+            fw.delete_type(network.EthernetInterface)
+        except Exception:
+            pass
 
 
 class TestIPv6AddressOnEthernetInterface(testlib.FwFlow):
