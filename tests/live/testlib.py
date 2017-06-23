@@ -11,6 +11,7 @@ def random_name():
         for x in range(10)
     )
 
+
 def random_ip(netmask=None):
     return '{0}.{1}.{2}.{3}{4}'.format(
         random.randint(11, 150),
@@ -19,6 +20,7 @@ def random_ip(netmask=None):
         1 if netmask is not None else random.randint(2, 200),
         netmask or '',
     )
+
 
 def random_ipv6(ending=None):
     if ending is None:
@@ -31,11 +33,13 @@ def random_ipv6(ending=None):
             random.randint(1, 65535), random.randint(1, 65535),
             random.randint(1, 65535), random.randint(1, 65535), ending)
 
+
 def random_mac():
     return ':'.join(
         '{0:02x}'.format(random.randint(0, 255))
         for x in range(6)
     )
+
 
 def get_available_interfaces(con, num=1):
     ifaces = network.EthernetInterface.refreshall(con, add=False)
