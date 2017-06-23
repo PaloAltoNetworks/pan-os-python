@@ -248,7 +248,7 @@ class Interface(VsysOperations):
     ROOT = Root.DEVICE
     DEFAULT_MODE = None
     ALLOW_SET_VLAN = False
-    IMPORT_BY_DEFAULT = True
+    ALWAYS_IMPORT = True
 
     def up(self):
         """Link state of interface

@@ -2560,7 +2560,7 @@ class ParamPath(object):
 class VsysOperations(VersionedPanObject):
     """Modify PanObject methods to set vsys import configuration."""
     CHILDMETHODS = ('create', 'apply', 'delete')
-    IMPORT_BY_DEFAULT = False
+    ALWAYS_IMPORT = False
 
     def __init__(self, *args, **kwargs):
         self._xpath_imports = VersioningSupport()
@@ -2594,7 +2594,9 @@ class VsysOperations(VersionedPanObject):
         # Remove vsys import if this object has an interface in ha or ag mode
         if str(getattr(self, "mode", None)) in ("ha", "aggregate-group"):
             self.set_vsys(None, refresh=True, update=True)
-        elif self.IMPORT_BY_DEFAULT:
+        elif self.ALWAYS_IMPORT and self.vsys is None:
+            self.create_import('vsys1')
+        else:
             self.create_import()
 
     def child_delete(self):
