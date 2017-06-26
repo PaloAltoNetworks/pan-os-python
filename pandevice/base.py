@@ -780,6 +780,7 @@ class PanObject(object):
         """Get the XML for a single PanObject."""
         # Get the root of the xml to parse
         optimized = False
+        err_msg = "Object doesn't exist: {0}".format(xpath)
         dev = self.nearest_pandevice()
         msg = '{0}: refreshing xml on {1} object {2}'.format(
             dev.id, type(self), self.uid)
@@ -804,7 +805,6 @@ class PanObject(object):
             root = api_action(xpath, retry_on_peer=self.HA_SYNC)
         except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
             if exceptions:
-                err_msg = "Object doesn't exist: {0}".format(xpath)
                 raise err.PanObjectMissing(err_msg, pan_device=dev)
             else:
                 return
