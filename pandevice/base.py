@@ -632,7 +632,8 @@ class PanObject(object):
 
         return (varpath, value, var)
 
-    def refresh(self, running_config=False, refresh_children=True, exceptions=True, xml=None):
+    def refresh(self, running_config=False, refresh_children=True,
+                exceptions=True, xml=None):
         """Refresh all variables and child objects from the device.
 
         Args:
@@ -648,7 +649,8 @@ class PanObject(object):
         """
         # Either retrieve the xml or use what is passed in
         if xml is None:
-            xml = self._refresh_xml(running_config, exceptions)
+            xml = self._refresh_xml(running_config, exceptions,
+                                    refresh_children)
         else:
             logger.debug('refresh called using xml on {0} object "{1}"'.format(
                 type(self), self.uid))
@@ -774,35 +776,54 @@ class PanObject(object):
 
         return self.children
 
-    def _refresh_xml(self, running_config, exceptions):
+    def _refresh_xml(self, running_config, exceptions, refresh_children=True):
         """Get the XML for a single PanObject."""
         # Get the root of the xml to parse
-        device = self.nearest_pandevice()
+        optimized = False
+        dev = self.nearest_pandevice()
         msg = '{0}: refreshing xml on {1} object {2}'.format(
-            device.id, type(self), self.uid)
+            dev.id, type(self), self.uid)
         logger.debug(msg)
-        if running_config:
-            api_action = device.xapi.show
+
+        api_action = dev.xapi.show if running_config else dev.xapi.get
+
+        if running_config or refresh_children:
+            xpath = self.xpath()
         else:
-            api_action = device.xapi.get
-        xpath = self.xpath()
-        err_msg = "Object doesn't exist: {0}".format(xpath)
+            optimized = True
+            info = self._build_element_info()
+            paths, settings = info[0], info[2]
+            query_paths = list(set(
+                p.path.split('/')[0].format(**settings) for p in paths))
+            xpath = '|'.join(
+                '{0}/{1}'.format(self.xpath(), x)
+                for x in query_paths)
 
         # Query the live device
         try:
             root = api_action(xpath, retry_on_peer=self.HA_SYNC)
         except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
             if exceptions:
-                raise err.PanObjectMissing(err_msg, pan_device=device)
+                err_msg = "Object doesn't exist: {0}".format(xpath)
+                raise err.PanObjectMissing(err_msg, pan_device=dev)
             else:
                 return
 
         # Determine the first element to look for in the XML
-        if self.SUFFIX is None:
-            lasttag = self.XPATH.rsplit("/", 1)[-1]
+        if not optimized:
+            # Normal XML recovery for parsing
+            if self.SUFFIX is None:
+                lasttag = self.XPATH.rsplit("/", 1)[-1]
+            else:
+                lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
+            elm = root.find("result/" + lasttag)
         else:
-            lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
-        elm = root.find("result/" + lasttag)
+            # Construct the XML for parsing.
+            elm = self._root_element()
+            results = root.find('./result')
+            if results is not None:
+                for se in results:
+                    elm.append(se)
 
         if elm is None and exceptions:
             raise err.PanObjectMissing(err_msg, pan_device=device)
