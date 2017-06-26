@@ -156,62 +156,6 @@ class Vsys(VersionedPanObject):
     def vsys(self, value):
         self.name = value
 
-    def refresh(self, running_config=False, refresh_children=True,
-                exceptions=True, xml=None):
-        """Refresh all variables and child objects from the device.
-
-        In order to limit the size of the XML, if this function is invoked
-        with refresh_children set to False and no XML, then a carefully
-        crafted XML document is created and submitted.
-
-        Args:
-            running_config (bool): Set to True to refresh from the running
-                configuration (Default: False)
-            xml (xml.etree.ElementTree): XML from a configuration to use
-                instead of refreshing from a live device
-            refresh_children (bool): Set to False to prevent refresh of child
-                objects (Default: True)
-            exceptions (bool): Set to False to prevent exceptions on failure
-                (Default: True)
-
-        """
-        # Still allow refreshing everything in one shot.
-        if refresh_children or xml is not None:
-            return super(Vsys, self).refresh(
-                running_config, refresh_children, exceptions, xml)
-
-        # Do a targetted refresh against this vsys' params.
-        dev = self.nearest_pandevice()
-        api_action = dev.xapi.show if running_config else dev.xapi.get
-
-        # Only query the xpaths we need.  In this case, we construct a list
-        # of unique first path tokens for the params.
-        paths, stubs, settings = self._build_element_info()
-        query_paths = list(set(
-            p.path.split('/')[0].format(**settings) for p in paths))
-        xpath = '|'.join(
-            '{0}/{1}'.format(self.xpath_vsys(), x)
-            for x in query_paths)
-
-        # Query the live device.
-        try:
-            root = api_action(xpath, retry_on_peer=self.HA_SYNC)
-        except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
-            if exceptions:
-                err_msg = "Object doesn't exist: {0}".format(xpath)
-                raise err.PanObjectMissing(err_msg, pan_device=dev)
-            return
-
-        # Construct the XML for parsing.
-        new_root = self._root_element()
-        results = root.find('./result')
-        if results is not None:
-            for elm in results:
-                new_root.append(elm)
-
-        # Parse normally.
-        return self.parse_xml(new_root)
-
 
 class NTPServer(PanObject):
     """A primary or secondary NTP server
