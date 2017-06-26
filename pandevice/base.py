@@ -780,7 +780,6 @@ class PanObject(object):
         """Get the XML for a single PanObject."""
         # Get the root of the xml to parse
         optimized = False
-        err_msg = "Object doesn't exist: {0}".format(xpath)
         dev = self.nearest_pandevice()
         msg = '{0}: refreshing xml on {1} object {2}'.format(
             dev.id, type(self), self.uid)
@@ -800,6 +799,7 @@ class PanObject(object):
                 '{0}/{1}'.format(self.xpath(), x)
                 for x in query_paths)
 
+        err_msg = "Object doesn't exist: {0}".format(xpath)
         # Query the live device
         try:
             root = api_action(xpath, retry_on_peer=self.HA_SYNC)
@@ -826,7 +826,7 @@ class PanObject(object):
                     elm.append(se)
 
         if elm is None and exceptions:
-            raise err.PanObjectMissing(err_msg, pan_device=device)
+            raise err.PanObjectMissing(err_msg, pan_device=dev)
 
         return elm
 
