@@ -2608,7 +2608,10 @@ class VsysOperations(VersionedPanObject):
             self.create_import()
 
     def child_delete(self):
-        self.delete_import()
+        if self.ALWAYS_IMPORT and self.vsys is None:
+            self.delete_import('vsys1')
+        else:
+            self.delete_import()
 
     def create_import(self, vsys=None):
         """Create a vsys import for the object
