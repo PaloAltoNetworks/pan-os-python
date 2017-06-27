@@ -152,9 +152,9 @@ class Firewall(PanDevice):
         if self.vsys == "shared":
             return "/config/shared"
         elif self.vsys is None:
-            return "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']"
+            return self._root_xpath_vsys('vsys1')
         else:
-            return "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='%s']" % self.vsys
+            return self._root_xpath_vsys(self.vsys)
 
     def xpath_panorama(self):
         raise err.PanDeviceError("Attempt to modify Panorama configuration on non-Panorama device")
@@ -280,13 +280,13 @@ class Firewall(PanDevice):
             if self.vsys_name is not None:
                 ET.SubElement(element, "display-name").text = self.vsys_name
             self.set_config_changed()
-            self.xapi.set(self.xpath_device() + "/vsys", ET.tostring(element), retry_on_peer=True)
+            self.xapi.set(self._root_xpath_vsys(None), ET.tostring(element), retry_on_peer=True)
 
     def delete_vsys(self):
         """Delete the vsys on the live device that this Firewall object represents"""
         if self.vsys.startswith("vsys"):
             self.set_config_changed()
-            self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys, retry_on_peer=True)
+            self.xapi.delete(self._root_xpath_vsys(self.vsys), retry_on_peer=True)
 
     def refreshall_from_xml(self, xml, refresh_children=False, variables=None):
         if len(xml) == 0:

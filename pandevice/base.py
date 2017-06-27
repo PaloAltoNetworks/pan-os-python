@@ -330,6 +330,11 @@ class PanObject(object):
         if self.parent is not None:
             return self.parent.xpath_panorama()
 
+    def _root_xpath_vsys(self, vsys):
+        root_xpath = "/config/devices/entry[@name='localhost.localdomain']/vsys"
+        specific_vsys = "/entry[@name='{0}']".format(vsys) if vsys else ""
+        return root_xpath + specific_vsys
+
     def element(self):
         """Construct an ElementTree for this PanObject and all its children
 
@@ -2616,14 +2621,17 @@ class VsysOperations(VersionedPanObject):
             vsys = self.vsys
 
         if vsys != "shared" and vsys is not None and self.XPATH_IMPORT is not None:
-            xpath = self.xpath_import_base()
+            xpath = self.xpath_import_base(vsys)
             element = '<member>{0}</member>'.format(self.uid)
             device = self.nearest_pandevice()
             device.active().xapi.set(xpath, element, retry_on_peer=True)
 
-    def xpath_import_base(self):
-        return "{0}/import{1}".format(
-            self.xpath_vsys(), self.XPATH_IMPORT)
+    def xpath_import_base(self, vsys=None):
+        if vsys:
+            vsys_xpath = self._root_xpath_vsys(vsys)
+        else:
+            vsys_xpath = self.xpath_vsys()
+        return "{0}/import{1}".format(vsys_xpath, self.XPATH_IMPORT)
 
     def delete_import(self, vsys=None):
         """Delete a vsys import for the object
@@ -2637,7 +2645,7 @@ class VsysOperations(VersionedPanObject):
 
         if vsys != "shared" and vsys is not None and self.XPATH_IMPORT is not None:
             xpath = "{0}/member[text()='{1}']".format(
-                self.xpath_import_base(), self.uid)
+                self.xpath_import_base(vsys), self.uid)
             device = self.nearest_pandevice()
             device.active().xapi.delete(xpath, retry_on_peer=True)
 
