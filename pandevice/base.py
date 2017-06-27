@@ -1035,18 +1035,16 @@ class PanObject(object):
             raise ValueError("can't get name_only from running_config")
         if name_only and cls.SUFFIX != ENTRY:
             raise ValueError("name_only is invalid, can only be used on entry type objects")
-        if isinstance(parent, PanDevice):
-            device = parent
-            parent_xpath = parent.xpath_root(cls.ROOT)
-        else:
-            device = parent.nearest_pandevice()
-            parent_xpath = parent.xpath()
-        logger.debug(device.id + ": refreshall called on %s type" % cls)
 
         # Versioned objects need a PanDevice to get the version from, so
         # set the child's parent before accessing XPATH.
         class_instance = cls()
         class_instance.parent = parent
+
+        device = class_instance.nearest_pandevice()
+        logger.debug(device.id + ": refreshall called on %s type" % cls)
+
+        parent_xpath = class_instance._parent_xpath()
 
         # Set api_action and xpath
         api_action = device.xapi.show if running_config else device.xapi.get
