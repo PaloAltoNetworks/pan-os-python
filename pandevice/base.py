@@ -338,8 +338,11 @@ class PanObject(object):
         specific_vsys = "/entry[@name='{0}']".format(vsys) if vsys else ""
         return root_xpath + specific_vsys
 
-    def element(self):
+    def element(self, comparable=False):
         """Construct an ElementTree for this PanObject and all its children
+
+        Args:
+            comparable (bool): Element will be used in a comparison with another.
 
         Returns:
             xml.etree.ElementTree: An ElementTree instance representing the
@@ -417,7 +420,7 @@ class PanObject(object):
                         nextelement = ET.SubElement(nextelement, section)
             if missing_replacement:
                 continue
-            var._set_inner_xml_tag_text(nextelement, value)
+            var._set_inner_xml_tag_text(nextelement, value, comparable)
         self.xml_merge(root, self._subelements())
         return root
 
@@ -463,7 +466,7 @@ class PanObject(object):
             e = root
             for path in xpath_sections:
                 e = ET.SubElement(e, path)
-            e.append(child.element(comparable))
+            e.append(child.element(comparable=comparable))
             yield root
 
     def _check_child_methods(self, method):
@@ -2251,27 +2254,28 @@ class VarPath(object):
             'XML Path': self.path,
         }
 
-    def _set_inner_xml_tag_text(self, elm, value, sha1=False):
+    def _set_inner_xml_tag_text(self, elm, value, comparable=False):
         """Sets the final elm's .text as appropriate given the vartype.
 
         Args:
             elm (xml.etree.ElementTree.Element): The element whose .text to set.
             value (various): The value to put in the .text, conforming to the vartype of this parameter.
-            sha1 (bool): This variable is ignored for classic objects
+            comparable (bool): Make updates for element string comparisons.  For entry and member vartypes, sort the entries (True) or leave them as-is (False).
 
         """
         # Create an element containing the value in the instance variable
         if self.vartype == "member":
-            for member in pandevice.string_or_list(value):
+            values = pandevice.string_or_list(value)
+            if comparable:
+                values = sorted(values)
+            for member in values:
                 ET.SubElement(elm, 'member').text = str(member)
         elif self.vartype == "entry":
-            try:
-                # Value is an array
-                for entry in pandevice.string_or_list(value):
-                    ET.SubElement(elm, 'entry', {'name': str(entry)})
-            except TypeError:
-                # Value is not an array
-                ET.SubElement(elm, 'entry', {'name': str(value)})
+            values = pandevice.string_or_list(value)
+            if comparable:
+                values = sorted(values)
+            for entry in values:
+                ET.SubElement(elm, 'entry', {'name': str(entry)})
         elif self.vartype == "exist":
             if value:
                 ET.SubElement(elm, self.variable)
