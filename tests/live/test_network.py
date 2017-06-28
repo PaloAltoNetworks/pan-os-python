@@ -163,6 +163,46 @@ class TestIPv6AddressOnLayer3Subinterface(testlib.FwFlow):
             pass
 
 
+class TestIPv6AddressOnSubinterface(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        state.eth_obj = None
+        state.eth = testlib.get_available_interfaces(fw)[0]
+
+        state.eth_obj = network.EthernetInterface(
+            state.eth, 'layer3', testlib.random_ip('/24'))
+        fw.add(state.eth_obj)
+        state.eth_obj.create()
+
+        tag = random.randint(1, 4000)
+        state.parent = network.Subinterface(
+            '{0}.{1}'.format(state.eth, tag),
+            tag, testlib.random_ip('/24'))
+        state.eth_obj.add(state.parent)
+        state.parent.create()
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.IPv6Address(
+            testlib.random_ipv6(),
+            False, True, False, True, 2420000, 604800, True, False)
+        state.parent.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable_on_interface = True
+        state.obj.prefix = False
+        state.obj.anycast = True
+
+    def cleanup_dependencies(self, fw, state):
+        try:
+            state.parent.delete()
+        except Exception:
+            pass
+
+        try:
+            state.eth_obj.delete()
+        except Exception:
+            pass
+
+
 # Interface - inherited by other interface objects
 
 class TestArpOnEthernetInterface(testlib.FwFlow):
@@ -186,6 +226,44 @@ class TestArpOnEthernetInterface(testlib.FwFlow):
     def cleanup_dependencies(self, fw, state):
         try:
             state.eth_obj.delete()
+        except Exception as e:
+            print('err: {0}'.format(e))
+            pass
+
+
+class TestArpOnLayer3Subinterface(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        state.eth_obj = None
+        state.eth = testlib.get_available_interfaces(fw)[0]
+
+        state.eth_obj = network.EthernetInterface(
+            state.eth, 'layer3', testlib.random_ip('/24'))
+        fw.add(state.eth_obj)
+        state.eth_obj.create()
+
+        tag = random.randint(1, 4000)
+        state.parent = network.Layer3Subinterface(
+            '{0}.{1}'.format(state.eth, tag),
+            tag, testlib.random_ip('/24'))
+        state.eth_obj.add(state.parent)
+        state.parent.create()
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.Arp(
+            testlib.random_ip(), testlib.random_mac())
+        state.parent.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.hw_address = testlib.random_mac()
+
+    def cleanup_dependencies(self, fw, state):
+        try:
+            state.parent.delete()
+        except Exception:
+            pass
+
+        try:
+            state.eth_obj.delete()
         except Exception:
             pass
 
@@ -201,7 +279,7 @@ class TestArpOnSubinterface(testlib.FwFlow):
         state.eth_obj.create()
 
         tag = random.randint(1, 4000)
-        state.parent = network.Layer3Subinterface(
+        state.parent = network.Subinterface(
             '{0}.{1}'.format(state.eth, tag),
             tag, testlib.random_ip('/24'))
         state.eth_obj.add(state.parent)
@@ -264,10 +342,81 @@ class TestVirtualWire(testlib.FwFlow):
                 pass
 
 
-# Subinterface - inherited by others
+class TestSubinterfaceOnLayer3EthernetInterface(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        state.management_profile = network.ManagementProfile(
+            testlib.random_name(), ping=True)
+        state.eth = None
+
+        fw.add(state.management_profile)
+        state.management_profile.create()
+
+        state.eth = testlib.get_available_interfaces(fw)[0]
+        state.parent = network.EthernetInterface(
+            state.eth, 'layer3', ip=testlib.random_ip('/24'),
+        )
+        fw.add(state.parent)
+        state.parent.create()
+
+    def setup_state_obj(self, fw, state):
+        tag = random.randint(1, 4000)
+        name = '{0}.{1}'.format(state.eth, tag)
+        state.obj = network.Subinterface(
+            name, tag, testlib.random_ip('/24'), False,
+            state.management_profile, random.randint(576, 1500),
+            True, None, 'This is my subeth',
+            random.randint(40, 300), random.randint(60, 300),
+        )
+        state.parent.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.comment = 'Update the comment'
+        state.obj.ip = testlib.random_ip('/24')
+
+    def cleanup_dependencies(self, fw, state):
+        try:
+            state.management_profile.delete()
+        except Exception:
+            pass
+
+        try:
+            state.parent.delete()
+        except Exception:
+            pass
+
+
+class TestSubinterfaceOnLayer2EthernetInterface(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        state.eth = None
+
+        state.eth = testlib.get_available_interfaces(fw)[0]
+        state.parent = network.EthernetInterface(
+            state.eth, 'layer2',
+        )
+        fw.add(state.parent)
+        state.parent.create()
+
+    def setup_state_obj(self, fw, state):
+        tag = random.randint(1, 4000)
+        name = '{0}.{1}'.format(state.eth, tag)
+        state.obj = network.Subinterface(
+            name, tag, comment='This is my L2 subinterface',
+        )
+        state.parent.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.comment = 'Updated comment'
+
+    def cleanup_dependencies(self, fw, state):
+        try:
+            state.parent.delete()
+        except Exception:
+            pass
+
+
 # AbstractSubinterface
 
-class TestL3Subinterface(testlib.FwFlow):
+class TestLayer3Subinterface(testlib.FwFlow):
     def create_dependencies(self, fw, state):
         state.management_profile = network.ManagementProfile(
             testlib.random_name(), ping=True)
@@ -310,7 +459,7 @@ class TestL3Subinterface(testlib.FwFlow):
             pass
 
 
-class TestL2Subinterface(testlib.FwFlow):
+class TestLayer2Subinterface(testlib.FwFlow):
     def create_dependencies(self, fw, state):
         state.eth = None
 
@@ -341,7 +490,7 @@ class TestL2Subinterface(testlib.FwFlow):
 
 # PhysicalInterface - inherited by others
 
-class TestL3EthernetInterface(testlib.FwFlow):
+class TestEthernetInterfaceAsLayer3(testlib.FwFlow):
     def create_dependencies(self, fw, state):
         state.management_profiles = []
 
@@ -386,7 +535,7 @@ class TestL3EthernetInterface(testlib.FwFlow):
                 pass
 
 
-class TestL2EthernetInterface(testlib.FwFlow):
+class TestEthernetInterfaceAsLayer2(testlib.FwFlow):
     def create_dependencies(self, fw, state):
         state.management_profiles = []
 

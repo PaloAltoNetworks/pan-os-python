@@ -339,8 +339,8 @@ class Interface(VsysOperations):
 
         """
         if not self.ALLOW_SET_VLAN:
-            msg = 'Class "{0}" cannot invoke this function'
-            raise AttributeError(msg.format(self.__class__))
+            msg = 'Interface "{0}" cannot invoke this function'
+            raise AttributeError(msg.format(self.name))
 
         return self._set_reference(vlan_name, Vlan, "interface", True,
                                    refresh, update, running_config)
@@ -472,7 +472,7 @@ class Arp(VersionedPanObject):
         # Subinterface xpaths
         self._xpaths.add_profile(
             value='/arp',
-            parents=('Layer3Subinterface', ))
+            parents=('Layer3Subinterface', 'Subinterface'))
 
         # params
         params = []
@@ -524,6 +524,107 @@ class VirtualWire(VersionedPanObject):
 
 
 class Subinterface(Interface):
+    """Ethernet or Aggregate Subinterface.
+
+    Args:
+        tag (int): Tag for the interface, aka vlan id
+        ip (tuple): Interface IPv4 addresses
+        ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
+        management_profile (ManagementProfile): Interface Management Profile
+        mtu(int): MTU for interface
+        adjust_tcp_mss (bool): Adjust TCP MSS
+        netflow_profile (NetflowProfile): Netflow profile
+        comment (str): The interface's comment
+        ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
+        ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+        enable_dhcp (bool): Enable DHCP on this interface
+        create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
+        dhcp_default_route_metric (int): Metric for the DHCP default route
+        lldp_enabled (bool): Enable LLDP
+        lldp_profile (str): Reference to an lldp profile
+
+    """
+    CHILDTYPES = (
+        "network.IPv6Address",
+        "network.Arp",
+    )
+
+    @property
+    def ALLOW_SET_VLAN(self):
+        if self.parent is None:
+            return False
+
+        return self.parent.mode == 'layer2'
+
+    @property
+    def DEFAULT_MODE(self):
+        if self.parent is None:
+            return 'layer3'
+
+        return self.parent.mode
+
+    def _setup(self):
+        # layer3 xpaths
+        self._xpaths.add_profile(value='/layer3/units')
+
+        # layer2 xpaths
+        self._xpaths.add_profile(
+            parent_param='mode',
+            parent_param_values=('layer2', ),
+            value='/layer2/units')
+
+        # xpath imports
+        self._xpath_imports.add_profile(value='/network/interface')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'tag', path='tag', vartype='int'))
+        params.append(VersionedParamPath(
+            'ip', path='ip', vartype='entry'))
+        params.append(VersionedParamPath(
+            'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'management_profile', path='interface-management-profile'))
+        params.append(VersionedParamPath(
+            'mtu', path='mtu', vartype='int'))
+        params.append(VersionedParamPath(
+            'adjust_tcp_mss', path='adjust-tcp-mss', vartype='yesno'))
+        params[-1].add_profile(
+            '7.1.0',
+            vartype='yesno', path='adjust-tcp-mss/enable')
+        params.append(VersionedParamPath(
+            'netflow_profile', path='netflow-profile'))
+        params.append(VersionedParamPath(
+            'comment', path='comment'))
+        params.append(VersionedParamPath(
+            'ipv4_mss_adjust', exclude=True))
+        params[-1].add_profile(
+            '7.1.0',
+            path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
+        params.append(VersionedParamPath(
+            'ipv6_mss_adjust', exclude=True))
+        params[-1].add_profile(
+            '7.1.0',
+            path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
+        params.append(VersionedParamPath(
+            'enable_dhcp', path='dhcp-client/enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'create_dhcp_default_route',
+            path='dhcp-client/create-default-route', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'dhcp_default_route_metric',
+            path='dhcp-client/default-route-metric', vartype='int'))
+        params.append(VersionedParamPath(
+            'lldp_enabled', path='lldp/enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'lldp_profile', path='lldp/profile'))
+
+        self._params = tuple(params)
+
+
+class SubinterfaceNamer(Interface):
     """Subinterface class
 
     Do not instantiate this object. Use a subclass.
@@ -533,6 +634,13 @@ class Subinterface(Interface):
         """Create a name appropriate for a subinterface if it isn't already"""
         if '.' not in self.name:
             self.name = '{0}.{1}'.format(self.name, self.tag)
+
+    def element(self):
+        import warnings
+        new_class = Subinterface
+        m = '{0} will be removed in a future version, please use {1} instead'
+        warnings.warn(m.format(self.__class__, new_class), UserWarning, 2)
+        return super(SubinterfaceNamer, self).element()
 
 
 class AbstractSubinterface(object):
@@ -643,7 +751,7 @@ class AbstractSubinterface(object):
             i.delete()
 
 
-class Layer3Subinterface(Subinterface):
+class Layer3Subinterface(SubinterfaceNamer):
     """Ethernet or Aggregate Subinterface in Layer 3 mode.
 
     Args:
@@ -723,7 +831,7 @@ class Layer3Subinterface(Subinterface):
         self._params = tuple(params)
 
 
-class Layer2Subinterface(Subinterface):
+class Layer2Subinterface(SubinterfaceNamer):
     """Ethernet or Aggregate Subinterface in Layer 2 mode.
 
     Args:
@@ -841,6 +949,7 @@ class EthernetInterface(PhysicalInterface):
     CHILDTYPES = (
         "network.Layer3Subinterface",
         "network.Layer2Subinterface",
+        "network.Subinterface",
         "network.IPv6Address",
         "network.Arp",
     )
@@ -969,6 +1078,7 @@ class AggregateInterface(PhysicalInterface):
     CHILDTYPES = (
         "network.Layer3Subinterface",
         "network.Layer2Subinterface",
+        "network.Subinterface",
         "network.IPv6Address",
         "network.Arp",
     )
