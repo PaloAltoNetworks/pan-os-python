@@ -229,6 +229,7 @@ class SystemSettings(PanObject):
         update_server (str): IP or hostname of the update server
 
     """
+    NAME = None
     ROOT = Root.DEVICE
     XPATH = "/deviceconfig/system"
     HA_SYNC = False

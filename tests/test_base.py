@@ -1375,5 +1375,76 @@ class TestParentAwareXpathWithParams(unittest.TestCase):
                 Base.VersionedPanObject._UNKNOWN_PANOS_VERSION, parent))
 
 
+class MyVersionedObject(Base.VersionedPanObject):
+    SUFFIX = Base.ENTRY
+
+    def _setup(self):
+        params = []
+
+        params.append(Base.VersionedParamPath(
+            'entries', path='multiple/entries', vartype='entry'))
+        params.append(Base.VersionedParamPath(
+            'members', path='multiple/members', vartype='member'))
+        params.append(Base.VersionedParamPath(
+            'someint', path='someint', vartype='int'))
+
+        self._params = tuple(params)
+
+
+class TestEqual(unittest.TestCase):
+    def test_ordered(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+
+        self.assertTrue(o1.equal(o2))
+
+    def test_unordered_entries(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['b', 'a'], ['c', 'd'], 5)
+
+        self.assertTrue(o1.equal(o2))
+
+    def test_unordered_members(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['a', 'b'], ['d', 'c'], 5)
+
+        self.assertTrue(o1.equal(o2))
+
+    def test_values_are_unchanged_after_comparison(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['b', 'a'], ['d', 'c'], 5)
+
+        o1.equal(o2)
+
+        self.assertEqual(o1.entries, ['a', 'b'])
+        self.assertEqual(o1.members, ['c', 'd'])
+        self.assertEqual(o2.entries, ['b', 'a'])
+        self.assertEqual(o2.members, ['d', 'c'])
+
+    def test_str_list_field_is_equal(self):
+        o1 = MyVersionedObject('a', ['a', ], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', 'a', ['c', 'd'], 5)
+
+        self.assertTrue(o1.equal(o2))
+
+    def test_unequal_entries_returns_false(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['a', 'i'], ['c', 'd'], 5)
+
+        self.assertFalse(o1.equal(o2))
+
+    def test_unequal_members_returns_false(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['a', 'b'], ['c', 'i'], 5)
+
+        self.assertFalse(o1.equal(o2))
+
+    def test_unequal_ints_returns_false(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 6)
+
+        self.assertFalse(o1.equal(o2))
+
+
 if __name__=='__main__':
     unittest.main()
