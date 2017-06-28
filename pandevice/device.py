@@ -28,45 +28,46 @@ import pandevice.errors as err
 logger = getlogger(__name__)
 
 
-class VsysResources(PanObject):
+class VsysResources(VersionedPanObject):
     """Resource constraints for a Vsys
 
     Args:
-        max-security-rules (int): Maximum security rules
-        max-nat-rules (int): Maximum nat rules
-        max-ssl-decryption-rules (int): Maximum ssl decryption rules
-        max-qos-rules (int): Maximum QOS rules
-        max-application-override-rules (int): Maximum application override rules
-        max-pbf-rules (int): Maximum policy based forwarding rules
-        max-cp-rules (int): Maximum captive portal rules
-        max-dos-rules (int): Maximum DOS rules
-        max-site-to-site-vpn-tunnels (int): Maximum site-to-site VPN tunnels
-        max-concurrent-ssl-vpn-tunnels (int): Maximum ssl VPN tunnels
-        max-sessions (int): Maximum sessions
+        max_security_rules (int): Maximum security rules
+        max_nat_rules (int): Maximum nat rules
+        max_ssl_decryption_rules (int): Maximum ssl decryption rules
+        max_qos_rules (int): Maximum QOS rules
+        max_application_override_rules (int): Maximum application override rules
+        max_pbf_rules (int): Maximum policy based forwarding rules
+        max_cp_rules (int): Maximum captive portal rules
+        max_dos_rules (int): Maximum DOS rules
+        max_site_to_site_vpn_tunnels (int): Maximum site-to-site VPN tunnels
+        max_concurrent_ssl_vpn_tunnels (int): Maximum ssl VPN tunnels
+        max_sessions (int): Maximum sessions
 
     """
-
-    XPATH = "/import/resource"
+    NAME = None
     ROOT = Root.VSYS
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("max-security-rules", vartype="int"),
-            Var("max-nat-rules", vartype="int"),
-            Var("max-ssl-decryption-rules", vartype="int"),
-            Var("max-qos-rules", vartype="int"),
-            Var("max-application-override-rules", vartype="int"),
-            Var("max-pbf-rules", vartype="int"),
-            Var("max-cp-rules", vartype="int"),
-            Var("max-dos-rules", vartype="int"),
-            Var("max-site-to-site-vpn-tunnels", vartype="int"),
-            Var("max-concurrent-ssl-vpn-tunnels", vartype="int"),
-            Var("max-sessions", vartype="int"),
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/import/resource')
+
+        # params
+        params = []
+
+        int_params = ("max-security-rules", "max-nat-rules",
+            "max-ssl-decryption-rules", "max-qos-rules",
+            "max-application-override-rules", "max-pbf-rules",
+            "max-cp-rules", "max-dos-rules", "max-site-to-site-vpn-tunnels",
+            "max-concurrent-ssl-vpn-tunnels", "max-sessions",
         )
+        for x in int_params:
+            params.append(VersionedParamPath(x, path=x, vartype='int'))
+
+        self._params = tuple(params)
 
 
-class Vsys(PanObject):
+class Vsys(VersionedPanObject):
     """Virtual System (VSYS)
 
     You can interact with virtual systems in two different ways:
@@ -86,18 +87,48 @@ class Vsys(PanObject):
         display_name (str): Friendly name of the vsys
         interface (list): A list of strings with names of interfaces
             or a list of :class:`pandevice.network.Interface` objects
+        vlans (list): A list of strings of VLANs
+        virtual_wires (list): A list of strings of virtual wires
+        virtual_routers (list): A list of strings of virtual routers
+        visible_vsys (list): A list of strings of the vsys visible
+        dns_proxy (str): DNS Proxy server
+        decrypt_forwarding (bool): Allow forwarding of decrypted content
 
     """
-    XPATH = "/vsys"
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("display-name"),
-            Var("import/network/interface", vartype="member")
-        )
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/vsys')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'display_name', path='display-name'))
+        params.append(VersionedParamPath(
+            'interface', vartype='member',
+            path='import/network/interface'))
+        params.append(VersionedParamPath(
+            'vlans', vartype='member',
+            path='import/network/vlan'))
+        params.append(VersionedParamPath(
+            'virtual_wires', vartype='member',
+            path='import/network/virtual-wire'))
+        params.append(VersionedParamPath(
+            'virtual_routers', vartype='member',
+            path='import/network/virtual-router'))
+        params.append(VersionedParamPath(
+            'visible_vsys', vartype='member',
+            path='import/visible-vsys'))
+        params.append(VersionedParamPath(
+            'dns_proxy', path='import/dns-proxy'))
+        params.append(VersionedParamPath(
+            'decrypt_forwarding', vartype='yesno',
+            path='setting/ssl-decrypt/allow-forward-decrypted-content'))
+
+        self._params = tuple(params)
 
     def xpath_vsys(self):
         if self.name == "shared":
