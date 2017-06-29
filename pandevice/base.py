@@ -338,10 +338,11 @@ class PanObject(object):
         specific_vsys = "/entry[@name='{0}']".format(vsys) if vsys else ""
         return root_xpath + specific_vsys
 
-    def element(self, comparable=False):
+    def element(self, with_children=True, comparable=False):
         """Construct an ElementTree for this PanObject and all its children
 
         Args:
+            with_children (bool): Include children in element.
             comparable (bool): Element will be used in a comparison with another.
 
         Returns:
@@ -421,7 +422,10 @@ class PanObject(object):
             if missing_replacement:
                 continue
             var._set_inner_xml_tag_text(nextelement, value, comparable)
-        self.xml_merge(root, self._subelements())
+
+        if with_children:
+            self.xml_merge(root, self._subelements())
+
         return root
 
     def element_str(self):
@@ -1959,11 +1963,11 @@ class VersionedPanObject(PanObject):
 
         return (paths, stubs, settings)
 
-    def element(self, compare_children=True, comparable=False):
+    def element(self, with_children=True, comparable=False):
         """Return an xml.etree.ElementTree for this object and its children.
 
         Args:
-            compare_children (bool): Include the children objects.
+            with_children (bool): Include the children objects.
             comparable (bool): Element will be used in a comparison with another.
 
         Returns:
@@ -1977,7 +1981,7 @@ class VersionedPanObject(PanObject):
             (p.element(self._root_element(), settings, comparable) for p in paths),
             (s.element(self._root_element(), settings, comparable) for s in stubs),
         )
-        if compare_children:
+        if with_children:
             iterchain += (self._subelements(comparable), )
 
         self.xml_merge(ans, itertools.chain(*iterchain))
