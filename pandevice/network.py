@@ -529,10 +529,23 @@ class Subinterface(Interface):
     Do not instantiate this object. Use a subclass.
 
     """
+    _BASE_INTERFACE_NAME = 'entry BASE_INTERFACE_NAME'
+
     def set_name(self):
         """Create a name appropriate for a subinterface if it isn't already"""
         if '.' not in self.name:
             self.name = '{0}.{1}'.format(self.name, self.tag)
+
+    @property
+    def XPATH(self):
+        path = super(Subinterface, self).XPATH
+
+        if self._BASE_INTERFACE_NAME in path:
+            base = self.uid.split('.')[0]
+            path = path.replace(self._BASE_INTERFACE_NAME,
+                                "entry[@name='{0}']".format(base))
+
+        return path
 
 
 class AbstractSubinterface(object):
@@ -669,8 +682,13 @@ class Layer3Subinterface(Subinterface):
     )
 
     def _setup(self):
-        # xpaths
+        # xpaths for parents: EthernetInterface, AggregateInterface)
         self._xpaths.add_profile(value='/layer3/units')
+        # xpaths for parents: firewall.Firewall, device.Vsys
+        self._xpaths.add_profile(
+            parents=('Firewall', 'Vsys'),
+            value=('/network/interface/ethernet/{0}/layer3/units'.format(
+                self._BASE_INTERFACE_NAME)))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -739,8 +757,13 @@ class Layer2Subinterface(Subinterface):
     ALLOW_SET_VLAN = True
 
     def _setup(self):
-        # xpaths
+        # xpaths for parents: EthernetInterface, AggregateInterface
         self._xpaths.add_profile(value='/layer2/units')
+        # xpaths for parents: firewall.Firewall, device.Vsys
+        self._xpaths.add_profile(
+            parents=('Firewall', 'Vsys'),
+            value=('/network/interface/ethernet/{0}/layer2/units'.format(
+                self._BASE_INTERFACE_NAME)))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
