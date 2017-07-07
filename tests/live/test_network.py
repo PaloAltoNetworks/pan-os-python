@@ -27,7 +27,7 @@ class TestStaticMac(testlib.FwFlow):
             state.eth_objs.append(network.EthernetInterface(
                 eth, 'layer2'))
             fw.add(state.eth_objs[-1])
-        fw.create_type(network.EthernetInterface)
+        state.eth_objs[0].create_similar()
 
         state.parent = network.Vlan(
             testlib.random_name(), state.eths)
@@ -46,12 +46,12 @@ class TestStaticMac(testlib.FwFlow):
 
     def cleanup_dependencies(self, fw, state):
         try:
-            fw.delete_type(network.EthernetInterface)
+            state.parent.delete()
         except Exception:
             pass
 
         try:
-            state.parent.delete()
+            state.eth_objs[0].delete_similar()
         except Exception:
             pass
 
@@ -66,7 +66,7 @@ class TestVlan(testlib.FwFlow):
             state.eth_objs.append(network.EthernetInterface(
                 eth, 'layer2'))
             fw.add(state.eth_objs[-1])
-        fw.create_type(network.EthernetInterface)
+        state.eth_objs[0].create_similar()
 
         state.vlan_interface = network.VlanInterface(
             'vlan.{0}'.format(random.randint(100, 200)))
@@ -90,7 +90,7 @@ class TestVlan(testlib.FwFlow):
             pass
 
         try:
-            fw.delete_type(network.EthernetInterface)
+            state.eth_objs[0].delete_similar()
         except Exception:
             pass
 
@@ -353,7 +353,7 @@ class TestL3EthernetInterface(testlib.FwFlow):
         for x in state.management_profiles:
             fw.add(x)
 
-        fw.create_type(network.ManagementProfile)
+        state.management_profiles[0].create_similar()
 
     def setup_state_obj(self, fw, state):
         state.obj = network.EthernetInterface(
@@ -379,11 +379,10 @@ class TestL3EthernetInterface(testlib.FwFlow):
         state.obj.comment = 'This is an update layer3 interface'
 
     def cleanup_dependencies(self, fw, state):
-        for x in state.management_profiles:
-            try:
-                x.delete()
-            except Exception:
-                pass
+        try:
+            state.management_profiles[0].delete_similar()
+        except Exception:
+            pass
 
 
 class TestL2EthernetInterface(testlib.FwFlow):
@@ -618,7 +617,7 @@ class MakeVirtualRouter(testlib.FwFlow):
             state.eths[1], 'layer3', ipv6_enabled=True)
         fw.add(state.eth_obj_v6)
 
-        fw.create_type(network.EthernetInterface)
+        state.eth_obj_v4.create_similar()
 
         state.vr = network.VirtualRouter(testlib.random_name(), state.eths)
         fw.add(state.vr)
@@ -653,7 +652,7 @@ class MakeVirtualRouter(testlib.FwFlow):
             pass
 
         try:
-            fw.delete_type(network.EthernetInterface)
+            state.eth_obj_v4.delete_similar()
         except Exception:
             pass
 
