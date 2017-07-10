@@ -369,7 +369,6 @@ class Firewall(PanDevice):
             refresh_vsys (bool): Refresh all vsys objects' parameters before doing the reorganization or not.  This is assumed True if create_vsys_objects is True.
 
         """
-        from pandevice import device
         from pandevice import network
 
         # Mapping of device.Vsys params to pandevice classes.
