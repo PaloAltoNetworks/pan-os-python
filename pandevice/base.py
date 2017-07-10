@@ -72,11 +72,14 @@ class PanObject(object):
 
     def __init__(self, *args, **kwargs):
         # Set the 'name' variable
-        try:
-            name = args[0]
-        except IndexError:
-            name = kwargs.pop(self.NAME, None)
-        setattr(self, self.NAME, name)
+        idx_start = 0
+        if self.NAME is not None:
+            try:
+                name = args[0]
+                idx_start = 1
+            except IndexError:
+                name = kwargs.pop(self.NAME, None)
+            setattr(self, self.NAME, name)
         # Initialize other common variables
         self.parent = None
         self.children = []
@@ -87,11 +90,11 @@ class PanObject(object):
             variables = type(self).variables()
         # Sort the variables by order
         variables = sorted(variables, key=lambda x: x.order)
-        for idx, var in enumerate(variables):
+        for idx, var in enumerate(variables, idx_start):
             varname = var.variable
             try:
                 # Try to get the variables from 'args' first
-                varvalue = args[idx+1]
+                varvalue = args[idx]
             except IndexError:
                 # If it's not in args, get it from 'kwargs', or store a None in the variable
                 try:
@@ -335,8 +338,12 @@ class PanObject(object):
         specific_vsys = "/entry[@name='{0}']".format(vsys) if vsys else ""
         return root_xpath + specific_vsys
 
-    def element(self):
+    def element(self, with_children=True, comparable=False):
         """Construct an ElementTree for this PanObject and all its children
+
+        Args:
+            with_children (bool): Include children in element.
+            comparable (bool): Element will be used in a comparison with another.
 
         Returns:
             xml.etree.ElementTree: An ElementTree instance representing the
@@ -414,8 +421,11 @@ class PanObject(object):
                         nextelement = ET.SubElement(nextelement, section)
             if missing_replacement:
                 continue
-            var._set_inner_xml_tag_text(nextelement, value)
-        self.xml_merge(root, self._subelements())
+            var._set_inner_xml_tag_text(nextelement, value, comparable)
+
+        if with_children:
+            self.xml_merge(root, self._subelements())
+
         return root
 
     def element_str(self):
@@ -442,7 +452,7 @@ class PanObject(object):
         raise ValueError('No suffix or XPATH defined for {0}'.format(
                          self.__class__.__name__))
 
-    def _subelements(self, comparison_element=False):
+    def _subelements(self, comparable=False):
         """Generator function to turn children into XML objects.
 
         Yields:
@@ -460,10 +470,7 @@ class PanObject(object):
             e = root
             for path in xpath_sections:
                 e = ET.SubElement(e, path)
-            if comparison_element:
-                e.append(child.comparison_element())
-            else:
-                e.append(child.element())
+            e.append(child.element(comparable=comparable))
             yield root
 
     def _check_child_methods(self, method):
@@ -1829,6 +1836,7 @@ class VersionedPanObject(PanObject):
         The setup includes configuring the following:
 
         * _xpaths
+        * _xpath_imports (VsysOperations objects only)
         * _params
         * _stubs
 
@@ -1955,42 +1963,26 @@ class VersionedPanObject(PanObject):
 
         return (paths, stubs, settings)
 
-    def element(self):
+    def element(self, with_children=True, comparable=False):
         """Return an xml.etree.ElementTree for this object and its children.
 
-        Returns:
-            An xml.etree.ElementTree instance representing the xml form of this
-                object and its children
-
-        """
-        ans = self._root_element()
-        paths, stubs, settings = self._build_element_info()
-
-        self.xml_merge(ans, itertools.chain(
-                (p.element(self._root_element(), settings) for p in paths),
-                (s.element(self._root_element(), settings) for s in stubs),
-                self._subelements(),
-        ))
-
-        return ans
-
-    def comparison_element(self, compare_children=True):
-        """Return an xml.etree.ElementTree for this object and its children.
+        Args:
+            with_children (bool): Include the children objects.
+            comparable (bool): Element will be used in a comparison with another.
 
         Returns:
-            An xml.etree.ElementTree instance representing the xml form of this
-                object and its children
+            xml.etree.ElementTree for this object.
 
         """
         ans = self._root_element()
         paths, stubs, settings = self._build_element_info()
 
         iterchain = (
-            (p.element(self._root_element(), settings, sha1=True) for p in paths),
-            (s.element(self._root_element(), settings, sha1=True) for s in stubs),
+            (p.element(self._root_element(), settings, comparable) for p in paths),
+            (s.element(self._root_element(), settings, comparable) for s in stubs),
         )
-        if compare_children:
-            iterchain += (self._subelements(comparison_element=True),)
+        if with_children:
+            iterchain += (self._subelements(comparable), )
 
         self.xml_merge(ans, itertools.chain(*iterchain))
 
@@ -2018,12 +2010,15 @@ class VersionedPanObject(PanObject):
         if not panobject:
             return False
         if type(self) != type(panobject) and not force:
-            raise err.PanObjectError("Object {0} is not comparable to {1}".format(type(self), type(panobject)))
+            msg = 'Object {0} is not compareable to {1}'
+            raise err.PanObjectError(msg.format(self, panobject))
 
-        self_element = self.comparison_element(compare_children)
-        other_element = panobject.comparison_element(compare_children)
+        xml_self = ET.tostring(self.element(compare_children, True),
+            encoding='utf-8')
+        xml_other = ET.tostring(panobject.element(compare_children, True),
+            encoding='utf-8')
 
-        return ET.tostring(self_element, encoding='utf-8') == ET.tostring(other_element, encoding='utf-8')
+        return xml_self == xml_other
 
     def _get_param_specific_info(self, param):
         """Gets a tuple of info for the given parameter.
@@ -2263,27 +2258,28 @@ class VarPath(object):
             'XML Path': self.path,
         }
 
-    def _set_inner_xml_tag_text(self, elm, value, sha1=False):
+    def _set_inner_xml_tag_text(self, elm, value, comparable=False):
         """Sets the final elm's .text as appropriate given the vartype.
 
         Args:
             elm (xml.etree.ElementTree.Element): The element whose .text to set.
             value (various): The value to put in the .text, conforming to the vartype of this parameter.
-            sha1 (bool): This variable is ignored for classic objects
+            comparable (bool): Make updates for element string comparisons.  For entry and member vartypes, sort the entries (True) or leave them as-is (False).
 
         """
         # Create an element containing the value in the instance variable
         if self.vartype == "member":
-            for member in pandevice.string_or_list(value):
+            values = pandevice.string_or_list(value)
+            if comparable:
+                values = sorted(values)
+            for member in values:
                 ET.SubElement(elm, 'member').text = str(member)
         elif self.vartype == "entry":
-            try:
-                # Value is an array
-                for entry in pandevice.string_or_list(value):
-                    ET.SubElement(elm, 'entry', {'name': str(entry)})
-            except TypeError:
-                # Value is not an array
-                ET.SubElement(elm, 'entry', {'name': str(value)})
+            values = pandevice.string_or_list(value)
+            if comparable:
+                values = sorted(values)
+            for entry in values:
+                ET.SubElement(elm, 'entry', {'name': str(entry)})
         elif self.vartype == "exist":
             if value:
                 ET.SubElement(elm, self.variable)
@@ -2359,7 +2355,7 @@ class ParamPath(object):
         else:
             yield str(value)
 
-    def element(self, elm, settings, sha1=False):
+    def element(self, elm, settings, comparable=False):
         """Create the xml.etree.ElementTree for this parameter.
 
         Args:
@@ -2367,7 +2363,7 @@ class ParamPath(object):
                 onto this param's XML.
             settings (dict): All parameter settings for the
                 ``VersionedPanObject``.
-            sha1 (bool): Hash encrypted fields for comparison
+            comparable (bool): Make necessary adjustments to the XML for comparison's sake.
 
         Returns:
             xml.etree.ElementTree: The ``elm`` passed in, modified to contain
@@ -2412,7 +2408,7 @@ class ParamPath(object):
             e.append(child)
             e = child
 
-        self._set_inner_xml_tag_text(e, value, sha1)
+        self._set_inner_xml_tag_text(e, value, comparable)
 
         return elm
 
@@ -2510,21 +2506,27 @@ class ParamPath(object):
         # Pull the value, properly formatted, from this last element
         self.parse_value_from_xml_last_tag(e, settings)
 
-    def _set_inner_xml_tag_text(self, elm, value, sha1=False):
+    def _set_inner_xml_tag_text(self, elm, value, comparable=False):
         """Sets the final elm's .text as appropriate given the vartype.
 
         Args:
             elm (xml.etree.ElementTree.Element): The element whose .text to set.
             value (various): The value to put in the .text, conforming to the vartype of this parameter.
-            sha1 (bool): For encrypted fields, if the text should be set to a password hash (True) or left as a basestring (False)
+            comparable (bool): Make updates for element string comparisons.  For encrypted fields, if the text should be set to a password hash (True) or left as a basestring (False).  For entry and member vartypes, sort the entries (True) or leave them as-is (False).
 
         """
         # Format the element text appropriately
         if self.vartype == 'member':
-            for v in self._value_as_list(value):
+            values = self._value_as_list(value)
+            if comparable:
+                values = sorted(values)
+            for v in values:
                 ET.SubElement(elm, 'member').text = v
         elif self.vartype == 'entry':
-            for v in self._value_as_list(value):
+            values = self._value_as_list(value)
+            if comparable:
+                values = sorted(values)
+            for v in values:
                 ET.SubElement(elm, 'entry', {'name': v})
         elif self.vartype == 'exist':
             if value:
@@ -2537,7 +2539,7 @@ class ParamPath(object):
             pass
         elif self.vartype == 'int':
             elm.text = str(int(value))
-        elif self.vartype == 'encrypted' and sha1:
+        elif self.vartype == 'encrypted' and comparable:
             elm.text = self._sha1_hash(str(value))
         else:
             elm.text = str(value)
