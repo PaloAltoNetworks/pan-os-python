@@ -381,9 +381,8 @@ class TestL3EthernetInterface(testlib.FwFlow):
     def cleanup_dependencies(self, fw, state):
         try:
             state.management_profiles[0].delete_similar()
-        except Exception:
+        except IndexError:
             pass
-
 
 class TestL2EthernetInterface(testlib.FwFlow):
     def create_dependencies(self, fw, state):
@@ -391,13 +390,12 @@ class TestL2EthernetInterface(testlib.FwFlow):
 
         state.eth = testlib.get_available_interfaces(fw)[0]
         state.management_profiles = [
-            network.ManagementProfile(testlib.random_name(), ping=True,
-                                      ssh=True, https=False)
-            for x in range(2)
-        ]
+            network.ManagementProfile(testlib.random_name(),
+                ping=bool(x)) for x in range(2)]
         for x in state.management_profiles:
             fw.add(x)
-            x.create()
+
+        state.management_profiles[0].create_similar()
 
     def setup_state_obj(self, fw, state):
         state.obj = network.EthernetInterface(
@@ -409,11 +407,10 @@ class TestL2EthernetInterface(testlib.FwFlow):
         state.obj.management_profile = state.management_profiles[1]
 
     def cleanup_dependencies(self, fw, state):
-        for x in state.management_profiles:
-            try:
-                x.delete()
-            except Exception:
-                pass
+        try:
+            state.management_profiles[0].delete_similar()
+        except IndexError:
+            pass
 
 
 # AggregateInterface

@@ -1611,7 +1611,7 @@ class PanObject(object):
 
     def _perform_vsys_dict_import_set(self, dev, vsys_dict):
         """Iterates of a vsys_dict, doing imports for all instances."""
-        for vsys, vsys_spec in vsys_dict.items():
+        for vsys_spec in vsys_dict.values():
             for xpath_import_base, objs in vsys_spec.items():
                 xpath_tokens = xpath_import_base.split('/')
                 new_root = xpath_tokens.pop()
@@ -1631,7 +1631,7 @@ class PanObject(object):
     def _perform_vsys_dict_import_delete(self, dev, vsys_dict):
         """Iterates over a vsys_dict, undoing the import for all instances."""
         for vsys, vsys_spec in vsys_dict.items():
-            for xpath_import_base, objs in vsys_spec.items():
+            for objs in vsys_spec.values():
                 members = ' or '.join(
                     "text()='{0}'".format(x.uid) for x in objs)
                 xpath = '{0}/member[{1}]'.format(
