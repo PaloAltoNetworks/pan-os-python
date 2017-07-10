@@ -1629,8 +1629,8 @@ class PanObject(object):
                              retry_on_peer=self.HA_SYNC)
 
     def _perform_vsys_dict_import_delete(self, dev, vsys_dict):
-        """Iterates over a vsys_dict, undoing the import for all instances."""
-        for vsys, vsys_spec in vsys_dict.items():
+        """Iterates over a vsys_dict, deleting the import for all instances."""
+        for vsys_spec in vsys_dict.values():
             for objs in vsys_spec.values():
                 members = ' or '.join(
                     "text()='{0}'".format(x.uid) for x in objs)

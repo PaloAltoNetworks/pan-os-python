@@ -172,7 +172,7 @@ class TestFirewallAdministrator(testlib.FwFlow):
     def cleanup_dependencies(self, fw, state):
         try:
             state.profiles[0].delete_similar()
-        except Exception:
+        except IndexError:
             pass
 
 
@@ -226,5 +226,5 @@ class TestPanoramaAdministrator(testlib.PanoFlow):
     def cleanup_dependencies(self, pano, state):
         try:
             state.profiles[0].delete_similar()
-        except Exception:
+        except IndexError:
             pass
