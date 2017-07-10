@@ -91,24 +91,15 @@ def main():
         fw.add(ao)
 
     # Now we can bulk create all the address objects.  This is accomplished by
-    # invoking `create_type()` and giving it the AddressObject type.  What
-    # would have been 600 individual API calls is now condensed into a single
-    # API call, taking much less time to complete.
-    #
-    # Although we would typically invoke `create()` on the object we want to
-    # create, the bulk operations are all invoked from the parent object, not
-    # on any given child object.  In this case, the parent is the firewall
-    # object, so we need to invoke `create_type()` from the firewall object.
-    #
-    # NOTE:  All child type searches the bulk operations perform are
-    #        non-recursive, so only the AddressObjects directly attached to
-    #        the `fw` object will be found.
+    # invoking `create_similar()` on any of the address objects in our tree,
+    # turning what would have been 600 individual API calls and condensing it
+    # into a single API call.
     start = datetime.datetime.now()
-    fw.create_type(pandevice.objects.AddressObject)
+    bulk_objects[0].create_similar()
     print('Creating {0} address objects took: {1}'.format(
         len(bulk_objects), datetime.datetime.now() - start))
 
-    # We've done a create, now let's look at bulk apply.
+    # We've done a bulk create, now let's look at bulk apply.
     #
     # Some care is needed when using apply with pandevice.  All "apply" methods
     # are doing a PANOS API `type=edit` under the hood, which does a replace of
@@ -128,13 +119,13 @@ def main():
     for num, x in enumerate(bulk_objects, 1):
         x.value = num_as_ip(num, 10)
 
-    # Now we can do our bulk apply, invoking `apply_type()`.  As before,
-    # we pass in the child type we want to invoke the bulk operation for,
-    # which is AddressObject.  And since the firewall has all the pre-existing
-    # address objects in its tree, we won't accidentally truncate them from
-    # the firewall config.
+    # Now we can do our bulk apply, invoking `apply_similar()`.  As before,
+    # we invoke this on any of the related children in our pandevice
+    # object tree.  Most important of all, since our firewall object has all
+    # the pre-existing address objects in its tree, we won't accidentally
+    # truncate them from the firewall config.
     start = datetime.datetime.now()
-    fw.apply_type(pandevice.objects.AddressObject)
+    bulk_objects[0].apply_similar()
     print('Bulk apply {0} address objects took: {1}'.format(
         len(bulk_objects) + len(original_objects),
         datetime.datetime.now() - start))
@@ -146,10 +137,11 @@ def main():
     for x in original_objects:
         fw.remove(x)
 
-    # Finally, let's invoke `delete_type()` from the firewall.  As should be
-    # expected, we pass in AddressObject as the child type.
+    # Finally, let's invoke `delete_similar()` from the firewall.  As should be
+    # expected, we invoke this from any of the objects currently in our
+    # pandevice object tree.
     start = datetime.datetime.now()
-    fw.delete_type(pandevice.objects.AddressObject)
+    bulk_objects[0].delete_similar()
     print('Deleting {0} address objects took: {1}'.format(
         len(bulk_objects), datetime.datetime.now() - start))
 

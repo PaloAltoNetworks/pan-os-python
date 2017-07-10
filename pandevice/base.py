@@ -1440,144 +1440,213 @@ class PanObject(object):
 
         return ans
 
-    def create_type(self, cType):
-        """Bulk create all children of the specified type.
+    def _requires_import_consideration(self):
+        if self.vsys in (None, 'shared') or not hasattr(self,
+                                                        'xpath_import_base'):
+            return False
+        return True
 
-        Note:  child type search is non-recursive.
+    def _gather_bulk_info(self, func=None):
+        """Returns info for the bulk functions to operate on.
+
+        This function gets a single instance which will act as xpath scope,
+        but goes back to the nearest pandevice to collect all instances of
+        cType with the same xpath, as we need to be aware that instances could
+        share path but be in different vsys.
 
         Args:
-            cType: a class type
+            func (str): The function calling this function
+
+        Returns:
+            3 element tuple:
+                * nearest PanDevice
+                * list of instances of cType that share single instance's scope
+                * dict: vsys key with value of dict:
+                    * import path key with value of list of PanObject instances
 
         """
         dev = self.nearest_pandevice()
-        logger.debug('{0}: {1} called on {2} object "{3}" for type {4}'.format(
-            dev.id, 'create_type', self.__class__.__name__, self.uid, cType))
+        logger.debug('{0}: {1} called on {2} object "{3}"'.format(
+            dev.id, func, self, self.uid))
         dev.set_config_changed()
         if self.HA_SYNC:
             dev = dev.active()
-        objs = self.findall(cType, False)
-        if not objs:
-            return
 
-        # All the same type of object, just need the first one to operate on.
-        o = objs[0]
+        # Determine base xpath to match against.
+        xpath = self.xpath_short()
+
+        # Now, find all PanObjects with a similar xpath.
+        tree = [dev, ]
+        instances = []
+        for node in itertools.chain(tree):
+            tree.extend(node.children)
+            if node.xpath_short() == xpath:
+                instances.append(node)
+
+        # Now find all the objects that need to be imported.
+        vsys_dict = {}
+        all_objects = instances[:]
+        for node in itertools.chain(all_objects):
+            all_objects.extend(node.children)
+            if node._requires_import_consideration():
+                vsys_dict.setdefault(node.vsys, {})
+                vsys_dict[node.vsys].setdefault(node.xpath_import_base(), [])
+                vsys_dict[node.vsys][node.xpath_import_base()].append(node)
+
+        return dev, instances, vsys_dict
+
+    def create_similar(self):
+        """Bulk create all objects similar to this one.
+
+        **Modifies the live device**
+
+        This is similar to create(), except instead of calling create only
+        on this object, it calls create for all objects that share the same
+        xpath as this object, recursively searching the entire object tree
+        from the nearest firewall or panorama instance.
+
+        As an example, if you called create_similar on an object representing
+        ethernet1/5.42, all of the subinterfaces for ethernet1/5 would be
+        included in the resulting XML document, regardless of which vsys
+        those subinterfaces existed in.
+
+        """
+        dev, instances, vsys_dict = self._gather_bulk_info('create_similar')
+        if not instances:
+            return
 
         # The new root tag is the last tag in the xpath, while the new xpath
         # is what remains.
-        xpath_tokens = o.xpath_short().split('/')
+        xpath_tokens = self.xpath_short().split('/')
         new_root = xpath_tokens.pop()
         xpath = '/'.join(xpath_tokens)
 
-        # Append all children of type cType.
+        # Append all similar children.
         shared_root = ET.Element(new_root)
-        for x in objs:
+        for x in instances:
             shared_root.append(x.element())
 
         # Perform the create.
         dev.xapi.set(xpath, ET.tostring(shared_root, encoding='utf-8'),
                      retry_on_peer=self.HA_SYNC)
 
-        # If this is shared vsys or not an importable objects, we're done.
-        if self.vsys == "shared" or self.vsys is None or not hasattr(o, 'xpath_import_base'):
-            return
+        # Do all necessary imports, per vsys, per import xpath.
+        self._perform_vsys_dict_import_set(dev, vsys_dict)
 
-        # It's an importable, now do the import for everything.
-        xpath_tokens = o.xpath_import_base().split('/')
-        new_root = xpath_tokens.pop()
+    def apply_similar(self):
+        """Bulk apply all objects similar to this one.
 
-        # Form the xpath from what remains of the xpath.
-        xpath = '/'.join(xpath_tokens)
+        **Modifies the live device**
 
-        # Append objects as members to the new root.
-        shared_root = ET.Element(new_root)
-        for x in objs:
-            ET.SubElement(shared_root, "member").text = x.uid
+        This is similar to apply(), except instead of calling apply only
+        on this object, it calls apply for all objects that share the same
+        xpath as this object, recursively searching the entire object tree
+        from the nearest firewall or panorama instance.
 
-        # Perform the import.
-        dev.xapi.set(xpath, ET.tostring(shared_root, encoding='utf-8'),
-                     retry_on_peer=self.HA_SYNC)
+        As an example, if you called apply_similar on an object representing
+        ethernet1/5.42, all of the subinterfaces for ethernet1/5 would be
+        included in the resulting XML document, regardless of which vsys
+        those subinterfaces existed in.
 
-    def apply_type(self, cType):
-        """Bulk apply all children of the specified type.
-
-        Note:  child type search is non-recursive.
-
-        Args:
-            cType: a class type
+        Since apply does a replace of the config at the given xpath, please
+        be careful when using this function that all objects, whether they
+        be updated or not, exist in your pandevice object tree.
 
         """
-        dev = self.nearest_pandevice()
-        logger.debug('{0}: {1} called on {2} object "{3}" for type {4}'.format(
-            dev.id, 'apply_type', self.__class__.__name__, self.uid, cType))
-        dev.set_config_changed()
-        if self.HA_SYNC:
-            dev = dev.active()
-        objs = self.findall(cType, False)
-        if not objs:
+        dev, instances, vsys_dict = self._gather_bulk_info('apply_similar')
+        if not instances:
             return
-
-        # All the same type of object, just need the first one to operate on.
-        o = objs[0]
 
         # The new root tag is the last tag in the xpath, while the new xpath
         # is what remains.
-        xpath = o.xpath_short()
+        xpath = self.xpath_short()
         new_root = xpath.split('/')[-1]
 
         # Append all children of type cType.
         shared_root = ET.Element(new_root)
-        for x in objs:
+        for x in instances:
             shared_root.append(x.element())
 
         # Perform the create.
         dev.xapi.edit(xpath, ET.tostring(shared_root, encoding='utf-8'),
                       retry_on_peer=self.HA_SYNC)
 
-    def delete_type(self, cType):
-        """Bulk delete all children of the specified type.
+        # Do all necessary imports, per vsys, per import xpath.
+        self._perform_vsys_dict_import_set(dev, vsys_dict)
 
-        Note:  child type search is non-recursive.
+    def delete_similar(self):
+        """Bulk delete all objects similar to this one.
 
-        Args:
-            cType: a class type
+        **Modifies the live device**
+
+        This is similar to delete(), except instead of calling delete only
+        on this object, it calls delete for all objects that share the same
+        xpath as this object, recursively searching the entire object tree
+        from the nearest firewall or panorama instance.
+
+        As an example, if you called delete_similar on an object representing
+        ethernet1/5.42, all of the subinterfaces in your pandevice object
+        tree for ethernet1/5 would be removed.
 
         """
-        dev = self.nearest_pandevice()
-        logger.debug('{0}: {1} called on {2} object "{3}" for type {4}'.format(
-            dev.id, 'delete_type', self.__class__.__name__, self.uid, cType))
-        dev.set_config_changed()
-        if self.HA_SYNC:
-            dev = dev.active()
-        objs = self.findall(cType, False)
-        if not objs:
+        dev, instances, vsys_dict = self._gather_bulk_info('delete_similar')
+        if not instances:
             return
 
-        # All the same type of object, just need the first one to operate on.
-        o = objs[0]
-
         # This operation is only supported for entry/member objects.
-        if o.SUFFIX not in (ENTRY, MEMBER):
-            raise ValueError('delete_type requires member or entry')
+        if self.SUFFIX not in (ENTRY, MEMBER):
+            raise ValueError('delete_similar requires member or entry')
 
-        # Unimport first if this is an imported object.
-        if self.vsys != 'shared' and self.vsys is not None and hasattr(o, 'xpath_import_base'):
-            members = ' or '.join("text()='{0}'".format(x.uid) for x in objs)
-            xpath = '{0}/member[{1}]'.format(o.xpath_import_base(), members)
-            dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
+        # Do all necessary unimports, per vsys, per xpath.
+        self._perform_vsys_dict_import_delete(dev, vsys_dict)
 
         # Now perform the bulk delete.
-        xpath = o._parent_xpath() + o.XPATH
-        if o.SUFFIX == ENTRY:
-            entries = ' or '.join("@name='{0}'".format(x.uid) for x in objs)
+        xpath = self._parent_xpath() + self.XPATH
+        if self.SUFFIX == ENTRY:
+            entries = ' or '.join(
+                "@name='{0}'".format(x.uid) for x in instances)
             xpath += '/entry[{0}]'.format(entries)
-        elif o.SUFFIX == MEMBER:
-            members = ' or '.join("text()='{0}'".format(x.uid) for x in objs)
+        elif self.SUFFIX == MEMBER:
+            members = ' or '.join(
+                "text()='{0}'".format(x.uid) for x in instances)
             xpath += '/member[{0}]'.format(members)
         dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
 
         # Remove each object from self, just like delete().
-        for x in objs:
-            self.remove(x)
+        for x in instances:
+            x.parent.remove(x)
+
+    def _perform_vsys_dict_import_set(self, dev, vsys_dict):
+        """Iterates of a vsys_dict, doing imports for all instances."""
+        for vsys_spec in vsys_dict.values():
+            for xpath_import_base, objs in vsys_spec.items():
+                xpath_tokens = xpath_import_base.split('/')
+                new_root = xpath_tokens.pop()
+
+                # Form the xpath from what remains of the xpath.
+                xpath = '/'.join(xpath_tokens)
+
+                # Append objects as members to the new root.
+                shared_root = ET.Element(new_root)
+                for x in objs:
+                    ET.SubElement(shared_root, "member").text = x.uid
+
+                # Perform the import.
+                dev.xapi.set(xpath, ET.tostring(shared_root, encoding='utf-8'),
+                             retry_on_peer=self.HA_SYNC)
+
+    def _perform_vsys_dict_import_delete(self, dev, vsys_dict):
+        """Iterates over a vsys_dict, deleting the import for all instances."""
+        for vsys_spec in vsys_dict.values():
+            for objs in vsys_spec.values():
+                members = ' or '.join(
+                    "text()='{0}'".format(x.uid) for x in objs)
+                xpath = '{0}/member[{1}]'.format(
+                    objs[0].xpath_import_base(), members)
+                # API complains if you try to do this in one delete statement,
+                # so do one delete per vsys per path, just like when we set the
+                # imports.
+                dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
 
 
 class VersioningSupport(object):

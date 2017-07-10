@@ -122,7 +122,7 @@ class TestFirewallAdministrator(testlib.FwFlow):
                 testlib.random_name(), x, x, x, x))
             fw.add(state.profiles[x])
 
-        fw.create_type(device.PasswordProfile)
+        state.profiles[0].create_similar()
 
     def setup_state_obj(self, fw, state):
         state.obj = device.Administrator(
@@ -170,7 +170,10 @@ class TestFirewallAdministrator(testlib.FwFlow):
         new_fw.refresh_system_info()
 
     def cleanup_dependencies(self, fw, state):
-        fw.delete_type(device.PasswordProfile)
+        try:
+            state.profiles[0].delete_similar()
+        except IndexError:
+            pass
 
 
 class TestPanoramaAdministrator(testlib.PanoFlow):
@@ -181,7 +184,7 @@ class TestPanoramaAdministrator(testlib.PanoFlow):
                 testlib.random_name(), x, x, x, x))
             pano.add(state.profiles[x])
 
-        pano.create_type(device.PasswordProfile)
+        state.profiles[0].create_similar()
 
     def setup_state_obj(self, pano, state):
         state.obj = device.Administrator(
@@ -221,4 +224,7 @@ class TestPanoramaAdministrator(testlib.PanoFlow):
         new_pano.refresh_system_info()
 
     def cleanup_dependencies(self, pano, state):
-        pano.delete_type(device.PasswordProfile)
+        try:
+            state.profiles[0].delete_similar()
+        except IndexError:
+            pass
