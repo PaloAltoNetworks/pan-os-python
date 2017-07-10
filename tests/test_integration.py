@@ -658,5 +658,64 @@ class TestXpaths_7_0(unittest.TestCase):
 
         self.assertEqual(expected, ret_val)
 
+
+class TestVariousSubinterfaceXpaths(unittest.TestCase):
+    def test_l2_subinterface_with_firewall_parent(self):
+        fw = pandevice.firewall.Firewall('192.168.1.1', 'admin', 'admin', vsys='vsys2')
+        iface = pandevice.network.EthernetInterface('ethernet1/3', 'layer2')
+        eth = pandevice.network.Layer2Subinterface('ethernet1/3.3', 3)
+        iface.add(eth)
+        fw.add(iface)
+
+        expected = eth.xpath()
+
+        fw.add(eth)
+
+        self.assertEqual(expected, eth.xpath())
+
+    def test_l2_subinterface_with_vsys_parent(self):
+        fw = pandevice.firewall.Firewall('192.168.1.1', 'admin', 'admin')
+        vsys = pandevice.device.Vsys('vsys2')
+        iface = pandevice.network.EthernetInterface('ethernet1/3', 'layer2')
+        eth = pandevice.network.Layer2Subinterface('ethernet1/3.3', 3)
+        iface.add(eth)
+        vsys.add(iface)
+        fw.add(vsys)
+
+        expected = eth.xpath()
+
+        vsys.add(eth)
+
+        self.assertEqual(expected, eth.xpath())
+
+    def test_l3_subinterface_with_firewall_parent(self):
+        fw = pandevice.firewall.Firewall('192.168.1.1', 'admin', 'admin', vsys='vsys3')
+        iface = pandevice.network.EthernetInterface('ethernet1/4', 'layer3')
+        eth = pandevice.network.Layer3Subinterface('ethernet1/4.4', 4)
+        iface.add(eth)
+        fw.add(iface)
+
+        expected = eth.xpath()
+
+        fw.add(eth)
+
+        self.assertEqual(expected, eth.xpath())
+
+    def test_l3_subinterface_with_vsys_parent(self):
+        fw = pandevice.firewall.Firewall('192.168.1.1', 'admin', 'admin')
+        vsys = pandevice.device.Vsys('vsys3')
+        iface = pandevice.network.EthernetInterface('ethernet1/4', 'layer3')
+        eth = pandevice.network.Layer2Subinterface('ethernet1/4.4', 4)
+        iface.add(eth)
+        vsys.add(iface)
+        fw.add(vsys)
+
+        expected = eth.xpath()
+
+        vsys.add(eth)
+
+        self.assertEqual(expected, eth.xpath())
+
+
 if __name__=='__main__':
     unittest.main()

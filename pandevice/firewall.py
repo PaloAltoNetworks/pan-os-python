@@ -18,6 +18,7 @@
 """Palo Alto Networks Firewall object"""
 
 # import modules
+import itertools
 import re
 import logging
 import xml.etree.ElementTree as ET
@@ -359,6 +360,63 @@ class Firewall(PanDevice):
     def commit_policy_and_objects(self, sync=False, exception=False):
         return self._commit(sync=sync, exclude="policy-and-objects",
                             exception=exception)
+
+    def organize_into_vsys(self, create_vsys_objects=True, refresh_vsys=True):
+        """Organizes all imported objects under the appropriate Vsys object.
+
+        Args:
+            create_vsys_objects (bool): Create the vsys objects (True) or use the ones already connected to this firewall (False).
+            refresh_vsys (bool): Refresh all vsys objects' parameters before doing the reorganization or not.  This is assumed True if create_vsys_objects is True.
+
+        """
+        from pandevice import network
+
+        # Mapping of device.Vsys params to pandevice classes.
+        mapping = {
+            'interface': network.Interface,
+            'vlans': network.Vlan,
+            'virtual_wires': network.VirtualWire,
+            'virtual_routers': network.VirtualRouter,
+        }
+
+        # Optional: create the vsys objects.
+        if create_vsys_objects:
+            device.Vsys.refreshall(self, name_only=True)
+
+        # Vsys to put objects into.
+        available_vsys = [x for x in self.children
+                          if isinstance(x, device.Vsys)]
+
+        # Optional: refresh the vsys params.
+        if create_vsys_objects or refresh_vsys:
+            for x in available_vsys:
+                x.refresh(refresh_children=False)
+
+        # List of objects we need to iterate over.
+        parents = self.children[:]
+
+        # Reorganize into vsys.
+        for x in itertools.chain(parents):
+            # Skip device.Vsys children.
+            if isinstance(x, device.Vsys):
+                continue
+
+            # Add children for later processing.
+            parents.extend(x.children)
+
+            # Check this class against the importable classes.
+            for param, importable_class in mapping.items():
+                if isinstance(x, importable_class):
+                    # Importable class found, check if it should be moved.
+                    for vsys in available_vsys:
+                        if (getattr(vsys, param) is not None and
+                                x.uid in getattr(vsys, param)):
+                            # If its vsys isn't right, move it.
+                            if x.vsys != vsys.uid:
+                                x.parent.remove(x)
+                                vsys.add(x)
+                            break
+                    break
 
 
 class FirewallState(object):
