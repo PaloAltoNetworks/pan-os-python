@@ -4,7 +4,7 @@ from tests.live import testlib
 from pandevice import network
 
 
-class TestZones(testlib.FwFlow):
+class TestZoneBasic(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
         state.obj = network.Zone(
             testlib.random_name(),
@@ -15,6 +15,38 @@ class TestZones(testlib.FwFlow):
     def update_state_obj(self, fw, state):
         state.obj.mode = 'layer2'
 
+
+class TestZone(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        state.eth_objs = []
+        state.eths = testlib.get_available_interfaces(fw, 2)
+
+        state.eth_objs.append(network.EthernetInterface(state.eths[0], 'layer2'))
+        state.eth_objs.append(network.EthernetInterface(state.eths[1], 'layer3'))
+        for x in state.eth_objs:
+            fw.add(x)
+        fw.create_type(network.EthernetInterface)
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.Zone(
+            testlib.random_name(), 'layer2', state.eths[0],
+            enable_user_identification=False,
+            include_acl=testlib.random_ip('/24'),
+            exclude_acl=testlib.random_ip('/24'),
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.mode = 'layer3'
+        state.obj.interface = state.eths[1]
+        state.obj.include_acl = [testlib.random_ip('/24') for x in range(2)]
+        state.obj.exclude_acl = [testlib.random_ip('/24') for x in range(2)]
+
+    def cleanup_dependencies(self, fw, state):
+        try:
+            fw.delete_type(network.EthernetInterface)
+        except Exception:
+            pass
 
 class TestStaticMac(testlib.FwFlow):
     def create_dependencies(self, fw, state):

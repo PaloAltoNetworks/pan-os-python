@@ -94,10 +94,16 @@ class Zone(VersionedPanObject):
     """Security zone
 
     Args:
+        name (str): Name of the zone
         mode (str): The mode of the security zone. Must match the mode of the interface.
             Possible values: tap, virtual-wire, layer2, layer3, external
         interface (list): List of interface names or instantiated subclasses
             of :class:`pandevice.network.Interface`.
+        zone_profile (str): Zone protection profile
+        log_setting (str): Log forwarding setting
+        enable_user_identification (bool): If user identification is enabled
+        include_acl (list/str): User identification ACL include list
+        exclude_acl (list/str): User identification ACL exclude list
 
     """
     ROOT = Root.VSYS
@@ -115,8 +121,22 @@ class Zone(VersionedPanObject):
             values=['tap', 'virtual-wire', 'layer2', 'layer3', 'external']))
         params.append(VersionedParamPath(
             'interface', path='network/{mode}', vartype='member'))
+        params.append(VersionedParamPath(
+            'zone_profile', path='network/zone-protection-profile'))
+        params.append(VersionedParamPath(
+            'log_setting', path='network/log-setting'))
+        params.append(VersionedParamPath(
+            'enable_user_identification', vartype='yesno',
+            path='enable-user-identification'))
+        params.append(VersionedParamPath(
+            'include_acl', vartype='member',
+            path='user-acl/include-list'))
+        params.append(VersionedParamPath(
+            'exclude_acl', vartype='member',
+            path='user-acl/exclude-list'))
 
         self._params = tuple(params)
+
 
 class StaticMac(VersionedPanObject):
     """Static MAC address for a Vlan
