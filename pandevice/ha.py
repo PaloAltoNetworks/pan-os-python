@@ -23,12 +23,12 @@ import inspect
 import xml.etree.ElementTree as ET
 
 import pan.xapi
-from pandevice import getlogger
-from base import PanObject, PanDevice, Root, MEMBER, ENTRY
-from base import VarPath as Var
-import errors as err
-import network
-import firewall
+from pandevice import getlogger, isstring
+from pandevice.base import PanObject, PanDevice, Root, MEMBER, ENTRY
+from pandevice.base import VarPath as Var
+from pandevice import  network, firewall
+import pandevice.errors as err
+
 
 logger = getlogger(__name__)
 
@@ -93,7 +93,7 @@ class HighAvailabilityInterface(PanObject):
         pandevice = self.nearest_pandevice()
         if pandevice is None:
             return None
-        if isinstance(self.port, basestring):
+        if isstring(self.port):
             intname = self.port
         else:
             intname = str(self.port)
@@ -160,7 +160,7 @@ class HighAvailabilityInterface(PanObject):
         if pan_device is None:
             return None
         port = interface if interface is not None else self.port
-        if isinstance(port, basestring):
+        if isstring(port):
             intname = port
         else:
             intname = str(port)
@@ -323,5 +323,3 @@ class HighAvailability(PanObject):
             Var("interface/ha2-backup", vartype="none"),
             Var("interface/ha3", vartype="none"),
         )
-
-

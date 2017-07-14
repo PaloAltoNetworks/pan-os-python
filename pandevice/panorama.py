@@ -24,21 +24,19 @@ from copy import deepcopy
 
 # import other parts of this pandevice package
 import pandevice
-from pandevice import getlogger
-import base
-import firewall
-import policies
-import errors as err
-from base import VarPath as Var
-from base import PanObject, Root, MEMBER, ENTRY
-from pandevice import yesno
+from pandevice import getlogger, yesno
+from pandevice import base, firewall, policies
+import pandevice.errors as err
+from pandevice.base import VarPath as Var
+from pandevice.base import PanObject, Root, MEMBER, ENTRY
+from pandevice.base import VersionedPanObject, VersionedParamPath
 
 import pan.commit
 
 logger = getlogger(__name__)
 
 
-class DeviceGroup(PanObject):
+class DeviceGroup(VersionedPanObject):
     """Panorama Device-group
 
     This class and the :class:`pandevice.panorama.Panorama` classes are the only objects that can
@@ -53,7 +51,6 @@ class DeviceGroup(PanObject):
         tag (list): Tags as strings
 
     """
-    XPATH = "/device-group"
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
     CHILDTYPES = (
@@ -69,14 +66,34 @@ class DeviceGroup(PanObject):
         "objects.ApplicationFilter",
     )
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("tag", vartype="entry"),
-        )
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/device-group')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'tag', vartype='entry'))
+
+        self._params = tuple(params)
 
     def devicegroup(self):
         return self
+
+    def xpath_vsys(self):
+        if self.name == "shared" or self.name is None:
+            return "/config/shared"
+        else:
+            return "/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='%s']" % self.name
+
+    def _build_xpath(self, root):
+        if (self.name == "shared" or self.name is None) and root == Root.VSYS:
+            # This is a Vsys object in shared Panorama scope, so proceed normally
+            return super(DeviceGroup, self)._build_xpath(root)
+        else:
+            # This is a member of the device-group, so override to use DeviceGroup root
+            return super(DeviceGroup, self)._build_xpath(self.ROOT)
 
 
 class Panorama(base.PanDevice):
@@ -98,8 +115,10 @@ class Panorama(base.PanDevice):
     FIREWALL_CLASS = firewall.Firewall
     NAME = "hostname"
     CHILDTYPES = (
-        "panorama.DeviceGroup",
+        "device.Administrator",
+        "device.PasswordProfile",
         "firewall.Firewall",
+        "panorama.DeviceGroup",
     )
 
     def __init__(self,
@@ -346,7 +365,7 @@ class Panorama(base.PanDevice):
                             # Passed in string serials, no vsys, so get all vsys
                             pass
                         else:
-                            if "shared" not in requested_vsys and dg_vsys not in requested_vsys:
+                            if "shared" not in requested_vsys and None not in requested_vsys and dg_vsys not in requested_vsys:
                                 # A specific vsys was requested, and this isn't it, skip
                                 continue
                     fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)

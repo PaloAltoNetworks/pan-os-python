@@ -106,7 +106,7 @@ def main():
         logging.debug("Logout user %s at IP %s" % (args.user, args.ip))
         device.userid.logout(args.user, args.ip)
     else:
-        raise StandardError("Unknown action: %s.  Must be 'login' or 'logout'." % args.action)
+        raise ValueError("Unknown action: %s.  Must be 'login' or 'logout'." % args.action)
 
     logging.debug("Done")
 

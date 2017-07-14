@@ -22,16 +22,16 @@ import re
 import logging
 import xml.etree.ElementTree as ET
 import pandevice
-from base import PanObject, Root, MEMBER, ENTRY, VsysImportMixin
-from base import VarPath as Var
-from pandevice import getlogger
+from pandevice.base import PanObject, Root, MEMBER, ENTRY
+from pandevice.base import VarPath as Var
+from pandevice import getlogger, string_or_list
 from pandevice import device
 from pandevice.base import VersionedPanObject
 from pandevice.base import VersionedParamPath
 from pandevice.base import VsysOperations
 
 # import other parts of this pandevice package
-import errors as err
+import pandevice.errors as err
 
 logger = getlogger(__name__)
 
@@ -62,7 +62,7 @@ def interface(name, *args, **kwargs):
     elif name.startswith("ethernet") or name.startswith("ae"):
         # Subinterface
         # Get mode from args
-        args = list(args)
+        args = string_or_list(args)
         if len(args) > 0:
             mode = args[0]
             del args[0]
@@ -94,10 +94,16 @@ class Zone(VersionedPanObject):
     """Security zone
 
     Args:
+        name (str): Name of the zone
         mode (str): The mode of the security zone. Must match the mode of the interface.
             Possible values: tap, virtual-wire, layer2, layer3, external
         interface (list): List of interface names or instantiated subclasses
             of :class:`pandevice.network.Interface`.
+        zone_profile (str): Zone protection profile
+        log_setting (str): Log forwarding setting
+        enable_user_identification (bool): If user identification is enabled
+        include_acl (list/str): User identification ACL include list
+        exclude_acl (list/str): User identification ACL exclude list
 
     """
     ROOT = Root.VSYS
@@ -115,8 +121,22 @@ class Zone(VersionedPanObject):
             values=['tap', 'virtual-wire', 'layer2', 'layer3', 'external']))
         params.append(VersionedParamPath(
             'interface', path='network/{mode}', vartype='member'))
+        params.append(VersionedParamPath(
+            'zone_profile', path='network/zone-protection-profile'))
+        params.append(VersionedParamPath(
+            'log_setting', path='network/log-setting'))
+        params.append(VersionedParamPath(
+            'enable_user_identification', vartype='yesno',
+            path='enable-user-identification'))
+        params.append(VersionedParamPath(
+            'include_acl', vartype='member',
+            path='user-acl/include-list'))
+        params.append(VersionedParamPath(
+            'exclude_acl', vartype='member',
+            path='user-acl/exclude-list'))
 
         self._params = tuple(params)
+
 
 class StaticMac(VersionedPanObject):
     """Static MAC address for a Vlan
@@ -192,13 +212,17 @@ class IPv6Address(VersionedPanObject):
         auto_config_flag (bool):
 
     """
-    XPATH = "/ipv6/address"
     SUFFIX = ENTRY
     NAME = "address"
 
     def _setup(self):
         # xpaths
+        # Non-mode interface xpaths
         self._xpaths.add_profile(value='/ipv6/address')
+        # Mode interface xpaths (mode: layer3)
+        self._xpaths.add_profile(
+            value='/layer3/ipv6/address',
+            parents=('EthernetInterface', 'AggregateInterface'))
 
         # params
         params = []
@@ -244,6 +268,7 @@ class Interface(VsysOperations):
     ROOT = Root.DEVICE
     DEFAULT_MODE = None
     ALLOW_SET_VLAN = False
+    ALWAYS_IMPORT = True
 
     def up(self):
         """Link state of interface
@@ -368,7 +393,7 @@ class Interface(VsysOperations):
 
             # Convert strings to integers, if they are integers
             entry.update((k, pandevice.convert_if_int(v))
-                         for k, v in entry.iteritems())
+                         for k, v in entry.items())
 
             # If empty dictionary (no results) it usually means the interface is not
             # configured, so return None
@@ -446,14 +471,15 @@ class Interface(VsysOperations):
         self.delete()
 
 
-class SubinterfaceArp(VersionedPanObject):
+class Arp(VersionedPanObject):
     """Static ARP Mapping
 
-    Can be added to subinterfaces in 'layer3' mode
+    Can be added to various interfaces.
 
     Args:
         ip (str): The IP address
         hw_address (str): The MAC address for the static ARP
+        interface (str): The interface (when attached to VlanInterface only)
 
     """
     SUFFIX = ENTRY
@@ -461,32 +487,22 @@ class SubinterfaceArp(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/arp')
+        # Interface xpaths
+        self._xpaths.add_profile(value='/layer3/arp')
+        # Subinterface xpaths
+        self._xpaths.add_profile(
+            value='/arp',
+            parents=('Layer3Subinterface', ))
 
         # params
         params = []
 
         params.append(VersionedParamPath(
             'hw_address', path='hw-address'))
+        params.append(VersionedParamPath(
+            'interface', path='interface'))
 
         self._params = tuple(params)
-
-
-class EthernetInterfaceArp(SubinterfaceArp):
-    """Static ARP Mapping
-
-    Can be added to interfaces in 'layer3' mode
-
-    Args:
-        ip (str): The IP address
-        hw_address (str): The MAC address for the static ARP
-
-    """
-    def _setup(self):
-        super(EthernetInterfaceArp, self)._setup()
-
-        # xpaths
-        self._xpaths.add_profile(value='/layer3/arp')
 
 
 class VirtualWire(VersionedPanObject):
@@ -533,10 +549,23 @@ class Subinterface(Interface):
     Do not instantiate this object. Use a subclass.
 
     """
+    _BASE_INTERFACE_NAME = 'entry BASE_INTERFACE_NAME'
+
     def set_name(self):
         """Create a name appropriate for a subinterface if it isn't already"""
         if '.' not in self.name:
             self.name = '{0}.{1}'.format(self.name, self.tag)
+
+    @property
+    def XPATH(self):
+        path = super(Subinterface, self).XPATH
+
+        if self._BASE_INTERFACE_NAME in path:
+            base = self.uid.split('.')[0]
+            path = path.replace(self._BASE_INTERFACE_NAME,
+                                "entry[@name='{0}']".format(base))
+
+        return path
 
 
 class AbstractSubinterface(object):
@@ -661,18 +690,25 @@ class Layer3Subinterface(Subinterface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+        enable_dhcp (bool): Enable DHCP on this interface
+        create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
+        dhcp_default_route_metric (int): Metric for the DHCP default route
 
     """
     DEFAULT_MODE = 'layer3'
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.SubinterfaceArp",
-        "network.ManagementProfile",
+        "network.Arp",
     )
 
     def _setup(self):
-        # xpaths
+        # xpaths for parents: EthernetInterface, AggregateInterface)
         self._xpaths.add_profile(value='/layer3/units')
+        # xpaths for parents: firewall.Firewall, device.Vsys
+        self._xpaths.add_profile(
+            parents=('Firewall', 'Vsys'),
+            value=('/network/interface/ethernet/{0}/layer3/units'.format(
+                self._BASE_INTERFACE_NAME)))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -704,15 +740,23 @@ class Layer3Subinterface(Subinterface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
+        params.append(VersionedParamPath(
+            'enable_dhcp', path='dhcp-client/enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'create_dhcp_default_route',
+            path='dhcp-client/create-default-route', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'dhcp_default_route_metric',
+            path='dhcp-client/default-route-metric', vartype='int'))
 
         self._params = tuple(params)
 
@@ -733,8 +777,13 @@ class Layer2Subinterface(Subinterface):
     ALLOW_SET_VLAN = True
 
     def _setup(self):
-        # xpaths
+        # xpaths for parents: EthernetInterface, AggregateInterface
         self._xpaths.add_profile(value='/layer2/units')
+        # xpaths for parents: firewall.Firewall, device.Vsys
+        self._xpaths.add_profile(
+            parents=('Firewall', 'Vsys'),
+            value=('/network/interface/ethernet/{0}/layer2/units'.format(
+                self._BASE_INTERFACE_NAME)))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -826,6 +875,9 @@ class EthernetInterface(PhysicalInterface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+        enable_dhcp (bool): Enable DHCP on this interface
+        create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
+        dhcp_default_route_metric (int): Metric for the DHCP default route
 
     """
     ALLOW_SET_VLAN = True
@@ -833,8 +885,7 @@ class EthernetInterface(PhysicalInterface):
         "network.Layer3Subinterface",
         "network.Layer2Subinterface",
         "network.IPv6Address",
-        "network.EthernetInterfaceArp",
-        "network.ManagementProfile",
+        "network.Arp",
     )
 
     def _setup(self):
@@ -859,10 +910,6 @@ class EthernetInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'ipv6_enabled', path='{mode}/ipv6/enabled', vartype='yesno',
             condition={'mode': 'layer3'}))
-        params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno', condition={'mode': 'layer3'},
-            path='{mode}/ipv6/neighbor-discovery/router-advertisement/enable')
         params.append(VersionedParamPath(
             'management_profile', path='{mode}/interface-management-profile',
             condition={'mode': 'layer3'}))
@@ -900,17 +947,28 @@ class EthernetInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='{mode}/adjust-tcp-mss/ipv4-mss-adjustment',
             vartype='int', condition={'mode': 'layer3'})
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='{mode}/adjust-tcp-mss/ipv6-mss-adjustment',
             vartype='int', condition={'mode': 'layer3'})
+        params.append(VersionedParamPath(
+            'enable_dhcp', path='{mode}/dhcp-client/enable',
+            vartype='yesno', condition={'mode': 'layer3'}))
+        params.append(VersionedParamPath(
+            'create_dhcp_default_route',
+            path='{mode}/dhcp-client/create-default-route',
+            vartype='yesno', condition={'mode': 'layer3'}))
+        params.append(VersionedParamPath(
+            'dhcp_default_route_metric',
+            path='{mode}/dhcp-client/default-route-metric',
+            vartype='int', condition={'mode': 'layer3'}))
 
         self._params = tuple(params)
 
@@ -945,6 +1003,9 @@ class AggregateInterface(PhysicalInterface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+        enable_dhcp (bool): Enable DHCP on this interface
+        create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
+        dhcp_default_route_metric (int): Metric for the DHCP default route
 
     """
     ALLOW_SET_VLAN = True
@@ -952,8 +1013,7 @@ class AggregateInterface(PhysicalInterface):
         "network.Layer3Subinterface",
         "network.Layer2Subinterface",
         "network.IPv6Address",
-        "network.EthernetInterfaceArp",
-        "network.ManagementProfile",
+        "network.Arp",
     )
 
     def _setup(self):
@@ -1000,15 +1060,26 @@ class AggregateInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
+        params.append(VersionedParamPath(
+            'enable_dhcp', path='{mode}/dhcp-client/enable',
+            vartype='yesno', condition={'mode': 'layer3'}))
+        params.append(VersionedParamPath(
+            'create_dhcp_default_route',
+            path='{mode}/dhcp-client/create-default-route',
+            vartype='yesno', condition={'mode': 'layer3'}))
+        params.append(VersionedParamPath(
+            'dhcp_default_route_metric',
+            path='{mode}/dhcp-client/default-route-metric',
+            vartype='int', condition={'mode': 'layer3'}))
 
         self._params = tuple(params)
 
@@ -1026,12 +1097,14 @@ class VlanInterface(Interface):
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+        enable_dhcp (bool): Enable DHCP on this interface
+        create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
+        dhcp_default_route_metric (int): Metric for the DHCP default route
 
     """
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.EthernetInterfaceArp",
-        "network.ManagementProfile",
+        "network.Arp",
     )
 
     def _setup(self):
@@ -1063,15 +1136,23 @@ class VlanInterface(Interface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
+        params.append(VersionedParamPath(
+            'enable_dhcp', path='dhcp-client/enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'create_dhcp_default_route',
+            path='dhcp-client/create-default-route', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'dhcp_default_route_metric',
+            path='dhcp-client/default-route-metric', vartype='int'))
 
         self._params = tuple(params)
 
@@ -1093,8 +1174,6 @@ class LoopbackInterface(Interface):
     """
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.EthernetInterfaceArp",
-        "network.ManagementProfile",
     )
 
     def _setup(self):
@@ -1126,12 +1205,12 @@ class LoopbackInterface(Interface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0',
             path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
@@ -1147,17 +1226,12 @@ class TunnelInterface(Interface):
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
-        adjust_tcp_mss (bool): Adjust TCP MSS
         netflow_profile (NetflowProfile): Netflow profile
         comment (str): The interface's comment
-        ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
-        ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
 
     """
     CHILDTYPES = (
         "network.IPv6Address",
-        "network.EthernetInterfaceArp",
-        "network.ManagementProfile",
     )
 
     def _setup(self):
@@ -1180,37 +1254,35 @@ class TunnelInterface(Interface):
         params.append(VersionedParamPath(
             'mtu', path='mtu', vartype='int'))
         params.append(VersionedParamPath(
-            'adjust_tcp_mss', path='adjust-tcp-mss', vartype='yesno'))
-        params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno', path='adjust-tcp-mss/enable')
-        params.append(VersionedParamPath(
             'netflow_profile', path='netflow-profile'))
         params.append(VersionedParamPath(
             'comment', path='comment'))
-        params.append(VersionedParamPath(
-            'ipv4_mss_adjust', path=None))
-        params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
-        params.append(VersionedParamPath(
-            'ipv6_mss_adjust', path=None))
-        params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
 
         self._params = tuple(params)
 
 
 class StaticRoute(VersionedPanObject):
+    """Static Route
+
+    Add to a :class:`pandevice.network.VirtualRouter` instance.
+
+    Args:
+        name (str): The name
+        destination (str): Destination network
+        nexthop_type (str): ip-address or discard
+        nexthop (str): Next hop IP address
+        interface (str): Next hop interface
+        admin_dist (str): Administrative distance
+        metric (int): Metric (Default: 10)
+
+    """
     SUFFIX = ENTRY
 
-    def _setup_xpaths(self):
+    def _setup(self):
+        # xpaths
         self._xpaths.add_profile(value='/routing-table/ip/static-route')
 
-    def _setup(self):
-        self._setup_xpaths()
-
+        # params
         params = []
 
         params.append(VersionedParamPath(
@@ -1220,34 +1292,57 @@ class StaticRoute(VersionedPanObject):
             values=['discard', 'ip-address'],
             path='nexthop/{nexthop_type}'))
         params.append(VersionedParamPath(
-            'nexthop', path='nexthop/ip-address'))
+            'nexthop', path='nexthop/{nexthop_type}'))
         params.append(VersionedParamPath(
             'interface', path='interface'))
         params.append(VersionedParamPath(
-            'admin_dist', path='admin-dist'))
+            'admin_dist', vartype='int', path='admin-dist'))
         params.append(VersionedParamPath(
             'metric', default=10, vartype='int', path='metric'))
 
         self._params = tuple(params)
 
 
-class StaticRouteV6(StaticRoute):
+class StaticRouteV6(VersionedPanObject):
     """IPV6 Static Route
 
     Add to a :class:`pandevice.network.VirtualRouter` instance.
 
     Args:
+        name (str): The name
         destination (str): Destination network
         nexthop_type (str): ip-address or discard
         nexthop (str): Next hop IP address
         interface (str): Next hop interface
-        admin-dist (str): Administrative distance
+        admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
 
     """
-    def _setup_xpaths(self):
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
         self._xpaths.add_profile(value='/routing-table/ipv6/static-route')
 
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'destination', path='destination'))
+        params.append(VersionedParamPath(
+            'nexthop_type', default='ipv6-address',
+            values=['discard', 'ipv6-address'],
+            path='nexthop/{nexthop_type}'))
+        params.append(VersionedParamPath(
+            'nexthop', path='nexthop/{nexthop_type}'))
+        params.append(VersionedParamPath(
+            'interface', path='interface'))
+        params.append(VersionedParamPath(
+            'admin_dist', vartype='int', path='admin-dist'))
+        params.append(VersionedParamPath(
+            'metric', default=10, vartype='int', path='metric'))
+
+        self._params = tuple(params)
 
 class VirtualRouter(VsysOperations):
     """Virtual router
@@ -1276,11 +1371,13 @@ class VirtualRouter(VsysOperations):
     )
 
     def _setup(self):
+        # xpaths
         self._xpaths.add_profile(value='/network/virtual-router')
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/virtual-router')
 
+        # params
         params = []
 
         params.append(VersionedParamPath(
@@ -1338,15 +1435,18 @@ class RedistributionProfile(VersionedPanObject):
         params.append(VersionedParamPath(
             'filter_nexthop', path='filter/nexthop', vartype='member'))
         params.append(VersionedParamPath(
-            'ospf_filter_pathtype', path='filter/ospf/path-type', vartype='member'))
+            'ospf_filter_pathtype', path='filter/ospf/path-type',
+            vartype='member'))
         params.append(VersionedParamPath(
             'ospf_filter_area', path='filter/ospf/area', vartype='member'))
         params.append(VersionedParamPath(
             'ospf_filter_tag', path='filter/ospf/tag', vartype='member'))
         params.append(VersionedParamPath(
-            'bgp_filter_community', path='filter/bgp/community', vartype='member'))
+            'bgp_filter_community', path='filter/bgp/community',
+            vartype='member'))
         params.append(VersionedParamPath(
-            'bgp_filter_extended_community', path='filter/bgp/extended-community', vartype='member'))
+            'bgp_filter_extended_community',
+            path='filter/bgp/extended-community', vartype='member'))
 
         self._params = tuple(params)
 
@@ -1393,19 +1493,25 @@ class Ospf(VersionedPanObject):
             'rfc1583', vartype='yesno'))
         # TODO: Add flood prevention
         params.append(VersionedParamPath(
-            'spf_calculation_delay', path='timers/spf-calculation-delay', vartype='int'))
+            'spf_calculation_delay', path='timers/spf-calculation-delay',
+            vartype='int'))
         params.append(VersionedParamPath(
             'lsa_interval', path='timers/lsa-interval', vartype='int'))
         params.append(VersionedParamPath(
-            'graceful_restart_enable', path='graceful-restart/enable', vartype='yesno'))
+            'graceful_restart_enable', path='graceful-restart/enable',
+            vartype='yesno'))
         params.append(VersionedParamPath(
-            'gr_grace_period', path='graceful-restart/grace-period', vartype='int'))
+            'gr_grace_period', path='graceful-restart/grace-period',
+            vartype='int'))
         params.append(VersionedParamPath(
-            'gr_helper_enable', path='graceful-restart/helper-enable', vartype='yesno'))
+            'gr_helper_enable', path='graceful-restart/helper-enable',
+            vartype='yesno'))
         params.append(VersionedParamPath(
-            'gr_strict_lsa_checking', path='graceful-restart/strict-LSA-checking', vartype='yesno'))
+            'gr_strict_lsa_checking',
+            path='graceful-restart/strict-LSA-checking', vartype='yesno'))
         params.append(VersionedParamPath(
-            'gr_max_neighbor_restart_time', path='graceful-restart/max-neighbor-restart-time', vartype='int'))
+            'gr_max_neighbor_restart_time',
+            path='graceful-restart/max-neighbor-restart-time', vartype='int'))
 
         self._params = tuple(params)
 
@@ -1435,7 +1541,8 @@ class OspfArea(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'type', default='normal', values=['normal', 'stub', 'nssa'], path='type/{type}'))
+            'type', default='normal', values=['normal', 'stub', 'nssa'],
+            path='type/{type}'))
         params.append(VersionedParamPath(
             'accept_summary',
             condition={'type': ['stub', 'nssa']},
@@ -1449,7 +1556,9 @@ class OspfArea(VersionedPanObject):
             path='type/{type}/default-route/{default_route_advertise}'))
         params.append(VersionedParamPath(
             'default_route_advertise_metric',
-            condition={'type': ['stub', 'nssa'], 'default_route_advertise': 'advertise'},
+            condition={
+                'type': ['stub', 'nssa'],
+                'default_route_advertise': 'advertise'},
             path='type/{type}/default-route/advertise/metric',
             vartype='int'))
         params.append(VersionedParamPath(
@@ -1478,7 +1587,8 @@ class OspfRange(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'mode', default='advertise', values=['advertise', 'suppress'], path='{mode}'))
+            'mode', default='advertise', values=['advertise', 'suppress'],
+            path='{mode}'))
 
         self._params = tuple(params)
 
@@ -1494,12 +1604,13 @@ class OspfNssaExternalRange(VersionedPanObject):
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/nssa-ext-range')
+        self._xpaths.add_profile(value='/type/nssa/nssa-ext-range')
 
         params = []
 
         params.append(VersionedParamPath(
-            'mode', default='advertise', values=['advertise', 'suppress'], path='{mode}'))
+            'mode', default='advertise', values=['advertise', 'suppress'],
+            path='{mode}'))
 
         self._params = tuple(params)
 
@@ -1537,7 +1648,8 @@ class OspfAreaInterface(VersionedPanObject):
         params.append(VersionedParamPath(
             'passive', vartype='yesno'))
         params.append(VersionedParamPath(
-            'link_type', default='broadcast', values=['broadcast', 'p2p', 'p2mp'], path='link-type/{link_type}'))
+            'link_type', default='broadcast',
+            values=['broadcast', 'p2p', 'p2mp'], path='link-type/{link_type}'))
         params.append(VersionedParamPath(
             'metric', vartype='int'))
         params.append(VersionedParamPath(
@@ -1574,7 +1686,7 @@ class OspfNeighbor(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'metric', vartype='int'))
+            'metric', vartype='int', exclude=True))
 
         self._params = tuple(params)
 

@@ -11,10 +11,13 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 import unittest
 import uuid
+import xml.etree.ElementTree as ET
 
 import pan.xapi
 import pandevice.base as Base
@@ -357,34 +360,19 @@ class TestPanObject(unittest.TestCase):
 
         self.assertEqual('', ret_val)
 
-    def test_parent_xpath_for_xpath_root_parent(self):
-        '''If the parent has "xpath_root()", then use that.'''
-        Path = '/foo/bar'
-
-        spec = {
-            'xpath_root.return_value': Path,
-        }
-        self.obj.parent = mock.Mock(**spec)
-
-        ret_val = self.obj._parent_xpath()
-
-        self.assertEqual(Path, ret_val)
-        self.obj.parent.xpath_root.assert_called_once_with(
-            self.obj.ROOT)
-
     def test_parent_xpath_for_xpath_parent(self):
         '''Default case for parent xpath.'''
         Path = '/hello/world'
 
         spec = {
-            'xpath.return_value': Path,
+            '_build_xpath.return_value': Path,
         }
-        self.obj.parent = mock.Mock(spec=['xpath', ], **spec)
+        self.obj.parent = mock.Mock(spec=['_build_xpath', ], **spec)
 
         ret_val = self.obj._parent_xpath()
 
         self.assertEqual(Path, ret_val)
-        self.obj.parent.xpath.assert_called_once_with()
+        self.obj.parent._build_xpath.assert_called_once_with(0)
 
     def test_xpath_vsys_without_parent(self):
         ret_val = self.obj.xpath_vsys()
@@ -437,7 +425,7 @@ class TestPanObject(unittest.TestCase):
 
         self.assertEqual(Tostring_Value, ret_val)
         self.obj.element.assert_called_once_with()
-        m_ET.tostring.assert_called_once_with(Element_Value)
+        m_ET.tostring.assert_called_once_with(Element_Value, encoding='utf-8')
 
     @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
     @mock.patch('pandevice.base.ET')
@@ -519,7 +507,7 @@ class TestPanObject(unittest.TestCase):
         spec = {
             '_check_child_methods.return_value': None,
         }
-        for x in xrange(3):
+        for x in range(3):
             m = mock.Mock(**spec)
             self.obj.children.append(m)
 
@@ -535,7 +523,7 @@ class TestPanObject(unittest.TestCase):
         spec = {
             '_check_child_methods.return_value': None,
         }
-        for x in xrange(3):
+        for x in range(3):
             m = mock.Mock(**spec)
             self.obj.children.append(m)
 
@@ -565,7 +553,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = 'uid'
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock(**spec)
             self.obj.children.append(child)
 
@@ -599,7 +587,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = 'uid'
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock(**spec)
             self.obj.children.append(child)
 
@@ -631,7 +619,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath_short = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = 'uid'
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock(**spec)
             self.obj.children.append(child)
 
@@ -665,7 +653,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.xpath_short = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = 'uid'
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock()
             self.obj.children.append(child)
 
@@ -695,7 +683,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         m_uid.return_value = 'uid'
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock(**spec)
             self.obj.children.append(child)
 
@@ -725,7 +713,7 @@ class TestPanObject(unittest.TestCase):
         self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         m_uid.return_value = Uid
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock(**spec)
             self.obj.children.append(child)
 
@@ -757,7 +745,7 @@ class TestPanObject(unittest.TestCase):
         m_pandevice = mock.Mock(**spec)
         self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
-        for x in xrange(3):
+        for x in range(3):
             child = mock.Mock()
 
     # Skip update
@@ -1155,3 +1143,308 @@ class TestPanObject(unittest.TestCase):
     # Skip refreshall_from_xml
 
     # Skip _parse_xml
+
+class TestParamPath(unittest.TestCase):
+    def setUp(self):
+        self.elm = ET.Element('myroot')
+
+    def test_element_for_exclude_returns_none(self):
+        settings = {'baz': 'jack'}
+        p = Base.ParamPath('baz', path='foo/bar', vartype=None,
+                           condition=None, values=None, exclude=True)
+
+        result = p.element(self.elm, settings, False)
+
+        self.assertIsNone(result)
+
+    def test_element_path_has_variable(self):
+        p = Base.ParamPath('baz', path='{mode}/bar/baz', vartype=None,
+                           condition=None, values=None)
+        settings = {'baz': 'jack', 'mode': 'layer3'}
+
+        result = p.element(self.elm, settings, False)
+        self.assertIsNotNone(result)
+
+        elm = result.find('./layer3/bar/baz')
+        self.assertIsNotNone(elm, msg='Failed: elm = {0}'.format(ET.tostring(result)))
+        self.assertEqual(settings['baz'], elm.text)
+
+    def test_element_for_vartype_member_for_string(self):
+        p = Base.ParamPath('baz', path='foo/bar/baz', vartype='member',
+                           condition=None, values=None)
+        settings = {'baz': 'jack'}
+
+        result = p.element(self.elm, settings, False)
+        self.assertIsNotNone(result)
+
+        elm = result.findall('./foo/bar/baz/member')
+        self.assertTrue(elm)
+        self.assertEqual(1, len(elm))
+        self.assertEqual(settings['baz'], elm[0].text)
+
+    def test_element_for_vartype_member_for_list(self):
+        p = Base.ParamPath('baz', path='foo/bar/baz', vartype='member',
+                           condition=None, values=None)
+        settings = {'baz': ['jack', 'john', 'jane', 'margret']}
+
+        result = p.element(self.elm, settings, False)
+        self.assertIsNotNone(result)
+
+        elms = result.findall('./foo/bar/baz/member')
+        self.assertEqual(len(settings['baz']), len(elms))
+
+        for elm in elms:
+            self.assertTrue(elm.text in settings['baz'])
+
+
+class Abouter(object):
+    def __init__(self, mode='layer3'):
+        self.mode = mode
+
+    def _about_object(self):
+        return {'mode': self.mode}
+
+class ParentClass1(Abouter):
+    pass
+
+class ParentClass2(Abouter):
+    pass
+
+class UnassociatedParent(Abouter):
+    pass
+
+
+class TestParentAwareXpathBasics(unittest.TestCase):
+    DEFAULT_PATH_1 = '/default/path/1'
+    DEFAULT_PATH_2 = '/default/path/2'
+    SPECIFIED_PATH_1 = '/some/specific/path/1'
+    SPECIFIED_PATH_2 = '/some/specific/path/2'
+
+    def setUp(self):
+        self.obj = Base.ParentAwareXpath()
+        self.obj.add_profile(value=self.DEFAULT_PATH_1)
+        self.obj.add_profile('1.0.0', self.DEFAULT_PATH_2)
+        self.obj.add_profile(value=self.SPECIFIED_PATH_1,
+                             parents=('ParentClass1', 'ParentClass2'))
+        self.obj.add_profile('2.0.0', self.SPECIFIED_PATH_2,
+                             ('ParentClass1', 'ParentClass2'))
+
+    def test_old_default_xpath(self):
+        parent = UnassociatedParent()
+
+        self.assertEqual(
+            self.DEFAULT_PATH_1,
+            self.obj._get_versioned_value(
+                (0, 5, 0), parent))
+
+    def test_new_default_xpath(self):
+        parent = UnassociatedParent()
+
+        self.assertEqual(
+            self.DEFAULT_PATH_2,
+            self.obj._get_versioned_value(
+                (1, 0, 0), parent))
+
+    def test_old_specefied_xpath_for_class1(self):
+        parent = ParentClass1()
+
+        self.assertEqual(
+            self.SPECIFIED_PATH_1,
+            self.obj._get_versioned_value(
+                (0, 5, 0), parent))
+
+    def test_new_specefied_xpath_for_class1(self):
+        parent = ParentClass1()
+
+        self.assertEqual(
+            self.SPECIFIED_PATH_2,
+            self.obj._get_versioned_value(
+                (2, 0, 0), parent))
+
+    def test_old_specefied_xpath_for_class2(self):
+        parent = ParentClass2()
+
+        self.assertEqual(
+            self.SPECIFIED_PATH_1,
+            self.obj._get_versioned_value(
+                (0, 0, 0), parent))
+
+    def test_new_specefied_xpath_for_class2(self):
+        parent = ParentClass2()
+
+        self.assertEqual(
+            self.SPECIFIED_PATH_2,
+            self.obj._get_versioned_value(
+                (5, 0, 0), parent))
+
+    def test_no_parent_gets_newest_version(self):
+        parent = None
+
+        self.assertEqual(
+            self.DEFAULT_PATH_2,
+            self.obj._get_versioned_value(
+                Base.VersionedPanObject._UNKNOWN_PANOS_VERSION, parent))
+
+    def test_no_fallback_raises_value_error(self):
+        parent = None
+        obj = Base.ParentAwareXpath()
+        obj.add_profile(
+            parents=('ParentClass1', ),
+            value='/some/path',
+        )
+
+        self.assertRaises(
+            ValueError,
+            obj._get_versioned_value,
+            (1, 0, 0), parent)
+
+
+class TestParentAwareXpathWithParams(unittest.TestCase):
+    OLD_LAYER3_PATH = '/units/layer3/old'
+    NEW_LAYER3_PATH = '/units/layer3/new'
+    OLD_LAYER2_PATH = '/units/layer2/old'
+    NEW_LAYER2_PATH = '/units/layer2/new'
+
+    def setUp(self):
+        self.obj = Base.ParentAwareXpath()
+        self.obj.add_profile(
+            parents=('ParentClass1', None),
+            value=self.OLD_LAYER3_PATH)
+        self.obj.add_profile(
+            version='1.0.0',
+            parents=('ParentClass1', None),
+            value=self.NEW_LAYER3_PATH)
+        self.obj.add_profile(
+            parents=('ParentClass1', ),
+            parent_param='mode',
+            parent_param_values=['junk', 'layer2'],
+            value=self.OLD_LAYER2_PATH)
+        self.obj.add_profile(
+            version='2.0.0',
+            parents=('ParentClass1', ),
+            parent_param='mode',
+            parent_param_values=['junk', 'layer2'],
+            value=self.NEW_LAYER2_PATH)
+
+    def test_old_default_path(self):
+        parent = UnassociatedParent('foo')
+
+        self.assertEqual(
+            self.OLD_LAYER3_PATH,
+            self.obj._get_versioned_value(
+                (0, 5, 0), parent))
+
+    def test_known_parent_and_param_for_old_l3_path(self):
+        parent = ParentClass1()
+
+        self.assertEqual(
+            self.OLD_LAYER3_PATH,
+            self.obj._get_versioned_value(
+                (0, 5, 0), parent))
+
+    def test_known_parent_and_param_for_new_l3_path(self):
+        parent = ParentClass1()
+
+        self.assertEqual(
+            self.NEW_LAYER3_PATH,
+            self.obj._get_versioned_value(
+                (1, 5, 0), parent))
+
+    def test_known_parent_and_param_for_old_l2_path(self):
+        parent = ParentClass1('layer2')
+
+        self.assertEqual(
+            self.OLD_LAYER2_PATH,
+            self.obj._get_versioned_value(
+                (0, 1, 0), parent))
+
+    def test_known_parent_and_param_for_new_l2_path(self):
+        parent = ParentClass1('layer2')
+
+        self.assertEqual(
+            self.NEW_LAYER2_PATH,
+            self.obj._get_versioned_value(
+                (5, 1, 0), parent))
+
+    def test_no_parent_gets_newest_default(self):
+        parent = None
+
+        self.assertEqual(
+            self.NEW_LAYER3_PATH,
+            self.obj._get_versioned_value(
+                Base.VersionedPanObject._UNKNOWN_PANOS_VERSION, parent))
+
+
+class MyVersionedObject(Base.VersionedPanObject):
+    SUFFIX = Base.ENTRY
+
+    def _setup(self):
+        params = []
+
+        params.append(Base.VersionedParamPath(
+            'entries', path='multiple/entries', vartype='entry'))
+        params.append(Base.VersionedParamPath(
+            'members', path='multiple/members', vartype='member'))
+        params.append(Base.VersionedParamPath(
+            'someint', path='someint', vartype='int'))
+
+        self._params = tuple(params)
+
+
+class TestEqual(unittest.TestCase):
+    def test_ordered(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+
+        self.assertTrue(o1.equal(o2))
+
+    def test_unordered_entries(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['b', 'a'], ['c', 'd'], 5)
+
+        self.assertTrue(o1.equal(o2))
+
+    def test_unordered_members(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['a', 'b'], ['d', 'c'], 5)
+
+        self.assertTrue(o1.equal(o2))
+
+    def test_values_are_unchanged_after_comparison(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['b', 'a'], ['d', 'c'], 5)
+
+        o1.equal(o2)
+
+        self.assertEqual(o1.entries, ['a', 'b'])
+        self.assertEqual(o1.members, ['c', 'd'])
+        self.assertEqual(o2.entries, ['b', 'a'])
+        self.assertEqual(o2.members, ['d', 'c'])
+
+    def test_str_list_field_is_equal(self):
+        o1 = MyVersionedObject('a', ['a', ], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', 'a', ['c', 'd'], 5)
+
+        self.assertTrue(o1.equal(o2))
+
+    def test_unequal_entries_returns_false(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['a', 'i'], ['c', 'd'], 5)
+
+        self.assertFalse(o1.equal(o2))
+
+    def test_unequal_members_returns_false(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['a', 'b'], ['c', 'i'], 5)
+
+        self.assertFalse(o1.equal(o2))
+
+    def test_unequal_ints_returns_false(self):
+        o1 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 5)
+        o2 = MyVersionedObject('a', ['a', 'b'], ['c', 'd'], 6)
+
+        self.assertFalse(o1.equal(o2))
+
+
+if __name__=='__main__':
+    unittest.main()

@@ -139,3 +139,6 @@ class TestPanOSVersion(unittest.TestCase):
 
     def test_hotfix_version_is_greater_than_previous_same_release_version(self):
         self.assertTrue(self.h3 > self.m2)
+
+if __name__=='__main__':
+    unittest.main()

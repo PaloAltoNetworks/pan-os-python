@@ -31,14 +31,13 @@ import base64
 import hashlib
 
 import pandevice
-from pandevice import yesno
+from pandevice import yesno, isstring, string_or_list
 
 import pan.xapi
 import pan.commit
 from pan.config import PanConfig
-import errors as err
-import updater
-import userid
+import pandevice.errors as err
+from pandevice import updater, userid
 
 logger = pandevice.getlogger(__name__)
 
@@ -73,11 +72,14 @@ class PanObject(object):
 
     def __init__(self, *args, **kwargs):
         # Set the 'name' variable
-        try:
-            name = args[0]
-        except IndexError:
-            name = kwargs.pop(self.NAME, None)
-        setattr(self, self.NAME, name)
+        idx_start = 0
+        if self.NAME is not None:
+            try:
+                name = args[0]
+                idx_start = 1
+            except IndexError:
+                name = kwargs.pop(self.NAME, None)
+            setattr(self, self.NAME, name)
         # Initialize other common variables
         self.parent = None
         self.children = []
@@ -88,11 +90,11 @@ class PanObject(object):
             variables = type(self).variables()
         # Sort the variables by order
         variables = sorted(variables, key=lambda x: x.order)
-        for idx, var in enumerate(variables):
+        for idx, var in enumerate(variables, idx_start):
             varname = var.variable
             try:
                 # Try to get the variables from 'args' first
-                varvalue = args[idx+1]
+                varvalue = args[idx]
             except IndexError:
                 # If it's not in args, get it from 'kwargs', or store a None in the variable
                 try:
@@ -115,7 +117,10 @@ class PanObject(object):
         return self.uid
 
     def __repr__(self):
-        return "<%s %s at 0x%x>" % (type(self).__name__, repr(getattr(self, self.NAME, None)), id(self))
+        return '<{0}{1} {2:#x}>'.format(
+            type(self).__name__,
+            ' {0}'.format(self.uid) if self.uid else '',
+            id(self))
 
     @classmethod
     def variables(cls):
@@ -134,7 +139,12 @@ class PanObject(object):
 
         """
         if self.parent is not None:
-            return self.parent.vsys
+            vsys = self.parent.vsys
+            if vsys is None and self.ROOT == Root.VSYS:
+                return 'vsys1'
+            else:
+                return vsys
+
 
     @vsys.setter
     def vsys(self, value):
@@ -302,14 +312,17 @@ class PanObject(object):
 
     def _parent_xpath(self):
         if self.parent is None:
-            # self with no parent
-            parent_xpath = ""
-        elif hasattr(self.parent, 'xpath_root'):
-            # Parent is Firewall or Panorama
-            parent_xpath = self.parent.xpath_root(self.ROOT)
+            return ""
         else:
-            parent_xpath = self.parent.xpath()
+            return self.parent._build_xpath(self.ROOT)
 
+    def _build_xpath(self, root):
+        if self.parent is None:
+            # self with no parent
+            return ""
+        parent_xpath = self.parent._build_xpath(root) + self.XPATH
+        if self.SUFFIX is not None:
+            parent_xpath += self.SUFFIX % (self.uid, )
         return parent_xpath
 
     def xpath_vsys(self):
@@ -320,8 +333,17 @@ class PanObject(object):
         if self.parent is not None:
             return self.parent.xpath_panorama()
 
-    def element(self):
+    def _root_xpath_vsys(self, vsys):
+        root_xpath = "/config/devices/entry[@name='localhost.localdomain']/vsys"
+        specific_vsys = "/entry[@name='{0}']".format(vsys) if vsys else ""
+        return root_xpath + specific_vsys
+
+    def element(self, with_children=True, comparable=False):
         """Construct an ElementTree for this PanObject and all its children
+
+        Args:
+            with_children (bool): Include children in element.
+            comparable (bool): Element will be used in a comparison with another.
 
         Returns:
             xml.etree.ElementTree: An ElementTree instance representing the
@@ -399,34 +421,11 @@ class PanObject(object):
                         nextelement = ET.SubElement(nextelement, section)
             if missing_replacement:
                 continue
-            # Create an element containing the value in the instance variable
-            if var.vartype == "member":
-                for member in pandevice.string_or_list(value):
-                    ET.SubElement(nextelement, 'member').text = str(member)
-            elif var.vartype == "entry":
-                try:
-                    # Value is an array
-                    for entry in pandevice.string_or_list(value):
-                        ET.SubElement(nextelement, 'entry', {'name': str(entry)})
-                except TypeError:
-                    # Value is not an array
-                    ET.SubElement(nextelement, 'entry', {'name': str(value)})
-            elif var.vartype == "exist":
-                if value:
-                    ET.SubElement(nextelement, var.variable)
-            elif var.vartype == "bool":
-                nextelement.text = yesno(value)
-            elif var.path.find("|") != -1:
-                # This is an element variable,
-                # it has already been created
-                # so do nothing
-                pass
-            elif var.vartype == "none":
-                # There is no variable, so don't try to populate it
-                pass
-            else:
-                nextelement.text = str(value)
-        self.xml_merge(root, self._subelements())
+            var._set_inner_xml_tag_text(nextelement, value, comparable)
+
+        if with_children:
+            self.xml_merge(root, self._subelements())
+
         return root
 
     def element_str(self):
@@ -436,7 +435,7 @@ class PanObject(object):
             str: XML form of this object and its children
 
         """
-        return ET.tostring(self.element())
+        return ET.tostring(self.element(), encoding='utf-8')
 
     def _root_element(self):
         if self.SUFFIX == ENTRY:
@@ -453,7 +452,7 @@ class PanObject(object):
         raise ValueError('No suffix or XPATH defined for {0}'.format(
                          self.__class__.__name__))
 
-    def _subelements(self, comparison_element=False):
+    def _subelements(self, comparable=False):
         """Generator function to turn children into XML objects.
 
         Yields:
@@ -471,10 +470,7 @@ class PanObject(object):
             e = root
             for path in xpath_sections:
                 e = ET.SubElement(e, path)
-            if comparison_element:
-                e.append(child.comparison_element())
-            else:
-                e.append(child.element())
+            e.append(child.element(comparable=comparable))
             yield root
 
     def _check_child_methods(self, method):
@@ -583,19 +579,15 @@ class PanObject(object):
         path, value, var_path = self._get_param_specific_info(variable)
         xpath = '{0}/{1}'.format(self.xpath(), path)
 
-        # Perform the operation
         if value is None:
+            # Value is None, so delete it from the live device.
             device.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
         else:
+            # Variable has a new value.
             element_tag = path.split("/")[-1]
             element = ET.Element(element_tag)
-            if var_path.vartype == "member":
-                for member in pandevice.string_or_list(value):
-                    ET.SubElement(element, 'member').text = str(member)
-            else:
-                # Regular text variables
-                element.text = value
-            device.xapi.edit(xpath, ET.tostring(element),
+            var_path._set_inner_xml_tag_text(element, value)
+            device.xapi.edit(xpath, ET.tostring(element, encoding='utf-8'),
                              retry_on_peer=self.HA_SYNC)
 
     def _get_param_specific_info(self, variable):
@@ -652,7 +644,8 @@ class PanObject(object):
 
         return (varpath, value, var)
 
-    def refresh(self, running_config=False, refresh_children=True, exceptions=True, xml=None):
+    def refresh(self, running_config=False, refresh_children=True,
+                exceptions=True, xml=None):
         """Refresh all variables and child objects from the device.
 
         Args:
@@ -668,7 +661,8 @@ class PanObject(object):
         """
         # Either retrieve the xml or use what is passed in
         if xml is None:
-            xml = self._refresh_xml(running_config, exceptions)
+            xml = self._refresh_xml(running_config, exceptions,
+                                    refresh_children)
         else:
             logger.debug('refresh called using xml on {0} object "{1}"'.format(
                 type(self), self.uid))
@@ -683,7 +677,7 @@ class PanObject(object):
         else:
             # Classic object
             variables = type(self)._parse_xml(xml)
-            for var, value in variables.iteritems():
+            for var, value in variables.items():
                 setattr(self, var, value)
 
         # Refresh children objects if requested
@@ -761,7 +755,7 @@ class PanObject(object):
             next_element.append(obj)
             # Refresh the requested variable
             variables = type(self)._parse_xml(root)
-            for var, value in variables.iteritems():
+            for var, value in variables.items():
                 if var == variable:
                     setattr(self, var, value)
 
@@ -794,38 +788,57 @@ class PanObject(object):
 
         return self.children
 
-    def _refresh_xml(self, running_config, exceptions):
+    def _refresh_xml(self, running_config, exceptions, refresh_children=True):
         """Get the XML for a single PanObject."""
         # Get the root of the xml to parse
-        device = self.nearest_pandevice()
+        optimized = False
+        dev = self.nearest_pandevice()
         msg = '{0}: refreshing xml on {1} object {2}'.format(
-            device.id, type(self), self.uid)
+            dev.id, type(self), self.uid)
         logger.debug(msg)
-        if running_config:
-            api_action = device.xapi.show
-        else:
-            api_action = device.xapi.get
-        xpath = self.xpath()
-        err_msg = "Object doesn't exist: {0}".format(xpath)
 
+        api_action = dev.xapi.show if running_config else dev.xapi.get
+
+        if running_config or refresh_children:
+            xpath = self.xpath()
+        else:
+            optimized = True
+            info = self._build_element_info()
+            paths, settings = info[0], info[2]
+            query_paths = list(set(
+                p.path.split('/')[0].format(**settings) for p in paths))
+            xpath = '|'.join(
+                '{0}/{1}'.format(self.xpath(), x)
+                for x in query_paths)
+
+        err_msg = "Object doesn't exist: {0}".format(xpath)
         # Query the live device
         try:
             root = api_action(xpath, retry_on_peer=self.HA_SYNC)
         except (pan.xapi.PanXapiError, err.PanNoSuchNode) as e:
             if exceptions:
-                raise err.PanObjectMissing(err_msg, pan_device=device)
+                raise err.PanObjectMissing(err_msg, pan_device=dev)
             else:
                 return
 
         # Determine the first element to look for in the XML
-        if self.SUFFIX is None:
-            lasttag = self.XPATH.rsplit("/", 1)[-1]
+        if not optimized:
+            # Normal XML recovery for parsing
+            if self.SUFFIX is None:
+                lasttag = self.XPATH.rsplit("/", 1)[-1]
+            else:
+                lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
+            elm = root.find("result/" + lasttag)
         else:
-            lasttag = re.match(r'^/(\w*?)\[', self.SUFFIX).group(1)
-        elm = root.find("result/" + lasttag)
+            # Construct the XML for parsing.
+            elm = self._root_element()
+            results = root.find('./result')
+            if results is not None:
+                for se in results:
+                    elm.append(se)
 
         if elm is None and exceptions:
-            raise err.PanObjectMissing(err_msg, pan_device=device)
+            raise err.PanObjectMissing(err_msg, pan_device=dev)
 
         return elm
 
@@ -1009,7 +1022,7 @@ class PanObject(object):
             device.xml_combine(element, [obj.element(), ])
         # Apply the element to the xpath
         device.set_config_changed()
-        device.xapi.edit(xpath, ET.tostring(element), retry_on_peer=cls.HA_SYNC)
+        device.xapi.edit(xpath, ET.tostring(element, encoding='utf-8'), retry_on_peer=cls.HA_SYNC)
         for obj in objects:
             obj._check_child_methods("apply")
 
@@ -1050,18 +1063,16 @@ class PanObject(object):
             raise ValueError("can't get name_only from running_config")
         if name_only and cls.SUFFIX != ENTRY:
             raise ValueError("name_only is invalid, can only be used on entry type objects")
-        if isinstance(parent, PanDevice):
-            device = parent
-            parent_xpath = parent.xpath_root(cls.ROOT)
-        else:
-            device = parent.nearest_pandevice()
-            parent_xpath = parent.xpath()
-        logger.debug(device.id + ": refreshall called on %s type" % cls)
 
         # Versioned objects need a PanDevice to get the version from, so
         # set the child's parent before accessing XPATH.
         class_instance = cls()
         class_instance.parent = parent
+
+        device = class_instance.nearest_pandevice()
+        logger.debug(device.id + ": refreshall called on %s type" % cls)
+
+        parent_xpath = class_instance._parent_xpath()
 
         # Set api_action and xpath
         api_action = device.xapi.show if running_config else device.xapi.get
@@ -1226,7 +1237,7 @@ class PanObject(object):
                     # Create a list of all the possible paths
                     option_paths = {opt: re.sub(r"\([\w\d|-]*\)", opt, path) for opt in options}
                     found = False
-                    for opt, opt_path in option_paths.iteritems():
+                    for opt, opt_path in option_paths.items():
                         match = xml.find(opt_path)
                         if match is not None:
                             vardict[var.variable] = cls._convert_var(opt, var.vartype)
@@ -1429,6 +1440,214 @@ class PanObject(object):
 
         return ans
 
+    def _requires_import_consideration(self):
+        if self.vsys in (None, 'shared') or not hasattr(self,
+                                                        'xpath_import_base'):
+            return False
+        return True
+
+    def _gather_bulk_info(self, func=None):
+        """Returns info for the bulk functions to operate on.
+
+        This function gets a single instance which will act as xpath scope,
+        but goes back to the nearest pandevice to collect all instances of
+        cType with the same xpath, as we need to be aware that instances could
+        share path but be in different vsys.
+
+        Args:
+            func (str): The function calling this function
+
+        Returns:
+            3 element tuple:
+                * nearest PanDevice
+                * list of instances of cType that share single instance's scope
+                * dict: vsys key with value of dict:
+                    * import path key with value of list of PanObject instances
+
+        """
+        dev = self.nearest_pandevice()
+        logger.debug('{0}: {1} called on {2} object "{3}"'.format(
+            dev.id, func, self, self.uid))
+        dev.set_config_changed()
+        if self.HA_SYNC:
+            dev = dev.active()
+
+        # Determine base xpath to match against.
+        xpath = self.xpath_short()
+
+        # Now, find all PanObjects with a similar xpath.
+        tree = [dev, ]
+        instances = []
+        for node in itertools.chain(tree):
+            tree.extend(node.children)
+            if node.xpath_short() == xpath:
+                instances.append(node)
+
+        # Now find all the objects that need to be imported.
+        vsys_dict = {}
+        all_objects = instances[:]
+        for node in itertools.chain(all_objects):
+            all_objects.extend(node.children)
+            if node._requires_import_consideration():
+                vsys_dict.setdefault(node.vsys, {})
+                vsys_dict[node.vsys].setdefault(node.xpath_import_base(), [])
+                vsys_dict[node.vsys][node.xpath_import_base()].append(node)
+
+        return dev, instances, vsys_dict
+
+    def create_similar(self):
+        """Bulk create all objects similar to this one.
+
+        **Modifies the live device**
+
+        This is similar to create(), except instead of calling create only
+        on this object, it calls create for all objects that share the same
+        xpath as this object, recursively searching the entire object tree
+        from the nearest firewall or panorama instance.
+
+        As an example, if you called create_similar on an object representing
+        ethernet1/5.42, all of the subinterfaces for ethernet1/5 would be
+        included in the resulting XML document, regardless of which vsys
+        those subinterfaces existed in.
+
+        """
+        dev, instances, vsys_dict = self._gather_bulk_info('create_similar')
+        if not instances:
+            return
+
+        # The new root tag is the last tag in the xpath, while the new xpath
+        # is what remains.
+        xpath_tokens = self.xpath_short().split('/')
+        new_root = xpath_tokens.pop()
+        xpath = '/'.join(xpath_tokens)
+
+        # Append all similar children.
+        shared_root = ET.Element(new_root)
+        for x in instances:
+            shared_root.append(x.element())
+
+        # Perform the create.
+        dev.xapi.set(xpath, ET.tostring(shared_root, encoding='utf-8'),
+                     retry_on_peer=self.HA_SYNC)
+
+        # Do all necessary imports, per vsys, per import xpath.
+        self._perform_vsys_dict_import_set(dev, vsys_dict)
+
+    def apply_similar(self):
+        """Bulk apply all objects similar to this one.
+
+        **Modifies the live device**
+
+        This is similar to apply(), except instead of calling apply only
+        on this object, it calls apply for all objects that share the same
+        xpath as this object, recursively searching the entire object tree
+        from the nearest firewall or panorama instance.
+
+        As an example, if you called apply_similar on an object representing
+        ethernet1/5.42, all of the subinterfaces for ethernet1/5 would be
+        included in the resulting XML document, regardless of which vsys
+        those subinterfaces existed in.
+
+        Since apply does a replace of the config at the given xpath, please
+        be careful when using this function that all objects, whether they
+        be updated or not, exist in your pandevice object tree.
+
+        """
+        dev, instances, vsys_dict = self._gather_bulk_info('apply_similar')
+        if not instances:
+            return
+
+        # The new root tag is the last tag in the xpath, while the new xpath
+        # is what remains.
+        xpath = self.xpath_short()
+        new_root = xpath.split('/')[-1]
+
+        # Append all children of type cType.
+        shared_root = ET.Element(new_root)
+        for x in instances:
+            shared_root.append(x.element())
+
+        # Perform the create.
+        dev.xapi.edit(xpath, ET.tostring(shared_root, encoding='utf-8'),
+                      retry_on_peer=self.HA_SYNC)
+
+        # Do all necessary imports, per vsys, per import xpath.
+        self._perform_vsys_dict_import_set(dev, vsys_dict)
+
+    def delete_similar(self):
+        """Bulk delete all objects similar to this one.
+
+        **Modifies the live device**
+
+        This is similar to delete(), except instead of calling delete only
+        on this object, it calls delete for all objects that share the same
+        xpath as this object, recursively searching the entire object tree
+        from the nearest firewall or panorama instance.
+
+        As an example, if you called delete_similar on an object representing
+        ethernet1/5.42, all of the subinterfaces in your pandevice object
+        tree for ethernet1/5 would be removed.
+
+        """
+        dev, instances, vsys_dict = self._gather_bulk_info('delete_similar')
+        if not instances:
+            return
+
+        # This operation is only supported for entry/member objects.
+        if self.SUFFIX not in (ENTRY, MEMBER):
+            raise ValueError('delete_similar requires member or entry')
+
+        # Do all necessary unimports, per vsys, per xpath.
+        self._perform_vsys_dict_import_delete(dev, vsys_dict)
+
+        # Now perform the bulk delete.
+        xpath = self._parent_xpath() + self.XPATH
+        if self.SUFFIX == ENTRY:
+            entries = ' or '.join(
+                "@name='{0}'".format(x.uid) for x in instances)
+            xpath += '/entry[{0}]'.format(entries)
+        elif self.SUFFIX == MEMBER:
+            members = ' or '.join(
+                "text()='{0}'".format(x.uid) for x in instances)
+            xpath += '/member[{0}]'.format(members)
+        dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
+
+        # Remove each object from self, just like delete().
+        for x in instances:
+            x.parent.remove(x)
+
+    def _perform_vsys_dict_import_set(self, dev, vsys_dict):
+        """Iterates of a vsys_dict, doing imports for all instances."""
+        for vsys_spec in vsys_dict.values():
+            for xpath_import_base, objs in vsys_spec.items():
+                xpath_tokens = xpath_import_base.split('/')
+                new_root = xpath_tokens.pop()
+
+                # Form the xpath from what remains of the xpath.
+                xpath = '/'.join(xpath_tokens)
+
+                # Append objects as members to the new root.
+                shared_root = ET.Element(new_root)
+                for x in objs:
+                    ET.SubElement(shared_root, "member").text = x.uid
+
+                # Perform the import.
+                dev.xapi.set(xpath, ET.tostring(shared_root, encoding='utf-8'),
+                             retry_on_peer=self.HA_SYNC)
+
+    def _perform_vsys_dict_import_delete(self, dev, vsys_dict):
+        """Iterates over a vsys_dict, deleting the import for all instances."""
+        for vsys_spec in vsys_dict.values():
+            for objs in vsys_spec.values():
+                members = ' or '.join(
+                    "text()='{0}'".format(x.uid) for x in objs)
+                xpath = '{0}/member[{1}]'.format(
+                    objs[0].xpath_import_base(), members)
+                # API complains if you try to do this in one delete statement,
+                # so do one delete per vsys per path, just like when we set the
+                # imports.
+                dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
+
 
 class VersioningSupport(object):
     """A class that supports getting version specific values of something.
@@ -1530,6 +1749,90 @@ class VersionedStubs(VersioningSupport):
         return ans
 
 
+class ParentAwareXpath(object):
+    """Class to handle xpaths of objects.
+
+    Some objects have a different xpath based on where in the tree they are
+    located.  This class allows you configure various xpaths that can vary
+    both on version and what the parent class is.
+
+    If no explicit parent is specified, then the global parent of `None' is
+    assumed.
+
+    """
+    def __init__(self):
+        self.settings = {}
+        self.parent_params = []
+
+    def add_profile(self, version=None, value=None, parents=None,
+                    parent_param=None, parent_param_values=None):
+        """Adds support for the given versions, specific to the parents.
+
+        If no parents are specified, then a parent of ``None`` is assumed,
+        which is the global parent type.
+
+        **Version support per parent must be in ascending order.**
+
+        Args:
+            version (str): The version number (default: '0.0.0').
+            value (str): The xpath setting.
+            parents (list/tuple): The parent classes this version/value is valid for.
+            parent_param (str): Parent param to key off of.
+            parent_param_values (list): Values of the parent param to key off of.
+
+        """
+        if parents is None:
+            parents = (None, )
+
+        if parent_param not in self.parent_params:
+            # None is always a fallback, so make sure None as a
+            # parent param is last.
+            index = -1 if parent_param is not None else len(
+                self.parent_params)
+            self.parent_params.insert(index, parent_param)
+
+        if parent_param_values is None:
+            parent_param_values = [None, ]
+
+        for p in parents:
+            for ppv in parent_param_values:
+                combo = (p, parent_param, ppv)
+                self.settings.setdefault(combo, VersioningSupport())
+                self.settings[combo].add_profile(version, value)
+
+    def _get_versioned_value(self, panos_version, parent):
+        """Gets the xpath for this version/parent combination.
+
+        Args:
+            panos_version (tuple): The version as (x, y, z) tuple.
+            parent: The self.parent for this VersionedPanObject.
+
+        Returns:
+            string.  The xpath.
+
+        Raises:
+            ValueError if no applicable xpath is found.
+
+        """
+        parents = [None, ]
+        parent_settings = {}
+        if parent is not None:
+            parents = [parent.__class__.__name__, None]
+            parent_settings = parent._about_object()
+
+        for p in parents:
+            for parent_param in self.parent_params:
+                combo = (p, parent_param,
+                         parent_settings.get(parent_param, None))
+                try:
+                    return self.settings[combo]._get_versioned_value(
+                        panos_version)
+                except KeyError:
+                    pass
+
+        raise ValueError('No applicable combination found for xpath')
+
+
 class VersionedPanObject(PanObject):
     """Base class for all versioned package objects.
 
@@ -1550,7 +1853,7 @@ class VersionedPanObject(PanObject):
             currently resides, as well as the versioning.
 
     """
-    _UNKNOWN_PANOS_VERSION = (sys.maxint, 0, 0)
+    _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
     _DEFAULT_NAME = None
 
     def __init__(self, *args, **kwargs):
@@ -1563,7 +1866,7 @@ class VersionedPanObject(PanObject):
             setattr(self, self.NAME, name or self._DEFAULT_NAME)
         self.parent = None
         self.children = []
-        self._xpaths = VersioningSupport()
+        self._xpaths = ParentAwareXpath()
         self._stubs = VersionedStubs()
 
         self._setup()
@@ -1602,6 +1905,7 @@ class VersionedPanObject(PanObject):
         The setup includes configuring the following:
 
         * _xpaths
+        * _xpath_imports (VsysOperations objects only)
         * _params
         * _stubs
 
@@ -1728,42 +2032,26 @@ class VersionedPanObject(PanObject):
 
         return (paths, stubs, settings)
 
-    def element(self):
+    def element(self, with_children=True, comparable=False):
         """Return an xml.etree.ElementTree for this object and its children.
 
-        Returns:
-            An xml.etree.ElementTree instance representing the xml form of this
-                object and its children
-
-        """
-        ans = self._root_element()
-        paths, stubs, settings = self._build_element_info()
-
-        self.xml_merge(ans, itertools.chain(
-                (p.element(self._root_element(), settings) for p in paths),
-                (s.element(self._root_element(), settings) for s in stubs),
-                self._subelements(),
-        ))
-
-        return ans
-
-    def comparison_element(self, compare_children=True):
-        """Return an xml.etree.ElementTree for this object and its children.
+        Args:
+            with_children (bool): Include the children objects.
+            comparable (bool): Element will be used in a comparison with another.
 
         Returns:
-            An xml.etree.ElementTree instance representing the xml form of this
-                object and its children
+            xml.etree.ElementTree for this object.
 
         """
         ans = self._root_element()
         paths, stubs, settings = self._build_element_info()
 
         iterchain = (
-            (p.element(self._root_element(), settings, sha1=True) for p in paths),
-            (s.element(self._root_element(), settings, sha1=True) for s in stubs),
+            (p.element(self._root_element(), settings, comparable) for p in paths),
+            (s.element(self._root_element(), settings, comparable) for s in stubs),
         )
-        if compare_children:
-            iterchain += (self._subelements(comparison_element=True),)
+        if with_children:
+            iterchain += (self._subelements(comparable), )
 
         self.xml_merge(ans, itertools.chain(*iterchain))
 
@@ -1791,12 +2079,15 @@ class VersionedPanObject(PanObject):
         if not panobject:
             return False
         if type(self) != type(panobject) and not force:
-            raise err.PanObjectError("Object {0} is not comparable to {1}".format(type(self), type(panobject)))
+            msg = 'Object {0} is not compareable to {1}'
+            raise err.PanObjectError(msg.format(self, panobject))
 
-        self_element = self.comparison_element(compare_children)
-        other_element = panobject.comparison_element(compare_children)
+        xml_self = ET.tostring(self.element(compare_children, True),
+            encoding='utf-8')
+        xml_other = ET.tostring(panobject.element(compare_children, True),
+            encoding='utf-8')
 
-        return ET.tostring(self_element) == ET.tostring(other_element)
+        return xml_self == xml_other
 
     def _get_param_specific_info(self, param):
         """Gets a tuple of info for the given parameter.
@@ -1903,7 +2194,7 @@ class VersionedPanObject(PanObject):
 
     def element_str(self):
         """The XML form of this object (and its children) as a string."""
-        return ET.tostring(self.element())
+        return ET.tostring(self.element(), encoding='utf-8')
 
     def __getattr__(self, name):
         params = super(VersionedPanObject, self).__getattribute__('_params')
@@ -1934,7 +2225,7 @@ class VersionedPanObject(PanObject):
     def XPATH(self):
         """Returns the version specific xpath of this object."""
         panos_version = self.retrieve_panos_version()
-        return self._xpaths._get_versioned_value(panos_version)
+        return self._xpaths._get_versioned_value(panos_version, self.parent)
 
 
 class VersionedParamPath(VersioningSupport):
@@ -2036,6 +2327,44 @@ class VarPath(object):
             'XML Path': self.path,
         }
 
+    def _set_inner_xml_tag_text(self, elm, value, comparable=False):
+        """Sets the final elm's .text as appropriate given the vartype.
+
+        Args:
+            elm (xml.etree.ElementTree.Element): The element whose .text to set.
+            value (various): The value to put in the .text, conforming to the vartype of this parameter.
+            comparable (bool): Make updates for element string comparisons.  For entry and member vartypes, sort the entries (True) or leave them as-is (False).
+
+        """
+        # Create an element containing the value in the instance variable
+        if self.vartype == "member":
+            values = pandevice.string_or_list(value)
+            if comparable:
+                values = sorted(values)
+            for member in values:
+                ET.SubElement(elm, 'member').text = str(member)
+        elif self.vartype == "entry":
+            values = pandevice.string_or_list(value)
+            if comparable:
+                values = sorted(values)
+            for entry in values:
+                ET.SubElement(elm, 'entry', {'name': str(entry)})
+        elif self.vartype == "exist":
+            if value:
+                ET.SubElement(elm, self.variable)
+        elif self.vartype == "bool":
+            elm.text = yesno(value)
+        elif self.path.find("|") != -1:
+            # This is an element variable,
+            # it has already been created
+            # so do nothing
+            pass
+        elif self.vartype == "none":
+            # There is no variable, so don't try to populate it
+            pass
+        else:
+            elm.text = str(value)
+
 
 class ParamPath(object):
     """Configuration parameter within the object.
@@ -2053,15 +2382,17 @@ class ParamPath(object):
             enforced in any way from the user's perspective when setting
             parameters, but these values are referenced when parsing any XML
             returned from a live device.
+        exclude (bool): Exclude this param from the resultant XML.
 
     """
     def __init__(self, param, path=None, vartype=None,
-                 condition=None, values=None):
+                 condition=None, values=None, exclude=False):
         self.param = param
         self.path = path
         self.vartype = vartype
         self.condition = condition or {}
         self.values = values or []
+        self.exclude = exclude
 
         if self.path is None:
             self.path = self.param.replace('_', '-')
@@ -2085,13 +2416,15 @@ class ParamPath(object):
             self.__class__.__name__, self.param, id(self))
 
     def _value_as_list(self, value):
-        if hasattr(value, '__iter__'):
+        if isstring(value):
+            yield value
+        elif hasattr(value, '__iter__'):
             for v in value:
                 yield str(v)
         else:
             yield str(value)
 
-    def element(self, elm, settings, sha1=False):
+    def element(self, elm, settings, comparable=False):
         """Create the xml.etree.ElementTree for this parameter.
 
         Args:
@@ -2099,7 +2432,7 @@ class ParamPath(object):
                 onto this param's XML.
             settings (dict): All parameter settings for the
                 ``VersionedPanObject``.
-            sha1 (bool): Hash encrypted fields for comparison
+            comparable (bool): Make necessary adjustments to the XML for comparison's sake.
 
         Returns:
             xml.etree.ElementTree: The ``elm`` passed in, modified to contain
@@ -2110,7 +2443,7 @@ class ParamPath(object):
         value = settings.get(self.param)
 
         # Check if this should return None instead of an element
-        if self.path is None:
+        if self.exclude:
             return None
         elif value is None and self.vartype != 'stub':
             return None
@@ -2127,9 +2460,11 @@ class ParamPath(object):
                 return None
 
         e = elm
-
         # Build the element
-        for token in self.path.split('/'):
+        tokens = self.path.split('/')
+        if self.vartype == 'exist':
+            del(tokens[-1])
+        for token in tokens:
             if not token:
                 continue
             if token.startswith('entry '):
@@ -2142,27 +2477,7 @@ class ParamPath(object):
             e.append(child)
             e = child
 
-        # Format the element text appropriately
-        if self.vartype == 'member':
-            for v in self._value_as_list(value):
-                ET.SubElement(e, 'member').text = v
-        elif self.vartype == 'entry':
-            for v in self._value_as_list(value):
-                ET.SubElement(e, 'entry', {'name': v})
-        elif self.vartype == 'exist':
-            if value:
-                ET.SubElement(e, self.param)
-        elif self.vartype == 'yesno':
-            e.text = 'yes' if value else 'no'
-        elif self.vartype == 'stub' or '{{{0}}}'.format(
-                    self.param) == self.path.split('/')[-1]:
-            pass
-        elif self.vartype == 'int':
-            e.text = str(int(value))
-        elif self.vartype == 'encrypted' and sha1:
-            e.text = self._sha1_hash(str(value))
-        else:
-            e.text = str(value)
+        self._set_inner_xml_tag_text(e, value, comparable)
 
         return elm
 
@@ -2210,7 +2525,10 @@ class ParamPath(object):
                 return None
 
         e = xml
-        for p in self.path.split('/'):
+        tokens = self.path.split('/')
+        if self.vartype == 'exist':
+            del(tokens[-1])
+        for p in tokens:
             # Skip this path part if there is no path part
             if not p:
                 continue
@@ -2257,6 +2575,44 @@ class ParamPath(object):
         # Pull the value, properly formatted, from this last element
         self.parse_value_from_xml_last_tag(e, settings)
 
+    def _set_inner_xml_tag_text(self, elm, value, comparable=False):
+        """Sets the final elm's .text as appropriate given the vartype.
+
+        Args:
+            elm (xml.etree.ElementTree.Element): The element whose .text to set.
+            value (various): The value to put in the .text, conforming to the vartype of this parameter.
+            comparable (bool): Make updates for element string comparisons.  For encrypted fields, if the text should be set to a password hash (True) or left as a basestring (False).  For entry and member vartypes, sort the entries (True) or leave them as-is (False).
+
+        """
+        # Format the element text appropriately
+        if self.vartype == 'member':
+            values = self._value_as_list(value)
+            if comparable:
+                values = sorted(values)
+            for v in values:
+                ET.SubElement(elm, 'member').text = v
+        elif self.vartype == 'entry':
+            values = self._value_as_list(value)
+            if comparable:
+                values = sorted(values)
+            for v in values:
+                ET.SubElement(elm, 'entry', {'name': v})
+        elif self.vartype == 'exist':
+            if value:
+                exist_tag = self.path.split('/')[-1]
+                ET.SubElement(elm, exist_tag)
+        elif self.vartype == 'yesno':
+            elm.text = 'yes' if value else 'no'
+        elif self.vartype == 'stub' or '{{{0}}}'.format(
+                    self.param) == self.path.split('/')[-1]:
+            pass
+        elif self.vartype == 'int':
+            elm.text = str(int(value))
+        elif self.vartype == 'encrypted' and comparable:
+            elm.text = self._sha1_hash(str(value))
+        else:
+            elm.text = str(value)
+
     def parse_value_from_xml_last_tag(self, elm, settings):
         """Actually do the parsing for this parameter.
 
@@ -2279,7 +2635,8 @@ class ParamPath(object):
             settings[self.param] = [x.attrib['name']
                                     for x in elm.findall('entry')]
         elif self.vartype == 'exist':
-            ans = elm.find('./{0}'.format(elm.tag))
+            exist_tag = self.path.split('/')[-1]
+            ans = elm.find('./{0}'.format(exist_tag))
             settings[self.param] = True if ans is not None else False
         elif self.vartype == 'yesno':
             if elm.text == 'yes':
@@ -2298,138 +2655,10 @@ class ParamPath(object):
             settings[self.param] = elm.text
 
 
-class VsysImportMixin(object):
-    """Modify PanObject methods to set vsys import configuration
-
-    This only applies to some object types, hence it is a Mixin,
-    and not part of PanObject
-
-    """
-    XPATH_IMPORT = None
-    CHILDMETHODS = ("apply", "create", "delete")
-
-    def __init__(self, *args, **kwargs):
-        super(VsysImportMixin, self).__init__(*args, **kwargs)
-
-    def apply(self, *args, **kwargs):
-        super(VsysImportMixin, self).apply(*args, **kwargs)
-        self.child_apply()
-
-    def create(self, *args, **kwargs):
-        super(VsysImportMixin, self).create(*args, **kwargs)
-        self.child_create()
-
-    def delete(self, *args, **kwargs):
-        self.child_delete()
-        super(VsysImportMixin, self).delete(*args, **kwargs)
-
-    def child_apply(self):
-        # Don't do anything if interface in ha or ag mode
-        # Use getattr since some classes won't have a mode (like virtual router)
-        if str(getattr(self, "mode", "None")) in ("ha", "aggregate-group"):
-            self.set_vsys(None, refresh=True, update=True)
-        else:
-            self.create_import()
-
-    def child_create(self):
-        # Don't do anything if interface in ha or ag mode
-        # Use getattr since some classes won't have a mode (like virtual router)
-        if str(getattr(self, "mode", "None")) in ("ha", "aggregate-group"):
-            self.set_vsys(None, refresh=True, update=True)
-        else:
-            self.create_import()
-
-    def child_delete(self):
-        self.delete_import()
-
-    def create_import(self, vsys=None):
-        """Create a vsys import for the object
-
-        Args:
-            vsys (str): Override the vsys
-
-        """
-        if vsys is None:
-            vsys = self.vsys
-        if vsys != "shared" and self.XPATH_IMPORT is not None:
-            xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            self.nearest_pandevice().xapi.set(xpath_import, "<member>%s</member>" % self.uid, retry_on_peer=True)
-
-    def delete_import(self, vsys=None):
-        """Delete a vsys import for the object
-
-        Args:
-            vsys (str): Override the vsys
-
-        """
-        if vsys is None:
-            vsys = self.vsys
-        if vsys != "shared" and self.XPATH_IMPORT is not None:
-            xpath_import = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
-            self.nearest_pandevice().xapi.delete(xpath_import + "/member[text()='%s']" % self.uid, retry_on_peer=True)
-
-    def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
-        """Set the vsys for this interface
-
-        Creates a reference to this interface in the specified vsys and removes references
-        to this interface from all other vsys. The vsys will be created if it doesn't exist.
-
-        Args:
-            vsys_id (str): The vsys id to set for this object (eg. vsys2)
-            refresh (bool): Refresh the relevant current state of the device before taking action
-                (Default: False)
-            update (bool): Apply the changes to the device (Default: False)
-            running_config: If refresh is True, refresh from the running configuration
-                (Default: False)
-
-        Returns:
-            Vsys: The vsys for this interface after the operation completes
-
-        """
-        import device
-        if refresh and running_config:
-            raise ValueError("Can't refresh vsys from running config in set_vsys method")
-        if refresh:
-            all_vsys = device.Vsys.refreshall(self.nearest_pandevice(), name_only=True)
-            for a_vsys in all_vsys:
-                a_vsys.refresh_variable(self.XPATH_IMPORT.split("/")[-1])
-        return self._set_reference(vsys_id, device.Vsys, self.XPATH_IMPORT.split("/")[-1], True, refresh=False, update=update, running_config=running_config)
-
-    @classmethod
-    def refreshall(cls, parent, running_config=False, add=True, exceptions=False, name_only=False):
-        instances = super(VsysImportMixin, cls).refreshall(parent, running_config, add=False, exceptions=exceptions, name_only=name_only)
-        # Filter out instances that are not in this vlan's imports
-        device = parent.nearest_pandevice()
-        if running_config:
-            api_action = device.xapi.show
-        else:
-            api_action = device.xapi.get
-        if parent.vsys != "shared" and cls.XPATH_IMPORT is not None:
-            xpath_import = parent.xpath_vsys() + "/import" + cls.XPATH_IMPORT
-            try:
-                imports_xml = api_action(xpath_import, retry_on_peer=True)
-            except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
-                if not str(e).startswith("No such node"):
-                    raise e
-                else:
-                    imports = []
-            else:
-                imports = imports_xml.findall(".//member")
-                if imports is not None:
-                    imports = [member.text for member in imports]
-            if imports is not None:
-                instances = [instance for instance in instances if instance.name in imports]
-        if add:
-            # Remove current children of this type from parent
-            parent.removeall(cls=cls)
-            # Add the new children that were just refreshed from the device
-            parent.extend(instances)
-        return instances
-
-
 class VsysOperations(VersionedPanObject):
     """Modify PanObject methods to set vsys import configuration."""
     CHILDMETHODS = ('create', 'apply', 'delete')
+    ALWAYS_IMPORT = False
 
     def __init__(self, *args, **kwargs):
         self._xpath_imports = VersioningSupport()
@@ -2460,14 +2689,19 @@ class VsysOperations(VersionedPanObject):
         return self._create_apply_child()
 
     def _create_apply_child(self):
-        # Don't do anything if this object has an interface in ha or ag mode
+        # Remove vsys import if this object has an interface in ha or ag mode
         if str(getattr(self, "mode", None)) in ("ha", "aggregate-group"):
             self.set_vsys(None, refresh=True, update=True)
+        elif self.ALWAYS_IMPORT and self.vsys is None:
+            self.create_import('vsys1')
         else:
             self.create_import()
 
     def child_delete(self):
-        self.delete_import()
+        if self.ALWAYS_IMPORT and self.vsys is None:
+            self.delete_import('vsys1')
+        else:
+            self.delete_import()
 
     def create_import(self, vsys=None):
         """Create a vsys import for the object
@@ -2479,11 +2713,18 @@ class VsysOperations(VersionedPanObject):
         if vsys is None:
             vsys = self.vsys
 
-        if vsys != "shared" and self.XPATH_IMPORT is not None:
-            xpath = self.xpath_vsys() + "/import" + self.XPATH_IMPORT
+        if vsys != "shared" and vsys is not None and self.XPATH_IMPORT is not None:
+            xpath = self.xpath_import_base(vsys)
             element = '<member>{0}</member>'.format(self.uid)
             device = self.nearest_pandevice()
             device.active().xapi.set(xpath, element, retry_on_peer=True)
+
+    def xpath_import_base(self, vsys=None):
+        if vsys:
+            vsys_xpath = self._root_xpath_vsys(vsys)
+        else:
+            vsys_xpath = self.xpath_vsys()
+        return "{0}/import{1}".format(vsys_xpath, self.XPATH_IMPORT)
 
     def delete_import(self, vsys=None):
         """Delete a vsys import for the object
@@ -2495,9 +2736,9 @@ class VsysOperations(VersionedPanObject):
         if vsys is None:
             vsys = self.vsys
 
-        if vsys != "shared" and self.XPATH_IMPORT is not None:
-            xpath = "{0}/import{1}/member[text()='{2}']".format(
-                self.xpath_vsys(), self.XPATH_IMPORT, self.uid)
+        if vsys != "shared" and vsys is not None and self.XPATH_IMPORT is not None:
+            xpath = "{0}/member[text()='{1}']".format(
+                self.xpath_import_base(vsys), self.uid)
             device = self.nearest_pandevice()
             device.active().xapi.delete(xpath, retry_on_peer=True)
 
@@ -2552,7 +2793,7 @@ class VsysOperations(VersionedPanObject):
         # Filter out instances that are not in this vlan's imports
         device = parent.nearest_pandevice()
         api_action = device.xapi.show if running_config else device.xapi.get
-        if parent.vsys != "shared" and class_instance.XPATH_IMPORT is not None:
+        if parent.vsys != "shared" and parent.vsys is not None and class_instance.XPATH_IMPORT is not None:
             imports = []
             xpath = '{0}/import{1}'.format(
                 parent.xpath_vsys(), class_instance.XPATH_IMPORT)
@@ -2664,7 +2905,7 @@ class PanDevice(PanObject):
 
         # create a predefined object subsystem
         # avoid a premature import
-        import predefined
+        from pandevice import predefined
         self.predefined = predefined.Predefined(self)
         """Predefined object subsystem
 
@@ -2714,8 +2955,7 @@ class PanDevice(PanObject):
 
         """
         # Create generic PanDevice to connect and get information
-        import firewall
-        import panorama
+        from pandevice import firewall, panorama
         device = PanDevice(hostname,
                            api_username,
                            api_password,
@@ -2746,7 +2986,7 @@ class PanDevice(PanObject):
 
     class XapiWrapper(pan.xapi.PanXapi):
         #This is a confusing class used for catching exceptions and faults.
-        # TODO: comment the hell out of it!
+        # TODO: comment this class
 
         CONNECTION_EXCEPTIONS = (
             err.PanConnectionTimeout, err.PanURLError,
@@ -2755,10 +2995,10 @@ class PanDevice(PanObject):
         def __init__(self, *args, **kwargs):
             self.pan_device = kwargs.pop('pan_device', None)
             pan.xapi.PanXapi.__init__(self, *args, **kwargs)
-
+            pred = lambda x: inspect.ismethod(x) or inspect.isfunction(x) # inspect.ismethod needed for Python2, inspect.isfunction needed for Python3
             for name, method in inspect.getmembers(
                     pan.xapi.PanXapi,
-                    inspect.ismethod):
+                    pred):
                 # Ignore hidden methods
                 if name[0] == "_":
                     continue
@@ -2973,7 +3213,7 @@ class PanDevice(PanObject):
         """
         element = self.xapi.op(cmd, vsys, cmd_xml, extra_qs, retry_on_peer=retry_on_peer)
         if xml:
-            return ET.tostring(element)
+            return ET.tostring(element, encoding='utf-8')
         else:
             return element
 
@@ -3031,9 +3271,8 @@ class PanDevice(PanObject):
         if scope not in self.config_changed:
             self.config_changed.append(scope)
 
-    def _parent_xpath(self):
-        parent_xpath = self.xpath_root(self.ROOT)
-        return parent_xpath
+    def _build_xpath(self, root):
+        return self.xpath_root(root)
 
     def xpath_root(self, root_type):
         if root_type == Root.DEVICE:
@@ -3278,7 +3517,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is already held", str(e)):
                 raise
@@ -3300,7 +3539,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "admin")
             subel.text = admin
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Commit lock is not currently held", str(e)):
                 raise
@@ -3322,7 +3561,7 @@ class PanDevice(PanObject):
             subel = ET.SubElement(subel, "comment")
             subel.text = comment
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config for scope (shared|vsys\d) is currently locked", str(e)) and \
                     not re.match(r"You already own a config lock for scope", str(e)):
@@ -3342,7 +3581,7 @@ class PanDevice(PanObject):
         subel = ET.SubElement(cmd, "config-lock")
         subel = ET.SubElement(subel, "remove")
         try:
-            self.xapi.op(ET.tostring(cmd), vsys=scope, retry_on_peer=retry_on_peer)
+            self.xapi.op(ET.tostring(cmd, encoding='utf-8'), vsys=scope, retry_on_peer=retry_on_peer)
         except (pan.xapi.PanXapiError, err.PanDeviceXapiError) as e:
             if not re.match(r"Config is not currently locked for scope (shared|vsys\d)", str(e)):
                 raise
@@ -3635,15 +3874,15 @@ class PanDevice(PanObject):
         if isinstance(cmd, pan.commit.PanCommit):
             cmd = cmd.cmd()
         elif isinstance(cmd, ET.Element):
-            cmd = ET.tostring(cmd)
-        elif isinstance(cmd, basestring):
+            cmd = ET.tostring(cmd, encoding='utf-8')
+        elif isstring(cmd):
             pass
         else:
             cmd = ET.Element("commit")
             if exclude is not None:
                 excluded = ET.SubElement(cmd, "partial")
                 excluded = ET.SubElement(excluded, exclude)
-            cmd = ET.tostring(cmd)
+            cmd = ET.tostring(cmd, encoding='utf-8')
         logger.debug(self.id + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s" % (str(commit_all),
                                                                                                        str(sync),
                                                                                                        str(sync_all),
@@ -3715,7 +3954,10 @@ class PanDevice(PanObject):
             dict: Job result
 
         """
-        import httplib
+        try:
+            import http.client as httplib
+        except ImportError:
+            import httplib
         if interval is not None:
             try:
                 interval = float(interval)
@@ -3792,8 +4034,10 @@ class PanDevice(PanObject):
 
     def syncreboot(self, interval=5.0, timeout=600):
         """Block until reboot completes and return version of device"""
-
-        import httplib
+        try:
+            import http.client as httplib
+        except ImportError:
+            import httplib
 
         # Validate interval and convert it to float
         if interval is not None:
@@ -3904,8 +4148,8 @@ class PanDevice(PanObject):
                 messages = job['details']['line']
             except KeyError:
                 messages = []
-        if issubclass(messages.__class__, basestring):
-            messages = [messages]
+        if isstring(messages):
+            messages = string_or_list(messages)
         # Create the results dict
         result = {
             'success': success,
@@ -4097,3 +4341,26 @@ class PanDevice(PanObject):
             raise err.PanActivateFeatureAuthCodeError(
                 result.get('./msg/line').text,
                 pan_device=self)
+
+    def request_password_hash(self, value):
+        """Request a password hash from the live device.
+
+        This function does not modify the live device, but it does
+        interact with the live device to generate the password hash.
+
+        Args:
+            value (str): The password
+
+        Returns:
+            str: A hashed version of the password provided.
+
+        Raises:
+            ValueError: If the password hash is not found.
+
+        """
+        result = self.op('request password-hash password "{0}"'.format(value))
+        elm = result.find('./result/phash')
+        if elm is None:
+            raise ValueError('No password hash in response')
+
+        return elm.text

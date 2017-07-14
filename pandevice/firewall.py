@@ -18,6 +18,7 @@
 """Palo Alto Networks Firewall object"""
 
 # import modules
+import itertools
 import re
 import logging
 import xml.etree.ElementTree as ET
@@ -28,9 +29,9 @@ from pandevice import device
 from pandevice import yesno
 
 # import other parts of this pandevice package
-import errors as err
-from base import PanDevice, Root, ENTRY
-from base import VarPath as Var
+import pandevice.errors as err
+from pandevice.base import PanDevice, Root, ENTRY
+from pandevice.base import VarPath as Var
 
 
 logger = getlogger(__name__)
@@ -63,6 +64,8 @@ class Firewall(PanDevice):
         "device.Vsys",
         "device.VsysResources",
         "device.SystemSettings",
+        "device.PasswordProfile",
+        "device.Administrator",
         "ha.HighAvailability",
         "objects.AddressObject",
         "objects.AddressGroup",
@@ -90,7 +93,7 @@ class Firewall(PanDevice):
                  api_key=None,
                  serial=None,
                  port=443,
-                 vsys='vsys1',  # vsys# or 'shared'
+                 vsys=None,  # 'vsys#', 'shared', or None
                  is_virtual=None,
                  multi_vsys=None,
                  *args,
@@ -134,7 +137,7 @@ class Firewall(PanDevice):
         # Check if attribute exists because this could be called during
         # init of the object before 'shared' exists.
         if hasattr(self, "shared") and self.shared:
-            return "shared"
+            return None
         else:
             return self._vsys
 
@@ -149,30 +152,13 @@ class Firewall(PanDevice):
     def xpath_vsys(self):
         if self.vsys == "shared":
             return "/config/shared"
+        elif self.vsys is None:
+            return self._root_xpath_vsys('vsys1')
         else:
-            return "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='%s']" % self.vsys
+            return self._root_xpath_vsys(self.vsys)
 
     def xpath_panorama(self):
         raise err.PanDeviceError("Attempt to modify Panorama configuration on non-Panorama device")
-
-    def _parent_xpath(self):
-        from pandevice import panorama
-        if self.parent is None:
-            # self with no parent
-            if self.vsys == "shared":
-                parent_xpath = self.xpath_root(Root.DEVICE)
-            else:
-                parent_xpath = self.xpath_root(Root.VSYS)
-        elif isinstance(self.parent, panorama.Panorama):
-            # Parent is Firewall or Panorama
-            parent_xpath = self.parent.xpath_root(self.ROOT)
-        else:
-            try:
-                # Bypass xpath of HAPairs
-                parent_xpath = self.parent.xpath_bypass()
-            except AttributeError:
-                parent_xpath = self.parent.xpath()
-        return parent_xpath
 
     def op(self, cmd=None, vsys=None, xml=False, cmd_xml=True, extra_qs=None, retry_on_peer=False):
         """Perform operational command on this Firewall
@@ -295,13 +281,13 @@ class Firewall(PanDevice):
             if self.vsys_name is not None:
                 ET.SubElement(element, "display-name").text = self.vsys_name
             self.set_config_changed()
-            self.xapi.set(self.xpath_device() + "/vsys", ET.tostring(element), retry_on_peer=True)
+            self.xapi.set(self._root_xpath_vsys(None), ET.tostring(element), retry_on_peer=True)
 
     def delete_vsys(self):
         """Delete the vsys on the live device that this Firewall object represents"""
         if self.vsys.startswith("vsys"):
             self.set_config_changed()
-            self.xapi.delete(self.xpath_device() + "/vsys/entry[@name='%s']" % self.vsys, retry_on_peer=True)
+            self.xapi.delete(self._root_xpath_vsys(self.vsys), retry_on_peer=True)
 
     def refreshall_from_xml(self, xml, refresh_children=False, variables=None):
         if len(xml) == 0:
@@ -374,6 +360,63 @@ class Firewall(PanDevice):
     def commit_policy_and_objects(self, sync=False, exception=False):
         return self._commit(sync=sync, exclude="policy-and-objects",
                             exception=exception)
+
+    def organize_into_vsys(self, create_vsys_objects=True, refresh_vsys=True):
+        """Organizes all imported objects under the appropriate Vsys object.
+
+        Args:
+            create_vsys_objects (bool): Create the vsys objects (True) or use the ones already connected to this firewall (False).
+            refresh_vsys (bool): Refresh all vsys objects' parameters before doing the reorganization or not.  This is assumed True if create_vsys_objects is True.
+
+        """
+        from pandevice import network
+
+        # Mapping of device.Vsys params to pandevice classes.
+        mapping = {
+            'interface': network.Interface,
+            'vlans': network.Vlan,
+            'virtual_wires': network.VirtualWire,
+            'virtual_routers': network.VirtualRouter,
+        }
+
+        # Optional: create the vsys objects.
+        if create_vsys_objects:
+            device.Vsys.refreshall(self, name_only=True)
+
+        # Vsys to put objects into.
+        available_vsys = [x for x in self.children
+                          if isinstance(x, device.Vsys)]
+
+        # Optional: refresh the vsys params.
+        if create_vsys_objects or refresh_vsys:
+            for x in available_vsys:
+                x.refresh(refresh_children=False)
+
+        # List of objects we need to iterate over.
+        parents = self.children[:]
+
+        # Reorganize into vsys.
+        for x in itertools.chain(parents):
+            # Skip device.Vsys children.
+            if isinstance(x, device.Vsys):
+                continue
+
+            # Add children for later processing.
+            parents.extend(x.children)
+
+            # Check this class against the importable classes.
+            for param, importable_class in mapping.items():
+                if isinstance(x, importable_class):
+                    # Importable class found, check if it should be moved.
+                    for vsys in available_vsys:
+                        if (getattr(vsys, param) is not None and
+                                x.uid in getattr(vsys, param)):
+                            # If its vsys isn't right, move it.
+                            if x.vsys != vsys.uid:
+                                x.parent.remove(x)
+                                vsys.add(x)
+                            break
+                    break
 
 
 class FirewallState(object):
