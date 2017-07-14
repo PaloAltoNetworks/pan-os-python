@@ -128,6 +128,7 @@ Contributors
 - Brian Torres-Gil - `github <https://github.com/btorresgil>`__
 - Garfield Freeman - `github <https://github.com/shinmog>`__
 - John Anderson - `github <https://github.com/lampwins>`__
+- Aditya Sripal - `github <https://github.com/AdityaSripal>`__
 
 Thank you to Kevin Steves, creator of the pan-python library:
     https://github.com/kevinsteves/pan-python

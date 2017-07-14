@@ -3,6 +3,46 @@
 History
 =======
 
+0.5.0
+-----
+
+Released 2017-07-14
+
+Status: Alpha
+
+- Add: Support for python3 (3.5+)
+- Add: Support for predefined tags
+- Add: Support for bulk operations (e.g. - `create_similar()`)
+- Add: DHCP support for various data interface objects
+- Add: `request_password_hash()` to firewall / panorama devices
+- Change: Layer2Subinterface/Layer3Subinterface can be children of vsys or firewalls now
+- Fix: `equals()` for objects with list params
+
+
+Potentially breaking-changes in this version, please update your scripts to account for the following:
+
+- The default vsys for firewalls is changed from "vsys1" to None.  This has no effect for scripts that set the vsys on the firewall object directly (vsys is still treated as vsys1 in this situation).  This specific change was to better align pandevice with the default behavior of the firewall, which only imports interfaces by default (vsys1 if otherwise unspecified).  Thus, virtual wire, virtual routers, and VLANs will only be imported if they are attached to a Vsys object *or* the firewall has a vsys set.
+- VsysResources and SystemSettings now have a name of None
+- SubinterfaceArp and EthernetInterfaceArp have been replaced with Arp
+
+
+List of PanObject changes:
+
+- Added: PasswordProfile
+- Added: Administrator
+- Added: Arp
+- Updated: Zone
+- Updated: Vsys
+- Fixed: StaticRouteV6
+- Fixed: OspfNsaaExternalRange
+
+
+- New example scripts:
+
+  - bulk_address_objects.py
+  - bulk_subinterfaces.py
+
+
 0.4.1
 -----
 
