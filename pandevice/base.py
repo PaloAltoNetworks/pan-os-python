@@ -1441,8 +1441,7 @@ class PanObject(object):
         return ans
 
     def _requires_import_consideration(self):
-        if self.vsys in (None, 'shared') or not hasattr(self,
-                                                        'xpath_import_base'):
+        if self.vsys == 'shared' or not hasattr(self, 'XPATH_IMPORT'):
             return False
         return True
 
@@ -1489,9 +1488,12 @@ class PanObject(object):
         for node in itertools.chain(all_objects):
             all_objects.extend(node.children)
             if node._requires_import_consideration():
-                vsys_dict.setdefault(node.vsys, {})
-                vsys_dict[node.vsys].setdefault(node.xpath_import_base(), [])
-                vsys_dict[node.vsys][node.xpath_import_base()].append(node)
+                vsys = node.vsys
+                if vsys is None and node.ALWAYS_IMPORT:
+                    vsys = 'vsys1'
+                vsys_dict.setdefault(vsys, {})
+                vsys_dict[vsys].setdefault(node.xpath_import_base(), [])
+                vsys_dict[vsys][node.xpath_import_base()].append(node)
 
         return dev, instances, vsys_dict
 
