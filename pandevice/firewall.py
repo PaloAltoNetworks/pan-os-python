@@ -416,6 +416,13 @@ class Firewall(PanDevice):
                                 x.parent.remove(x)
                                 vsys.add(x)
                             break
+                    else:
+                        # Checked every vsys, this importable isn't in any of
+                        # them (vsys is None), so move this node to be a child
+                        # of the firewall.
+                        if x.parent != self:
+                            x.parent.remove(x)
+                            self.add(x)
                     break
 
 
