@@ -505,7 +505,7 @@ class Arp(VersionedPanObject):
         self._params = tuple(params)
 
 
-class VirtualWire(VersionedPanObject):
+class VirtualWire(VsysOperations):
     """Virtual wires (vwire)
 
     Args:
@@ -523,6 +523,9 @@ class VirtualWire(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/virtual-wire')
+
+        # xpath imports
+        self._xpath_imports.add_profile(value='/network/virtual-wire')
 
         # params
         params = []
