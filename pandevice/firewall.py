@@ -150,12 +150,7 @@ class Firewall(PanDevice):
             self.ha_peer._vsys = value
 
     def xpath_vsys(self):
-        if self.vsys == "shared":
-            return "/config/shared"
-        elif self.vsys is None:
-            return self._root_xpath_vsys('vsys1')
-        else:
-            return self._root_xpath_vsys(self.vsys)
+        return self._root_xpath_vsys(self.vsys)
 
     def xpath_panorama(self):
         raise err.PanDeviceError("Attempt to modify Panorama configuration on non-Panorama device")
