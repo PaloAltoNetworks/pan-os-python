@@ -116,6 +116,7 @@ class SecurityRule(VersionedPanObject):
     """
     # TODO: Add QoS variables
     SUFFIX = ENTRY
+    ROOT = Root.VSYS
 
     def _setup(self):
         # xpaths
@@ -242,8 +243,10 @@ class NatRule(VersionedPanObject):
         target (list): Apply this policy to the listed firewalls only
             (applies to panorama/device groups only)
         tag (list): Administrative tags
+
     """
     SUFFIX = ENTRY
+    ROOT = Root.VSYS
 
     def _setup(self):
         # xpaths
