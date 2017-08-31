@@ -2970,7 +2970,7 @@ class PanDevice(PanObject):
         system_info = device.refresh_system_info()
         version = system_info[0]
         model = system_info[1]
-        if model == "Panorama":
+        if model == "Panorama" or model.startswith('M-'):
             instance = panorama.Panorama(hostname,
                                          api_username,
                                          api_password,
