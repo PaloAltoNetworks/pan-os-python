@@ -2,10 +2,10 @@
 Palo Alto Networks Device Framework
 ===================================
 
-The Palo Alto Networks Device Framework is a way to interact with Palo Alto
-Networks devices (including Next-generation Firewalls and Panorama) using the
-device API that is object oriented and conceptually similar to interaction
-with the device via the GUI or CLI.
+The Device Framework is a mechanism for interacting with Palo Alto Networks
+devices (including physical and virtualized Next-generation Firewalls and
+Panorama).  The Device Framework is object oriented and mimics the traditional
+interaction with the device via the GUI or CLI/API.
 
 * Documentation: http://pandevice.readthedocs.io
 * Overview: http://paloaltonetworks.github.io/pandevice
