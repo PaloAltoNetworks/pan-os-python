@@ -372,7 +372,7 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj._parent_xpath()
 
         self.assertEqual(Path, ret_val)
-        self.obj.parent._build_xpath.assert_called_once_with(0)
+        self.obj.parent._build_xpath.assert_called_once_with(0, None)
 
     def test_xpath_vsys_without_parent(self):
         ret_val = self.obj.xpath_vsys()

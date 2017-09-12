@@ -314,13 +314,13 @@ class PanObject(object):
         if self.parent is None:
             return ""
         else:
-            return self.parent._build_xpath(self.ROOT)
+            return self.parent._build_xpath(self.ROOT, None)
 
-    def _build_xpath(self, root):
+    def _build_xpath(self, root, vsys):
         if self.parent is None:
             # self with no parent
             return ""
-        parent_xpath = self.parent._build_xpath(root) + self.XPATH
+        parent_xpath = self.parent._build_xpath(root, vsys) + self.XPATH
         if self.SUFFIX is not None:
             parent_xpath += self.SUFFIX % (self.uid, )
         return parent_xpath
@@ -334,9 +334,12 @@ class PanObject(object):
             return self.parent.xpath_panorama()
 
     def _root_xpath_vsys(self, vsys):
-        root_xpath = "/config/devices/entry[@name='localhost.localdomain']/vsys"
-        specific_vsys = "/entry[@name='{0}']".format(vsys) if vsys else ""
-        return root_xpath + specific_vsys
+        if vsys == 'shared':
+            return '/config/shared'
+
+        xpath = "/config/devices/entry[@name='localhost.localdomain']"
+        xpath += "/vsys/entry[@name='{0}']".format(vsys or 'vsys1')
+        return xpath
 
     def element(self, with_children=True, comparable=False):
         """Construct an ElementTree for this PanObject and all its children
@@ -1441,8 +1444,7 @@ class PanObject(object):
         return ans
 
     def _requires_import_consideration(self):
-        if self.vsys in (None, 'shared') or not hasattr(self,
-                                                        'xpath_import_base'):
+        if self.vsys == 'shared' or not hasattr(self, 'XPATH_IMPORT'):
             return False
         return True
 
@@ -1489,9 +1491,12 @@ class PanObject(object):
         for node in itertools.chain(all_objects):
             all_objects.extend(node.children)
             if node._requires_import_consideration():
-                vsys_dict.setdefault(node.vsys, {})
-                vsys_dict[node.vsys].setdefault(node.xpath_import_base(), [])
-                vsys_dict[node.vsys][node.xpath_import_base()].append(node)
+                vsys = node.vsys
+                if vsys is None and node.ALWAYS_IMPORT:
+                    vsys = 'vsys1'
+                vsys_dict.setdefault(vsys, {})
+                vsys_dict[vsys].setdefault(node.xpath_import_base(), [])
+                vsys_dict[vsys][node.xpath_import_base()].append(node)
 
         return dev, instances, vsys_dict
 
@@ -2965,7 +2970,7 @@ class PanDevice(PanObject):
         system_info = device.refresh_system_info()
         version = system_info[0]
         model = system_info[1]
-        if model == "Panorama":
+        if model == "Panorama" or model.startswith('M-'):
             instance = panorama.Panorama(hostname,
                                          api_username,
                                          api_password,
@@ -3271,14 +3276,14 @@ class PanDevice(PanObject):
         if scope not in self.config_changed:
             self.config_changed.append(scope)
 
-    def _build_xpath(self, root):
-        return self.xpath_root(root)
+    def _build_xpath(self, root, vsys):
+        return self.xpath_root(root, vsys or self.vsys)
 
-    def xpath_root(self, root_type):
+    def xpath_root(self, root_type, vsys):
         if root_type == Root.DEVICE:
             xpath = self.xpath_device()
         elif root_type == Root.VSYS:
-            xpath = self.xpath_vsys()
+            xpath = self._root_xpath_vsys(vsys)
         elif root_type == Root.MGTCONFIG:
             xpath = self.xpath_mgtconfig()
         elif root_type == Root.PANORAMA:

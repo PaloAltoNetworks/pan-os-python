@@ -131,22 +131,12 @@ class Vsys(VersionedPanObject):
         self._params = tuple(params)
 
     def xpath_vsys(self):
-        if self.name == "shared":
-            return "/config/shared"
-        elif self.name is None:
-            return self._root_xpath_vsys('vsys1')
-        else:
-            return self._root_xpath_vsys(self.name)
+        return self._root_xpath_vsys(self.name)
 
-    def _build_xpath(self, root):
-        if root == Root.VSYS:
-            return super(Vsys, self)._build_xpath(root)
-        else:
-            # If original object is not a VSYS Root, then bypass the vsys part of the xpath
-            if self.parent is None:
-                return ""
-            else:
-                return self.parent._build_xpath(root)
+    def _build_xpath(self, root, vsys):
+        if self.parent is None:
+            return ''
+        return self.parent._build_xpath(root, self.name)
 
     @property
     def vsys(self):

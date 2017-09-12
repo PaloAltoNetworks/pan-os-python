@@ -3,10 +3,23 @@
 History
 =======
 
+0.5.1
+-----
+
+Released: 2017-09-12
+
+Status: Alpha
+
+- Fix: Security and NAT policy XPATH problems
+- Fix: `base.PanDevice.create_from_device()`'s check for certain Panorama devices
+- Fix: `firewall.Firewall.organize_into_vsys()`'s behavior with importables that aren't imported
+- Fix: `refreshall()`'s behavior when it has a `device.Vsys` parent
+
+
 0.5.0
 -----
 
-Released 2017-07-14
+Released: 2017-07-14
 
 Status: Alpha
 

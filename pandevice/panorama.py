@@ -87,13 +87,14 @@ class DeviceGroup(VersionedPanObject):
         else:
             return "/config/devices/entry[@name='localhost.localdomain']/device-group/entry[@name='%s']" % self.name
 
-    def _build_xpath(self, root):
+    def _build_xpath(self, root, vsys):
         if (self.name == "shared" or self.name is None) and root == Root.VSYS:
             # This is a Vsys object in shared Panorama scope, so proceed normally
-            return super(DeviceGroup, self)._build_xpath(root)
+            return super(DeviceGroup, self)._build_xpath(root,
+                self.name or 'shared')
         else:
             # This is a member of the device-group, so override to use DeviceGroup root
-            return super(DeviceGroup, self)._build_xpath(self.ROOT)
+            return super(DeviceGroup, self)._build_xpath(self.ROOT, self.name)
 
 
 class Panorama(base.PanDevice):
