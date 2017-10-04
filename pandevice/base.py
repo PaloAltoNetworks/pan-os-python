@@ -1493,6 +1493,8 @@ class PanObject(object):
             if node._requires_import_consideration():
                 vsys = node.vsys
                 if vsys is None and node.ALWAYS_IMPORT:
+                    if getattr(node, 'mode', None) in ('ha', 'aggregate-group'):
+                        continue
                     vsys = 'vsys1'
                 vsys_dict.setdefault(vsys, {})
                 vsys_dict[vsys].setdefault(node.xpath_import_base(), [])
