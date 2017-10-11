@@ -553,6 +553,7 @@ class Subinterface(Interface):
 
     """
     _BASE_INTERFACE_NAME = 'entry BASE_INTERFACE_NAME'
+    _BASE_INTERFACE_TYPE = 'var BASE_INTERFACE_TYPE'
 
     def set_name(self):
         """Create a name appropriate for a subinterface if it isn't already"""
@@ -562,6 +563,13 @@ class Subinterface(Interface):
     @property
     def XPATH(self):
         path = super(Subinterface, self).XPATH
+
+        if self._BASE_INTERFACE_TYPE in path:
+            if self.uid.startswith('ae'):
+                rep = 'aggregate-ethernet'
+            else:
+                rep = 'ethernet'
+            path = path.replace(self._BASE_INTERFACE_TYPE, rep)
 
         if self._BASE_INTERFACE_NAME in path:
             base = self.uid.split('.')[0]
@@ -710,8 +718,8 @@ class Layer3Subinterface(Subinterface):
         # xpaths for parents: firewall.Firewall, device.Vsys
         self._xpaths.add_profile(
             parents=('Firewall', 'Vsys'),
-            value=('/network/interface/ethernet/{0}/layer3/units'.format(
-                self._BASE_INTERFACE_NAME)))
+            value=('/network/interface/{0}/{1}/layer3/units'.format(
+                self._BASE_INTERFACE_TYPE, self._BASE_INTERFACE_NAME)))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -785,8 +793,8 @@ class Layer2Subinterface(Subinterface):
         # xpaths for parents: firewall.Firewall, device.Vsys
         self._xpaths.add_profile(
             parents=('Firewall', 'Vsys'),
-            value=('/network/interface/ethernet/{0}/layer2/units'.format(
-                self._BASE_INTERFACE_NAME)))
+            value=('/network/interface/{0}/{1}/layer2/units'.format(
+                self._BASE_INTERFACE_TYPE, self._BASE_INTERFACE_NAME)))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
