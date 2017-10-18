@@ -1625,7 +1625,9 @@ class PanObject(object):
 
     def _perform_vsys_dict_import_set(self, dev, vsys_dict):
         """Iterates of a vsys_dict, doing imports for all instances."""
-        for vsys_spec in vsys_dict.values():
+        for vsys, vsys_spec in vsys_dict.items():
+            if vsys is None:
+                continue
             for xpath_import_base, objs in vsys_spec.items():
                 xpath_tokens = xpath_import_base.split('/')
                 new_root = xpath_tokens.pop()
