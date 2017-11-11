@@ -3740,7 +3740,7 @@ class PanDevice(PanObject):
         return result1, result2
 
     def show_highavailability_state(self):
-        ha_state = self.active().op("show high-availability state")
+        ha_state = self.op("show high-availability state")
         enabled = ha_state.findtext("result/enabled")
         if enabled is None or enabled == "no":
             return "disabled", None
