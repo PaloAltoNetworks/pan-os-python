@@ -3760,17 +3760,15 @@ class PanDevice(PanObject):
         self_state = self.show_highavailability_state()[0]
         peer_state = self.ha_peer.show_highavailability_state()[0]
         states = (self_state, peer_state)
-        if "disabled" not in states:
-            if "initial" in states:
-                logger.debug("HA is initializing on one or both devices, try again soon")
-                return "initial"
-            elif self_state == "active":
-                logger.debug("Current firewall is active, no change made")
-                return "active"
-            else:
-                logger.debug("Current firewall state is %s, switching to use other firewall" % self_state)
-                self.toggle_ha_active()
-                return self_state
+        if 'disabled' in states:
+            return
+        elif 'initial' in states:
+            logger.debug("HA is initializing on one or both devices, try again soon")
+            return 'initial'
+        else:
+            for fw, state in ((self, self_state), (self.ha_peer, peer_state)):
+                fw._ha_active = state == 'active'
+            return self_state
 
     def synchronize_config(self):
         """Force configuration synchronization from this device to its HA peer"""
