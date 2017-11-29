@@ -197,10 +197,13 @@ class NTPServerSecondary(NTPServer):
     XPATH = "/ntp-servers/secondary-ntp-server"
 
 
-class SystemSettings(PanObject):
+class SystemSettings(VersionedPanObject):
     """Firewall or Panorama device system settings
 
     Add only one of these to a parent object.
+
+    If you want to configure DHCP on the management interface, you should
+    specify settings for `dhcp_send_hostname` and `dhcp_send_client_id`.
 
     Args:
         hostname (str): The hostname of the device
@@ -217,35 +220,73 @@ class SystemSettings(PanObject):
         panorama2 (str):  IP address of secondary Panorama
         login_banner (str): Login banner text
         update_server (str): IP or hostname of the update server
+        verify_update_server (bool): Verify the update server identity
+        dhcp_send_hostname (bool): (DHCP Mngt) Send Hostname
+        dhcp_send_client_id (bool): (DHCP Mngt) Send Client ID
+        accept_dhcp_hostname (bool): (DHCP Mngt) Accept DHCP hostname
+        accept_dhcp_domain (bool): (DHCP Mngt) Accept DHCP domain name
 
     """
     NAME = None
     ROOT = Root.DEVICE
-    XPATH = "/deviceconfig/system"
     HA_SYNC = False
     CHILDTYPES = (
         "device.NTPServerPrimary",
         "device.NTPServerSecondary",
     )
 
-    @classmethod
-    def variables(cls):
-        return (
-            Var("hostname"),
-            Var("domain"),
-            Var("ip-address"),
-            Var("netmask"),
-            Var("default-gateway"),
-            Var("ipv6-address"),
-            Var("ipv6-default-gateway"),
-            Var("dns-setting/servers/primary", "dns_primary"),
-            Var("dns-setting/servers/secondary", "dns_secondary"),
-            Var("timezone"),
-            Var("panorama-server", "panorama"),
-            Var("panorama-server-2", "panorama2"),
-            Var("login-banner"),
-            Var("update-server"),
-        )
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/deviceconfig/system')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'hostname', path='hostname'))
+        params.append(VersionedParamPath(
+            'domain', path='domain'))
+        params.append(VersionedParamPath(
+            'ip_address', path='ip-address'))
+        params.append(VersionedParamPath(
+            'netmask', path='netmask'))
+        params.append(VersionedParamPath(
+            'default_gateway', path='default-gateway'))
+        params.append(VersionedParamPath(
+            'ipv6_address', path='ipv6-address'))
+        params.append(VersionedParamPath(
+            'ipv6_default_gateway', path='ipv6-default-gateway'))
+        params.append(VersionedParamPath(
+            'dns_primary', path='dns-setting/servers/primary'))
+        params.append(VersionedParamPath(
+            'dns_secondary', path='dns-setting/servers/secondary'))
+        params.append(VersionedParamPath(
+            'timezone', path='timezone'))
+        params.append(VersionedParamPath(
+            'panorama', path='panorama-server'))
+        params.append(VersionedParamPath(
+            'panorama2', path='panorama-server-2'))
+        params.append(VersionedParamPath(
+            'login_banner', path='login-banner'))
+        params.append(VersionedParamPath(
+            'update_server', path='update-server'))
+        params.append(VersionedParamPath(
+            'verify_update_server', vartype='yesno',
+            path='server-verification'))
+        params.append(VersionedParamPath(
+            'dhcp_send_hostname', vartype='yesno',
+            path='type/dhcp-client/send-hostname'))
+        params.append(VersionedParamPath(
+            'dhcp_send_client_id', vartype='yesno',
+            path='type/dhcp-client/send-client-id'))
+        params.append(VersionedParamPath(
+            'accept_dhcp_hostname', vartype='yesno',
+            path='type/dhcp-client/accept-dhcp-hostname'))
+        params.append(VersionedParamPath(
+            'accept_dhcp_domain', vartype='yesno',
+            path='type/dhcp-client/accept-dhcp-domain'))
+
+        self._params = tuple(params)
 
 
 class PasswordProfile(VersionedPanObject):
