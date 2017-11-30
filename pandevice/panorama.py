@@ -333,6 +333,8 @@ class Panorama(base.PanDevice):
         # of the device groups
         if devicegroup_configxml is not None:
             for dg_entry in devicegroup_configxml:
+                if dg_entry.find('devices') is None:
+                    continue
                 for fw_entry in dg_entry.find('devices'):
                     fw_entry_op = devicegroup_opxml.find("entry/devices/entry[@name='%s']" % fw_entry.get("name"))
                     if fw_entry_op is not None:

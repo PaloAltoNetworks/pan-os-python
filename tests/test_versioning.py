@@ -9,11 +9,13 @@ import pandevice.base
 import pandevice.network
 import pandevice.objects
 import pandevice.policies
+import pandevice.device
 
 
 class TestObject(unittest.TestCase):
     OLD_CLS = None
     NEW_CLS = None
+    # This is a tuple of two-element tuples.
     PARAMS = ()
 
     def setUp(self):
@@ -23,8 +25,13 @@ class TestObject(unittest.TestCase):
             raise unittest.SkipTest('NEW_CLS not defined')
 
     def test_empty_objects_are_equal(self):
-        old = self.OLD_CLS('foo')
-        new = self.NEW_CLS('foo')
+        if self.OLD_CLS.SUFFIX is not None:
+            old = self.OLD_CLS('foo')
+            new = self.NEW_CLS('foo')
+        else:
+            old = self.OLD_CLS()
+            new = self.NEW_CLS()
+
         new.retrieve_panos_version = mock.Mock(return_value=(7, 0, 0))
 
         if not hasattr(old, 'element_str'):
@@ -37,9 +44,13 @@ class TestObject(unittest.TestCase):
 
     def test_positionally_populated_objects_are_equal(self):
         args = tuple(y for x, y in self.PARAMS)
-        new = self.NEW_CLS('jack', *args)
+        if self.OLD_CLS.SUFFIX is not None:
+            new = self.NEW_CLS('jack', *args)
+            old = self.OLD_CLS('jack', *args)
+        else:
+            new = self.NEW_CLS(*args)
+            old = self.OLD_CLS(*args)
         new.retrieve_panos_version = mock.Mock(return_value=(7, 0, 0))
-        old = self.OLD_CLS('jack', *args)
 
         if not hasattr(old, 'element_str'):
             raise unittest.SkipTest('OLD_CLS does not have element_str()')
@@ -51,8 +62,12 @@ class TestObject(unittest.TestCase):
 
     def test_keyword_populated_objects_are_equal(self):
         kwargs = dict(self.PARAMS)
-        old = self.OLD_CLS('burton', **kwargs)
-        new = self.NEW_CLS('burton', **kwargs)
+        if self.OLD_CLS.SUFFIX is not None:
+            old = self.OLD_CLS('burton', **kwargs)
+            new = self.NEW_CLS('burton', **kwargs)
+        else:
+            old = self.OLD_CLS(**kwargs)
+            new = self.NEW_CLS(**kwargs)
         new.retrieve_panos_version = mock.Mock(return_value=(7, 0, 0))
 
         if not hasattr(old, 'element_str'):

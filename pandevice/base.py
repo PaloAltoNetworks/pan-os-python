@@ -1493,6 +1493,8 @@ class PanObject(object):
             if node._requires_import_consideration():
                 vsys = node.vsys
                 if vsys is None and node.ALWAYS_IMPORT:
+                    if getattr(node, 'mode', None) in ('ha', 'aggregate-group'):
+                        continue
                     vsys = 'vsys1'
                 vsys_dict.setdefault(vsys, {})
                 vsys_dict[vsys].setdefault(node.xpath_import_base(), [])
@@ -1623,7 +1625,9 @@ class PanObject(object):
 
     def _perform_vsys_dict_import_set(self, dev, vsys_dict):
         """Iterates of a vsys_dict, doing imports for all instances."""
-        for vsys_spec in vsys_dict.values():
+        for vsys, vsys_spec in vsys_dict.items():
+            if vsys is None:
+                continue
             for xpath_import_base, objs in vsys_spec.items():
                 xpath_tokens = xpath_import_base.split('/')
                 new_root = xpath_tokens.pop()
@@ -3736,7 +3740,7 @@ class PanDevice(PanObject):
         return result1, result2
 
     def show_highavailability_state(self):
-        ha_state = self.active().op("show high-availability state")
+        ha_state = self.op("show high-availability state")
         enabled = ha_state.findtext("result/enabled")
         if enabled is None or enabled == "no":
             return "disabled", None
@@ -3756,17 +3760,15 @@ class PanDevice(PanObject):
         self_state = self.show_highavailability_state()[0]
         peer_state = self.ha_peer.show_highavailability_state()[0]
         states = (self_state, peer_state)
-        if "disabled" not in states:
-            if "initial" in states:
-                logger.debug("HA is initializing on one or both devices, try again soon")
-                return "initial"
-            elif self_state == "active":
-                logger.debug("Current firewall is active, no change made")
-                return "active"
-            else:
-                logger.debug("Current firewall state is %s, switching to use other firewall" % self_state)
-                self.toggle_ha_active()
-                return self_state
+        if 'disabled' in states:
+            return
+        elif 'initial' in states:
+            logger.debug("HA is initializing on one or both devices, try again soon")
+            return 'initial'
+        else:
+            for fw, state in ((self, self_state), (self.ha_peer, peer_state)):
+                fw._ha_active = state == 'active'
+            return self_state
 
     def synchronize_config(self):
         """Force configuration synchronization from this device to its HA peer"""
