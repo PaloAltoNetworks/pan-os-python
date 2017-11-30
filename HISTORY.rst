@@ -3,6 +3,17 @@
 History
 =======
 
+0.5.2
+-----
+
+Released: 2017-11-30
+
+Status: Alpha
+
+- Adding DHCP management interface options to `device.SystemSettings`
+- Various bug fixes
+
+
 0.5.1
 -----
 
