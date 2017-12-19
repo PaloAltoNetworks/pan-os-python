@@ -867,7 +867,7 @@ class TestOspfExportRules(MakeVirtualRouter):
 
     def setup_state_obj(self, fw, state):
         state.obj = network.OspfExportRules(
-            testlib.random_ip('/24'),
+            testlib.random_netmask(),
             'ext-2', testlib.random_ip(), 2048)
         state.ospf.add(state.obj)
 
