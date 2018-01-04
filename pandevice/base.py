@@ -134,6 +134,9 @@ class PanObject(object):
         Traverses the tree to determine the vsys from a :class:`pandevice.firewall.Firewall`
         or :class:`pandevice.device.Vsys` instance somewhere before this node in the tree.
 
+        Should the object parent be None, it is implied the operation is within the Shared
+        space of the appliance.
+
         Returns:
             str: The vsys id (eg. vsys2)
 
@@ -144,7 +147,8 @@ class PanObject(object):
                 return 'vsys1'
             else:
                 return vsys
-
+        else:
+            return 'shared'
 
     @vsys.setter
     def vsys(self, value):

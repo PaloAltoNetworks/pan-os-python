@@ -65,7 +65,9 @@ class TestPanObject(unittest.TestCase):
         self.assertTrue(callable(self.obj.variables))
 
     def test_property_vsys_without_parent(self):
-        self.assertIsNone(self.obj.vsys)
+        expected = 'shared'
+
+        self.assertEqual(expected, self.obj.vsys)
 
     def test_property_vsys_with_parent(self):
         self.obj.parent = mock.Mock(vsys=VSYS)
