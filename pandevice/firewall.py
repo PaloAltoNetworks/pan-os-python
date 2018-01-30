@@ -84,6 +84,10 @@ class Firewall(PanDevice):
         "network.VirtualRouter",
         "network.ManagementProfile",
         "network.VirtualWire",
+        "network.IkeGateway",
+        "network.IpsecTunnel",
+        "network.IpsecCryptoProfile",
+        "network.IkeCryptoProfile",
     )
 
     def __init__(self,
