@@ -3,6 +3,22 @@
 History
 =======
 
+0.5.3
+-----
+
+Released: 2018-01-30
+
+Status: Alpha
+
+- Added: `network.IkeGateway`
+- Added: `network.IpsecTunnel`
+- Added: `network.IpsecTunnelIpv4ProxyId`
+- Added: `network.IpsecTunnelIpv6ProxyId`
+- Added: `network.IpsecCryptoProfile`
+- Added: `network.IkeCryptoProfile`
+- Fix: `enable_ipv6` XPath for various network interface has been corrected
+
+
 0.5.2
 -----
 

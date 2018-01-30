@@ -23,7 +23,7 @@ Documentation available at http://pandevice.readthedocs.io
 
 __author__ = 'Palo Alto Networks'
 __email__ = 'techpartners@paloaltonetworks.com'
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 
 
 import logging
