@@ -1471,8 +1471,6 @@ class PanObject(object):
         logger.debug('{0}: {1} called on {2} object "{3}"'.format(
             dev.id, func, self, self.uid))
         dev.set_config_changed()
-        if self.HA_SYNC:
-            dev = dev.active()
 
         # Determine base xpath to match against.
         xpath = self.xpath_short()
