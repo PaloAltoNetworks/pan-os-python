@@ -199,7 +199,7 @@ class IPv6Address(VersionedPanObject):
     """IPv6 Address
 
     Can be added to any :class:`pandevice.network.Interface` subclass
-    that supports IPv6
+    that supports IPv6.
 
     Args:
         enabled-on-interface (bool): Enabled IPv6 on the interface this
@@ -733,10 +733,6 @@ class Layer3Subinterface(Subinterface):
             'ip', path='ip', vartype='entry'))
         params.append(VersionedParamPath(
             'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
-        params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno',
-            path='ipv6/neighbor-discovery/router-advertisement/enable')
         params.append(VersionedParamPath(
             'management_profile', path='interface-management-profile'))
         params.append(VersionedParamPath(
@@ -1047,10 +1043,6 @@ class AggregateInterface(PhysicalInterface):
             'ip', path='ip', vartype='entry'))
         params.append(VersionedParamPath(
             'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
-        params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno',
-            path='ipv6/neighbor-discovery/router-advertisement/enable')
         params.append(VersionedParamPath(
             'management_profile', path='interface-management-profile'))
         params.append(VersionedParamPath(
@@ -1129,10 +1121,6 @@ class VlanInterface(Interface):
             'ip', path='ip', vartype='entry'))
         params.append(VersionedParamPath(
             'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
-        params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno',
-            path='ipv6/neighbor-discovery/router-advertisement/enable')
         params.append(VersionedParamPath(
             'management_profile', path='interface-management-profile'))
         params.append(VersionedParamPath(
@@ -1198,10 +1186,6 @@ class LoopbackInterface(Interface):
             'ip', path='ip', vartype='entry'))
         params.append(VersionedParamPath(
             'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
-        params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno',
-            path='ipv6/neighbor-discovery/router-advertisement/enable')
         params.append(VersionedParamPath(
             'management_profile', path='interface-management-profile'))
         params.append(VersionedParamPath(
@@ -1256,10 +1240,6 @@ class TunnelInterface(Interface):
             'ip', path='ip', vartype='entry'))
         params.append(VersionedParamPath(
             'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
-        params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno',
-            path='ipv6/neighbor-discovery/router-advertisement/enable')
         params.append(VersionedParamPath(
             'management_profile', path='interface-management-profile'))
         params.append(VersionedParamPath(
@@ -1830,3 +1810,902 @@ class ManagementProfile(VersionedPanObject):
             'permitted-ip', path='permitted-ip', vartype='entry'))
 
         self._params = tuple(params)
+
+
+class IkeGateway(VersionedPanObject):
+    """IKE Gateway.
+
+    Args:
+        name: IKE gateway name
+        version: (7.0+) ikev1, ikev2, or ikev2-prefered (default: ikev1)
+        enable_ipv6 (bool): (7.0+) enable IPv6
+        disabled (bool): (7.0+) disable this object
+        peer_ip_type: ip or dynamic (default: ip)
+        peer_ip_value: the IP for peer_ip_type of 'ip'
+        interface: local gateway end-point
+        local_ip_address_type: ip or floating-ip
+        local_ip_address: IP address if interface has multiple addresses
+        auth_type: pre-shared-key or certificate (default: pre-shared-key)
+        pre_shared_key: The string used as pre-shared key
+        local_id_type: ipaddr, fqdn, ufqdn, keyid, or dn
+        local_id_value: The value for local_id_type
+        peer_id_type: ipaddr, fqdn, ufqdn, keyid, or dn
+        peer_id_value: The value for peer_id_type
+        peer_id_check: exact or wildcard (default: exact)
+        local_cert: Local certificate name
+        cert_enable_hash_and_url (bool): (7.0+) Use hash-and-url for local
+            certificate.
+        cert_base_url: (7.0+) The host and directory part of URL for
+            local certificates (http only).
+        cert_use_management_as_source (bool): (7.0+) Use management interface IP
+            as source to retrieve http certificates
+        cert_permit_payload_mismatch (bool): Permit peer identification and
+            certificate payload identification mismatch.
+        cert_profile: Local certificate name
+        cert_enable_strict_validation (bool): Enable strict valication of
+            peer's extended key use
+        enable_passive_mode (bool): Enable passive mode (responder only)
+        enable_nat_traversal (bool): Enable NAT traversal
+        nat_traversal_keep_alive (int): sending interval for NAT keep-alive
+            packets (in seconds)
+        nat_traversal_enable_udp_checksum (bool): enable UDP checksum
+        enable_fragmentation (bool): Enable IKE fragmentation
+        ikev1_exchange_mode: auto, main, or aggressive
+        ikev1_crypto_profile: IKE SA crypto oprofile name
+        enable_dead_peer_detection (bool): enable Dead-Peer-Detection
+        dead_peer_detection_interval (int): sending interval for probing
+            packets (in seconds)
+        dead_peer_detection_retry (int): number of retries before disconnection
+        ikev1_send_commit_bit (bool): Send commit bit
+        ikev1_initial_contact (bool): send initial contact
+        ikev2_crypto_profile: (7.0+) IKE SE crypto profile name
+        ikev2_cookie_valication (bool): (7.0+) require cookie
+        ikev2_send_peer_id (bool): (7.0+) send peer ID
+        enable_liveness_check (bool): (7.0+) enable sending empty information
+            liveness check message
+        liveness_check_interval (int): (7.0+) delay interval before sending
+            probing packets (in seconds)
+
+    """
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(
+            value='/network/ike/gateway')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'version', default='ikev1', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            values=('ikev1', 'ikev2', 'ikev2-preferred'),
+            path='protocol/version')
+        params.append(VersionedParamPath(
+            'enable_ipv6', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            path='ipv6', vartype='yesno')
+        params.append(VersionedParamPath(
+            'disabled', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            path='disabled', vartype='yesno')
+        params.append(VersionedParamPath(
+            'peer_ip_type', values=('ip', 'dynamic'), default='ip',
+            path='peer-address/{peer_ip_type}'))
+        params.append(VersionedParamPath(
+            'peer_ip_value', condition={'peer_ip_type': 'ip'},
+            path='peer-address/{peer_ip_type}'))
+        params.append(VersionedParamPath(
+            'interface', path='local-address/interface'))
+        params.append(VersionedParamPath(
+            'local_ip_address_type', values=('ip', 'floating-ip'),
+            path='local-address/{local_ip_address_type}'))
+        params.append(VersionedParamPath(
+            'local_ip_address',
+            path='local-address/{local_ip_address_type}'))
+        params.append(VersionedParamPath(
+            'auth_type', values=('pre-shared-key', 'certificate'),
+            default='pre-shared-key', path='authentication/{auth_type}'))
+        params.append(VersionedParamPath(
+            'pre_shared_key', condition={'auth_type': 'pre-shared-key'},
+            vartype='encrypted', path='authentication/{auth_type}/key'))
+        params.append(VersionedParamPath(
+            'local_id_type', values=('ipaddr', 'fqdn', 'ufqdn', 'keyid', 'dn'),
+            path='local-id/type'))
+        params.append(VersionedParamPath(
+            'local_id_value', path='local-id/id'))
+        params.append(VersionedParamPath(
+            'peer_id_type', values=('ipaddr', 'fqdn', 'ufqdn', 'keyid', 'dn'),
+            path='peer-id/type'))
+        params.append(VersionedParamPath(
+            'peer_id_value', path='peer-id/id'))
+        params.append(VersionedParamPath(
+            'peer_id_check', default='exact',
+            values=('exact', 'wildcard'), path='peer-id/matching'))
+        params.append(VersionedParamPath(
+            'local_cert', condition={'auth_type': 'certificate'},
+            path='authentication/{auth_type}/local-certificate'))
+        params[-1].add_profile(
+            '7.0.0',
+            condition={'auth_type': 'certificate'},
+            path='authentication/{auth_type}/local-certificate/name')
+        params.append(VersionedParamPath(
+            'cert_enable_hash_and_url', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='yesno', condition={'auth_type': 'certificate'},
+            path='authentication/{auth_type}/local-certificate/hash-and-url/enable')
+        params.append(VersionedParamPath(
+            'cert_base_url', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            condition={'auth_type': 'certificate'},
+            path='authentication/{auth_type}/local-certificate/hash-and-url/base-url')
+        params.append(VersionedParamPath(
+            'cert_use_management_as_source', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='yesno', condition={'auth_type': 'certificate'},
+            path='authentication/{auth_type}/use-management-as-source')
+        params.append(VersionedParamPath(
+            'cert_permit_payload_mismatch',
+            vartype='yesno', condition={'auth_type': 'certificate'},
+            path='authentication/{auth_type}/allow-id-payload-mismatch'))
+        params.append(VersionedParamPath(
+            'cert_profile', condition={'auth_type': 'certificate'},
+            path='authentication/{auth_type}/certificate-profile'))
+        params.append(VersionedParamPath(
+            'cert_enable_strict_validation',
+            vartype='yesno', condition={'auth_type': 'certificate'},
+            path='authentication/{auth_type}/strict-validation-revocation'))
+        params.append(VersionedParamPath(
+            'enable_passive_mode', vartype='yesno',
+            path='protocol-common/passive-mode'))
+        params.append(VersionedParamPath(
+            'enable_nat_traversal', vartype='yesno',
+            path='protocol-common/nat-traversal/enable'))
+        params.append(VersionedParamPath(
+            'nat_traversal_keep_alive', vartype='int',
+            path='protocol-common/nat-traversal/keep-alive-interval'))
+        params.append(VersionedParamPath(
+            'nat_traversal_enable_udp_checksum', vartype='yesno',
+            path='protocol-common/nat-traversal/udp-checksum-enable'))
+        params.append(VersionedParamPath(
+            'enable_fragmentation', vartype='yesno',
+            path='protocol-common/fragmentation/enable'))
+        params.append(VersionedParamPath(
+            'ikev1_exchange_mode', values=('auto', 'main', 'aggressive'),
+            path='protocol/ikev1/exchange-mode'))
+        params.append(VersionedParamPath(
+            'ikev1_crypto_profile', path='protocol/ikev1/ike-crypto-profile'))
+        params.append(VersionedParamPath(
+            'enable_dead_peer_detection', vartype='yesno',
+            path='protocol/ikev1/dpd/enable'))
+        params.append(VersionedParamPath(
+            'dead_peer_detection_interval', vartype='int',
+            path='protocol/ikev1/dpd/interval'))
+        params.append(VersionedParamPath(
+            'dead_peer_detection_retry', vartype='int',
+            path='protocol/ikev1/dpd/retry'))
+        params.append(VersionedParamPath(
+            'ikev1_send_commit_bit', exclude=True, vartype='yesno',
+            path='protocol/ikev1/commit-bit'))
+        params.append(VersionedParamPath(
+            'ikev1_initial_contact', exclude=True, vartype='yesno',
+            path='protocol/ikev1/initial-contact'))
+        params.append(VersionedParamPath(
+            'ikev2_crypto_profile', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            path='protocol/ikev2/ike-crypto-profile')
+        params.append(VersionedParamPath(
+            'ikev2_cookie_validation', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='yesno',
+            path='protocol/ikev2/require-cookie')
+        params.append(VersionedParamPath(
+            'ikev2_send_peer_id', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='yesno', exclude=True,
+            path='protocol/ikev2/send-peer-id')
+        params.append(VersionedParamPath(
+            'enable_liveness_check', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='yesno', path='protocol/ikev2/dpd/enable')
+        params.append(VersionedParamPath(
+            'liveness_check_interval', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='int', path='protocol/ikev2/dpd/interval')
+
+        self._params = tuple(params)
+
+
+class IpsecTunnel(VersionedPanObject):
+    """IPSec Tunnel
+
+    A large number of params have prefixes:
+        * ak:   Auto Key
+        * mk:   Manual Key
+        * gps:  GlobalProtect Satellite
+
+    Only attach IpsecTunnelIpv4ProxyId or IpsecTunnelIpv4ProxyId  objects to
+    this one if you are using type='auto-key'.
+
+    Args:
+        name: IPSec tunnel name
+        tunnel_interface: apply IPSec VPN tunnels to tunnel interface
+        anti_replay (bool): enable anti-replay check on this tunnel
+        ipv6 (bool): (7.0+) use IPv6 for the IPSec tunnel
+        type: auto-key (default), manual-key, or global-protect-satellite
+        ak_ike_gateway (string/list): IKE gateway name
+        ak_ipsec_crypto_profile: IPSec crypto profile name
+        mk_local_spi: outbound SPI in hex
+        mk_interface: interface to terminate tunnel
+        mk_remote_spi: inbound SPI in hex
+        mk_remote_address: tunnel peer IP address
+        mk_local_address_ip: exact IP address if interface has multiple IP
+            addresses
+        mk_local_address_floating_ip: floating IP address in HA Active-Active
+            configuration
+        mk_protocol: esp or ah
+        mk_auth_type: md5, sha1, sha256, sha384, or sha512
+        mk_auth_key: the key for the given mk_auth_type
+        mk_esp_encryption: des, 3des, aes128 / aes-128-cbc, aes192 / aes-192-cbc,
+            aes256 / aes-256-cbc, or null.  The various "aes" options changed
+            in version 7.0 onward.  If you need to make a script that is
+            compatible with 6.1 PANOS, then use "set_mk_esp_encryption()".  Passing
+            it either "aes128" or "aes-128-cbc" will have it set the appropriate
+            string for the given version.
+        mk_esp_encryption_key: The ESP encryption key for mk_esp_encryption type
+        gps_portal_address: GlobalProtect portal address
+        gps_prefer_ipv6 (bool): (8.0+) perfer to register portal in IPv6
+        gps_interface: interface to communicate with portal
+        gps_interface_ipv4_ip: exact IPv4 IP address if interface has multiple IP
+            addresses
+        gps_interface_ipv6_ip: (8.0+) exact IPv6 IP address if interface has
+            multiple IP addresses
+        gps_interface_ipv4_floating_ip: (7.0+) floating IPv4 IP address in HA
+            Active-Active configuration
+        gps_interface_ipv6_floating_ip: (8.0+) floating IPv6 IP address in HA
+            Active-Active configuration
+        gps_publish_connected_routes (bool): enable publishing of connected
+            and static routes
+        gps_publish_routes (str/list): specify list of routes to publish to
+            GlobalProtect gateway
+        gps_local_certificate: GlobalProtect satellite certificate file name
+        gps_certificate_profile: profile for authenticating GlobalProtect
+            gateway certificates
+        anti_replay (bool): enable anti-replay check on this tunnel
+        copy_tos (bool): copy IP TOS bits from inner packet to IPSec
+            packet (not recommended)
+        copy_flow_label (bool): (7.0+) copy IPv6 flow label for 6in6 tunnel
+            from inner packet to IPSec packet (not recommended)
+        enable_tunnel_monitor (bool): enable tunnel monitoring on this tunnel
+        tunnel_monitor_dest_ip: destination IP to send ICMP probe
+        tunnel_monitor_proxy_id: (7.0+) which proxy-id (or proxy-id-v6) the
+            monitoring traffic will use
+        tunnel_monitor_profile: monitoring action
+        disabled (bool): (7.0+) disable the IPSec tunnel
+
+    """
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        'network.IpsecTunnelIpv4ProxyId',
+        'network.IpsecTunnelIpv6ProxyId',
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/network/tunnel/ipsec')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'tunnel_interface', path='tunnel-interface'))
+        params.append(VersionedParamPath(
+            'anti_replay', path='anti-replay', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'ipv6', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='yesno', path='ipv6')
+        params.append(VersionedParamPath(
+            'type', default='auto-key', path='{type}',
+            values=('auto-key', 'manual-key', 'global-protect-satellite')))
+        params.append(VersionedParamPath(
+            'ak_ike_gateway',
+            condition={'type': 'auto-key'}, vartype='entry',
+            path='{type}/ike-gateway'))
+        params.append(VersionedParamPath(
+            'ak_ipsec_crypto_profile', condition={'type': 'auto-key'},
+            path='{type}/ipsec-crypto-profile'))
+        params.append(VersionedParamPath(
+            'mk_local_spi', condition={'type': 'manual-key'},
+            path='{type}/local-spi'))
+        params.append(VersionedParamPath(
+            'mk_interface', condition={'type': 'manual-key'},
+            path='{type}/local-address/interface'))
+        params.append(VersionedParamPath(
+            'mk_remote_spi', condition={'type': 'manual-key'},
+            path='{type}/remote-spi'))
+        params.append(VersionedParamPath(
+            'mk_remote_address', condition={'type': 'manual-key'},
+            path='{type}/peer-address/ip'))
+        params.append(VersionedParamPath(
+            'mk_local_address_ip', condition={'type': 'manual-key'},
+            path='{type}/local-address/ip'))
+        params.append(VersionedParamPath(
+            'mk_local_address_floating_ip', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            condition={'type': 'manual-key'},
+            path='{type}/local-address/floating-ip')
+        params.append(VersionedParamPath(
+            'mk_protocol', condition={'type': 'manual-key'},
+            values=('esp', 'ah'), path='{type}/{mk_protocol}'))
+        params.append(VersionedParamPath(
+            'mk_auth_type', condition={'type': 'manual-key'},
+            values=('md5', 'sha1', 'sha256', 'sha384', 'sha512'),
+            path='{type}/{mk_protocol}/authentication/{mk_auth_type}'))
+        params.append(VersionedParamPath(
+            'mk_auth_key',
+            vartype='encrypted', condition={'type': 'manual-key'},
+            path='{type}/{mk_protocol}/authentication/{mk_auth_type}/key'))
+        params.append(VersionedParamPath(
+            'mk_esp_encryption',
+            values=(
+                'des',
+                '3des',
+                'aes128',
+                'aes192',
+                'aes256',
+                'null',
+            ),
+            path='{type}/{mk_protocol}/encryption/algorithm'))
+        params[-1].add_profile(
+            '7.0.0',
+            condition={'type': 'manual-key', 'mk_protocol': 'esp'},
+            values=(
+                'des',
+                '3des',
+                'aes-128-cbc',
+                'aes-192-cbc',
+                'aes-256-cbc',
+                'null',
+            ),
+            path='{type}/{mk_protocol}/encryption/algorithm')
+        params.append(VersionedParamPath(
+            'mk_esp_encryption_key', vartype='encrypted',
+            condition={'type': 'manual-key', 'mk_protocol': 'esp'},
+            path='{type}/{mk_protocol}/encryption/key'))
+        params.append(VersionedParamPath(
+            'gps_portal_address',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/portal-address'))
+        params.append(VersionedParamPath(
+            'gps_prefer_ipv6', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            vartype='yesno', condition={'type': 'global-protect-satellite'},
+            path='{type}/ipv6-preferred')
+        params.append(VersionedParamPath(
+            'gps_interface',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/local-address/interface'))
+        params.append(VersionedParamPath(
+            'gps_interface_ipv4_ip',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/local-address/ip'))
+        params[-1].add_profile(
+            '8.0.0',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/local-address/ip/ipv4')
+        params.append(VersionedParamPath(
+            'gps_interface_ipv6_ip', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/local-address/ip/ipv6')
+        params.append(VersionedParamPath(
+            'gps_interface_ipv4_floating_ip', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/local-address/floating-ip')
+        params[-1].add_profile(
+            '8.0.0',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/local-address/floating-ip/ipv4')
+        params.append(VersionedParamPath(
+            'gps_interface_ipv6_floating_ip', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/local-address/floating-ip/ipv6')
+        params.append(VersionedParamPath(
+            'gps_publish_connected_routes', vartype='yesno',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/publish-connected-routes/enable'))
+        params.append(VersionedParamPath(
+            'gps_publish_routes', vartype='member',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/publish-routes'))
+        params.append(VersionedParamPath(
+            'gps_local_certificate',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/external-ca/local-certificate'))
+        params.append(VersionedParamPath(
+            'gps_certificate_profile',
+            condition={'type': 'global-protect-satellite'},
+            path='{type}/external-ca/certificate-profile'))
+        params.append(VersionedParamPath(
+            'anti_replay', default=True, vartype='yesno', path='anti-replay'))
+        params.append(VersionedParamPath(
+            'copy_tos', vartype='yesno', path='copy-tos'))
+        params.append(VersionedParamPath(
+            'copy_flow_label', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='yesno', path='copy-flow-label')
+        params.append(VersionedParamPath(
+            'enable_tunnel_monitor',
+            vartype='yesno', path='tunnel-monitor/enable'))
+        params.append(VersionedParamPath(
+            'tunnel_monitor_dest_ip', path='tunnel-monitor/destination-ip'))
+        params.append(VersionedParamPath(
+            'tunnel_monitor_proxy_id', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            path='tunnel-monitor/proxy-id')
+        params.append(VersionedParamPath(
+            'tunnel_monitor_profile',
+            path='tunnel-monitor/tunnel-monitor-profile'))
+        params.append(VersionedParamPath(
+            'disabled', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='yesno', path='disabled')
+
+        self._params = tuple(params)
+
+    def set_mk_esp_encryption(self, value):
+        """Version agnostic set for mk_esp_encryption.
+
+        This object should be connected to a pandevice.Firewall before
+        invocation.
+
+        Valid values include the following:
+            * des
+            * 3des
+            * aes128
+            * aes-128-cbc
+            * aes192
+            * aes-192-cbc
+            * aes256
+            * aes-256-cbc
+            * null
+
+        Raises:
+            PanDeviceNotSet: if there is no Firewall in the object tree
+            ValueError: if value is not one of the above
+
+        """
+        # Some values are constant across versioning, so set them outright.
+        if value in ('des', '3des', 'null'):
+            self.mk_esp_encryption = value
+            return
+
+        # Get the version specific values for mk_esp_encryption.
+        self.nearest_pandevice()
+        vals = self.about('mk_esp_encryption')['About']['Values']
+
+        # Normalize the value.
+        for masks in (
+            ('aes128', 'aes-128-cbc'),
+            ('aes192', 'aes-192-cbc'),
+            ('aes256', 'aes-256-cbc'),
+        ):
+            if value in masks:
+                break
+        else:
+            raise ValueError('Unknown encryption type: {0}'.format(value))
+
+        # Set the version specific encryption type.
+        for x in vals:
+            if x in masks:
+                self.mk_esp_encryption = x
+                break
+
+
+class IpsecTunnelIpv4ProxyId(VersionedPanObject):
+    """IKEv1 proxy-id for auto-key IPSec tunnels.
+
+    Args:
+        name: The proxy ID
+        local: IP subnet or IP address represents local network
+        remote: IP subnet or IP address represents remote network
+        any_protocol (bool): Any protocol
+        number_proto (int): Numbered Protocol: protocol number (1-254)
+        tcp_local_port (int): Protocol TCP: local port
+        tcp_remote_port (int): Protocol TCP: remote port
+        udp_local_port (int): Protocol UDP: local port
+        udp_remote_port (int): Protocol UDP: remote port
+
+    """
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/auto-key/proxy-id')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'local', path='local'))
+        params.append(VersionedParamPath(
+            'remote', path='remote'))
+        params.append(VersionedParamPath(
+            'any_protocol', vartype='exist', path='protocol/any'))
+        params.append(VersionedParamPath(
+            'number_protocol', vartype='int', path='protocol/number'))
+        params.append(VersionedParamPath(
+            'tcp_local_port', vartype='int', path='protocol/tcp/local-port'))
+        params.append(VersionedParamPath(
+            'tcp_remote_port', vartype='int', path='protocol/tcp/remote-port'))
+        params.append(VersionedParamPath(
+            'udp_local_port', vartype='int', path='protocol/udp/local-port'))
+        params.append(VersionedParamPath(
+            'udp_remote_port', vartype='int', path='protocol/udp/remote-port'))
+
+        self._params = tuple(params)
+
+
+class IpsecTunnelIpv6ProxyId(VersionedPanObject):
+    """IKEv1 IPv6 proxy-id for auto-key IPSec tunnels.
+
+    NOTE:  Only supported in 7.0 and forward.
+
+    Args:
+        name: The proxy ID
+        local: IP subnet or IP address represents local network
+        remote: IP subnet or IP address represents remote network
+        any_proto (bool): Any protocol
+        number_proto (int): Numbered Protocol: protocol number (1-254)
+        tcp_local_port (int): Protocol TCP: local port
+        tcp_remote_port (int): Protocol TCP: remote port
+        udp_local_port (int): Protocol UDP: local port
+        udp_remote_port (int): Protocol UDP: remote port
+
+    """
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/auto-key/proxy-id-v6')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'local', path='local'))
+        params.append(VersionedParamPath(
+            'remote', path='remote'))
+        params.append(VersionedParamPath(
+            'any_protocol', vartype='exist', path='protocol/any'))
+        params.append(VersionedParamPath(
+            'number_protocol', vartype='int', path='protocol/number'))
+        params.append(VersionedParamPath(
+            'tcp_local_port', vartype='int', path='protocol/tcp/local-port'))
+        params.append(VersionedParamPath(
+            'tcp_remote_port', vartype='int', path='protocol/tcp/remote-port'))
+        params.append(VersionedParamPath(
+            'udp_local_port', vartype='int', path='protocol/udp/local-port'))
+        params.append(VersionedParamPath(
+            'udp_remote_port', vartype='int', path='protocol/udp/remote-port'))
+
+        self._params = tuple(params)
+
+
+class IpsecCryptoProfile(VersionedPanObject):
+    """IPSec SA proposals.
+
+    Args:
+        name: IPSec crypto profile name
+        esp_encryption (string/list): des, 3des, null, aes128 / aes-128-cbc,
+            aes192 / aes-192-cbc, aes256 / aes-256-cbc, aes-128-gcm (7.0+), or
+            aes-256-gcm (7.0+).  If you need to write a script that works older
+            than 7.0 firewalls, then please use set_esp_encryption().
+        esp_authentication (string/list): none, md5, sha1, sha256, sha384, or
+            sha512
+        ah_authentication (string/list): md5, sha1, sha256, sha384, or sha512
+        dh_group: no-pfs, group1, group2, group5, group14, group19, or group20
+        lifetime_seconds (int): IPSec SA lifetime in seconds
+        lifetime_minutes (int): IPSec SA lifetime in minutes
+        lifetime_hours (int): IPSec SA lifetime in hours
+        lifetime_days (int): IPSec SA lifetime in days
+        lifesize_kb (int): IPSec SA lifesize in kilobytes (KB)
+        lifesize_mb (int): IPSec SA lifesize in megabytes (MB)
+        lifesize_gb (int): IPSec SA lifesize in gigabytes (GB)
+        lifesize_tb (int): IPSec SA lifesize in terabytes (TB)
+
+    """
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(
+            value='/network/ike/crypto-profiles/ipsec-crypto-profiles')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'esp_encryption', vartype='member', path='esp/encryption',
+            values=(
+                'des',
+                '3des',
+                'aes128',
+                'aes192',
+                'aes256',
+                'null')))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='member', path='esp/encryption',
+            values=(
+                'des',
+                '3des',
+                'aes-128-cbc',
+                'aes-192-cbc',
+                'aes-256-cbc',
+                'aes-128-gcm',
+                'aes-256-gcm',
+                'null'))
+        params.append(VersionedParamPath(
+            'esp_authentication', vartype='member', path='esp/authentication',
+            values=('none', 'md5', 'sha1', 'sha256', 'sha384', 'sha512')))
+        params.append(VersionedParamPath(
+            'ah_authentication', vartype='member', path='ah/authentication',
+            values=('md5', 'sha1', 'sha256', 'sha384', 'sha512')))
+        params.append(VersionedParamPath(
+            'dh_group', path='dh-group',
+            values=(
+                'no-pfs',
+                'group1',
+                'group2',
+                'group5',
+                'group14',
+                'group19',
+                'group20')))
+        params.append(VersionedParamPath(
+            'lifetime_seconds', vartype='int', path='lifetime/seconds'))
+        params.append(VersionedParamPath(
+            'lifetime_minutes', vartype='int', path='lifetime/minutes'))
+        params.append(VersionedParamPath(
+            'lifetime_hours', vartype='int', path='lifetime/hours'))
+        params.append(VersionedParamPath(
+            'lifetime_days', vartype='int', path='lifetime/days'))
+        params.append(VersionedParamPath(
+            'lifesize_kb', vartype='int', path='lifesize/kb'))
+        params.append(VersionedParamPath(
+            'lifesize_mb', vartype='int', path='lifesize/mb'))
+        params.append(VersionedParamPath(
+            'lifesize_gb', vartype='int', path='lifesize/gb'))
+        params.append(VersionedParamPath(
+            'lifesize_tb', vartype='int', path='lifesize/tb'))
+
+        self._params = tuple(params)
+
+    def set_esp_encryption(self, value):
+        """Version agnostic set for esp_encryption.
+
+        This object should be connected to a pandevice.Firewall before
+        invocation.
+
+        Valid values include the following:
+            * des
+            * 3des
+            * aes128
+            * aes-128-cbc
+            * aes192
+            * aes-192-cbc
+            * aes256
+            * aes-256-cbc
+            * aes-128-gcm (7.0+)
+            * aes-256-gcm (7.0+)
+            * null
+
+        Args:
+            value (string/list): values to put in esp_encryption
+
+        Raises:
+            PanDeviceNotSet: if there is no Firewall in the object tree
+            ValueError: if value is not one of the above, or you attempt
+                to configure aes-128-gcm or aes-256-gcm with this object
+                connected to a PANOS 6.1 firewall.
+
+        """
+        normalized = []
+
+        # Make sure there is a pandevice set such that we can get versioning.
+        self.nearest_pandevice()
+
+        for token in string_or_list(value):
+            # Some values are constant across versioning.
+            if token in ('des', '3des', 'null'):
+                normalized.append(token)
+                continue
+
+            # Get the version specific values for mk_esp_encryption.
+            vals = self.about('esp_encryption')['About']['Values']
+
+            # Normalize the value.
+            for masks in (
+                ('aes128', 'aes-128-cbc'),
+                ('aes192', 'aes-192-cbc'),
+                ('aes256', 'aes-256-cbc'),
+                ('aes-128-gcm', ),
+                ('aes-256-gcm', ),
+            ):
+                if token in masks:
+                    break
+            else:
+                raise ValueError('Unknown encryption type: {0}'.format(token))
+
+            # Set the version specific encryption type.
+            for x in vals:
+                if x in masks:
+                    normalized.append(x)
+                    break
+            else:
+                raise ValueError(
+                    'ESP encryption {0} not supported in this version'.format(
+                        token))
+
+        self.esp_encryption = normalized
+
+
+class IkeCryptoProfile(VersionedPanObject):
+    """IKE SA proposal.
+
+    Args:
+        name: IKE crypto profile name
+        dh_group (string/list): phase-1 DH group:  group1, group2, group5,
+            group14, group19 (7.0+), or group20 (7.0+).
+        authentication (string/list): hashing algorithm: md5, sha1, sha256,
+            sha384, or sha512.
+        encryption (string/list): encryption algorithm: des (7.1+), 3des,
+            aes128 / aes-128-cbc, aes192 / aes-192-cbc, or
+            aes256 / aes-256-cbc.  If you need to be able to work with older
+            than 7.0 firewalls, then use set_encryption().
+        lifetime_seconds (int): IKE SA lifetime in seconds
+        lifetime_minutes (int): IKE SA lifetime in minutes
+        lifetime_hours (int): IKE SA lifetime in hours
+        lifetime_days (int): IKE SA lifetime in days
+        authentication_multiple (int): (7.0+) IKEv2 SA reauthentication
+            interval equals authentication_multiple * lifetime; 0 means
+            reauthentication is disabled.
+
+    """
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(
+            value='/network/ike/crypto-profiles/ike-crypto-profiles')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'dh_group', vartype='member', path='dh-group',
+            values=('group1', 'group2', 'group5', 'group14')))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='member', path='dh-group',
+            values=('group1', 'group2', 'group5', 'group14', 'group19', 'group20'))
+        params.append(VersionedParamPath(
+            'authentication', vartype='member', path='hash',
+            values=('md5', 'sha1', 'sha256', 'sha384', 'sha512')))
+        params.append(VersionedParamPath(
+            'encryption', vartype='member', path='encryption',
+            values=('3des', 'aes128', 'aes192', 'aes256')))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='member', path='encryption',
+            values=('3des', 'aes-128-cbc', 'aes-192-cbc', 'aes-256-cbc'))
+        params[-1].add_profile(
+            '7.1.0',
+            vartype='member', path='encryption',
+            values=('des', '3des', 'aes-128-cbc', 'aes-192-cbc', 'aes-256-cbc'))
+        params.append(VersionedParamPath(
+            'lifetime_seconds', vartype='int', path='lifetime/seconds'))
+        params.append(VersionedParamPath(
+            'lifetime_minutes', vartype='int', path='lifetime/minutes'))
+        params.append(VersionedParamPath(
+            'lifetime_hours', vartype='int', path='lifetime/hours'))
+        params.append(VersionedParamPath(
+            'lifetime_days', vartype='int', path='lifetime/days'))
+        params.append(VersionedParamPath(
+            'authentication_multiple', exclude=True))
+        params[-1].add_profile(
+            '7.0.0',
+            vartype='int', path='authentication-multiple')
+
+        self._params = tuple(params)
+
+    def set_encryption(self, value):
+        """Version agnostic set for encryption.
+
+        This object should be connected to a pandevice.Firewall before
+        invocation.
+
+        Valid values include the following:
+            * des (7.1+)
+            * 3des
+            * aes128
+            * aes-128-cbc
+            * aes192
+            * aes-192-cbc
+            * aes256
+            * aes-256-cbc
+
+        Raises:
+            PanDeviceNotSet: if there is no Firewall in the object tree
+            ValueError: if value is not one of the above, or you attempt
+                to configure 3des with this object connected to a PANOS
+                7.0 or earlier firewall.
+
+        """
+        normalized = []
+
+        # Make sure there is a pandevice set such that we can get versioning.
+        self.nearest_pandevice()
+
+        for token in string_or_list(value):
+            # Some values are constant across versioning.
+            if token in ('3des'):
+                normalized.append(token)
+                continue
+
+            # Get the version specific values for mk_esp_encryption.
+            vals = self.about('encryption')['About']['Values']
+
+            # Normalize the value.
+            for masks in (
+                ('3des', ),
+                ('aes128', 'aes-128-cbc'),
+                ('aes192', 'aes-192-cbc'),
+                ('aes256', 'aes-256-cbc'),
+            ):
+                if token in masks:
+                    break
+            else:
+                raise ValueError('Unknown encryption type: {0}'.format(token))
+
+            # Set the version specific encryption type.
+            for x in vals:
+                if x in masks:
+                    normalized.append(x)
+                    break
+            else:
+                raise ValueError(
+                    'Encryption {0} not supported in this version'.format(
+                        token))
+
+        self.encryption = normalized
