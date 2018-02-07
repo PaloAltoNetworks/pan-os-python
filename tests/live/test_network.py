@@ -48,6 +48,7 @@ class TestZone(testlib.FwFlow):
         except Exception:
             pass
 
+
 class TestStaticMac(testlib.FwFlow):
     def create_dependencies(self, fw, state):
         state.parent = None
@@ -415,6 +416,7 @@ class TestL3EthernetInterface(testlib.FwFlow):
             state.management_profiles[0].delete_similar()
         except IndexError:
             pass
+
 
 class TestL2EthernetInterface(testlib.FwFlow):
     def create_dependencies(self, fw, state):
@@ -867,7 +869,7 @@ class TestOspfExportRules(MakeVirtualRouter):
 
     def setup_state_obj(self, fw, state):
         state.obj = network.OspfExportRules(
-            testlib.random_ip('/24'),
+            testlib.random_netmask(),
             'ext-2', testlib.random_ip(), 2048)
         state.ospf.add(state.obj)
 
@@ -899,3 +901,210 @@ class TestManagementProfile(testlib.FwFlow):
         state.obj.permitted_ip = ['9.8.7.6', ]
         state.obj.https = True
         state.obj.http_ocsp = False
+
+
+class TestIkeCryptoProfile(testlib.FwFlow):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.IkeCryptoProfile(
+            testlib.random_name(),
+            authentication=['sha256', ],
+            dh_group=['group1', ],
+            lifetime_minutes=42,
+        )
+        fw.add(state.obj)
+        state.obj.set_encryption('3des')
+
+    def update_state_obj(self, fw, state):
+        state.obj.dh_group = ['group5', 'group2']
+        state.obj.lifetime_minutes = None
+        state.obj.lifetime_hours = 4
+        state.obj.authentication_multiple = 3
+        state.obj.set_encryption(['3des', 'aes128'])
+
+
+class TestIpsecCryptoProfile(testlib.FwFlow):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.IpsecCryptoProfile(
+            testlib.random_name(),
+            ah_authentication=['md5', 'sha256'],
+            dh_group='group1',
+            lifetime_hours=4,
+            lifesize_gb=2,
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.ah_authentication = None
+        state.obj.esp_authentication = ['md5', 'sha512']
+        state.obj.lifetime_hours = None
+        state.obj.lifetime_days = 2
+        state.obj.lifesize_gb = None
+        state.obj.lifesize_tb = 1
+        state.obj.set_esp_encryption(['aes128', 'aes192', 'aes256'])
+
+
+class TestIkeGateway(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        state.lbi = network.LoopbackInterface(
+            'loopback.{0}'.format(random.randint(5, 20)),
+            ip=[testlib.random_ip(), testlib.random_ip()],
+        )
+        fw.add(state.lbi)
+        state.lbi.create()
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.IkeGateway(
+            testlib.random_name(),
+            auth_type='pre-shared-key',
+            enable_dead_peer_detection=True,
+            enable_liveness_check=True,
+            enable_passive_mode=True,
+            ikev2_crypto_profile='default',
+            interface=state.lbi.name,
+            liveness_check_interval=5,
+            local_id_type='ipaddr',
+            local_id_value=testlib.random_ip(),
+            local_ip_address_type='ip',
+            local_ip_address=state.lbi.ip[0],
+            peer_ip_type='ip',
+            peer_ip_value=testlib.random_ip(),
+            pre_shared_key='secret',
+            version='ikev2-preferred',
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.disabled = True
+        state.obj.local_ip_address = state.lbi.ip[1]
+        state.obj.local_id_type = 'fqdn'
+        state.obj.local_id_value = 'example.com'
+        state.obj.peer_id_type = 'keyid'
+        state.obj.peer_id_value = '{0:04x}'.format(random.randint(1, 65535))
+
+    def cleanup_dependencies(self, fw, state):
+        try:
+            state.lbi.delete()
+        except Exception:
+            pass
+
+
+class TestIkeIpv6Gateway(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        if fw._version_info < (7, 0, 0):
+            raise ValueError('IkeGateway not supported for version < 7.0')
+
+        state.lbi = network.LoopbackInterface(
+            'loopback.{0}'.format(random.randint(5, 20)),
+            ipv6_enabled=True,
+        )
+        state.lbi.add(network.IPv6Address(testlib.random_ipv6()))
+        state.lbi.add(network.IPv6Address(testlib.random_ipv6()))
+        fw.add(state.lbi)
+        state.lbi.create()
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.IkeGateway(
+            testlib.random_name(),
+            auth_type='pre-shared-key',
+            enable_ipv6=True,
+            enable_liveness_check=True,
+            ikev2_crypto_profile='default',
+            interface=state.lbi.name,
+            liveness_check_interval=5,
+            local_id_type='ufqdn',
+            local_id_value='foo@bar.baz',
+            local_ip_address_type='ip',
+            local_ip_address=state.lbi.children[0].address,
+            peer_id_type='keyid',
+            peer_id_value='{0:04x}'.format(random.randint(1, 65535)),
+            peer_ip_type='dynamic',
+            pre_shared_key='secret',
+            version='ikev2',
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.disabled = True
+        state.obj.local_ip_address = state.lbi.children[1].address
+        state.obj.enable_liveness_check = False
+
+    def cleanup_dependencies(self, fw, state):
+        try:
+            state.lbi.delete()
+        except Exception:
+            pass
+
+
+class TestIpv4IpsecTunnel(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        state.ti = network.TunnelInterface(
+            'tunnel.{0}'.format(random.randint(5, 50)),
+            ip=[testlib.random_ip(), testlib.random_ip()],
+        )
+        fw.add(state.ti)
+
+        state.lbi = network.LoopbackInterface(
+            'loopback.{0}'.format(random.randint(5, 20)),
+            ip=[testlib.random_ip(), testlib.random_ip()],
+        )
+        fw.add(state.lbi)
+
+        state.ike_gw = network.IkeGateway(
+            testlib.random_name(),
+            auth_type='pre-shared-key',
+            enable_dead_peer_detection=True,
+            enable_liveness_check=True,
+            enable_passive_mode=True,
+            ikev2_crypto_profile='default',
+            interface=state.lbi.name,
+            liveness_check_interval=5,
+            local_id_type='ipaddr',
+            local_id_value=testlib.random_ip(),
+            local_ip_address_type='ip',
+            local_ip_address=state.lbi.ip[0],
+            peer_ip_type='ip',
+            peer_ip_value=testlib.random_ip(),
+            pre_shared_key='secret',
+            version='ikev2-preferred',
+        )
+        fw.add(state.ike_gw)
+
+        state.ti.create()
+        state.lbi.create()
+        state.ike_gw.create()
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.IpsecTunnel(
+            testlib.random_name(),
+            tunnel_interface=state.ti.name,
+            type='auto-key',
+            ak_ike_gateway=state.ike_gw.name,
+            ak_ipsec_crypto_profile='default',
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.anti_replay = True
+        state.obj.copy_tos = True
+        state.obj.enable_tunnel_monitor = True
+        state.obj.tunnel_monitor_dest_ip = testlib.random_ip()
+
+    def test_05_add_ipv4_proxy_id(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        state.proxy_id = network.IpsecTunnelIpv4ProxyId(
+            testlib.random_name(),
+            local=testlib.random_netmask(),
+            remote=testlib.random_netmask(),
+            any_protocol=True,
+        )
+        state.obj.add(state.proxy_id)
+
+        state.proxy_id.create()
+
+    def cleanup_dependencies(self, fw, state):
+        for o in (state.ike_gw, state.lbi, state.ti):
+            try:
+                o.delete()
+            except Exception:
+                pass
