@@ -141,10 +141,9 @@ class PanObject(object):
         if self.parent is not None:
             vsys = self.parent.vsys
             if vsys is None and self.ROOT == Root.VSYS:
-                return 'vsys1'
+                return getattr(self.parent, 'DEFAULT_VSYS', None)
             else:
                 return vsys
-
 
     @vsys.setter
     def vsys(self, value):
@@ -270,60 +269,82 @@ class PanObject(object):
             self.children = []
             return children
 
-    def xpath(self):
+    def xpath(self, root=None):
         """Return the full xpath for this object
 
         Xpath in the form: parent's xpath + this object's xpath + entry or member if applicable.
+
+        Args:
+            root: The root to use for this object (default: this object's root)
 
         Returns:
             str: The full xpath to this object
 
         """
-        xpath = self._parent_xpath() + self.XPATH
-        if self.SUFFIX is not None:
-            xpath += self.SUFFIX % (self.uid, )
+        path = []
+        p = self
+        if root is None:
+            root = self.ROOT
+        vsys = self.vsys
+        label = getattr(self, 'VSYS_LABEL', 'vsys')
+        while True:
+            if isinstance(p, PanDevice) and p != self:
+                path.insert(0, p.xpath_root(root, vsys, label))
+                break
+            elif not hasattr(p, 'VSYS_LABEL') or p == self:
+                addon = p.XPATH
+                if p.SUFFIX is not None:
+                    addon += p.SUFFIX % (p.uid, )
+                path.insert(0, addon)
+                if p.__class__.__name__ == 'Firewall' and p.parent is not None:
+                    if p.parent.__class__.__name__ == 'DeviceGroup':
+                        root = Root.VSYS
+            p = p.parent
+            if p is None:
+                break
+            if hasattr(p, 'VSYS_LABEL'):
+                label = p.VSYS_LABEL
+                vsys = p.vsys
+            if p.__class__.__name__ == 'Template':
+                path.insert(0, self.xpath_root(root, vsys, label))
+                vsys = p.vsys
+                root = p.ROOT
 
-        return xpath
+        return ''.join(path)
 
     def xpath_nosuffix(self):
         """Return the xpath without the suffix
+
+        This is used by refreshall().
 
         Returns:
             str: The xpath without entry or member on the end
 
         """
-        xpath = self._parent_xpath() + self.XPATH
-        return xpath
+        if self.SUFFIX is None:
+            return self.xpath()
+        else:
+            return self.xpath_short()
 
-    def xpath_short(self):
+    def xpath_short(self, root=None):
         """Return an xpath for this object without the final segment
 
         Xpath in the form: parent's xpath + this object's xpath.  Used for set API calls.
+
+        Args:
+            root: The root to use for this object (default: this object's root)
 
         Returns:
             str: The xpath without the final segment
 
         """
-        xpath = self._parent_xpath() + self.XPATH
-        if self.SUFFIX is None:
-            # Remove last segment of xpath
-            xpath = re.sub(r"/(?=[^/']*'[^']*'[^/']*$|[^/]*$).*$", "", xpath)
+        xpath = self.xpath(root)
+        xpath = re.sub(r"/(?=[^/']*'[^']*'[^/']*$|[^/]*$).*$", "", xpath)
         return xpath
 
-    def _parent_xpath(self):
-        if self.parent is None:
-            return ""
-        else:
-            return self.parent._build_xpath(self.ROOT, None)
-
-    def _build_xpath(self, root, vsys):
-        if self.parent is None:
-            # self with no parent
-            return ""
-        parent_xpath = self.parent._build_xpath(root, vsys) + self.XPATH
-        if self.SUFFIX is not None:
-            parent_xpath += self.SUFFIX % (self.uid, )
-        return parent_xpath
+    def xpath_root(self, root_type, vsys, vsys_label='vsys'):
+        if self.parent:
+            return self.parent.xpath_root(root_type, vsys, vsys_label)
 
     def xpath_vsys(self):
         if self.parent is not None:
@@ -333,12 +354,13 @@ class PanObject(object):
         if self.parent is not None:
             return self.parent.xpath_panorama()
 
-    def _root_xpath_vsys(self, vsys):
+    def _root_xpath_vsys(self, vsys, label='vsys'):
         if vsys == 'shared':
-            return '/config/shared'
+            xpath = '/config/shared'
+        else:
+            xpath = "/config/devices/entry[@name='localhost.localdomain']"
+            xpath += "/{0}/entry[@name='{1}']".format(label, vsys or 'vsys1')
 
-        xpath = "/config/devices/entry[@name='localhost.localdomain']"
-        xpath += "/vsys/entry[@name='{0}']".format(vsys or 'vsys1')
         return xpath
 
     def element(self, with_children=True, comparable=False):
@@ -1009,27 +1031,6 @@ class PanObject(object):
                 return num
 
     @classmethod
-    def applyall(cls, parent):
-        device = parent.nearest_pandevice()
-        logger.debug(device.id + ": applyall called on %s type" % cls)
-        objects = parent.findall(cls)
-        if not objects:
-            return
-        # Create the xpath
-        xpath = objects[0].xpath_nosuffix()
-        # Create the root element
-        lasttag = cls.XPATH.rsplit("/", 1)[-1]
-        element = ET.Element(lasttag)
-        # Build the full element from the objects
-        for obj in objects:
-            device.xml_combine(element, [obj.element(), ])
-        # Apply the element to the xpath
-        device.set_config_changed()
-        device.xapi.edit(xpath, ET.tostring(element, encoding='utf-8'), retry_on_peer=cls.HA_SYNC)
-        for obj in objects:
-            obj._check_child_methods("apply")
-
-    @classmethod
     def refreshall(cls, parent, running_config=False, add=True,
                    exceptions=False, name_only=False):
         """Factory method to instantiate class from live device.
@@ -1075,11 +1076,9 @@ class PanObject(object):
         device = class_instance.nearest_pandevice()
         logger.debug(device.id + ": refreshall called on %s type" % cls)
 
-        parent_xpath = class_instance._parent_xpath()
-
         # Set api_action and xpath
         api_action = device.xapi.show if running_config else device.xapi.get
-        xpath = parent_xpath + class_instance.XPATH
+        xpath = class_instance.xpath_nosuffix()
         if name_only:
             xpath = xpath + "/entry/@name"
 
@@ -1606,7 +1605,7 @@ class PanObject(object):
         self._perform_vsys_dict_import_delete(dev, vsys_dict)
 
         # Now perform the bulk delete.
-        xpath = self._parent_xpath() + self.XPATH
+        xpath = self.xpath_nosuffix()
         if self.SUFFIX == ENTRY:
             entries = ' or '.join(
                 "@name='{0}'".format(x.uid) for x in instances)
@@ -2668,14 +2667,14 @@ class VsysOperations(VersionedPanObject):
     ALWAYS_IMPORT = False
 
     def __init__(self, *args, **kwargs):
-        self._xpath_imports = VersioningSupport()
+        self._xpath_imports = ParentAwareXpath()
         super(VsysOperations, self).__init__(*args, **kwargs)
 
     @property
     def XPATH_IMPORT(self):
         """Returns the version specific xpath import for this object."""
         panos_version = self.retrieve_panos_version()
-        return self._xpath_imports._get_versioned_value(panos_version)
+        return self._xpath_imports._get_versioned_value(panos_version, self.parent)
 
     def create(self):
         super(VsysOperations, self).create()
@@ -2727,11 +2726,17 @@ class VsysOperations(VersionedPanObject):
             device.active().xapi.set(xpath, element, retry_on_peer=True)
 
     def xpath_import_base(self, vsys=None):
-        if vsys:
-            vsys_xpath = self._root_xpath_vsys(vsys)
-        else:
-            vsys_xpath = self.xpath_vsys()
-        return "{0}/import{1}".format(vsys_xpath, self.XPATH_IMPORT)
+        template = ''
+        p = self
+        while p is not None:
+            if p.__class__.__name__ == 'Template':
+                template = p.xpath()
+                break
+            p = p.parent
+
+        vsys_xpath = self._root_xpath_vsys(vsys or self.vsys or 'vsys1')
+        return "{0}{1}/import{2}".format(
+            template, vsys_xpath, self.XPATH_IMPORT)
 
     def delete_import(self, vsys=None):
         """Delete a vsys import for the object
@@ -3281,11 +3286,11 @@ class PanDevice(PanObject):
     def _build_xpath(self, root, vsys):
         return self.xpath_root(root, vsys or self.vsys)
 
-    def xpath_root(self, root_type, vsys):
+    def xpath_root(self, root_type, vsys, label='vsys'):
         if root_type == Root.DEVICE:
             xpath = self.xpath_device()
         elif root_type == Root.VSYS:
-            xpath = self._root_xpath_vsys(vsys)
+            xpath = self._root_xpath_vsys(vsys, label)
         elif root_type == Root.MGTCONFIG:
             xpath = self.xpath_mgtconfig()
         elif root_type == Root.PANORAMA:

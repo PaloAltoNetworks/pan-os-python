@@ -1114,6 +1114,9 @@ class VlanInterface(Interface):
         # xpaths
         self._xpaths.add_profile(value='/network/interface/vlan/units')
 
+        # xpath imports
+        self._xpath_imports.add_profile(value='/network/interface')
+
         # params
         params = []
 
@@ -1179,6 +1182,9 @@ class LoopbackInterface(Interface):
         # xpaths
         self._xpaths.add_profile(value='/network/interface/loopback/units')
 
+        # xpath imports
+        self._xpath_imports.add_profile(value='/network/interface')
+
         # params
         params = []
 
@@ -1232,6 +1238,9 @@ class TunnelInterface(Interface):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/interface/tunnel/units')
+
+        # xpath imports
+        self._xpath_imports.add_profile(value='/network/interface')
 
         # params
         params = []

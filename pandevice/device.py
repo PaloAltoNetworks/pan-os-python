@@ -96,6 +96,7 @@ class Vsys(VersionedPanObject):
 
     """
     ROOT = Root.DEVICE
+    VSYS_LABEL = 'vsys'
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -131,7 +132,7 @@ class Vsys(VersionedPanObject):
         self._params = tuple(params)
 
     def xpath_vsys(self):
-        return self._root_xpath_vsys(self.name)
+        return self.xpath()
 
     def _build_xpath(self, root, vsys):
         if self.parent is None:
