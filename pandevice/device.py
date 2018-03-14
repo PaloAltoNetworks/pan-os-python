@@ -98,6 +98,34 @@ class Vsys(VersionedPanObject):
     ROOT = Root.DEVICE
     VSYS_LABEL = 'vsys'
     SUFFIX = ENTRY
+    CHILDTYPES = (
+        "device.VsysResources",
+        "device.SystemSettings",
+        "device.PasswordProfile",
+        "device.Administrator",
+        "ha.HighAvailability",
+        "objects.AddressObject",
+        "objects.AddressGroup",
+        "objects.ServiceObject",
+        "objects.ServiceGroup",
+        "objects.ApplicationObject",
+        "objects.ApplicationGroup",
+        "objects.ApplicationFilter",
+        "policies.Rulebase",
+        "network.EthernetInterface",
+        "network.AggregateInterface",
+        "network.LoopbackInterface",
+        "network.TunnelInterface",
+        "network.VlanInterface",
+        "network.Vlan",
+        "network.VirtualRouter",
+        "network.ManagementProfile",
+        "network.VirtualWire",
+        "network.IkeGateway",
+        "network.IpsecTunnel",
+        "network.IpsecCryptoProfile",
+        "network.IkeCryptoProfile",
+    )
 
     def _setup(self):
         # xpaths

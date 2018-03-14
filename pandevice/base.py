@@ -342,9 +342,9 @@ class PanObject(object):
         xpath = re.sub(r"/(?=[^/']*'[^']*'[^/']*$|[^/]*$).*$", "", xpath)
         return xpath
 
-    def xpath_root(self, root_type, vsys, vsys_label='vsys'):
+    def xpath_root(self, root_type, vsys, label='vsys'):
         if self.parent:
-            return self.parent.xpath_root(root_type, vsys, vsys_label)
+            return self.parent.xpath_root(root_type, vsys, label)
 
     def xpath_vsys(self):
         if self.parent is not None:

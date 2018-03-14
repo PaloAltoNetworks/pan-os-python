@@ -208,6 +208,8 @@ class Panorama(base.PanDevice):
         "device.PasswordProfile",
         "firewall.Firewall",
         "panorama.DeviceGroup",
+        "panorama.Template",
+        "panorama.TemplateStack",
     )
 
     def __init__(self,
