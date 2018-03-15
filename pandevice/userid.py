@@ -133,7 +133,7 @@ class UserId(object):
                 else:
                     raise e
 
-    def login(self, user, ip):
+    def login(self, user, ip, timeout=None):
         """Login a single user
 
         Maps a user to an IP address
@@ -143,13 +143,16 @@ class UserId(object):
         Args:
             user (str): a username
             ip (str): an ip address
+            timeout (int): timeout in minutes to remove this mapping
 
         """
         root, payload = self._create_uidmessage()
         login = payload.find("login")
         if login is None:
             login = ET.SubElement(payload, "login")
-        ET.SubElement(login, "entry", {"name": user, "ip": ip})
+        entry = ET.SubElement(login, "entry", {"name": user, "ip": ip})
+        if timeout:
+            entry.set('timeout', str(timeout))
         self.send(root)
 
     def logins(self, users):
@@ -158,8 +161,8 @@ class UserId(object):
         This method can be batched with batch_start() and batch_end().
 
         Args:
-            users: a list of sets of user/ip mappings
-                   eg. [(user1, 10.0.1.1), (user2, 10.0.1.2)]
+            users: a list of sets of user/ip mappings with optional timeout in minutes
+                   eg. [('user1', '10.0.1.1'), ('user2', '10.0.1.2', 60)]
 
         """
         if not users:
@@ -169,7 +172,12 @@ class UserId(object):
         if login is None:
             login = ET.SubElement(payload, "login")
         for user in users:
-            ET.SubElement(login, "entry", {"name": user[0], "ip": user[1]})
+            entry = ET.SubElement(login, "entry", {"name": user[0], "ip": user[1]})
+            try:
+                entry.set('timeout', str(user[2]))
+            except IndexError:
+                # No timeout specified
+                pass
         self.send(root)
 
     def logout(self, user, ip):
