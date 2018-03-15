@@ -107,6 +107,23 @@ class Template(VersionedPanObject):
     SUFFIX = ENTRY
     CHILDTYPES = (
         "device.Vsys",
+        "device.SystemSettings",
+        "device.PasswordProfile",
+        "device.Administrator",
+        "ha.HighAvailability",
+        "network.EthernetInterface",
+        "network.AggregateInterface",
+        "network.LoopbackInterface",
+        "network.TunnelInterface",
+        "network.VlanInterface",
+        "network.Vlan",
+        "network.VirtualRouter",
+        "network.ManagementProfile",
+        "network.VirtualWire",
+        "network.IkeGateway",
+        "network.IpsecTunnel",
+        "network.IpsecCryptoProfile",
+        "network.IkeCryptoProfile",
     )
 
     def _setup(self):

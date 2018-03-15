@@ -112,6 +112,9 @@ class Zone(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/zone')
+        self._xpaths.add_profile(
+            value='{0}/zone'.format(self._TEMPLATE_VSYS_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -180,6 +183,9 @@ class Vlan(VsysOperations):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/vlan')
+        self._xpaths.add_profile(
+            value='{0}/network/vlan'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # xpath_imports
         self._xpath_imports.add_profile(value='/network/vlan')
@@ -523,6 +529,9 @@ class VirtualWire(VsysOperations):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/virtual-wire')
+        self._xpaths.add_profile(
+            value='{0}/network/virtual-wire'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/virtual-wire')
@@ -720,6 +729,12 @@ class Layer3Subinterface(Subinterface):
             parents=('Firewall', 'Vsys'),
             value=('/network/interface/{0}/{1}/layer3/units'.format(
                 self._BASE_INTERFACE_TYPE, self._BASE_INTERFACE_NAME)))
+        self._xpaths.add_profile(
+            value='{0}/network/interface/{1}/{2}/layer3/units'.format(
+                self._TEMPLATE_DEVICE_XPATH,
+                self._BASE_INTERFACE_TYPE,
+                self._BASE_INTERFACE_NAME),
+            parents=('Template', ))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -791,6 +806,12 @@ class Layer2Subinterface(Subinterface):
             parents=('Firewall', 'Vsys'),
             value=('/network/interface/{0}/{1}/layer2/units'.format(
                 self._BASE_INTERFACE_TYPE, self._BASE_INTERFACE_NAME)))
+        self._xpaths.add_profile(
+            value='{0}/network/interface/{1}/{2}/layer2/units'.format(
+                self._TEMPLATE_DEVICE_XPATH,
+                self._BASE_INTERFACE_TYPE,
+                self._BASE_INTERFACE_NAME),
+            parents=('Template', ))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -898,6 +919,9 @@ class EthernetInterface(PhysicalInterface):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/interface/ethernet')
+        self._xpaths.add_profile(
+            value='{0}/network/interface/ethernet'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -1026,6 +1050,9 @@ class AggregateInterface(PhysicalInterface):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/interface/aggregate-ethernet')
+        self._xpaths.add_profile(
+            value='{0}/network/interface/aggregate-ethernet'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -1113,6 +1140,9 @@ class VlanInterface(Interface):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/interface/vlan/units')
+        self._xpaths.add_profile(
+            value='{0}/network/interface/vlan/units'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -1181,6 +1211,9 @@ class LoopbackInterface(Interface):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/interface/loopback/units')
+        self._xpaths.add_profile(
+            value='{0}/network/interface/loopback/units'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -1238,6 +1271,9 @@ class TunnelInterface(Interface):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/interface/tunnel/units')
+        self._xpaths.add_profile(
+            value='{0}/network/interface/tunnel/units'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -1373,6 +1409,9 @@ class VirtualRouter(VsysOperations):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/virtual-router')
+        self._xpaths.add_profile(
+            value='{0}/network/virtual-router'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/virtual-router')
@@ -1805,6 +1844,9 @@ class ManagementProfile(VersionedPanObject):
         # xpaths
         self._xpaths.add_profile(
             value='/network/profiles/interface-management-profile')
+        self._xpaths.add_profile(
+            value='{0}/network/profiles/interface-management-profile'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -1881,8 +1923,10 @@ class IkeGateway(VersionedPanObject):
 
     def _setup(self):
         # xpaths
+        self._xpaths.add_profile(value='/network/ike/gateway')
         self._xpaths.add_profile(
-            value='/network/ike/gateway')
+            value='{0}/network/ike/gateway'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -2116,6 +2160,9 @@ class IpsecTunnel(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/network/tunnel/ipsec')
+        self._xpaths.add_profile(
+            value='{0}/network/tunnel/ipsec'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -2358,6 +2405,9 @@ class IpsecTunnelIpv4ProxyId(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/auto-key/proxy-id')
+        self._xpaths.add_profile(
+            value='{0}/auto-key/proxy-id'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -2405,6 +2455,9 @@ class IpsecTunnelIpv6ProxyId(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/auto-key/proxy-id-v6')
+        self._xpaths.add_profile(
+            value='{0}/auto-key/proxy-id-v6'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -2459,6 +2512,9 @@ class IpsecCryptoProfile(VersionedPanObject):
         # xpaths
         self._xpaths.add_profile(
             value='/network/ike/crypto-profiles/ipsec-crypto-profiles')
+        self._xpaths.add_profile(
+            value='{0}/network/ike/crypto-profiles/ipsec-crypto-profiles'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -2617,6 +2673,9 @@ class IkeCryptoProfile(VersionedPanObject):
         # xpaths
         self._xpaths.add_profile(
             value='/network/ike/crypto-profiles/ike-crypto-profiles')
+        self._xpaths.add_profile(
+            value='{0}/network/ike/crypto-profiles/ike-crypto-profiles'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # params
         params = []

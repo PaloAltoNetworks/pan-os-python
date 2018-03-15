@@ -289,9 +289,15 @@ class PanObject(object):
         label = getattr(self, 'VSYS_LABEL', 'vsys')
         while True:
             if isinstance(p, PanDevice) and p != self:
+                # Stop on the first pandevice encountered, unless the
+                # pandevice.PanDevice object is the object whose xpath
+                # was asked for.
                 path.insert(0, p.xpath_root(root, vsys, label))
                 break
             elif not hasattr(p, 'VSYS_LABEL') or p == self:
+                # Add on the xpath of this object, unless it is a
+                # device.Vsys, unless the device.Vsys is the object whose
+                # xpath was asked for.
                 addon = p.XPATH
                 if p.SUFFIX is not None:
                     addon += p.SUFFIX % (p.uid, )
@@ -303,10 +309,14 @@ class PanObject(object):
             if p is None:
                 break
             if hasattr(p, 'VSYS_LABEL'):
+                # Either panorama.DeviceGroup or device.Vsys.
                 label = p.VSYS_LABEL
                 vsys = p.vsys
-            if p.__class__.__name__ == 'Template':
-                path.insert(0, self.xpath_root(root, vsys, label))
+            elif p.__class__.__name__ == 'Template':
+                # Hit a template, make sure that the appropriate /config/...
+                # xpath has been saved.
+                if not path[0].startswith('/config/'):
+                    path.insert(0, self.xpath_root(root, vsys, label))
                 vsys = p.vsys
                 root = p.ROOT
 
@@ -1861,6 +1871,9 @@ class VersionedPanObject(PanObject):
     """
     _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
     _DEFAULT_NAME = None
+    _TEMPLATE_DEVICE_XPATH = "/config/devices/entry[@name='localhost.localdomain']"
+    _TEMPLATE_VSYS_XPATH = _TEMPLATE_DEVICE_XPATH + "/vsys/entry[@name='{vsys}']"
+    _TEMPLATE_MGTCONFIG_XPATH = "/config/mgt-config"
 
     def __init__(self, *args, **kwargs):
         if self.NAME is not None:
@@ -2231,7 +2244,8 @@ class VersionedPanObject(PanObject):
     def XPATH(self):
         """Returns the version specific xpath of this object."""
         panos_version = self.retrieve_panos_version()
-        return self._xpaths._get_versioned_value(panos_version, self.parent)
+        val = self._xpaths._get_versioned_value(panos_version, self.parent)
+        return val.format(vsys=self.vsys or 'vsys1')
 
 
 class VersionedParamPath(VersioningSupport):
@@ -2476,6 +2490,8 @@ class ParamPath(object):
             if token.startswith('entry '):
                 junk, var_to_use = token.split()
                 child = ET.Element('entry', {'name': settings[var_to_use]})
+            elif token == "entry[@name='localhost.localdomain']":
+                child = ET.Element('entry', {'name': 'localhost.localdomain'})
             else:
                 child = ET.Element(token.format(**settings))
                 if child.tag == 'None':
@@ -2807,8 +2823,7 @@ class VsysOperations(VersionedPanObject):
         api_action = device.xapi.show if running_config else device.xapi.get
         if parent.vsys != "shared" and parent.vsys is not None and class_instance.XPATH_IMPORT is not None:
             imports = []
-            xpath = '{0}/import{1}'.format(
-                parent.xpath_vsys(), class_instance.XPATH_IMPORT)
+            xpath = class_instance.xpath_import_base()
             try:
                 imports_xml = api_action(xpath, retry_on_peer=True)
             except (err.PanNoSuchNode, pan.xapi.PanXapiError) as e:
