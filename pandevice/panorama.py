@@ -269,7 +269,9 @@ class Panorama(base.PanDevice):
     def panorama(self):
         return self
 
-    def commit_all(self, sync=False, sync_all=True, exception=False, devicegroup=None, serials=(), cmd=None):
+    def commit_all(self, sync=False, sync_all=True, exception=False,
+                   devicegroup=None, serials=(), cmd=None,
+                   description=None, include_template=None):
         """Trigger a commit-all (commit to devices) on Panorama
 
         Args:
@@ -279,6 +281,8 @@ class Panorama(base.PanDevice):
             devicegroup (str): Limit commit-all to a single device-group
             serials (list): Limit commit-all to these serial numbers
             cmd (str): Commit options in XML format
+            description: Commit description
+            include_template (bool): Include template changes in this push
 
         Returns:
             dict: Commit results
@@ -297,6 +301,11 @@ class Panorama(base.PanDevice):
                     d = ET.SubElement(dg_e, "devices")
                     for serial in serials:
                         ET.SubElement(d, "entry", {"name": serial})
+                if description is not None:
+                    ET.SubElement(sp, "description").text = description
+                if include_template is not None:
+                    val = 'yes' if include_template else 'no'
+                    ET.SubElement(sp, "include-template").text = val
             cmd = ET.tostring(e)
         elif isinstance(cmd, pan.commit.PanCommit):
             cmd = cmd.cmd()
