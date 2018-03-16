@@ -51,6 +51,9 @@ class VsysResources(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/import/resource')
+        self._xpaths.add_profile(
+            value='{0}/import/resource'.format(self._TEMPLATE_VSYS_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -96,11 +99,35 @@ class Vsys(VersionedPanObject):
 
     """
     ROOT = Root.DEVICE
+    VSYS_LABEL = 'vsys'
     SUFFIX = ENTRY
+    CHILDTYPES = (
+        "device.VsysResources",
+        "objects.AddressObject",
+        "objects.AddressGroup",
+        "objects.ServiceObject",
+        "objects.ServiceGroup",
+        "objects.ApplicationObject",
+        "objects.ApplicationGroup",
+        "objects.ApplicationFilter",
+        "policies.Rulebase",
+        "network.EthernetInterface",
+        "network.AggregateInterface",
+        "network.LoopbackInterface",
+        "network.TunnelInterface",
+        "network.VlanInterface",
+        "network.Vlan",
+        "network.VirtualRouter",
+        "network.VirtualWire",
+        "network.Zone",
+    )
 
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/vsys')
+        self._xpaths.add_profile(
+            value='{0}/vsys'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -131,7 +158,7 @@ class Vsys(VersionedPanObject):
         self._params = tuple(params)
 
     def xpath_vsys(self):
-        return self._root_xpath_vsys(self.name)
+        return self.xpath()
 
     def _build_xpath(self, root, vsys):
         if self.parent is None:
@@ -238,6 +265,9 @@ class SystemSettings(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/deviceconfig/system')
+        self._xpaths.add_profile(
+            value='{0}/deviceconfig/system'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -306,6 +336,9 @@ class PasswordProfile(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/password-profile')
+        self._xpaths.add_profile(
+            value='{0}/password-profile'.format(self._TEMPLATE_MGTCONFIG_XPATH),
+            parents=('Template', ))
 
         # params
         params = []
@@ -352,6 +385,9 @@ class Administrator(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/users')
+        self._xpaths.add_profile(
+            value='{0}/users'.format(self._TEMPLATE_MGTCONFIG_XPATH),
+            parents=('Template', ))
 
         # params
         params = []

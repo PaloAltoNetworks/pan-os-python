@@ -3,6 +3,20 @@
 History
 =======
 
+0.6.0
+-----
+
+Released: 2018-03-16
+
+Status: Alpha
+
+- Added initial support for templates and template stacks
+- Added: Support for timeouts for logins in user-id module
+- Added: `panorama.Template`
+- Added: `panorama.TemplateStack`
+- Fix: Vsys native objects added under a Panorama will be put in `shared` scope
+
+
 0.5.3
 -----
 

@@ -331,48 +331,9 @@ class TestPanObject(unittest.TestCase):
 
     # Skipping removeall
 
-    @mock.patch('pandevice.base.PanObject.uid', new_callable=mock.PropertyMock)
-    def test_xpath_with_entry_suffix(self, m_uid):
-        Uid = 'baz'
-        ParentValue = '/foo'
-        SelfXpath = '/bar'
-        Suffix = Base.ENTRY
-        expected = ParentValue + SelfXpath + Base.ENTRY % (Uid, )
-
-        m_uid.return_value = Uid
-        self.obj._parent_xpath = mock.Mock(
-            return_value=ParentValue)
-        self.obj.XPATH = SelfXpath
-        self.obj.SUFFIX = Suffix
-
-        ret_val = self.obj.xpath()
-
-        self.assertEqual(expected, ret_val)
-        self.obj._parent_xpath.assert_called_once_with()
-
     # Skipping xpath_nosuffix
 
     # Skipping xpath_short
-
-    def test_parent_xpath_for_none_parent(self):
-        '''None parent results in empty xpath string.'''
-        ret_val = self.obj._parent_xpath()
-
-        self.assertEqual('', ret_val)
-
-    def test_parent_xpath_for_xpath_parent(self):
-        '''Default case for parent xpath.'''
-        Path = '/hello/world'
-
-        spec = {
-            '_build_xpath.return_value': Path,
-        }
-        self.obj.parent = mock.Mock(spec=['_build_xpath', ], **spec)
-
-        ret_val = self.obj._parent_xpath()
-
-        self.assertEqual(Path, ret_val)
-        self.obj.parent._build_xpath.assert_called_once_with(0, None)
 
     def test_xpath_vsys_without_parent(self):
         ret_val = self.obj.xpath_vsys()
