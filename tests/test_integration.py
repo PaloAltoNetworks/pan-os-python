@@ -658,6 +658,19 @@ class TestXpaths_7_0(unittest.TestCase):
 
         self.assertEqual(expected, ret_val)
 
+    def test_xpath_from_addressobject_with_pano_parent(self):
+        expected = "/config/shared/address/entry[@name='shared ao']"
+
+        ao = pandevice.objects.AddressObject('shared ao')
+        pano = pandevice.panorama.Panorama('pano')
+        pano.get_device_version = mock.Mock(return_value=(7, 0, 0))
+
+        pano.add(ao)
+
+        ret_val = ao.xpath()
+
+        self.assertEqual(expected, ret_val)
+
 
 class TestVariousSubinterfaceXpaths(unittest.TestCase):
     def test_l2_subinterface_with_firewall_parent(self):
