@@ -23,7 +23,7 @@ Documentation available at http://pandevice.readthedocs.io
 
 __author__ = 'Palo Alto Networks'
 __email__ = 'techpartners@paloaltonetworks.com'
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 
 
 import logging
@@ -41,6 +41,9 @@ if not hasattr(logging, 'NullHandler'):
         def emit(self, record):
             pass
     logging.NullHandler = NullHandler
+
+
+DOCUMENTATION_URL = 'http://pandevice.readthedocs.io/en/latest'
 
 
 def getlogger(name=__name__):
@@ -185,6 +188,29 @@ def stringToVersion(other):
     return other
 
 
+def tree_legend_dot():
+    """Create a graphviz dot string for a legend graph"""
+    modules = ['firewall', 'policies', 'objects', 'network', 'device', 'panorama', 'ha']
+    result = 'graph legend {' \
+             'graph [fontsize=10, margin=0.001];' \
+             'node [shape=box, fontsize=10, height=0.001, margin=0.1, ordering=out];'
+    for module in modules:
+        result += '{module} [style=filled fillcolor={color} URL="{url}' \
+                  '/module-{module}.html" target="_blank"];'.format(
+                   module=module,
+                   color=node_color(module),
+                   url=DOCUMENTATION_URL,
+        )
+    result += '}'
+    return result
+
+
+def tree_legend():
+    """Display a legend for the colors of the tree method"""
+    import graphviz
+    return graphviz.Source(tree_legend_dot())
+
+
 # Convenience methods used internally by module
 # Do not use these methods outside the module
 
@@ -303,3 +329,19 @@ def yesno(value):
         False: "no",
     }
     return convert[value]
+
+
+def node_color(module):
+    nodecolor = {
+        'device':    'lightpink',
+        'firewall':  'lightblue',
+        'ha':        'lavender',
+        'network':   'lightcyan',
+        'objects':   'lemonchiffon',
+        'policies':  'lightsalmon',
+        'panorama':  'palegreen2',
+    }
+    try:
+        return nodecolor[module]
+    except KeyError:
+        return ''

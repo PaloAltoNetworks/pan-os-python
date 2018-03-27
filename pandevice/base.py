@@ -152,7 +152,9 @@ class PanObject(object):
     @property
     def uid(self):
         """Returns the unique identifier of this object as a string."""
-        if self.NAME is not None:
+        if hasattr(self, 'id'):
+            return self.id
+        elif self.NAME is not None:
             return str(getattr(self, self.NAME))
         else:
             return None
@@ -1663,6 +1665,59 @@ class PanObject(object):
                 # so do one delete per vsys per path, just like when we set the
                 # imports.
                 dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
+
+    def dot(self):
+        result = 'digraph configtree {graph [rankdir=LR, fontsize=10, margin=0.001];' \
+                 'node [shape=box, fontsize=10, height=0.001, margin=0.1, ordering=out];'
+        result += self._dot(root_node=True)
+        result += '}'
+        return result
+
+    def _dot(self, root_node=False):
+        node = type(self).__name__
+        module = type(self).__module__.split('.')[-1]
+        result = '"{node_name}" [style=filled fillcolor={color} ' \
+               'URL="{url}' \
+               '/module-{module}.html#pandevice.{module}.{node}" ' \
+               'target="_blank"];'
+        result = result.format(node_name=node+' : '+self.uid,
+                               node=node,
+                               module=module,
+                               url=pandevice.DOCUMENTATION_URL,
+                               color=pandevice.node_color(module))
+        # Make recursive call to children
+        for child in self.children:
+            result += child._dot()
+        # Build relationship with parent
+        if not root_node and self.parent is not None:
+            if self.parent is not None:
+                result += '"{0}" -> "{1}";'.format(
+                    type(self.parent).__name__+' : '+self.parent.uid,
+                    type(self).__name__+' : '+self.uid,
+                )
+        return result
+
+    def tree(self):
+        """Display a graph of the configuration tree
+
+        The tree includes this object and its children, recursively.
+
+        This method is only for use in Jupyder Notebooks
+
+        """
+        import graphviz
+        return graphviz.Source(self.dot())
+
+    def fulltree(self):
+        """Display a graph of the entire configuration tree
+
+        This method is only for use in Jupyder Notebooks
+
+        """
+        if self.parent is not None:
+            return self.parent.fulltree()
+        return self.tree()
+
 
 
 class VersioningSupport(object):
