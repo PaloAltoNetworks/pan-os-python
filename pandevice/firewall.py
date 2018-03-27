@@ -281,7 +281,8 @@ class Firewall(PanDevice):
             if self.vsys_name is not None:
                 ET.SubElement(element, "display-name").text = self.vsys_name
             self.set_config_changed()
-            self.xapi.set(self._root_xpath_vsys(None), ET.tostring(element), retry_on_peer=True)
+            path = self._root_xpath_vsys(None).rsplit('/', 1)[0]
+            self.xapi.set(path, ET.tostring(element, encoding='utf-8'), retry_on_peer=True)
 
     def delete_vsys(self):
         """Delete the vsys on the live device that this Firewall object represents"""
