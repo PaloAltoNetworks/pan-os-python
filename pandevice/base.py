@@ -152,7 +152,9 @@ class PanObject(object):
     @property
     def uid(self):
         """Returns the unique identifier of this object as a string."""
-        if self.NAME is not None:
+        if hasattr(self, 'id'):
+            return self.id
+        elif self.NAME is not None:
             return str(getattr(self, self.NAME))
         else:
             return None
