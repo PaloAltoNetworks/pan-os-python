@@ -3,6 +3,18 @@
 History
 =======
 
+0.6.1
+-----
+
+Released: 2018-03-27
+
+Status: Alpha
+
+- Added: visualize configuration tree in Jupyter Notebooks and graphviz
+- Fixed: small xpath generation issue
+- Fixed: uid is equal to id when id exists
+
+
 0.6.0
 -----
 
