@@ -22,4 +22,5 @@ deploy:
     secure: HDdWhCTXRqlWslYJ2yNEq4ObVlqjBgBMQb1ZiwkMFWc28uDR4L8jrtyEgiu1EqVEHFACSHM52ktd92Baufiv350qwpu2enljM2XA3hYTqYkM2dp/ItsKYZ/4QUkfnWUekebav1FkoPpoFMWkAeoDkQwVTKexJTqTwTnr1atTA7Q=
   on:
     tags: true
+    python: 3.5
 
