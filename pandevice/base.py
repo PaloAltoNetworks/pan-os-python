@@ -3193,8 +3193,7 @@ class PanDevice(PanObject):
                     # This could be that we have an old version of OpenSSL
                     # that doesn't support TLSv1.1, so check for that and give
                     # a more explicit error if so.
-                    suspect_error = 'URLError: reason: [Errno 54] Connection reset by peer'
-                    if e.message == suspect_error:
+                    if str(e) == 'URLError: reason: [Errno 54] Connection reset by peer':
                         min_openssl_version = ['1', '0', '1']
                         help_url = 'http://pandevice.readthedocs.io/en/latest/usage.html#connecting-to-pan-os-8-0'
                         try:
