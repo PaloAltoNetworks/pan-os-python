@@ -3,6 +3,15 @@
 History
 =======
 
+0.6.2
+-----
+
+Released: 2018-05-03
+
+Status: Alpha
+
+- Fixed: issue in error checking
+
 0.6.1
 -----
 
