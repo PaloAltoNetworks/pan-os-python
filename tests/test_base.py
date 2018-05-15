@@ -1407,5 +1407,25 @@ class TestEqual(unittest.TestCase):
         self.assertFalse(o1.equal(o2))
 
 
+class TestTree(unittest.TestCase):
+    def test_dot(self):
+        import pandevice.device as Device
+        expected = 'digraph configtree {graph [rankdir=LR, fontsize=10, margin=0.001];' \
+                   'node [shape=box, fontsize=10, height=0.001, margin=0.1, ordering=out];' \
+                   '"PanDevice : None" [style=filled fillcolor= ' \
+                   'URL="http://pandevice.readthedocs.io/en/latest/module-base.html#pandevice.base.PanDevice" ' \
+                   'target="_blank"];"SystemSettings : " [style=filled fillcolor=lightpink ' \
+                   'URL="http://pandevice.readthedocs.io/en/latest/module-device.html' \
+                   '#pandevice.device.SystemSettings" target="_blank"];' \
+                   '"PanDevice : None" -> "SystemSettings : ";}'
+
+        fw = Base.PanDevice(hostname=None, serial='Serial')
+        sys = Device.SystemSettings()
+        fw.add(sys)
+
+        ret_val = fw.dot()
+        self.assertEqual(ret_val, expected)
+
+
 if __name__=='__main__':
     unittest.main()

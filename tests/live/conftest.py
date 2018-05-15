@@ -29,10 +29,10 @@ def desc(pano=None, fw=None):
 def init():
     '''
     Environment variables:
-        USERNAME
-        PASSWORD
-        PANORAMAS
-        FIREWALLS
+        PD_USERNAME
+        PD_PASSWORD
+        PD_PANORAMAS
+        PD_FIREWALLS
     '''
     global live_devices
     global one_fw_per_version
@@ -43,10 +43,10 @@ def init():
 
     # Get os.environ stuff to set the live_devices global.
     try:
-        username = os.environ['USERNAME']
-        password = os.environ['PASSWORD']
-        panos = os.environ['PANORAMAS'].split()
-        fws = os.environ['FIREWALLS'].split()
+        username = os.environ['PD_USERNAME']
+        password = os.environ['PD_PASSWORD']
+        panos = os.environ['PD_PANORAMAS'].split()
+        fws = os.environ['PD_FIREWALLS'].split()
     except KeyError as e:
         print('NOT RUNNING LIVE TESTS - missing "{0}"'.format(e))
         return
