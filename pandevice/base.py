@@ -157,7 +157,7 @@ class PanObject(object):
         elif self.NAME is not None:
             return str(getattr(self, self.NAME))
         else:
-            return None
+            return ''
 
     def add(self, child):
         """Add a child node to this node
