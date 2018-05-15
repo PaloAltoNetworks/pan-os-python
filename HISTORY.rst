@@ -3,6 +3,15 @@
 History
 =======
 
+0.6.3
+-----
+
+Released: 2018-05-15
+
+Status: Alpha
+
+- Fixed: uid always returns a string
+
 0.6.2
 -----
 
