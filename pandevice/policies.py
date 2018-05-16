@@ -412,5 +412,23 @@ class NatRule(VersionedPanObject):
             'target', path='target/devices', vartype='entry'))
         params.append(VersionedParamPath(
             'tag', path='tag', vartype='member'))
+        params.append(VersionedParamPath(
+            'destination_dynamic_translated_address', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            path='dynamic-destination-translation/translated-address')
+        params.append(VersionedParamPath(
+            'destination_dynamic_translated_port', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            path='dynamic-destination-translation/translated-port',
+            vartype='int')
+        params.append(VersionedParamPath(
+            'destination_dynamic_translated_distribution',
+            default='round-robin', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            path='dynamic-destination-translation/distribution',
+            values=('round-robin', ))
 
         self._params = tuple(params)
