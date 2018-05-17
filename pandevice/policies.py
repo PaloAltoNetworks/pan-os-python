@@ -424,8 +424,7 @@ class NatRule(VersionedPanObject):
             path='dynamic-destination-translation/translated-port',
             vartype='int')
         params.append(VersionedParamPath(
-            'destination_dynamic_translated_distribution',
-            default='round-robin', exclude=True))
+            'destination_dynamic_translated_distribution', exclude=True))
         params[-1].add_profile(
             '8.1.0',
             path='dynamic-destination-translation/distribution',
