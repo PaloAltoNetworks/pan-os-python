@@ -2544,7 +2544,9 @@ class ParamPath(object):
                 continue
             if token.startswith('entry '):
                 junk, var_to_use = token.split()
-                child = ET.Element('entry', {'name': settings[var_to_use]})
+                sol_val = pandevice.string_or_list(settings[var_to_use])[0]
+                child = ET.Element('entry',
+                    {'name': str(sol_val)})
             elif token == "entry[@name='localhost.localdomain']":
                 child = ET.Element('entry', {'name': 'localhost.localdomain'})
             else:
@@ -2620,7 +2622,8 @@ class ParamPath(object):
                     if ans is None:
                         return
                     settings[entry_var] = ans.attrib['name']
-                path_str = "entry[@name='{0}']".format(settings[entry_var])
+                sol_val = pandevice.string_or_list(settings[entry_var])[0]
+                path_str = "entry[@name='{0}']".format(sol_val)
             else:
                 # Standard path part
                 try:

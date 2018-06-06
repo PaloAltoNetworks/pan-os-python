@@ -6,10 +6,11 @@ import unittest
 import xml.etree.ElementTree as ET
 
 import pandevice.base
+import pandevice.device
+import pandevice.ha
 import pandevice.network
 import pandevice.objects
 import pandevice.policies
-import pandevice.device
 
 
 class TestObject(unittest.TestCase):
@@ -44,7 +45,7 @@ class TestObject(unittest.TestCase):
 
     def test_positionally_populated_objects_are_equal(self):
         args = tuple(y for x, y in self.PARAMS)
-        if self.OLD_CLS.SUFFIX is not None:
+        if self.OLD_CLS.NAME is not None:
             new = self.NEW_CLS('jack', *args)
             old = self.OLD_CLS('jack', *args)
         else:
@@ -62,7 +63,7 @@ class TestObject(unittest.TestCase):
 
     def test_keyword_populated_objects_are_equal(self):
         kwargs = dict(self.PARAMS)
-        if self.OLD_CLS.SUFFIX is not None:
+        if self.OLD_CLS.NAME is not None:
             old = self.OLD_CLS('burton', **kwargs)
             new = self.NEW_CLS('burton', **kwargs)
         else:
@@ -80,9 +81,14 @@ class TestObject(unittest.TestCase):
 
     def test_parsing_old_elmstring_works(self):
         kwargs = dict(self.PARAMS)
-        old = self.OLD_CLS('myuid', **kwargs)
-        orig = self.OLD_CLS('blah')
-        new = self.NEW_CLS()
+        if self.OLD_CLS.NAME is not None:
+            old = self.OLD_CLS('myuid', **kwargs)
+            orig = self.OLD_CLS('blah')
+            new = self.NEW_CLS('blah')
+        else:
+            old = self.OLD_CLS(**kwargs)
+            orig = self.OLD_CLS()
+            new = self.NEW_CLS()
         new.retrieve_panos_version = mock.Mock(return_value=(7, 0, 0))
 
         if not hasattr(old, 'element'):
