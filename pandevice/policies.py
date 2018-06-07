@@ -70,8 +70,6 @@ class PostRulebase(Rulebase):
 class SecurityRule(VersionedPanObject):
     """Security Rule
 
-    Firewall only.  Use SecurityPreRule or SecurityPostRule with Panorama.
-
     Args:
         name (str): Name of the rule
         fromzone (list): From zones
