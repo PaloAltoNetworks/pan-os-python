@@ -627,6 +627,80 @@ class PanObject(object):
             device.xapi.edit(xpath, ET.tostring(element, encoding='utf-8'),
                              retry_on_peer=self.HA_SYNC)
 
+    def move(self, location, ref=None, update=True):
+        """Moves the current object.
+
+        **Modifies the live device**
+
+        This is useful for stuff like moving one security policy above another.
+
+        If this object's parent is a rulebase object, then this object is also
+        moved to the appropriate position in the local pandevice object tree.
+
+        Args:
+            location (str): Any of the following: before, after, top, or bottom
+            ref (PanObject/str): If location is "before" or "after", move this object before/after the ref object.  If this is a string, then the string should just be the name of the object.
+            update (bool): If this is set to False, then only move this object in the pandevice object tree, do not actually perform the MOVE operation on the live device.  Note that in order for this object to be moved in the pandevice object tree, the parent object must be a rulebase object.
+
+        Raises:
+            ValueError
+
+        """
+        d = self.nearest_pandevice()
+        dst = None
+        new_index = None
+        rbs = ('Rulebase', 'PreRulebase', 'PostRulebase')
+        ref_locs = ('before', 'after')
+        standalone_locs = ('top', 'bottom')
+        parent = self.parent
+
+        # Sanity checks + determine move location.
+        if parent is None:
+            raise ValueError('No parent for object {0}'.format(self.uid))
+        elif location in standalone_locs:
+            if ref is not None:
+                raise ValueError('ref should be None for {0} move'.format(
+                                 location))
+            if parent.__class__.__name__ in rbs:
+                new_index = 0 if location == 'top' else len(parent.children) - 1
+        elif location in ref_locs:
+            if ref is None:
+                raise ValueError('ref must be specified for {0} move'.format(
+                                 location))
+            dst = str(ref)
+            if self.uid == dst:
+                raise ValueError('Cannot move rule in relation to self')
+            if parent.__class__.__name__ in rbs:
+                offset = 0
+                for i, x in enumerate(parent.children):
+                    if self == x:
+                        offset = 1
+                    elif type(x) == type(self) and x.uid == dst:
+                        new_index = (
+                            i - offset
+                            if location == 'before'
+                            else i - offset + 1)
+                        break
+        else:
+            raise ValueError('Location must be one of:  {0} or {1}'.format(
+                             ref_locs, standalone_locs))
+
+        logger.debug('{0}: move called on {1} "{2}"'.format(
+            d.id, type(self), self.uid))
+
+        # Move the rule in the pandevice object tree, if applicable.
+        if new_index is not None:
+            parent.remove(self)
+            parent.insert(new_index, self)
+
+        # Done if we're not updating.
+        if not update:
+            return
+
+        # Perform the move on the nearest pandevice.
+        d.set_config_changed()
+        d.xapi.move(self.xpath(), location, dst)
+
     def _get_param_specific_info(self, variable):
         """Gets a tuple of info for the given parameter.
 
