@@ -470,3 +470,45 @@ class ApplicationContainer(VersionedPanObject):
             'applications', path='functions', vartype='member'))
 
         self._params = tuple(params)
+
+
+class SecurityProfileGroup(VersionedPanObject):
+    """Security Profile Group object
+
+    Args:
+        name (str): The group name
+        virus (str): Antivirus profile
+        spyware (str): Anti-spyware profile
+        vulnerability (str): Vulnerability protection profile
+        url_filtering (str): URL filtering profile
+        file_blocking (str): File blocking profile
+        data_filtering (str): Data filtering profile
+        wildfire_analysis (str): WildFire analysis profile
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/profile-group')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'virus', path='virus', vartype='member'))
+        params.append(VersionedParamPath(
+            'spyware', path='spyware', vartype='member'))
+        params.append(VersionedParamPath(
+            'vulnerability', path='vulnerability', vartype='member'))
+        params.append(VersionedParamPath(
+            'url_filtering', path='url-filtering', vartype='member'))
+        params.append(VersionedParamPath(
+            'file_blocking', path='file-blocking', vartype='member'))
+        params.append(VersionedParamPath(
+            'data_filtering', path='data-filtering', vartype='member'))
+        params.append(VersionedParamPath(
+            'wildfire_analysis', path='wildfire-analysis', vartype='member'))
+
+        self._params = tuple(params)
