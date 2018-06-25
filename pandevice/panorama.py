@@ -182,6 +182,7 @@ class TemplateStack(VersionedPanObject):
         name: Stack name
         description: The description
         templates (str/list): The list of templates in this stack
+        devices (str/list): The list of serial numbers in this template
 
     """
     ROOT = Root.DEVICE
@@ -198,6 +199,8 @@ class TemplateStack(VersionedPanObject):
             'description', path='description'))
         params.append(VersionedParamPath(
             'templates', path='templates', vartype='member'))
+        params.append(VersionedParamPath(
+            'devices', vartype='entry', path='devices'))
 
         self._params = tuple(params)
 
