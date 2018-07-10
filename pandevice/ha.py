@@ -26,6 +26,8 @@ import pan.xapi
 from pandevice import getlogger, isstring
 from pandevice.base import PanObject, PanDevice, Root, MEMBER, ENTRY
 from pandevice.base import VarPath as Var
+from pandevice.base import VersionedPanObject
+from pandevice.base import VersionedParamPath
 from pandevice import  network, firewall
 import pandevice.errors as err
 
@@ -264,12 +266,13 @@ class HA3(HighAvailabilityInterface):
         )
 
 
-class HighAvailability(PanObject):
+class HighAvailability(VersionedPanObject):
     """High availability configuration base object
 
     All high availability configuration is in this object or is a child of this object
 
     Args:
+        name: (unused, and may be omitted)
         enabled (bool): Enable HA (Default: True)
         group_id (int): The group identifier
         description (str): Description for HA pairing
@@ -284,42 +287,99 @@ class HighAvailability(PanObject):
 
     """
     ROOT = Root.DEVICE
-    XPATH = "/deviceconfig/high-availability"
+    SUFFIX = None
     HA_SYNC = False
     CHILDTYPES = (
-        "ha.HA1",
-        "ha.HA1Backup",
-        "ha.HA2",
-        "ha.HA2Backup",
-        "ha.HA3",
+        'ha.HA1',
+        'ha.HA1Backup',
+        'ha.HA2',
+        'ha.HA2Backup',
+        'ha.HA3',
     )
 
-    ACTIVE_PASSIVE = "active-passive"
-    ACTIVE_ACTIVE = "active-active"
+    ACTIVE_PASSIVE = 'active-passive'
+    ACTIVE_ACTIVE = 'active-active'
 
-    @classmethod
-    def variables(cls):
-        return (
-            # Enabled flag
-            Var("enabled", vartype="bool", default=True),
-            # Group
-            Var("group", "group_id", vartype="entry", default=(1,)),
-            Var("{{group_id}}/description"),
-            Var("{{group_id}}/configuration-synchronization/enabled", "config_sync", vartype="bool"),
-            Var("{{group_id}}/peer-ip"),
-            # HA Mode (A/P, A/A)
-            Var("{{group_id}}/mode/(active-passive|active-active)", "mode", default="active-passive"),
-            Var("{{group_id}}/mode/{{mode}}/passive-link-state"),
-            # State Synchronization
-            Var("{{group_id}}/state-synchronization/enabled", "state_sync", vartype="bool", default=False),
-            # HA2 Keep-alive
-            Var("{{group_id}}/state-synchronization/ha2-keep-alive/enabled", "ha2_keepalive", vartype="bool"),
-            Var("{{group_id}}/state-synchronization/ha2-keep-alive/action", "ha2_keepalive_action"),
-            Var("{{group_id}}/state-synchronization/ha2-keep-alive/threshold", "ha2_keepalive_threshold", vartype="int"),
-            Var("interface", vartype="none"),
-            Var("interface/ha1", vartype="none"),
-            Var("interface/ha1-backup", vartype="none"),
-            Var("interface/ha2", vartype="none"),
-            Var("interface/ha2-backup", vartype="none"),
-            Var("interface/ha3", vartype="none"),
-        )
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/deviceconfig/high-availability')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'enabled', default=True, vartype='yesno', path='enabled'))
+        params.append(VersionedParamPath(
+            'group_id', default=1, vartype='entry', path='group'))
+        params[-1].add_profile(
+            '8.1.0',
+            vartype='int', path='group/group-id')
+        params.append(VersionedParamPath(
+            'description', path='group/entry group_id/description'))
+        params[-1].add_profile(
+            '8.1.0',
+            path='group/description')
+        params.append(VersionedParamPath(
+            'config_sync', vartype='yesno',
+            path='group/entry group_id/configuration-synchronization/enabled'))
+        params[-1].add_profile(
+            '8.1.0',
+            vartype='yesno',
+            path='group/configuration-synchronization/enabled')
+        params.append(VersionedParamPath(
+            'peer_ip', path='group/entry group_id/peer-ip'))
+        params[-1].add_profile(
+            '8.1.0',
+            path='group/peer-ip')
+        params.append(VersionedParamPath(
+            'mode', default='active-passive',
+            values=('active-passive', 'active-active'),
+            path='group/entry group_id/mode/{mode}'))
+        params[-1].add_profile(
+            '8.1.0',
+            values=('active-passive', 'active-active'),
+            path='group/mode/{mode}')
+        params.append(VersionedParamPath(
+            'passive_link_state', condition={'mode': 'active-passive'},
+            path='group/entry group_id/mode/{mode}/passive-link-state'))
+        params[-1].add_profile(
+            '8.1.0',
+            condition={'mode': 'active-passive'},
+            path='group/mode/{mode}/passive-link-state')
+        params.append(VersionedParamPath(
+            'state_sync', vartype='yesno', default=False,
+            path='group/entry group_id/state-synchronization/enabled'))
+        params[-1].add_profile(
+            '8.1.0',
+            vartype='yesno',
+            path='group/state-synchronization/enabled')
+        params.append(VersionedParamPath(
+            'ha2_keepalive', vartype='yesno',
+            path='group/entry group_id/state-synchronization/ha2-keep-alive/enabled'))
+        params[-1].add_profile(
+            '8.1.0',
+            vartype='yesno',
+            path='group/state-synchronization/ha2-keep-alive/enabled')
+        params.append(VersionedParamPath(
+            'ha2_keepalive_action', values=('log-only', 'split-datapath'),
+            path='group/entry group_id/state-synchronization/ha2-keep-alive/action'))
+        params[-1].add_profile(
+            '8.1.0',
+            values=('log-only', 'split-datapath'),
+            path='group/state-synchronization/ha2-keep-alive/action')
+        params.append(VersionedParamPath(
+            'ha2_keepalive_threshold', vartype='int',
+            path='group/entry group_id/state-synchronization/ha2-keep-alive/threshold'))
+        params[-1].add_profile(
+            '8.1.0',
+            vartype='int',
+            path='group/state-synchronization/ha2-keep-alive/threshold')
+
+        self._params = tuple(params)
+
+        # stubs
+        self._stubs.add_profile(
+            '0.0.0',
+            'interface/ha1', 'interface/ha1-backup',
+            'interface/ha2', 'interface/ha2-backup',
+            'interface/ha3')

@@ -157,14 +157,16 @@ class TestElementStr_7_0(unittest.TestCase):
         ha_config = pandevice.ha.HighAvailability(
             'my high availability config', True, '1', 'my ha conf description',
             True, '10.5.1.5', 'active-passive', 'passive state', False, True,
-            'ha2 do stuff', 2, 'ethernet1/5')
+            'ha2 do stuff', 2)
 
         ha_config.add(h1o)
         ha_config.add(h2o)
+        ha_config.retrieve_panos_version = mock.Mock(return_value=(7, 0, 0))
 
         ret_val = ha_config.element_str()
 
-        self.assertEqual(expected, ret_val)
+        self.assertEqual(expected, ret_val,
+            '\n{0}\n{1}'.format(expected, ret_val))
 
     # 2) VirtualRouter with StaticRoute child
     def test_element_str_from_virtualrouter_with_sr_parent(self):
