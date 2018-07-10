@@ -3,6 +3,19 @@
 History
 =======
 
+0.6.4
+-----
+
+Released: 2018-07-10
+
+Status: Alpha
+
+- Added .move() function to move config elements
+- Added objects.SecurityProfileGroup
+- Added "devices" param to panorama.TemplateStack
+- Added dynamic NAT translation support for PAN-OS 8.1+
+- Fixed ha.HighAvailability for PAN-OS 8.1+
+
 0.6.3
 -----
 
