@@ -30,11 +30,11 @@ Tag/untag ip addresses for Dynamic Address Groups on a firewall
 
 Tag the IP 3.3.3.3 with the tag 'linux' and 'apache'::
 
-    $ python dyn_address_group.py 10.0.0.1 admin password 3.3.3.3 linux,apache
+    $ python dyn_address_group.py -r linux,apache 10.0.0.1 admin password 3.3.3.3
 
 Remove the tag apache from the IP 3.3.3.3::
 
-    $ python dyn_address_group.py -u 10.0.0.1 admin password 3.3.3.3 linux
+    $ python dyn_address_group.py -u linux 10.0.0.1 admin password 3.3.3.3
 
 Clear all tags from all IP's::
 
