@@ -83,13 +83,13 @@ more information.
 
 In each of these examples, assume a Firewall and Panorama object have been instantiated::
 
-    fw = firewall.Firewall('10.0.0.1', 'admin', 'mypassword')
-    pano = panorama.Panorama('10.0.0.5', 'admin', 'mypassword')
+    fw = firewall.Firewall("10.0.0.1", "admin", "mypassword")
+    pano = panorama.Panorama("10.0.0.5", "admin", "mypassword")
 
 Create an address object on a firewall::
 
     webserver = objects.AddressObject("Apache-webserver", "5.5.5.5", description="Company web server")
-    fw.add(webapache)
+    fw.add(webserver)
     webserver.create()
 
 In this example, add() makes the AddressObject a child of the Firewall. This does not make any change to
