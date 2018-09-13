@@ -76,7 +76,7 @@ class SecurityRule(VersionedPanObject):
         tozone (list): To zones
         source (list): Source addresses
         source_user (list): Source users and groups
-        hip_profile (list): GlobalProtect host integrity profiles
+        hip_profiles (list): GlobalProtect host integrity profiles
         destination (list): Destination addresses
         application (list): Applications
         service (list): Destination services (ports) (Default:
