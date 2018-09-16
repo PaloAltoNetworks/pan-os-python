@@ -162,7 +162,7 @@ class SecurityRule(VersionedPanObject):
         params.append(VersionedParamPath(
             'schedule', path='schedule'))
         params.append(VersionedParamPath(
-            'icmp_unreachable', path='icmp-unreachable'))
+            'icmp_unreachable', path='icmp-unreachable', vartype='yesno'))
         params.append(VersionedParamPath(
             'disable_server_response_inspection', vartype='yesno',
             path='option/disable-server-response-inspection'))
