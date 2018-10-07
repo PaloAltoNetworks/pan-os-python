@@ -3,6 +3,18 @@
 History
 =======
 
+0.6.5
+-----
+
+Released: 2018-10-07
+
+Status: Alpha
+
+- Fixed: ICMP Unreachable param type in security rules
+- Fixed: Content upgrade error
+- Fixed: (Python3) The comparison of encrypted types
+- Various documentation fixes
+
 0.6.4
 -----
 
