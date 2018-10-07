@@ -81,7 +81,7 @@ The following examples assume the modules were imported as such::
 
 Create a subinterface and commit::
 
-    fw = firewall.Firewall("10.0.0.1", username="admin", password="admin")
+    fw = firewall.Firewall("10.0.0.1", api_username="admin", api_password="admin")
     eth = fw.add(network.EthernetInterface("ethernet1/1", mode="layer3"))
     subeth = eth.add(network.Layer3Subinterface("ethernet1/1.30", ip="4.4.4.4/24", tag=30))
     subeth.create()
@@ -89,8 +89,8 @@ Create a subinterface and commit::
 
 Operational commands leverage the 'op' method of the device::
 
-    fw = firewall.Firewall("10.0.0.1", username="admin", password="admin")
-    print fw.op("show system info", xml=True)
+    fw = firewall.Firewall("10.0.0.1", api_username="admin", api_password="admin")
+    print fw.op("show system info")
 
 Some operational commands have methods to refresh the variables in an object::
 

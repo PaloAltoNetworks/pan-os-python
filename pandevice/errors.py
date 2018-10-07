@@ -37,6 +37,7 @@ class PanDeviceError(PanXapiError):
     def __init__(self, *args, **kwargs):
         self.pan_device = kwargs.pop('pan_device', None)
         super(PanDeviceError, self).__init__(*args, **kwargs)
+        self.message = '{0}'.format(self)
 
 class PanDeviceXapiError(PanDeviceError):
     """General error returned by an API call"""

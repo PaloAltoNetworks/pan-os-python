@@ -2642,8 +2642,9 @@ class ParamPath(object):
             return string[5:33]
         else:
             # Sha1 hash the cleartext value
-            sha1 = hashlib.sha1(string)
-            return base64.b64encode(sha1.digest())
+            # Python3:  encode for sha1, decode for XML serialization.
+            sha1 = hashlib.sha1(string.encode('utf-8'))
+            return base64.b64encode(sha1.digest()).decode('utf-8')
 
     def parse_xml(self, xml, settings, possibilities):
         """Parse the XML to find this parameter's value.

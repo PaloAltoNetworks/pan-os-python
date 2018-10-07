@@ -75,6 +75,8 @@ class SecurityRule(VersionedPanObject):
         fromzone (list): From zones
         tozone (list): To zones
         source (list): Source addresses
+        source_user (list): Source users and groups
+        hip_profiles (list): GlobalProtect host integrity profiles
         destination (list): Destination addresses
         application (list): Applications
         service (list): Destination services (ports) (Default:
@@ -160,7 +162,7 @@ class SecurityRule(VersionedPanObject):
         params.append(VersionedParamPath(
             'schedule', path='schedule'))
         params.append(VersionedParamPath(
-            'icmp_unreachable', path='icmp-unreachable'))
+            'icmp_unreachable', path='icmp-unreachable', vartype='yesno'))
         params.append(VersionedParamPath(
             'disable_server_response_inspection', vartype='yesno',
             path='option/disable-server-response-inspection'))

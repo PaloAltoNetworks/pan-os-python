@@ -297,21 +297,27 @@ class ContentUpdater(Updater):
         self.pandevice.content_version = self._parse_current_version(response)
         self.versions = self._parse_version_list(response)
 
-    def download(self, version="latest", sync_to_peer=True, sync=False):
+    def download(self, sync_to_peer=None, sync=False):
         if not self.versions:
             self.check()
         available_versions = map(PanOSVersion, self.versions.keys())
         latest_version = max(available_versions)
         if self.versions[str(latest_version)]['downloaded']:
             return
-        self._logger.info("Device %s downloading content version: %s" % (self.pandevice.id, version))
-        response = self._op('request content upgrade download latest sync-to-peer "%s"' %
-                            "yes" if sync_to_peer else "no")
+        self._logger.info("Device %s downloading content version: %s" % (self.pandevice.id, latest_version))
+        if sync_to_peer is None:
+            sync_to_peer_text = ''
+        elif sync_to_peer:
+            sync_to_peer_text = ' "" sync-to-peer "yes"'
+        else:
+            sync_to_peer_text = ' "" sync-to-peer "no"'
+        command = 'request content upgrade download latest{0}'.format(sync_to_peer_text)
+        response = self._op(command)
         if sync:
             result = self.pandevice.syncjob(response)
             if not result['success']:
                 raise err.PanDeviceError("Device %s attempt to download content version %s failed: %s" %
-                                         (self.pandevice.id, version, result['messages']))
+                                         (self.pandevice.id, latest_version, result['messages']))
             return result
         else:
             return True
