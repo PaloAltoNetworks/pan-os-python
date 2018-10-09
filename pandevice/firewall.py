@@ -76,6 +76,7 @@ class Firewall(PanDevice):
         "objects.ApplicationGroup",
         "objects.ApplicationFilter",
         "objects.SecurityProfileGroup",
+        "objects.CustomUrlCategory",
         "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",
