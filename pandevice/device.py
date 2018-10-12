@@ -121,6 +121,7 @@ class Vsys(VersionedPanObject):
         "network.VirtualRouter",
         "network.VirtualWire",
         "network.Zone",
+        "globalprotect.GlobalProtectGateway",
     )
 
     def _setup(self):
