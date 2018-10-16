@@ -3,6 +3,15 @@
 History
 =======
 
+0.6.6
+-----
+
+Released: 2018-10-16
+
+Status: Alpha
+
+- Added `test_security_policy_match()` to PanDevice objects
+
 0.6.5
 -----
 
