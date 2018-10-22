@@ -1404,6 +1404,7 @@ class VirtualRouter(VsysOperations):
         "network.StaticRouteV6",
         "network.RedistributionProfile",
         "network.Ospf",
+        "network.Bgp",
     )
 
     def _setup(self):
@@ -1806,6 +1807,348 @@ class OspfExportRules(VersionedPanObject):
             'new_tag'))
         params.append(VersionedParamPath(
             'metric', vartype='int'))
+
+        self._params = tuple(params)
+
+
+class Bgp(VersionedPanObject):
+    """BGP Process
+
+    Args:
+        enable (bool): Enable BGP (Default: True)
+        router_id (str): Router ID in IP format (eg. 1.1.1.1)
+        reject_default_route (bool): Reject default route
+        allow_redist_default_route (bool): Allow redistribution in default route
+        install_route (bool): Populate BGP learned route to global route table
+        ecmp_multi_as (bool): Support multiple AS in ECMP
+        enforce_first_as (bool): Enforce First AS for EBGP
+        local_as (int): local AS number
+
+    """
+    NAME = None
+    CHILDTYPES = (
+        "network.BgpRoutingOptions",
+        "network.BgpAuthProfile",
+        "network.BgpDampeningProfile",
+        "network.BgpPeerGroup",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/protocol/bgp')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', default=True, path='enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'router_id'))
+        params.append(VersionedParamPath(
+            'reject_default_route', default=True, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'allow_redist_default_route', default=False, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'install_route', default=False, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'ecmp_multi_as', default=False, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'enforce_first_as', default=None, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'local_as', vartype='str'))
+        params.append(VersionedParamPath(
+            'global_bfd_profile', path='global-bfd/profile'))
+
+        self._params = tuple(params)
+
+
+class BgpRoutingOptions(VersionedPanObject):
+    """BGP Routing Options
+
+    Args:
+        as_format (str): AS format ('2-byte'/'4-byte')
+        always_compare_med (bool): always compare MEDs
+        deterministic_med_comparison (bool): deterministic MEDs comparison
+        default_local_preference (int): default local preference
+        graceful_restart_enable (bool): enable graceful restart
+        gr_stale_route_time (int): time to remove stale routes after peer restart (in seconds)
+        gr_local_restart_time (int): local restart time to advertise to peer (in seconds)
+        gr_max_peer_restart_time (int): maximum of peer restart time accepted (in seconds)
+        orf_enable (bool): enable prefix-based outbound route filtering.
+        orf_max_recieved_entries (int): maximum of ORF prefixes to receive.
+        orf_cisco_prefix_mode (bool): ORF vendor-compatible mode
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/routing-options')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'as_format', default='2-byte', values=['2-byte', '4-byte'], vartype='int'))
+        params.append(VersionedParamPath(
+            'always_compare_med', path='med/always-compare-med',
+            vartype='yesno'))
+        params.append(VersionedParamPath(
+            'deterministic_med_comparison', path='med/deterministic-med-comparison',
+            vartype='yesno'))
+        params.append(VersionedParamPath(
+            'default_local_preference', vartype='int'))
+        params.append(VersionedParamPath(
+            'graceful_restart_enable', path='graceful-restart/enable',
+            vartype='yesno'))
+        params.append(VersionedParamPath(
+            'gr_stale_route_time', path='graceful-restart/stale-route-time',
+            vartype='int'))
+        params.append(VersionedParamPath(
+            'gr_local_restart_time', path='graceful-restart/local-restart-time',
+            vartype='int'))
+        params.append(VersionedParamPath(
+            'gr_max_peer_restart_time', path='graceful-restart/max-peer-restart-time',
+            vartype='int'))
+        params.append(VersionedParamPath(
+            'reflector_cluster_id'))
+        params.append(VersionedParamPath(
+            'confederation_member_as'))
+        params.append(VersionedParamPath(
+            'aggregate_med', path='aggregate/aggregate-med'))
+        params.append(VersionedParamPath(
+            'orf_enable', path='outbound-route-filter/enable'))
+        params.append(VersionedParamPath(
+            'orf_max_recieved_entries', path='outbound-route-filter/max-recieved-entries'))
+        params.append(VersionedParamPath(
+            'orf_cisco_prefix_mode', path='outbound-route-filter/cisco-prefix-mode'))
+
+        self._params = tuple(params)
+
+
+class BgpDampeningProfile(VersionedPanObject):
+    """BGP Dampening Profile
+
+    Args:
+        name (str): Name of Dampening Profile
+        enable (bool): Enable profile (Default: True)
+        cutoff (float): shared secret for the TCP MD5 authentication.
+        reuse (float): reuse threshold value
+        max_hold_time (int): maximum of hold-down time (in seconds)
+        decay_half_life_reachable (int): Decay half-life while reachable (in seconds)
+        decay_half_life_unreachable (int): Decay half-life while unreachable (in seconds)
+
+    """
+    _DEFAULT_NAME = 'default'
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/dampening-profile')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'name'))
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'cutoff', vartype='float'))
+        params.append(VersionedParamPath(
+            'reuse', vartype='float'))
+        params.append(VersionedParamPath(
+            'max_hold_time', vartype='int'))
+        params.append(VersionedParamPath(
+            'decay_half_life_reachable', vartype='int'))
+        params.append(VersionedParamPath(
+            'decay_half_life_unreachable', vartype='int'))
+
+        self._params = tuple(params)
+
+
+class BgpAuthProfile(VersionedPanObject):
+    """BGP Authentication Profile
+
+    Args:
+        name (str): Name of Auth Profile
+        secret (str): shared secret for the TCP MD5 authentication.
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/auth-profile')
+
+        params = []
+
+        # params.append(VersionedParamPath(
+        #     'name'))
+        params.append(VersionedParamPath(
+            'secret', condition={'type': 'password'}))
+
+        self._params = tuple(params)
+
+
+class BgpPeerGroup(VersionedPanObject):
+    """BGP Peer Group
+
+    Args:
+        name (str): Name of BGP Peer Group
+        enable (bool): Enable Peer Group (Default: True)
+        aggregated_confed_as_path (bool): the peers understand aggregated confederation AS path
+        soft_reset_with_stored_info (bool): soft reset with stored info
+        type (str): peer group type I('ebgp')/I('ibgp')/I('ebgp-confed')/I('ibgp-confed')
+        export_nexthop (str): export locally resolved nexthop I('original')/I('use-self')
+        import_nexthop (str): override nexthop with peer address I('original')/I('use-peer'), only with 'ebgp'
+        remove_private_as (bool): remove private AS when exporting route, only with 'ebgp'
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPeer",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/peer-group')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'aggregated_confed_as_path', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'soft_reset_with_stored_info', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'type', path='{type}', values=('ebgp', 'ibgp', 'ebgp-confed', 'ibgp-confed')))
+        params.append(VersionedParamPath(
+            'export_next_hop', path='{type}/export-nexthop', values=('original', 'use-self')))
+        params.append(VersionedParamPath(
+            'import_next_hop', condition={'type': 'ebgp'},
+            path='{type}/import-nexthop', values=('original', 'use-peer')))
+        params.append(VersionedParamPath(
+            'remove_private_as', condition={'type': 'ebgp'}, vartype='yesno'))
+
+        self._params = tuple(params)
+
+
+class BgpPeer(VersionedPanObject):
+    """BGP Peer
+
+    Args:
+        name (str): Name of BGP Peer
+        enable (bool): Enable Peer (Default: True)
+        peer_as (str): peer AS number
+        enable_mp_bgp (bool): enable MP-BGP extentions
+        address_family_identifier (str): peer address family type
+            * ipv4
+            * ipv6
+        subsequent_address_unicast (bool): select SAFI for this peer
+        subsequent_address_multicast (bool): select SAFI for this peer
+        local_interface (str): interface to accept BGP session
+        local_interface_ip (str): specify exact IP address if interface has multiple addresses
+        peer_address_ip (str): IP address of peer
+        connection_authentication (str): BGP auth profile name
+        connection_keep_alive_interval (int): keep-alive interval (in seconds)
+        connection_min_route_adv_interval (int): Minimum Route Advertisement Interval (in seconds)
+        connection_multihop (int): IP TTL value used for sending BGP packet. set to 0 means eBGP use 2, iBGP use 255
+        connection_open_delay_time (int): open delay time (in seconds)
+        connection_hold_time (int): hold time (in seconds)
+        connection_idle_hold_time (int): idle hold time (in seconds)
+        connection_incoming_allow (bool): allow incoming connections
+        connection_outgoing_allow (bool): allow outgoing connections
+        connection_incoming_remote_port (int): restrict remote port for incoming BGP connections
+        connection_outgoing_local_port (int): use specific local port for outgoing BGP connections
+        enable_sender_side_loop_detection (bool): 
+        reflector_client (str): 
+            * non-client
+            * client
+            * meshed-client
+        peering_type (str): 
+            * unspecified
+            * bilateral
+        aggregated_confed_as_path (bool): this peer understands aggregated confederation AS path
+        max_prefixes (int): maximum of prefixes to receive from peer
+        max_orf_entries (int): maximum of ORF entries accepted from peer
+        soft_reset_with_stored_info (bool): soft reset with stored info
+        bfd_profile (str): BFD configuration
+            * Inherit-vr-global-setting
+            * None
+            * Pre-existing BFD profile name
+            * None
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/peer')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'peer_as'))
+        params.append(VersionedParamPath(
+            'enable_mp_bgp', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'address_family_identifier', condition={'enable_mp_bgp': True},
+            values=('ipv4', 'ipv6')))
+        params.append(VersionedParamPath(
+            'subsequent_address_unicast', condition={'enable_mp_bgp': True},
+            path='subsequent-address-family-identifier/unicast', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'subsequent_address_multicast', condition={'enable_mp_bgp': True},
+            path='subsequent-address-family-identifier/multicast', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'local_interface', path='local-address/interface'))
+        params.append(VersionedParamPath(
+            'local_interface_ip', path='local-address/ip'))
+        params.append(VersionedParamPath(
+            'peer_address_ip', path='peer-address/ip'))
+        params.append(VersionedParamPath(
+            'connection_authentication', path='connection-options/authentication'))
+        params.append(VersionedParamPath(
+            'connection_keep_alive_interval',
+            path='connection-options/keep-alive-interval', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_min_route_adv_interval',
+            path='connection-options/min-route-adv-interval', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_multihop',
+            path='connection-options/multihop', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_open_delay_time',
+            path='connection-options/open-delay-time', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_hold_time',
+            path='connection-options/hold-time', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_idle_hold_time',
+            path='connection-options/idle-hold-time', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_incoming_allow',
+            path='connection-options/incoming-bgp-connection/allow', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'connection_outgoing_allow',
+            path='connection-options/outgoing-bgp-connection/allow', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'connection_incoming_remote_port',
+            path='connection-options/incoming-bgp-connection/remote-port', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_outgoing_local_port',
+            path='connection-options/outgoing-bgp-connection/local-port', vartype='int'))
+        params.append(VersionedParamPath(
+            'enable_sender_side_loop_detection', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'reflector_client', values=('non-client', 'client', 'meshed-client')))
+        params.append(VersionedParamPath(
+            'peering_type', values=('unspecified', 'bilateral')))
+        params.append(VersionedParamPath(
+            'aggregated_confed_as_path', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'max_prefixes'))
+        params.append(VersionedParamPath(
+            'max_orf_entries', vartype='int'))
+        params.append(VersionedParamPath(
+            'soft_reset_with_stored_info', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'bfd_profile'))
 
         self._params = tuple(params)
 
