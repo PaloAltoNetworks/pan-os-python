@@ -1877,7 +1877,11 @@ class BgpRoutingOptions(VersionedPanObject):
         orf_cisco_prefix_mode (bool): ORF vendor-compatible mode
 
     """
-    SUFFIX = ENTRY
+    NAME = None
+    SUFFIX = None
+    CHILDTYPES = (
+        "network.BgpOutboundRouteFilter",
+    )
 
     def _setup(self):
         self._xpaths.add_profile(value='/routing-options')
@@ -1885,7 +1889,7 @@ class BgpRoutingOptions(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'as_format', default='2-byte', values=['2-byte', '4-byte'], vartype='int'))
+            'as_format', default='2-byte', values=['2-byte', '4-byte']))
         params.append(VersionedParamPath(
             'always_compare_med', path='med/always-compare-med',
             vartype='yesno'))
@@ -1911,13 +1915,34 @@ class BgpRoutingOptions(VersionedPanObject):
         params.append(VersionedParamPath(
             'confederation_member_as'))
         params.append(VersionedParamPath(
-            'aggregate_med', path='aggregate/aggregate-med'))
+            'aggregate_med', path='aggregate/aggregate-med', vartype='yesno'))
+
+        self._params = tuple(params)
+
+
+class BgpOutboundRouteFilter(VersionedPanObject):
+    """BGP Outbound Route Filtering
+
+    Args:
+        enable (bool): enable prefix-based outbound route filtering.
+        max_recieved_entries (int): maximum of ORF prefixes to receive.
+        cisco_prefix_mode (bool): ORF vendor-compatible mode
+
+    """
+    NAME = None
+    SUFFIX = None
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/outbound-route-filter')
+
+        params = []
+
         params.append(VersionedParamPath(
-            'orf_enable', path='outbound-route-filter/enable'))
+            'enable', path='enable', vartype='yesno'))
         params.append(VersionedParamPath(
-            'orf_max_recieved_entries', path='outbound-route-filter/max-recieved-entries'))
+            'max_received_entries', path='max-received-entries', vartype='int'))
         params.append(VersionedParamPath(
-            'orf_cisco_prefix_mode', path='outbound-route-filter/cisco-prefix-mode'))
+            'cisco_prefix_mode', path='cisco-prefix-mode', vartype='yesno'))
 
         self._params = tuple(params)
 
@@ -1993,7 +2018,7 @@ class BgpPeerGroup(VersionedPanObject):
         aggregated_confed_as_path (bool): the peers understand aggregated confederation AS path
         soft_reset_with_stored_info (bool): soft reset with stored info
         type (str): peer group type I('ebgp')/I('ibgp')/I('ebgp-confed')/I('ibgp-confed')
-        export_nexthop (str): export locally resolved nexthop I('original')/I('use-self')
+        export_nexthop (str): export locally resolved nexthop I('resolve')/I('use-self')
         import_nexthop (str): override nexthop with peer address I('original')/I('use-peer'), only with 'ebgp'
         remove_private_as (bool): remove private AS when exporting route, only with 'ebgp'
 
@@ -2015,14 +2040,16 @@ class BgpPeerGroup(VersionedPanObject):
         params.append(VersionedParamPath(
             'soft_reset_with_stored_info', vartype='yesno'))
         params.append(VersionedParamPath(
-            'type', path='{type}', values=('ebgp', 'ibgp', 'ebgp-confed', 'ibgp-confed')))
+            'type', path='type/{type}', default='ebgp',
+            values=('ebgp', 'ibgp', 'ebgp-confed', 'ibgp-confed')))
         params.append(VersionedParamPath(
-            'export_next_hop', path='{type}/export-nexthop', values=('original', 'use-self')))
+            'export_nexthop', path='type/{type}/export-nexthop', values=('resolve', 'use-self')))
         params.append(VersionedParamPath(
-            'import_next_hop', condition={'type': 'ebgp'},
-            path='{type}/import-nexthop', values=('original', 'use-peer')))
+            'import_nexthop', condition={'type': 'ebgp'},
+            path='type/{type}/import-nexthop', values=('original', 'use-peer')))
         params.append(VersionedParamPath(
-            'remove_private_as', condition={'type': 'ebgp'}, vartype='yesno'))
+            'remove_private_as', condition={'type': 'ebgp'},
+            path='type/{type}/remove-private-as', vartype='yesno'))
 
         self._params = tuple(params)
 
@@ -2054,18 +2081,18 @@ class BgpPeer(VersionedPanObject):
         connection_outgoing_allow (bool): allow outgoing connections
         connection_incoming_remote_port (int): restrict remote port for incoming BGP connections
         connection_outgoing_local_port (int): use specific local port for outgoing BGP connections
-        enable_sender_side_loop_detection (bool): 
-        reflector_client (str): 
+        enable_sender_side_loop_detection (bool):
+        reflector_client (str):
             * non-client
             * client
             * meshed-client
-        peering_type (str): 
+        peering_type (str):
             * unspecified
             * bilateral
-        aggregated_confed_as_path (bool): this peer understands aggregated confederation AS path
+        # aggregated_confed_as_path (bool): this peer understands aggregated confederation AS path
         max_prefixes (int): maximum of prefixes to receive from peer
-        max_orf_entries (int): maximum of ORF entries accepted from peer
-        soft_reset_with_stored_info (bool): soft reset with stored info
+        # max_orf_entries (int): maximum of ORF entries accepted from peer
+        # soft_reset_with_stored_info (bool): soft reset with stored info
         bfd_profile (str): BFD configuration
             * Inherit-vr-global-setting
             * None
@@ -2081,9 +2108,9 @@ class BgpPeer(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'enable', vartype='yesno'))
+            'enable', path='enable', vartype='yesno'))
         params.append(VersionedParamPath(
-            'peer_as'))
+            'peer_as', path='peer-as'))
         params.append(VersionedParamPath(
             'enable_mp_bgp', vartype='yesno'))
         params.append(VersionedParamPath(
@@ -2139,16 +2166,16 @@ class BgpPeer(VersionedPanObject):
             'reflector_client', values=('non-client', 'client', 'meshed-client')))
         params.append(VersionedParamPath(
             'peering_type', values=('unspecified', 'bilateral')))
-        params.append(VersionedParamPath(
-            'aggregated_confed_as_path', vartype='yesno'))
+        # params.append(VersionedParamPath(
+        #     'aggregated_confed_as_path', vartype='yesno'))
         params.append(VersionedParamPath(
             'max_prefixes'))
+        # params.append(VersionedParamPath(
+        #     'max_orf_entries', vartype='int'))
+        # params.append(VersionedParamPath(
+        #     'soft_reset_with_stored_info', vartype='yesno'))
         params.append(VersionedParamPath(
-            'max_orf_entries', vartype='int'))
-        params.append(VersionedParamPath(
-            'soft_reset_with_stored_info', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'bfd_profile'))
+            'bfd_profile', path='bfd/profile'))
 
         self._params = tuple(params)
 

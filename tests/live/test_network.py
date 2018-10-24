@@ -1,4 +1,5 @@
 import random
+import pytest
 
 from tests.live import testlib
 from pandevice import network
@@ -636,6 +637,10 @@ class MakeVirtualRouter(testlib.FwFlow):
     WITH_AREA = False
     WITH_AUTH_PROFILE = False
     WITH_AREA_INTERFACE = False
+    WITH_BGP = False
+    WITH_BGP_ROUTING_OPTIONS = False
+    WITH_BGP_AUTH_PROFILE = False
+    WITH_BGP_PEER_GROUP = False
 
     def create_dependencies(self, fw, state):
         state.eths = testlib.get_available_interfaces(fw, 2)
@@ -675,6 +680,46 @@ class MakeVirtualRouter(testlib.FwFlow):
                     state.area.add(state.iface)
 
             state.ospf.create()
+
+        if any((self.WITH_BGP, self.WITH_BGP_AUTH_PROFILE,
+                self.WITH_BGP_ROUTING_OPTIONS, self.WITH_BGP_PEER_GROUP)):
+            state.bgp = network.Bgp(
+                enable=True,
+                router_id=testlib.random_ip(),
+                reject_default_route=True,
+                allow_redist_default_route=True,
+                install_route=True,
+                ecmp_multi_as=True,
+                enforce_first_as=True,
+                local_as=random.randint(1, 2000))
+            state.vr.add(state.bgp)
+
+            if self.WITH_BGP_AUTH_PROFILE:
+                state.bgp_auth = network.BgpAuthProfile(
+                    testlib.random_name(), 'MD5')
+                state.bgp.add(state.bgp_auth)
+                state.bgp.apply()
+
+            if self.WITH_BGP_ROUTING_OPTIONS:
+                state.bgp_opts = network.BgpRoutingOptions(
+                    as_format='2-byte')
+                state.bgp.add(state.bgp_opts)
+                state.bgp.apply()
+
+            if self.WITH_BGP_PEER_GROUP:
+                state.pg = network.BgpPeerGroup(
+                    name=testlib.random_name(),
+                    enable=True,
+                    aggregated_confed_as_path=True,
+                    soft_reset_with_stored_info=True,
+                    export_nexthop='resolve',
+                    import_nexthop='original',
+                    remove_private_as=True,
+                )
+                state.bgp.add(state.pg)
+                state.bgp.apply()
+
+            state.bgp.create()
 
     def cleanup_dependencies(self, fw, state):
         try:
@@ -723,7 +768,7 @@ class TestOspf(MakeVirtualRouter):
     def update_state_obj(self, fw, state):
         state.obj.enable = False
         state.obj.reject_default_route = False
-        state.allow_redist_default_route = False
+        state.obj.allow_redist_default_route = False
         state.obj.rfc1583 = False
         state.obj.spf_calculation_delay = 3
         state.obj.lsa_interval = 4
@@ -876,6 +921,210 @@ class TestOspfExportRules(MakeVirtualRouter):
     def update_state_obj(self, fw, state):
         state.obj.new_path_type = 'ext-1'
         state.obj.metric = 5309
+
+
+class TestBgp(MakeVirtualRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.Bgp(
+            enable=True,
+            router_id=testlib.random_ip(),
+            reject_default_route=True,
+            allow_redist_default_route=True,
+            install_route=True,
+            ecmp_multi_as=True,
+            enforce_first_as=True,
+            local_as=random.randint(1, 2000))
+        state.vr.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
+        state.obj.reject_default_route = False
+        state.obj.allow_redist_default_route = False
+        state.obj.install_route = False
+        state.obj.ecmp_multi_as = False
+        state.obj.enforce_first_as = False
+        state.obj.local_as = 101
+
+
+class TestBgpAuthProfile(MakeVirtualRouter):
+    WITH_BGP = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.BgpAuthProfile(
+            testlib.random_name(), 'md5'
+        )
+        state.bgp.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.secret = 'sha256'
+
+
+class TestBgpRoutingOptions(MakeVirtualRouter):
+    WITH_BGP = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.BgpRoutingOptions(
+            as_format='2-byte',
+            always_compare_med=True,
+            deterministic_med_comparison=True,
+            default_local_preference=10,
+            graceful_restart_enable=True,
+            gr_stale_route_time=10,
+            gr_local_restart_time=60,
+            gr_max_peer_restart_time=120,
+            reflector_cluster_id='192.168.19.104',
+            confederation_member_as=random.randint(0, 100),
+            aggregate_med=True,
+        )
+        state.bgp.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
+        state.obj.as_format = '4-byte'
+        state.obj.always_compare_med = False
+        state.obj.deterministic_med_comparison = False
+        state.obj.default_local_preference = False
+        state.obj.graceful_restart_enable = False
+        state.obj.gr_stale_route_time = 120
+        state.obj.gr_local_restart_time = 60
+        state.obj.gr_max_peer_restart_time = 10
+        state.obj.reflector_cluster_id = '192.168.19.14'
+        state.obj.confederation_member_as = '13634.10467'
+        state.obj.aggregate_med = False
+
+
+# # unsupported configuration, test disabled
+# class TestBgpOutboundRouteFilter(MakeVirtualRouter):
+#     WITH_BGP_ROUTING_OPTIONS = True
+
+#     def setup_state_obj(self, fw, state):
+#         state.obj = network.BgpOutboundRouteFilter(
+#             enable = True,
+#             max_received_entries = 100,
+#             cisco_prefix_mode = False,
+#         )
+#         state.bgp_opts.add(state.obj)
+
+#     def update_state_obj(self, fw, state):
+#         state.obj.enable = False
+#         state.obj.max_received_entries = 200
+#         state.obj.cisco_prefix_mode = True
+
+
+class TestBgpDampeningProfile(MakeVirtualRouter):
+    WITH_BGP = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.BgpDampeningProfile(
+            name=testlib.random_name(),
+            enable=True,
+            cutoff=random.randint(1, 3),
+            reuse=random.random(),
+            max_hold_time=random.randint(1, 3600),
+            decay_half_life_reachable=random.randint(1, 3600),
+            decay_half_life_unreachable=random.randint(1, 3600),
+        )
+        state.bgp.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
+        state.obj.cutoff = random.randint(1, 3)
+        state.obj.reuse = random.random()
+        state.obj.max_hold_time = random.randint(1, 3600)
+        state.obj.decay_half_life_reachable = random.randint(1, 3600)
+        state.obj.decay_half_life_unreachable = random.randint(1, 3600)
+
+
+class TestBgpPeerGroup(MakeVirtualRouter):
+    WITH_BGP = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.BgpPeerGroup(
+            name=testlib.random_name(),
+            enable=True,
+            aggregated_confed_as_path=True,
+            soft_reset_with_stored_info=True,
+            # # 'type'='ebgp',
+            export_nexthop='resolve',
+            import_nexthop='original',
+            remove_private_as=True
+        )
+        state.bgp.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
+        state.obj.aggregated_confed_as_path = False
+        state.obj.soft_reset_with_stored_info = False
+        state.obj.export_nexthop = 'use-self'
+        state.obj.import_nexhop = 'use-peer'
+        state.obj.remove_private_as = False
+
+
+class TestBgpPeer(MakeVirtualRouter):
+    WITH_BGP = True
+    WITH_BGP_AUTH_PROFILE = True
+    WITH_BGP_PEER_GROUP = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.BgpPeer(
+            name=testlib.random_name(),
+            enable=True,
+            peer_as=random.randint(1000, 1255),
+            enable_mp_bgp=False,
+            address_family_identifier='ipv4',
+            subsequent_address_unicast=True,
+            subsequent_address_multicast=False,
+            local_interface=state.eths[0],
+            peer_address_ip=testlib.random_ip(),
+            connection_authentication=state.bgp_auth.name,
+            connection_keep_alive_interval=random.randint(25, 35),
+            connection_min_route_adv_interval=random.randint(25, 35),
+            connection_multihop=0,
+            connection_open_delay_time=0,
+            connection_hold_time=random.randint(85, 95),
+            connection_idle_hold_time=random.randint(5, 15),
+            connection_incoming_allow=True,
+            connection_outgoing_allow=True,
+            connection_incoming_remote_port=0,
+            connection_outgoing_local_port=0,
+            enable_sender_side_loop_detection=True,
+            reflector_client='non-client',
+            peering_type='unspecified',
+            # aggregated_confed_as_path=True,
+            max_prefixes=random.randint(4000, 6000),
+            # max_orf_entries=random.randint(4000, 6000),
+            # soft_reset_with_stored_info=True,
+            bfd_profile='Inherit-vr-global-setting'
+        )
+        state.pg.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
+        state.obj.peer_as = random.randint(1000, 1255)
+        state.obj.enable_mp_bgp = True
+        state.obj.subsequent_address_multicast = True
+        state.obj.subsequent_address_unicast = False
+        state.obj.enable_mp_bgp = True
+        state.obj.local_interface = state.eths[1]
+        state.obj.connection_authentication = None
+        state.obj.connection_keep_alive_interval = random.randint(1, 1200)
+        state.obj.connection_min_route_adv_interval = random.randint(1, 600)
+        state.obj.connection_multihop = random.randint(0, 255)
+        state.obj.connection_open_delay_time = random.randint(0, 240)
+        state.obj.connection_hold_time = random.randint(3, 3600)
+        state.obj.connection_idle_hold_time = random.randint(1, 3600)
+        state.obj.connection_incoming_allow=False
+        state.obj.connection_outgoing_allow=False
+        state.obj.connection_incoming_remote_port=random.randint(1025, 65535)
+        state.obj.connection_outgoing_local_port=random.randint(1025, 65535)
+        state.obj.enable_sender_side_loop_detection=False
+        state.obj.reflector_client='client'
+        state.obj.peering_type='bilateral'
+        # state.obj.aggregated_confed_as_path=False
+        state.obj.max_prefixes=random.randint(4000, 6000)
+        # state.obj.max_orf_entries=random.randint(4000, 6000)
+        # state.obj.soft_reset_with_stored_info=False
+        state.obj.bfd_profile=None
 
 
 class TestManagementProfile(testlib.FwFlow):
