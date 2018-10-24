@@ -27,6 +27,34 @@ import pandevice.network
 import pandevice.objects
 import pandevice.panorama
 
+import xml.etree.ElementTree as ET
+
+
+class TestTemplates(unittest.TestCase):
+    def setUp(self):
+        self.pano = pandevice.panorama.Panorama(
+            'foo', 'bar', 'baz', 'apikey')
+        self.pano._version_info = (8, 0, 0)
+
+    def test_template_element_str_stays_consistent(self):
+        expected = ''.join([
+            '<entry name="blah"><description>my description</description>',
+            '<settings><default-vsys>vsys1</default-vsys></settings>',
+            '<config><devices><entry name="localhost.localdomain"><vsys>',
+            '<entry name="vsys1"><import><network><interface /></network>',
+            '</import></entry></vsys><network><virtual-router>',
+            '<entry name="some vr"><admin-dists><static>42</static>',
+            '<ebgp>21</ebgp></admin-dists></entry></virtual-router>',
+            '</network></entry></devices></config></entry>',
+        ])
+
+        xml_tree = ET.fromstring('<result>{0}</result>'.format(expected))
+        t = pandevice.panorama.Template()
+        self.pano.add(t)
+        other = t.refreshall_from_xml(xml_tree)[0]
+
+        self.assertEqual(expected, other.element_str().decode('utf-8'))
+
 
 class TestNearestPandevice(unittest.TestCase):
     """

@@ -506,7 +506,10 @@ class PanObject(object):
                 xpath_sections = xpath_sections[:-1]
             e = root
             for path in xpath_sections:
-                e = ET.SubElement(e, path)
+                if path == "entry[@name='localhost.localdomain']":
+                    e = ET.SubElement(e, 'entry', {'name': 'localhost.localdomain'})
+                else:
+                    e = ET.SubElement(e, path)
             e.append(child.element(comparable=comparable))
             yield root
 
