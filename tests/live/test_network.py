@@ -1,5 +1,4 @@
 import random
-import pytest
 
 from tests.live import testlib
 from pandevice import network
