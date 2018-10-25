@@ -1823,6 +1823,7 @@ class Bgp(VersionedPanObject):
         ecmp_multi_as (bool): Support multiple AS in ECMP
         enforce_first_as (bool): Enforce First AS for EBGP
         local_as (int): local AS number
+        global_bfd_profile (str): BFD Profile
 
     """
     NAME = None
@@ -1872,9 +1873,9 @@ class BgpRoutingOptions(VersionedPanObject):
         gr_stale_route_time (int): time to remove stale routes after peer restart (in seconds)
         gr_local_restart_time (int): local restart time to advertise to peer (in seconds)
         gr_max_peer_restart_time (int): maximum of peer restart time accepted (in seconds)
-        orf_enable (bool): enable prefix-based outbound route filtering.
-        orf_max_recieved_entries (int): maximum of ORF prefixes to receive.
-        orf_cisco_prefix_mode (bool): ORF vendor-compatible mode
+        reflector_cluster_id (str): route reflector cluster ID
+        confederation_member_as (str): 32-bit value in decimal or dot decimal AS.AS format
+        aggregate_med (bool): aggregate route only if they have same MED attributes
 
     """
     NAME = None
