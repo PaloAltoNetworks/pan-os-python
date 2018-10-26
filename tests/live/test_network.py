@@ -972,7 +972,7 @@ class TestBgpRoutingOptions(MakeVirtualRouter):
             gr_local_restart_time=60,
             gr_max_peer_restart_time=120,
             reflector_cluster_id='192.168.19.104',
-            confederation_member_as=random.randint(0, 100),
+            confederation_member_as=random.randint(1, 100),
             aggregate_med=True,
         )
         state.bgp.add(state.obj)
