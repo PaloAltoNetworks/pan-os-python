@@ -1852,7 +1852,7 @@ class Bgp(VersionedPanObject):
         params.append(VersionedParamPath(
             'ecmp_multi_as', default=False, vartype='yesno'))
         params.append(VersionedParamPath(
-            'enforce_first_as', default=None, vartype='yesno'))
+            'enforce_first_as', default=True, vartype='yesno'))
         params.append(VersionedParamPath(
             'local_as', vartype='str'))
         params.append(VersionedParamPath(
@@ -1914,7 +1914,7 @@ class BgpRoutingOptions(VersionedPanObject):
         params.append(VersionedParamPath(
             'reflector_cluster_id'))
         params.append(VersionedParamPath(
-            'confederation_member_as'))
+            'confederation_member_as', default=None))
         params.append(VersionedParamPath(
             'aggregate_med', path='aggregate/aggregate-med', vartype='yesno'))
 
