@@ -732,7 +732,7 @@ class MakeVirtualRouter(testlib.FwFlow):
                     )
                     state.pg.add(state.peer)
                     state.pg.apply()
-            
+
             if self.WITH_BGP_IMPORT_RULE:
                 state.import_rule = network.BgpPolicyImportRule(
                     name=testlib.random_name(),
