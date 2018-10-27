@@ -640,6 +640,9 @@ class MakeVirtualRouter(testlib.FwFlow):
     WITH_BGP_ROUTING_OPTIONS = False
     WITH_BGP_AUTH_PROFILE = False
     WITH_BGP_PEER_GROUP = False
+    WITH_BGP_PEER = False
+    WITH_BGP_IMPORT_RULE = False
+    WITH_BGP_EXPORT_RULE = False
 
     def create_dependencies(self, fw, state):
         state.eths = testlib.get_available_interfaces(fw, 2)
@@ -680,8 +683,9 @@ class MakeVirtualRouter(testlib.FwFlow):
 
             state.ospf.create()
 
-        if any((self.WITH_BGP, self.WITH_BGP_AUTH_PROFILE,
-                self.WITH_BGP_ROUTING_OPTIONS, self.WITH_BGP_PEER_GROUP)):
+        if any((self.WITH_BGP, self.WITH_BGP_ROUTING_OPTIONS,
+                self.WITH_BGP_AUTH_PROFILE, self.WITH_BGP_PEER_GROUP, self.WITH_BGP_PEER,
+                self.WITH_BGP_IMPORT_RULE, self.WITH_BGP_EXPORT_RULE)):
             state.bgp = network.Bgp(
                 enable=True,
                 router_id=testlib.random_ip(),
@@ -705,7 +709,7 @@ class MakeVirtualRouter(testlib.FwFlow):
                 state.bgp.add(state.bgp_opts)
                 state.bgp.apply()
 
-            if self.WITH_BGP_PEER_GROUP:
+            if any((self.WITH_BGP_PEER_GROUP, self.WITH_BGP_PEER)):
                 state.pg = network.BgpPeerGroup(
                     name=testlib.random_name(),
                     enable=True,
@@ -716,6 +720,33 @@ class MakeVirtualRouter(testlib.FwFlow):
                     remove_private_as=True,
                 )
                 state.bgp.add(state.pg)
+                state.bgp.apply()
+
+                if self.WITH_BGP_PEER:
+                    state.peer = network.BgpPeer(
+                        name=testlib.random_name(),
+                        enable=True,
+                        peer_as=random.randint(1000, 1255),
+                        local_interface=state.eths[0],
+                        peer_address_ip=testlib.random_ip(),
+                    )
+                    state.pg.add(state.peer)
+                    state.pg.apply()
+            
+            if self.WITH_BGP_IMPORT_RULE:
+                state.import_rule = network.BgpPolicyImportRule(
+                    name=testlib.random_name(),
+                    enable=True,
+                )
+                state.bgp.add(state.import_rule)
+                state.bgp.apply()
+
+            if self.WITH_BGP_EXPORT_RULE:
+                state.export_rule = network.BgpPolicyExportRule(
+                    name=testlib.random_name(),
+                    enable=True,
+                )
+                state.bgp.add(state.export_rule)
                 state.bgp.apply()
 
             state.bgp.create()
@@ -1124,6 +1155,134 @@ class TestBgpPeer(MakeVirtualRouter):
         # state.obj.max_orf_entries=random.randint(4000, 6000)
         # state.obj.soft_reset_with_stored_info=False
         state.obj.bfd_profile=None
+
+
+class MakeBgpPolicyImportRule(MakeVirtualRouter):
+    WITH_BGP = True
+    WITH_BGP_PEER = True
+    WITH_BGP_PEER_GROUP = True
+    USE_IMPORT_RULE = False
+    USE_EXPORT_RULE = False
+
+    def setup_state_obj(self, fw, state):
+        rule_spec = {
+            'name': testlib.random_name(),
+            'enable': True,
+            'used_by': state.pg.name,
+            # match_afi/match_safi are unsupported for testing
+            # 'match_afi': 'ip',
+            # 'match_safi': 'ip',
+            'match_route_table': 'unicast',
+            'match_nexthop': [testlib.random_ip('/32'), ],
+            'match_from_peer': state.peer.name,
+            'match_med': random.randint(0, 4294967295),
+            'match_as_path_regex': 'as-path-regex',
+            'match_community_regex': 'community-regex',
+            'match_extended_community_regex': 'ext-comm-regex',
+            'action': 'allow',
+            'action_local_preference': random.randint(0, 4294967295),
+            'action_med': random.randint(0, 4294967295),
+            'action_nexthop': testlib.random_ip(),
+            'action_origin': 'incomplete',
+            'action_as_path_limit': random.randint(1, 255),
+            'action_as_path_type': 'none',
+        }
+        if self.USE_IMPORT_RULE:
+            state.obj = network.BgpPolicyImportRule(**rule_spec)
+        elif self.USE_EXPORT_RULE:
+            state.obj = network.BgpPolicyExportRule(**rule_spec)
+
+        state.bgp.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
+        state.obj.match_route_table = 'both'
+        state.obj.match_nexthop = [testlib.random_ip('/32'), ]
+        state.obj.match_from_peer = None
+        state.obj.match_med = random.randint(0, 4294967295)
+        state.obj.match_as_path_regex = 'updated-as-path-regex'
+        state.obj.match_community_regex = 'updated-community-regex'
+        state.obj.match_extended_community_regex = 'updated-ext-comm-regex'
+        state.obj.action_local_preference = random.randint(0, 4294967295)
+        state.obj.action_med = random.randint(0, 4294967295)
+        state.obj.action_nexthop = testlib.random_ip()
+        state.obj.action_origin = 'incomplete'
+        state.obj.action_as_path_limit = random.randint(1, 255)
+        state.obj.action_as_path_type='none'
+
+    def test_05_action_community_regex_argument(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        state.obj.action = 'allow'
+        state.obj.action_community_type = 'remove-regex'
+        state.obj.action_community_argument = 'test-regex'
+
+        state.obj.apply()
+
+    def test_06_action_extended_community_regex_argument(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        state.obj.action = 'allow'
+        state.obj.action_extended_community_type = 'remove-regex'
+        state.obj.action_extended_community_argument = 'test-regex'
+
+        state.obj.apply()
+
+    def test_07_action_deny(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        state.obj.action = 'deny'
+
+        state.obj.apply()
+
+
+class TestBgpPolicyImportRule(MakeBgpPolicyImportRule):
+    USE_IMPORT_RULE = True
+    """Define any Import specific tests here"""
+
+
+class TestBgpPolicyExportRule(MakeBgpPolicyImportRule):
+    USE_EXPORT_RULE = True
+    """Define any Export specific tests here"""
+
+
+class MakeBgpPolicyRuleAddressPrefix(MakeVirtualRouter):
+    WITH_BGP = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.BgpPolicyRuleAddressPrefix(
+            name=testlib.random_ip('/32'),
+            exact=True,
+        )
+        if self.WITH_BGP_IMPORT_RULE:
+            state.import_rule.add(state.obj)
+        elif self.WITH_BGP_EXPORT_RULE:
+            state.export_rule.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.exact = False
+
+    def test_05_multiple_prefixes(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        prefixes = [network.BgpPolicyRuleAddressPrefix(
+            name=testlib.random_ip('/32'),
+            exact=random.choice([True, False])) for x in range(2)]
+
+        if self.WITH_BGP_IMPORT_RULE:
+            state.import_rule.extend(prefixes)
+            state.import_rule.apply()
+        elif self.WITH_BGP_EXPORT_RULE:
+            state.export_rule.extend(prefixes)
+            state.export_rule.apply()
+
+
+class TestBgpPolicyImportRuleAddressPrefix(MakeBgpPolicyRuleAddressPrefix):
+    WITH_BGP_IMPORT_RULE = True
+
+
+class TestBgpPolicyExportRuleAddressPrefix(MakeBgpPolicyRuleAddressPrefix):
+    WITH_BGP_EXPORT_RULE = True
 
 
 class TestManagementProfile(testlib.FwFlow):
