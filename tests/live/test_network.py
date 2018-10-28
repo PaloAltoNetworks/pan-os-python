@@ -1157,7 +1157,7 @@ class TestBgpPeer(MakeVirtualRouter):
         state.obj.bfd_profile=None
 
 
-class MakeBgpPolicyImportRule(MakeVirtualRouter):
+class MakeBgpPolicyRule(MakeVirtualRouter):
     WITH_BGP = True
     WITH_BGP_PEER = True
     WITH_BGP_PEER_GROUP = True
@@ -1236,21 +1236,23 @@ class MakeBgpPolicyImportRule(MakeVirtualRouter):
         state.obj.apply()
 
 
-class TestBgpPolicyImportRule(MakeBgpPolicyImportRule):
+class TestBgpPolicyImportRule(MakeBgpPolicyRule):
     USE_IMPORT_RULE = True
     """Define any Import specific tests here"""
 
 
-class TestBgpPolicyExportRule(MakeBgpPolicyImportRule):
+class TestBgpPolicyExportRule(MakeBgpPolicyRule):
     USE_EXPORT_RULE = True
     """Define any Export specific tests here"""
 
 
-class MakeBgpPolicyRuleAddressPrefix(MakeVirtualRouter):
+class MakeBgpPolicyAddressPrefixExact(MakeVirtualRouter):
     WITH_BGP = True
+    WITH_BGP_IMPORT_RULE = False
+    WITH_BGP_EXPORT_RULE = False
 
     def setup_state_obj(self, fw, state):
-        state.obj = network.BgpPolicyRuleAddressPrefix(
+        state.obj = network.BgpPolicyAddressPrefixExact(
             name=testlib.random_ip('/32'),
             exact=True,
         )
@@ -1265,7 +1267,7 @@ class MakeBgpPolicyRuleAddressPrefix(MakeVirtualRouter):
     def test_05_multiple_prefixes(self, fw, state_map):
         state = self.sanity(fw, state_map)
 
-        prefixes = [network.BgpPolicyRuleAddressPrefix(
+        prefixes = [network.BgpPolicyAddressPrefixExact(
             name=testlib.random_ip('/32'),
             exact=random.choice([True, False])) for x in range(2)]
 
@@ -1277,12 +1279,41 @@ class MakeBgpPolicyRuleAddressPrefix(MakeVirtualRouter):
             state.export_rule.apply()
 
 
-class TestBgpPolicyImportRuleAddressPrefix(MakeBgpPolicyRuleAddressPrefix):
+class TestBgpPolicyImportRuleAddressPrefix(MakeBgpPolicyAddressPrefixExact):
     WITH_BGP_IMPORT_RULE = True
 
 
-class TestBgpPolicyExportRuleAddressPrefix(MakeBgpPolicyRuleAddressPrefix):
+class TestBgpPolicyExportRuleAddressPrefix(MakeBgpPolicyAddressPrefixExact):
     WITH_BGP_EXPORT_RULE = True
+
+
+class TestBgpPolicyConditionalAdvertisement(MakeVirtualRouter):
+    WITH_BGP = True
+    WITH_BGP_PEER = True
+    WITH_BGP_PEER_GROUP = True
+
+    def setup_state_obj(self, fw, state):
+        prefixes = [network.BgpPolicyAddressPrefix(
+            name=testlib.random_ip('/32')) for x in range(2)]
+
+        non_exist = network.BgpPolicyNonExistFilter(
+            name=testlib.random_name(), enable=False)
+        non_exist.extend(prefixes)
+        advert = network.BgpPolicyAdvertiseFilter(
+            name=testlib.random_name(), enable=False)
+        advert.extend(prefixes)
+        state.obj = network.BgpPolicyConditionalAdvertisement(
+            name=testlib.random_name(),
+            enable=True,
+            used_by=state.pg.name,
+        )
+        state.obj.add(non_exist)
+        state.obj.add(advert)
+        state.bgp.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
+        state.obj.used_by = None
 
 
 class TestManagementProfile(testlib.FwFlow):

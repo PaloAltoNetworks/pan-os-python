@@ -2183,6 +2183,134 @@ class BgpPeer(VersionedPanObject):
         self._params = tuple(params)
 
 
+class BgpPolicyFilter(VersionedPanObject):
+    """Base class for BGP Policy Match Filters
+
+    Do not instantiate this class, use one of:
+        * BgpPolicyImportRule
+        * BgpPolicyExportRule
+
+    Args:
+        name (str): name of filter
+        enable (bool): enable prefix-based outbound route filtering.
+        used_by (list): peer-groups that use this rule.
+        match_afi (str): Address Family Identifier
+            * ip
+            * ipv6
+        match_safi (str): Subsequent Address Family Identifier
+            * ip
+            * ipv6
+        match_route_table (str): route table to match rule
+            * unicast
+            * multicast
+            * both
+        match_nexthop (list): next-hop attributes
+        match_from_peer (list): filter by peer that sent this route
+        match_med (int): Multi-Exit Discriminator
+        match_as_path_regex (str): AS-path regular expression
+        match_community_regex (str): AS-path regular expression
+        match_extended_community_regex (str): AS-path regular expression
+
+    """
+    # SUFFIX = None
+
+    def _setup(self):
+        # disabled because this is a base class
+        # self._xpaths.add_profile(value='/policy')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'match_afi', path='match/afi', default=None, values=('ip', 'ipv6')))
+        params.append(VersionedParamPath(
+            'match_safi', path='match/safi', default=None, values=('ip', 'ipv6')))
+        params.append(VersionedParamPath(
+            'match_route_table', path='match/route-table', default='unicast',
+            values=('unicast', 'multicast', 'both')))
+        params.append(VersionedParamPath(
+            'match_nexthop', path='match/nexthop', vartype='member'))
+        params.append(VersionedParamPath(
+            'match_from_peer', path='match/from-peer', vartype='member'))
+        params.append(VersionedParamPath(
+            'match_med', path='match/med', vartype='int'))
+        params.append(VersionedParamPath(
+            'match_as_path_regex', path='match/as-path/regex'))
+        params.append(VersionedParamPath(
+            'match_community_regex', path='match/community/regex'))
+        params.append(VersionedParamPath(
+            'match_extended_community_regex', path='match/extended-community/regex'))
+
+        self._params = tuple(params)
+
+
+class BgpPolicyNonExistFilter(BgpPolicyFilter):
+    """BGP Policy Non-Exist Filter
+
+    ** Most of the arguments are derived from the BgpPolicyFilter class
+
+    Args:
+
+    """
+    SUFFIX = ENTRY
+    # CHILDTYPES = (
+    #     "network.BgpPolicyAddressPrefixExact",
+    # )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/non-exist-filters')
+
+        super(BgpPolicyNonExistFilter, self)._setup()
+
+
+class BgpPolicyAdvertiseFilter(BgpPolicyFilter):
+    """BGP Policy Non-Exist Filter
+
+    ** Most of the arguments are derived from the BgpPolicyFilter class
+
+    Args:
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicyAddressPrefixExact",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/advertise-filters')
+
+        super(BgpPolicyAdvertiseFilter, self)._setup()
+
+
+class BgpPolicyConditionalAdvertisement(VersionedPanObject):
+    """BGP Conditional Advertisement Policy
+
+    Args:
+        name (str): Name of Conditional Advertisement Policy
+        enable (bool): enable prefix-based outbound route filtering.
+        used_by (list): peer-groups that use this rule.
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicyNonExistFilter",
+        "network.BgpPolicyAdvertiseFilter",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/policy/conditional-advertisement/policy')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'used_by', vartype='member'))
+
+        self._params = tuple(params)
+
+
 class BgpPolicyRule(VersionedPanObject):
     """Base class for BGP Policy Import/Export Rules
 
@@ -2339,7 +2467,7 @@ class BgpPolicyImportRule(BgpPolicyRule):
     """
     SUFFIX = ENTRY
     CHILDTYPES = (
-        "network.BgpPolicyRuleAddressPrefix",
+        "network.BgpPolicyAddressPrefix",
     )
 
     def _setup(self):
@@ -2347,7 +2475,7 @@ class BgpPolicyImportRule(BgpPolicyRule):
 
         super(BgpPolicyImportRule, self)._setup()
 
-        params = [x for x in self._params]
+        params = list(self._params)
 
         params.append(VersionedParamPath(
             'action_dampening', path='action/{action}/dampening',
@@ -2371,7 +2499,7 @@ class BgpPolicyExportRule(BgpPolicyRule):
     """
     SUFFIX = ENTRY
     CHILDTYPES = (
-        "network.BgpPolicyRuleAddressPrefix",
+        "network.BgpPolicyAddressPrefix",
     )
 
     def _setup(self):
@@ -2380,11 +2508,28 @@ class BgpPolicyExportRule(BgpPolicyRule):
         super(BgpPolicyExportRule, self)._setup()
 
 
-class BgpPolicyRuleAddressPrefix(VersionedPanObject):
+class BgpPolicyAddressPrefix(VersionedPanObject):
     """BGP Policy Address Prefix
 
     Args:
-        name (str): Name of Auth Profile
+        name (str): address prefix
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/match/address-prefix')
+
+        params = []
+
+        self._params = tuple(params)
+
+
+class BgpPolicyAddressPrefixExact(VersionedPanObject):
+    """BGP Policy Address Prefix with Exact
+
+    Args:
+        name (str): address prefix
         exact (str): match exact prefix length
 
     """
