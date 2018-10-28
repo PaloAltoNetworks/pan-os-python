@@ -2254,18 +2254,18 @@ class BgpPolicyNonExistFilter(BgpPolicyFilter):
 
     """
     SUFFIX = ENTRY
-    # CHILDTYPES = (
-    #     "network.BgpPolicyAddressPrefixExact",
-    # )
+    CHILDTYPES = (
+        "network.BgpPolicyAddressPrefix",
+    )
 
     def _setup(self):
         self._xpaths.add_profile(value='/non-exist-filters')
 
-        super(BgpPolicyNonExistFilter, self)._setup()
+        BgpPolicyFilter._setup(self)
 
 
 class BgpPolicyAdvertiseFilter(BgpPolicyFilter):
-    """BGP Policy Non-Exist Filter
+    """BGP Policy Advertise Filter
 
     ** Most of the arguments are derived from the BgpPolicyFilter class
 
@@ -2274,13 +2274,32 @@ class BgpPolicyAdvertiseFilter(BgpPolicyFilter):
     """
     SUFFIX = ENTRY
     CHILDTYPES = (
-        "network.BgpPolicyAddressPrefixExact",
+        "network.BgpPolicyAddressPrefix",
     )
 
     def _setup(self):
         self._xpaths.add_profile(value='/advertise-filters')
 
-        super(BgpPolicyAdvertiseFilter, self)._setup()
+        BgpPolicyFilter._setup(self)
+
+
+class BgpPolicySuppressFilter(BgpPolicyFilter):
+    """BGP Policy Suppress Filter
+
+    ** Most of the arguments are derived from the BgpPolicyFilter class
+
+    Args:
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicyAddressPrefix",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/suppress-filters')
+
+        BgpPolicyFilter._setup(self)
 
 
 class BgpPolicyConditionalAdvertisement(VersionedPanObject):
@@ -2311,7 +2330,7 @@ class BgpPolicyConditionalAdvertisement(VersionedPanObject):
         self._params = tuple(params)
 
 
-class BgpPolicyRule(VersionedPanObject):
+class BgpPolicyRule(BgpPolicyFilter):
     """Base class for BGP Policy Import/Export Rules
 
     Do not instantiate this class, use one of:
@@ -2345,13 +2364,13 @@ class BgpPolicyRule(VersionedPanObject):
             * egp
             * incomplete
         action_as_path_limit (int): add AS path limit attribute if it does not exist
-        action_as_path (str): AS path update options
+        action_as_path_type (str): AS path update options
             * none (string, not to be confused with the Python type None)
             * remove
             * prepend
             * remove-and-prepend
         action_as_path_prepend_times (int): prepend local AS for specified number of times
-            * only valid when action_as_path is 'prepend' or 'remove-and-prepend'
+            * only valid when action_as_path_type is 'prepend' or 'remove-and-prepend'
         action_community (str): community update options
             * none (string, not to be confused with the Python type None)
             * remove-all
@@ -2381,32 +2400,12 @@ class BgpPolicyRule(VersionedPanObject):
     def _setup(self):
         # disabled because this is a base class
         # self._xpaths.add_profile(value='/policy')
+        BgpPolicyFilter._setup(self)
 
-        params = []
+        params = list(self._params)
 
-        params.append(VersionedParamPath(
-            'enable', vartype='yesno'))
         params.append(VersionedParamPath(
             'used_by', vartype='member'))
-        params.append(VersionedParamPath(
-            'match_afi', path='match/afi', default=None, values=('ip', 'ipv6')))
-        params.append(VersionedParamPath(
-            'match_safi', path='match/safi', default=None, values=('ip', 'ipv6')))
-        params.append(VersionedParamPath(
-            'match_route_table', path='match/route-table', default=None,
-            values=('unicast', 'multicast', 'both')))
-        params.append(VersionedParamPath(
-            'match_nexthop', path='match/nexthop', vartype='member'))
-        params.append(VersionedParamPath(
-            'match_from_peer', path='match/from-peer', vartype='member'))
-        params.append(VersionedParamPath(
-            'match_med', path='match/med', vartype='int'))
-        params.append(VersionedParamPath(
-            'match_as_path_regex', path='match/as-path/regex'))
-        params.append(VersionedParamPath(
-            'match_community_regex', path='match/community/regex'))
-        params.append(VersionedParamPath(
-            'match_extended_community_regex', path='match/extended-community/regex'))
         params.append(VersionedParamPath(
             'action', path='action/{action}',
             default='allow', values=('allow', 'deny')))
@@ -2473,7 +2472,7 @@ class BgpPolicyImportRule(BgpPolicyRule):
     def _setup(self):
         self._xpaths.add_profile(value='/policy/import/rules')
 
-        super(BgpPolicyImportRule, self)._setup()
+        BgpPolicyRule._setup(self)
 
         params = list(self._params)
 
@@ -2505,27 +2504,10 @@ class BgpPolicyExportRule(BgpPolicyRule):
     def _setup(self):
         self._xpaths.add_profile(value='/policy/export/rules')
 
-        super(BgpPolicyExportRule, self)._setup()
+        BgpPolicyRule._setup(self)
 
 
 class BgpPolicyAddressPrefix(VersionedPanObject):
-    """BGP Policy Address Prefix
-
-    Args:
-        name (str): address prefix
-
-    """
-    SUFFIX = ENTRY
-
-    def _setup(self):
-        self._xpaths.add_profile(value='/match/address-prefix')
-
-        params = []
-
-        self._params = tuple(params)
-
-
-class BgpPolicyAddressPrefixExact(VersionedPanObject):
     """BGP Policy Address Prefix with Exact
 
     Args:
@@ -2541,7 +2523,117 @@ class BgpPolicyAddressPrefixExact(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'exact', default=False, vartype='yesno'))
+            'exact', default=None, vartype='yesno'))
+
+        self._params = tuple(params)
+
+
+class BgpPolicyAggregationAddress(VersionedPanObject):
+    """BGP Policy Aggregation Address
+
+    Args:
+        name (str): address prefix
+        enable (bool): enable aggregation for this prefix
+        prefix (str): aggregating address prefix
+        summary (bool): summarize route
+        as_set (bool): generate AS-set attribute
+        attr_local_preference (int): new local preference value
+        attr_med (int): new MED value
+        attr_nexthop (str): nexthop address
+        attr_origin (str): new route origin
+            * igp
+            * egp
+            * incomplete
+        attr_as_path_limit (int): add AS path limit attribute if it does not exist
+        attr_as_path_type (str): AS path update options
+            * none (string, not to be confused with the Python type None)
+            * remove
+            * prepend
+            * remove-and-prepend
+        attr_as_path_prepend_times (int): prepend local AS for specified number of times
+            * only valid when attr_as_path_type is 'prepend' or 'remove-and-prepend'
+        attr_community (str): community update options
+            * none (string, not to be confused with the Python type None)
+            * remove-all
+            * remove-regex
+            * append
+            * overwrite
+        attr_community_argument (str): argument to the attr community value if needed
+            * None
+            * local-as
+            * no-advertise
+            * no-export
+            * nopeer
+            * regex
+            * 32-bit value
+            * AS:VAL
+        attr_extended_community (str): extended community update options
+            * none (string, not to be confused with the Python type None)
+            * remove-all
+            * remove-regex
+            * append
+            * overwrite
+        attr_extended_community_argument (str): argument to the attr extended community value if needed
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicySuppressFilter",
+        "network.BgpPolicyAdvertiseFilter",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/policy/aggregation/address')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', default=True, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'prefix'))
+        params.append(VersionedParamPath(
+            'summary', default=False, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'as_set', default=False, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'attr_local_preference', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/local-preference', vartype='int'))
+        params.append(VersionedParamPath(
+            'attr_med', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/med', vartype='int'))
+        params.append(VersionedParamPath(
+            'attr_nexthop', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/nexthop'))
+        params.append(VersionedParamPath(
+            'attr_origin', default='incomplete', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/origin', values=('igp', 'egp', 'incomplete')))
+        params.append(VersionedParamPath(
+            'attr_as_path_limit', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/as-path-limit', vartype='int'))
+        params.append(VersionedParamPath(
+            'attr_as_path_type', condition={'attr': 'allow'}, default='none',
+            path='aggregate-route-attributes/as-path/{attr_as_path_type}',
+            values=('none', 'remove', 'prepend', 'remove-and-prepend')))
+        params.append(VersionedParamPath(
+            'attr_as_path_prepend_times',
+            condition={'attr': 'allow', 'attr_as_path_type': ['prepend', 'remove-and-prepend']},
+            path='aggregate-route-attributes/as-path/{attr_as_path_type}', vartype='int'))
+        params.append(VersionedParamPath(
+            'attr_community_type', condition={'attr': 'allow'}, default='none',
+            path='aggregate-route-attributes/community/{attr_community_type}',
+            values=('none', 'remove-all', 'remove-regex', 'append', 'overwrite')))
+        params.append(VersionedParamPath(
+            'attr_community_argument', default=None,
+            condition={'attr': 'allow', 'attr_community_type': ['remove-regex', 'append', 'overwrite']},
+            path='aggregate-route-attributes/community/{attr_community_type}'))
+        params.append(VersionedParamPath(
+            'attr_extended_community_type', condition={'attr': 'allow'}, default='none',
+            path='aggregate-route-attributes/extended-community/{attr_extended_community_type}',
+            values=('none', 'remove-all', 'remove-regex', 'append', 'overwrite')))
+        params.append(VersionedParamPath(
+            'attr_extended_community_argument', default=None,
+            condition={'attr': 'allow', 'attr_extended_community_type': ['remove-regex', 'append', 'overwrite']},
+            path='aggregate-route-attributes/extended-community/{attr_extended_community_type}'))
 
         self._params = tuple(params)
 

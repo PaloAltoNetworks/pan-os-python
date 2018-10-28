@@ -1246,14 +1246,14 @@ class TestBgpPolicyExportRule(MakeBgpPolicyRule):
     """Define any Export specific tests here"""
 
 
-class MakeBgpPolicyAddressPrefixExact(MakeVirtualRouter):
+class MakeBgpPolicyAddressPrefix(MakeVirtualRouter):
     WITH_BGP = True
     WITH_BGP_IMPORT_RULE = False
     WITH_BGP_EXPORT_RULE = False
 
     def setup_state_obj(self, fw, state):
-        state.obj = network.BgpPolicyAddressPrefixExact(
-            name=testlib.random_ip('/32'),
+        state.obj = network.BgpPolicyAddressPrefix(
+            name=testlib.random_netmask(),
             exact=True,
         )
         if self.WITH_BGP_IMPORT_RULE:
@@ -1267,8 +1267,8 @@ class MakeBgpPolicyAddressPrefixExact(MakeVirtualRouter):
     def test_05_multiple_prefixes(self, fw, state_map):
         state = self.sanity(fw, state_map)
 
-        prefixes = [network.BgpPolicyAddressPrefixExact(
-            name=testlib.random_ip('/32'),
+        prefixes = [network.BgpPolicyAddressPrefix(
+            name=testlib.random_netmask(),
             exact=random.choice([True, False])) for x in range(2)]
 
         if self.WITH_BGP_IMPORT_RULE:
@@ -1279,11 +1279,11 @@ class MakeBgpPolicyAddressPrefixExact(MakeVirtualRouter):
             state.export_rule.apply()
 
 
-class TestBgpPolicyImportRuleAddressPrefix(MakeBgpPolicyAddressPrefixExact):
+class TestBgpPolicyImportRuleAddressPrefix(MakeBgpPolicyAddressPrefix):
     WITH_BGP_IMPORT_RULE = True
 
 
-class TestBgpPolicyExportRuleAddressPrefix(MakeBgpPolicyAddressPrefixExact):
+class TestBgpPolicyExportRuleAddressPrefix(MakeBgpPolicyAddressPrefix):
     WITH_BGP_EXPORT_RULE = True
 
 
@@ -1294,7 +1294,7 @@ class TestBgpPolicyConditionalAdvertisement(MakeVirtualRouter):
 
     def setup_state_obj(self, fw, state):
         prefixes = [network.BgpPolicyAddressPrefix(
-            name=testlib.random_ip('/32')) for x in range(2)]
+            name=testlib.random_netmask()) for x in range(2)]
 
         non_exist = network.BgpPolicyNonExistFilter(
             name=testlib.random_name(), enable=False)
@@ -1314,6 +1314,50 @@ class TestBgpPolicyConditionalAdvertisement(MakeVirtualRouter):
     def update_state_obj(self, fw, state):
         state.obj.enable = False
         state.obj.used_by = None
+
+
+class TestBgpPolicyAggregationAddress(MakeVirtualRouter):
+    WITH_BGP = True
+
+    def setup_state_obj(self, fw, state):
+        prefixes = [network.BgpPolicyAddressPrefix(
+            name=testlib.random_netmask(),
+            exact=random.choice([True, False])) for x in range(2)]
+
+        suppress = network.BgpPolicySuppressFilter(
+            name=testlib.random_name(), enable=False)
+        suppress.extend(prefixes)
+        advert = network.BgpPolicyAdvertiseFilter(
+            name=testlib.random_name(), enable=False)
+        advert.extend(prefixes)
+        state.obj = network.BgpPolicyAggregationAddress(
+            name=testlib.random_name(),
+            enable=True,
+            prefix=testlib.random_netmask(),
+            summary=False,
+        )
+        state.obj.add(suppress)
+        state.obj.add(advert)
+        state.bgp.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
+        state.obj.prefix = testlib.random_netmask()
+        state.obj.summary = True
+
+    def test_05_attributes(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        state.obj.enable = True
+        state.obj.prefix = testlib.random_netmask()
+        state.obj.summary = True
+        state.obj.as_set = True
+        state.obj.attr_local_preference = random.randint(0, 4294967295)
+        state.obj.attr_med = random.randint(0, 4294967295)
+        state.obj.attr_nexthop = testlib.random_ip()
+        state.obj.attr_origin = 'incomplete'
+        state.obj.attr_as_path_limit = random.randint(1, 255)
+        state.obj.attr_as_path_type='none'
 
 
 class TestManagementProfile(testlib.FwFlow):
