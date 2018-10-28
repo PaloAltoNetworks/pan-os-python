@@ -636,6 +636,7 @@ class MakeVirtualRouter(testlib.FwFlow):
     WITH_AREA = False
     WITH_AUTH_PROFILE = False
     WITH_AREA_INTERFACE = False
+    WITH_REDISTRIBUTION_PROFILE = False
     WITH_BGP = False
     WITH_BGP_ROUTING_OPTIONS = False
     WITH_BGP_AUTH_PROFILE = False
@@ -660,6 +661,24 @@ class MakeVirtualRouter(testlib.FwFlow):
         state.vr = network.VirtualRouter(testlib.random_name(), state.eths)
         fw.add(state.vr)
         state.vr.create()
+
+        if self.WITH_REDISTRIBUTION_PROFILE:
+            some_ip = testlib.random_ip()
+
+            state.redist_profile = network.RedistributionProfile(
+                testlib.random_name(),
+                priority=random.randint(1, 255),
+                action='no-redist',
+                filter_type=['ospf', 'static', 'connect', 'bgp'],
+                filter_interface=random.choice(state.eths),
+                filter_destination=testlib.random_ip(),
+                filter_nexthop=testlib.random_ip(),
+                ospf_filter_pathtype=('intra-area', 'ext-1'),
+                ospf_filter_area=some_ip,
+                ospf_filter_tag=some_ip,
+            )
+            state.vr.add(state.redist_profile)
+            state.redist_profile.create()
 
         if any((self.WITH_OSPF, self.WITH_AUTH_PROFILE,
                self.WITH_AREA, self.WITH_AREA_INTERFACE)):
@@ -1358,6 +1377,21 @@ class TestBgpPolicyAggregationAddress(MakeVirtualRouter):
         state.obj.attr_origin = 'incomplete'
         state.obj.attr_as_path_limit = random.randint(1, 255)
         state.obj.attr_as_path_type='none'
+
+
+class TestBgpRedistributionRule(MakeVirtualRouter):
+    WITH_BGP = True
+    WITH_REDISTRIBUTION_PROFILE = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.BgpRedistributionRule(
+            name=state.redist_profile.name,
+            enable=True, address_family_identifier='ipv4',
+        )
+        state.bgp.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
 
 
 class TestManagementProfile(testlib.FwFlow):

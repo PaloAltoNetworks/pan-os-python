@@ -2638,6 +2638,62 @@ class BgpPolicyAggregationAddress(VersionedPanObject):
         self._params = tuple(params)
 
 
+class BgpRedistributionRule(VersionedPanObject):
+    """BGP Policy Address Prefix with Exact
+
+    Args:
+        name (str): redistribution profile name
+        enable (bool): enable redistribution rule.
+        address_family_identifier (str): select redistribution profile type
+            * ipv4
+            * ipv6
+        route_table (str): select destination SAFI for redistribution
+            * unicast
+            * multicast
+            * both
+        set_origin (str): add the ORIGIN path attribute
+            * igp
+            * egp
+            * incomplete
+        set_med (int): add the MULTI_EXIT_DISC path attribute
+        set_local_preference (int): add the LOCAL_PREF path attribute
+        set_community (list): add the COMMUNITY path attribute
+        set_extended_community (list): add the EXTENDED COMMUNITY path attribute
+        metric (int): metric value
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/redist-rules')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'address_family_identifier', default='ipv4', values=('ipv4', 'ipv6')))
+        params.append(VersionedParamPath(
+            'route_table', default='unicast',
+            values=('unicast', 'multicast', 'both')))
+        params.append(VersionedParamPath(
+            'set_origin', default='incomplete', values=('igp', 'egp', 'incomplete')))
+        params.append(VersionedParamPath(
+            'set_med', vartype='int'))
+        params.append(VersionedParamPath(
+            'set_local_preference', vartype='int'))
+        params.append(VersionedParamPath(
+            'set_as_path_limit', vartype='int'))
+        params.append(VersionedParamPath(
+            'set_community', vartype='member'))
+        params.append(VersionedParamPath(
+            'set_extended_community', vartype='member'))
+        params.append(VersionedParamPath(
+            'metric', vartype='int'))
+
+        self._params = tuple(params)
+
+
 class ManagementProfile(VersionedPanObject):
     """Interface management provile.
 
