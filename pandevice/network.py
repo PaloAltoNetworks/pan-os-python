@@ -650,7 +650,9 @@ class AbstractSubinterface(object):
         """
         interface = Layer3Subinterface(self.name, self.tag)
         interface.parent = self.parent
-        return interface._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh=False, update=update, running_config=running_config)
+        return interface._set_reference(
+            virtual_router_name, VirtualRouter, "interface", True,
+            refresh=False, update=update, running_config=running_config)
 
     def get_layered_subinterface(self, mode, add=True):
         """Instantiate a regular subinterface type from this AbstractSubinterface
@@ -1380,6 +1382,7 @@ class StaticRouteV6(VersionedPanObject):
 
         self._params = tuple(params)
 
+
 class VirtualRouter(VsysOperations):
     """Virtual router
 
@@ -1437,7 +1440,7 @@ class VirtualRouter(VsysOperations):
         self._params = tuple(params)
 
 
-class RedistributionProfile(VersionedPanObject):
+class RedistributionProfileBase(VersionedPanObject):
     """Redistribution Profile
 
     Args:
@@ -1458,7 +1461,7 @@ class RedistributionProfile(VersionedPanObject):
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/protocol/redist-profile')
+        # self._xpaths.add_profile(value='/protocol/redist-profile')
 
         params = []
 
@@ -1489,6 +1492,58 @@ class RedistributionProfile(VersionedPanObject):
             path='filter/bgp/extended-community', vartype='member'))
 
         self._params = tuple(params)
+
+
+class RedistributionProfile(RedistributionProfileBase):
+    """Redistribution Profile
+
+    Args:
+        name (str): Name of profile
+        priority (int): Priority id
+        action (str): 'no-redist' or 'redist'
+        filter_type (tuple): Any of 'static', 'connect', 'rip', 'ospf', or 'bgp'
+        filter_interface (tuple): Filter interface
+        filter_destination (tuple): Filter destination
+        filter_nexthop (tuple): Filter nexthop
+        ospf_filter_pathtype (tuple): Any of 'intra-area', 'inter-area', 'ext-1', or 'ext-2
+        ospf_filter_area (tuple): OSPF filter on area
+        ospf_filter_tag (tuple): OSPF filter on tag
+        bgp_filter_community (tuple): BGP filter on community
+        bgp_filter_extended_community (tuple): BGP filter on extended community
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/protocol/redist-profile')
+
+        RedistributionProfileBase._setup(self)
+
+
+class RedistributionProfileIPv6(RedistributionProfileBase):
+    """Redistribution Profile
+
+    Args:
+        name (str): Name of profile
+        priority (int): Priority id
+        action (str): 'no-redist' or 'redist'
+        filter_type (tuple): Any of 'static', 'connect', 'rip', 'ospf', or 'bgp'
+        filter_interface (tuple): Filter interface
+        filter_destination (tuple): Filter destination
+        filter_nexthop (tuple): Filter nexthop
+        ospf_filter_pathtype (tuple): Any of 'intra-area', 'inter-area', 'ext-1', or 'ext-2
+        ospf_filter_area (tuple): OSPF filter on area
+        ospf_filter_tag (tuple): OSPF filter on tag
+        bgp_filter_community (tuple): BGP filter on community
+        bgp_filter_extended_community (tuple): BGP filter on extended community
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/protocol/redist-profile-ipv6')
+
+        RedistributionProfileBase._setup(self)
 
 
 class Ospf(VersionedPanObject):
@@ -1834,6 +1889,9 @@ class Bgp(VersionedPanObject):
         "network.BgpPeerGroup",
         "network.BgpPolicyImportRule",
         "network.BgpPolicyExportRule",
+        "network.BgpPolicyConditionalAdvertisement",
+        "network.BgpPolicyAggregationAddress",
+        "network.BgpRedistributionRule",
     )
 
     def _setup(self):
@@ -1956,9 +2014,9 @@ class BgpDampeningProfile(VersionedPanObject):
     Args:
         name (str): Name of Dampening Profile
         enable (bool): Enable profile (Default: True)
-        cutoff (float): shared secret for the TCP MD5 authentication.
-        reuse (float): reuse threshold value
-        max_hold_time (int): maximum of hold-down time (in seconds)
+        cutoff (float): Cutoff threshold value
+        reuse (float): Reuse threshold value
+        max_hold_time (int): Maximum of hold-down time (in seconds)
         decay_half_life_reachable (int): Decay half-life while reachable (in seconds)
         decay_half_life_unreachable (int): Decay half-life while unreachable (in seconds)
 
@@ -1971,8 +2029,6 @@ class BgpDampeningProfile(VersionedPanObject):
 
         params = []
 
-        params.append(VersionedParamPath(
-            'name'))
         params.append(VersionedParamPath(
             'enable', vartype='yesno'))
         params.append(VersionedParamPath(
@@ -2004,10 +2060,8 @@ class BgpAuthProfile(VersionedPanObject):
 
         params = []
 
-        # params.append(VersionedParamPath(
-        #     'name'))
         params.append(VersionedParamPath(
-            'secret', condition={'type': 'password'}))
+            'secret'))
 
         self._params = tuple(params)
 
@@ -2191,25 +2245,24 @@ class BgpPolicyFilter(VersionedPanObject):
         * BgpPolicyExportRule
 
     Args:
-        name (str): name of filter
-        enable (bool): enable prefix-based outbound route filtering.
-        used_by (list): peer-groups that use this rule.
+        name (str): Name of filter
+        enable (bool): Enable rule.
         match_afi (str): Address Family Identifier
             * ip
             * ipv6
         match_safi (str): Subsequent Address Family Identifier
             * ip
             * ipv6
-        match_route_table (str): route table to match rule
+        match_route_table (str): Route table to match rule
             * unicast
             * multicast
             * both
-        match_nexthop (list): next-hop attributes
-        match_from_peer (list): filter by peer that sent this route
+        match_nexthop (list): Next-hop attributes
+        match_from_peer (list): Filter by peer that sent this route
         match_med (int): Multi-Exit Discriminator
         match_as_path_regex (str): AS-path regular expression
-        match_community_regex (str): AS-path regular expression
-        match_extended_community_regex (str): AS-path regular expression
+        match_community_regex (str): Community AS-path regular expression
+        match_extended_community_regex (str): Extended Community AS-path regular expression
 
     """
     # SUFFIX = None
@@ -2338,46 +2391,46 @@ class BgpPolicyRule(BgpPolicyFilter):
         * BgpPolicyExportRule
 
     Args:
-        enable (bool): enable prefix-based outbound route filtering.
-        used_by (list): peer-groups that use this rule.
+        enable (bool): Enable rule.
+        used_by (list): Peer-groups that use this rule.
         match_afi (str): Address Family Identifier
             * ip
             * ipv6
         match_safi (str): Subsequent Address Family Identifier
             * ip
             * ipv6
-        match_route_table (str): route table to match rule
+        match_route_table (str): Route table to match rule
             * unicast
             * multicast
             * both
-        match_nexthop (list): next-hop attributes
-        match_from_peer (list): filter by peer that sent this route
+        match_nexthop (list): Next-hop attributes
+        match_from_peer (list): Filter by peer that sent this route
         match_med (int): Multi-Exit Discriminator
         match_as_path_regex (str): AS-path regular expression
         match_community_regex (str): AS-path regular expression
         match_extended_community_regex (str): AS-path regular expression
-        action_local_preference (int): new local preference value
-        action_med (int): new MED value
-        action_nexthop (str): nexthop address
-        action_origin (str): new route origin
+        action_local_preference (int): New local preference value
+        action_med (int): New MED value
+        action_nexthop (str): Nexthop address
+        action_origin (str): New route origin
             * igp
             * egp
             * incomplete
-        action_as_path_limit (int): add AS path limit attribute if it does not exist
+        action_as_path_limit (int): Add AS path limit attribute if it does not exist
         action_as_path_type (str): AS path update options
             * none (string, not to be confused with the Python type None)
             * remove
             * prepend
             * remove-and-prepend
-        action_as_path_prepend_times (int): prepend local AS for specified number of times
+        action_as_path_prepend_times (int): Prepend local AS for specified number of times
             * only valid when action_as_path_type is 'prepend' or 'remove-and-prepend'
-        action_community (str): community update options
+        action_community (str): Community update options
             * none (string, not to be confused with the Python type None)
             * remove-all
             * remove-regex
             * append
             * overwrite
-        action_community_argument (str): argument to the action community value if needed
+        action_community_argument (str): Argument to the action community value if needed
             * None
             * local-as
             * no-advertise
@@ -2386,13 +2439,13 @@ class BgpPolicyRule(BgpPolicyFilter):
             * regex
             * 32-bit value
             * AS:VAL
-        action_extended_community (str): extended community update options
+        action_extended_community (str): Extended community update options
             * none (string, not to be confused with the Python type None)
             * remove-all
             * remove-regex
             * append
             * overwrite
-        action_extended_community_argument (str): argument to the action extended community value if needed
+        action_extended_community_argument (str): Argument to the action extended community value if needed
 
     """
     # SUFFIX = None
@@ -2460,8 +2513,8 @@ class BgpPolicyImportRule(BgpPolicyRule):
        the BgpPolicyImportRule and BgpPolicyExportRule classes
 
     Args:
-        action_dampening (str): route flap dampening profile
-        action_weight (int): new weight value
+        action_dampening (str): Route flap dampening profile
+        action_weight (int): New weight value
 
     """
     SUFFIX = ENTRY
@@ -2532,33 +2585,34 @@ class BgpPolicyAggregationAddress(VersionedPanObject):
     """BGP Policy Aggregation Address
 
     Args:
-        name (str): address prefix
-        enable (bool): enable aggregation for this prefix
-        prefix (str): aggregating address prefix
-        summary (bool): summarize route
-        as_set (bool): generate AS-set attribute
-        attr_local_preference (int): new local preference value
-        attr_med (int): new MED value
-        attr_nexthop (str): nexthop address
-        attr_origin (str): new route origin
+        name (str): Sddress prefix
+        enable (bool): Enable aggregation for this prefix
+        prefix (str): Aggregating address prefix
+        summary (bool): Summarize route
+        as_set (bool): Generate AS-set attribute
+        attr_local_preference (int): New local preference value
+        attr_med (int): New MED value
+        attr_weight (int): New weight value
+        attr_nexthop (str): Nexthop address
+        attr_origin (str): New route origin
             * igp
             * egp
             * incomplete
-        attr_as_path_limit (int): add AS path limit attribute if it does not exist
+        attr_as_path_limit (int): Add AS path limit attribute if it does not exist
         attr_as_path_type (str): AS path update options
             * none (string, not to be confused with the Python type None)
             * remove
             * prepend
             * remove-and-prepend
-        attr_as_path_prepend_times (int): prepend local AS for specified number of times
+        attr_as_path_prepend_times (int): Prepend local AS for specified number of times
             * only valid when attr_as_path_type is 'prepend' or 'remove-and-prepend'
-        attr_community (str): community update options
+        attr_community_type (str): Community update options
             * none (string, not to be confused with the Python type None)
             * remove-all
             * remove-regex
             * append
             * overwrite
-        attr_community_argument (str): argument to the attr community value if needed
+        attr_community_argument (str): Argument to the attr community value if needed
             * None
             * local-as
             * no-advertise
@@ -2567,13 +2621,13 @@ class BgpPolicyAggregationAddress(VersionedPanObject):
             * regex
             * 32-bit value
             * AS:VAL
-        attr_extended_community (str): extended community update options
+        attr_extended_community_type (str): Extended community update options
             * none (string, not to be confused with the Python type None)
             * remove-all
             * remove-regex
             * append
             * overwrite
-        attr_extended_community_argument (str): argument to the attr extended community value if needed
+        attr_extended_community_argument (str): Argument to the attr extended community value if needed
 
     """
     SUFFIX = ENTRY
@@ -2601,6 +2655,9 @@ class BgpPolicyAggregationAddress(VersionedPanObject):
         params.append(VersionedParamPath(
             'attr_med', condition={'attr': 'allow'},
             path='aggregate-route-attributes/med', vartype='int'))
+        params.append(VersionedParamPath(
+            'attr_weight', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/weight', vartype='int'))
         params.append(VersionedParamPath(
             'attr_nexthop', condition={'attr': 'allow'},
             path='aggregate-route-attributes/nexthop'))
@@ -2642,24 +2699,25 @@ class BgpRedistributionRule(VersionedPanObject):
     """BGP Policy Address Prefix with Exact
 
     Args:
-        name (str): redistribution profile name
-        enable (bool): enable redistribution rule.
-        address_family_identifier (str): select redistribution profile type
+        name (str): Redistribution profile name
+        enable (bool): Enable redistribution rule.
+        address_family_identifier (str): Select redistribution profile type
             * ipv4
             * ipv6
-        route_table (str): select destination SAFI for redistribution
+        route_table (str): Select destination SAFI for redistribution
             * unicast
             * multicast
             * both
-        set_origin (str): add the ORIGIN path attribute
+        set_origin (str): Add the ORIGIN path attribute
             * igp
             * egp
             * incomplete
-        set_med (int): add the MULTI_EXIT_DISC path attribute
-        set_local_preference (int): add the LOCAL_PREF path attribute
-        set_community (list): add the COMMUNITY path attribute
-        set_extended_community (list): add the EXTENDED COMMUNITY path attribute
-        metric (int): metric value
+        set_med (int): Add the MULTI_EXIT_DISC path attribute
+        set_local_preference (int): Add the LOCAL_PREF path attribute
+        set_as_path_limit (int): Add the AS_PATHLIMIT path attribute
+        set_community (list): Add the COMMUNITY path attribute
+        set_extended_community (list): Add the EXTENDED COMMUNITY path attribute
+        metric (int): Metric value
 
     """
     SUFFIX = ENTRY
