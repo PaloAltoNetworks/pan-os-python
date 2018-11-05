@@ -506,7 +506,10 @@ class PanObject(object):
                 xpath_sections = xpath_sections[:-1]
             e = root
             for path in xpath_sections:
-                e = ET.SubElement(e, path)
+                if path == "entry[@name='localhost.localdomain']":
+                    e = ET.SubElement(e, 'entry', {'name': 'localhost.localdomain'})
+                else:
+                    e = ET.SubElement(e, path)
             e.append(child.element(comparable=comparable))
             yield root
 
@@ -4521,3 +4524,87 @@ class PanDevice(PanObject):
             raise ValueError('No password hash in response')
 
         return elm.text
+
+    def test_security_policy_match(self, source, destination, protocol,
+            application=None, category=None, port=None, user=None,
+            from_zone=None, to_zone=None, show_all=False):
+        """Test security policy match using the given criteria.
+
+        This function will always return a list for its results.  If `show_all`
+        is set to False, then the list will only have one entry in it.  The
+        keys in each dict are as follows:
+            * name (str): rule's name
+            * index (int): the index of the security rule
+            * action (str): the security rule's action
+
+        Args:
+            source (str): Source IP address.
+            destination (str): Destination IP address.
+            protocol (int): IP protocol value (1-255).
+            application (str): Application name.
+            category (str): Category name.
+            port (int): Destination port.
+            user (str): Source user.
+            from_zone (str): Source zone name.
+            to_zone (str): Destination zone name.
+            show_all (bool): Show all potential match rules until first allow.
+
+        Returns:
+            List of dicts
+        """
+        extras = (
+            ('application', application),
+            ('category', category),
+            ('destination-port', port),
+            ('source-user', user),
+            ('from', from_zone),
+            ('to', to_zone),
+            ('show-all', show_all),
+        )
+
+        # Build up the XML document.
+        root = ET.Element('test')
+        elm = ET.SubElement(root, 'security-policy-match')
+
+        # Add in required params.
+        ET.SubElement(elm, 'source').text = source
+        ET.SubElement(elm, 'destination').text = destination
+        ET.SubElement(elm, 'protocol').text = str(int(protocol))
+
+        # Add in the optional params.
+        for desc, val in extras:
+            if val is None:
+                continue
+
+            if desc == 'destination-port':
+                ET.SubElement(elm, desc).text = str(int(val))
+            elif desc == 'show-all':
+                ET.SubElement(elm, desc).text = 'yes' if val else 'no'
+            else:
+                ET.SubElement(elm, desc).text = val
+
+        # Run the test operation.
+        res = self.op(ET.tostring(root, encoding='utf-8'), cmd_xml=False)
+
+        # Build up the answer.
+        #
+        # Side note here:  the XML document returned here does not follow the
+        # rules of the API, so we can't use the SecurityRule module to parse
+        # the results.  For this reason, we won't parse everything, just
+        # name, index, and action.
+        ans = []
+        for elm in res.findall('./result/rules/entry'):
+            val = {
+                'name': elm.attrib['name'],
+            }
+
+            e = elm.find('./index')
+            val['index'] = 0 if e is None else int(e.text)
+
+            e = elm.find('./action')
+            val['action'] = '' if e is None else e.text
+
+            ans.append(val)
+
+        # Done.
+        return ans
