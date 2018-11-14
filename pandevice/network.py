@@ -1306,7 +1306,7 @@ class StaticRoute(VersionedPanObject):
         name (str): The name
         destination (str): Destination network
         nexthop_type (str): ip-address, discard, or next-vr
-        nexthop (str): Next hop IP address
+        nexthop (str): Next hop IP address or Next VR Name
         interface (str): Next hop interface
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
