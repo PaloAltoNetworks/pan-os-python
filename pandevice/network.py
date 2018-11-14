@@ -1305,7 +1305,7 @@ class StaticRoute(VersionedPanObject):
     Args:
         name (str): The name
         destination (str): Destination network
-        nexthop_type (str): ip-address or discard
+        nexthop_type (str): ip-address, discard, or next-vr
         nexthop (str): Next hop IP address
         interface (str): Next hop interface
         admin_dist (str): Administrative distance
@@ -1325,7 +1325,7 @@ class StaticRoute(VersionedPanObject):
             'destination', path='destination'))
         params.append(VersionedParamPath(
             'nexthop_type', default='ip-address',
-            values=['discard', 'ip-address'],
+            values=['discard', 'ip-address', 'next-vr'],
             path='nexthop/{nexthop_type}'))
         params.append(VersionedParamPath(
             'nexthop', path='nexthop/{nexthop_type}'))
