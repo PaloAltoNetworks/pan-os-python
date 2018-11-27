@@ -1115,7 +1115,7 @@ class PanObject(object):
             class_type = type(self)
 
         for num, child in enumerate(self.children):
-            if ((name is None or self.uid == name)
+            if ((name is None or child.uid == name)
                     and type(child) == class_type):
                 return num
 
