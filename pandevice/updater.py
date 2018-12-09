@@ -376,6 +376,6 @@ class ContentUpdater(Updater):
         if not self.versions:
             self.check()
         # Download the software upgrade
-        self.download(version, sync_to_peer=sync_to_peer, sync=True)
+        self.download(sync_to_peer=sync_to_peer, sync=True)
         # Install the software upgrade
         self.install(version, sync_to_peer=sync_to_peer, skip_commit=skip_commit, sync=sync)
