@@ -512,3 +512,29 @@ class SecurityProfileGroup(VersionedPanObject):
             'wildfire_analysis', path='wildfire-analysis', vartype='member'))
 
         self._params = tuple(params)
+
+
+class CustomUrlCategory(VersionedPanObject):
+    """Custom url category group
+
+    Args:
+        url_value (list): Values to include in custom URL category object
+        description (str): Description of this object
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/profiles/custom-url-category')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'url_value', path='list', vartype='member'))
+        params.append(VersionedParamPath(
+            'description', path='description'))
+
+        self._params = tuple(params)
