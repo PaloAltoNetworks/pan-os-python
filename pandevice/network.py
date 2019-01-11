@@ -1479,7 +1479,7 @@ class RedistributionProfileBase(VersionedPanObject):
             'filter_nexthop', path='filter/nexthop', vartype='member'))
         params.append(VersionedParamPath(
             'ospf_filter_pathtype', path='filter/ospf/path-type',
-            vartype='member'))
+            vartype='member', values=['intra-area', 'inter-area', 'ext-1', 'ext-2']))
         params.append(VersionedParamPath(
             'ospf_filter_area', path='filter/ospf/area', vartype='member'))
         params.append(VersionedParamPath(
@@ -1984,6 +1984,8 @@ class BgpRoutingOptions(VersionedPanObject):
 class BgpOutboundRouteFilter(VersionedPanObject):
     """BGP Outbound Route Filtering
 
+    NOTE: This functionality is not enabled yet in PanOS
+
     Args:
         enable (bool): enable prefix-based outbound route filtering.
         max_recieved_entries (int): maximum of ORF prefixes to receive.
@@ -2061,7 +2063,7 @@ class BgpAuthProfile(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'secret'))
+            'secret', vartype='encrypted'))
 
         self._params = tuple(params)
 
