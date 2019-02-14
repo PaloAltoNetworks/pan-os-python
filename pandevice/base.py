@@ -889,6 +889,20 @@ class PanObject(object):
         # Check for children in the remaining XML
         for child_type_string in self.CHILDTYPES:
             module_name, class_name = child_type_string.split('.')
+            if module_name == 'device':
+                import pandevice.device
+            elif module_name == 'firewall':
+                import pandevice.firewall
+            elif module_name == 'ha':
+                import pandevice.ha
+            elif module_name == 'network':
+                import pandevice.network
+            elif module_name == 'objects':
+                import pandevice.objects
+            elif module_name == 'panorama':
+                import pandevice.panorama
+            elif module_name == 'policies':
+                import pandevice.policies
             child = getattr(getattr(pandevice, module_name), class_name)()
 
             # Versioned objects need a PanDevice to get the version from, so
