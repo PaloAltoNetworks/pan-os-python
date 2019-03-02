@@ -538,3 +538,54 @@ class CustomUrlCategory(VersionedPanObject):
             'description', path='description'))
 
         self._params = tuple(params)
+
+
+class SecurityProfileUrlFiltering(VersionedPanObject):
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/profiles/url-filtering')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'credential-enforcement-mode', path='credential-enforcement/mode/disabled', vartype='member'
+        ))
+        params.append(VersionedParamPath(
+            'credential-enforcement-log-severity', path='credential-enforcement/log-severity'
+        ))
+        params.append(VersionedParamPath(
+            'credential-enforcement-alert', path='credential-enforcement/alert', vartype='member'
+        ))
+        params.append(VersionedParamPath(
+            'credential-enforcement-allow', path='credential-enforcement/allow', vartype='member'
+        ))
+        params.append(VersionedParamPath(
+            'credential-enforcement-block', path='credential-enforcement/block', vartype='member'
+        ))
+        params.append(VersionedParamPath(
+            'credential-enforcement-continue', path='credential-enforcement/continue', vartype='member'
+        ))
+        params.append(VersionedParamPath(
+            'alert', path='alert', vartype='member'))
+        params.append(VersionedParamPath(
+            'allow', path='allow', vartype='member'))
+        params.append(VersionedParamPath(
+            'block', path='block', vartype='member'))
+        params.append(VersionedParamPath(
+            'continue', path='continue', vartype='member'))
+        params.append(VersionedParamPath(
+            'override', path='override', vartype='member'))
+        params.append(VersionedParamPath(
+            'block_list', path='block-list', vartype='member'))
+        params.append(VersionedParamPath(
+            'allow_list', path='allow-list', vartype='member'))
+        params.append(VersionedParamPath(
+            'action', path='action'))
+        params.append(VersionedParamPath(
+            'disable_override', path='disable-override'))
+
+        self._params = tuple(params)

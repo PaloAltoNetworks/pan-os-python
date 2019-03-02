@@ -67,6 +67,7 @@ class DeviceGroup(VersionedPanObject):
         "objects.ApplicationFilter",
         "objects.SecurityProfileGroup",
         "objects.CustomUrlCategory",
+        "SecurityProfileUrlFiltering"
     )
 
     def _setup(self):
