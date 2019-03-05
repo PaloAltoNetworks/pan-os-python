@@ -1367,18 +1367,73 @@ class PanObject(object):
         elif vartype == "bool":
             return yesno(value)
 
-    def _set_reference(self, reference_name, reference_type, reference_var, exclusive, refresh, update, running_config, *args, **kwargs):
+    def _set_reference(self, reference_name, reference_type, reference_var,
+                       exclusive, refresh, update, running_config,
+                       return_boolean, name_only, **kwargs):
         """Used by helper methods to set references between objects
 
         For example, set_zone() would set the zone for an interface by creating a reference from
         the zone to the interface. If the desired reference already exists then nothing happens.
 
         """
-        device = self.nearest_pandevice()
+        parent = None
+        update_needed = False
+
         if refresh:
-            allobjects = reference_type.refreshall(device, running_config=running_config)
+            from pandevice.firewall import Firewall
+            from pandevice.panorama import Panorama, Template, TemplateStack
+            from pandevice.device import Vsys
+
+            new_tree = None
+            if reference_type.ROOT == Root.VSYS:
+                parent = Vsys(self.vsys or 'vsys1')
+                new_tree = parent
+
+            p = self
+            while p is not None:
+                new_obj = None
+                if isinstance(p, Firewall):
+                    new_obj = Firewall(
+                        hostname=p.hostname,
+                        api_username=p._api_username,
+                        api_password=p._api_password,
+                        api_key=p._api_key,
+                        serial=p.serial,
+                    )
+                elif isinstance(p, Template):
+                    new_obj = Template(p.name)
+                elif isinstance(p, TemplateStack):
+                    new_obj = TemplateStack(p.name)
+                elif isinstance(p, Panorama):
+                    new_obj = Panorama(
+                        hostname=p.hostname,
+                        api_username=p._api_username,
+                        api_password=p._api_password,
+                        api_key=p._api_key,
+                    )
+
+                if new_obj is not None:
+                    if parent is None:
+                        parent = new_obj
+                        new_tree = new_obj
+                    else:
+                        new_obj.add(new_tree)
+                        new_tree = new_obj
+
+                p = p.parent
+
+            if parent is None or isinstance(parent, Panorama):
+                raise err.PanDeviceError('Improper pandevice object tree')
+
+            allobjects = reference_type.refreshall(parent, name_only=name_only,
+                running_config=running_config)
+            if name_only:
+                for obj in allobjects:
+                    obj.refresh_variable(reference_var)
         else:
-            allobjects = device.findall(reference_type)
+            parent = self.nearest_pandevice()
+            allobjects = parent.findall(reference_type)
+
         # Find any current references to self and remove them, unless it is the desired reference
         if exclusive:
             for obj in allobjects:
@@ -1388,35 +1443,46 @@ class PanObject(object):
                 elif hasattr(references, "__iter__") and self in references:
                     if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
+                    update_needed = True
                     references.remove(self)
                     if update: obj.update(reference_var)
                 elif hasattr(references, "__iter__") and str(self) in references:
                     if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
+                    update_needed = True
                     references.remove(str(self))
                     if update: obj.update(reference_var)
                 elif references == self or references == str(self):
                     if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
                         continue
+                    update_needed = True
                     references = None
                     if update: obj.update(reference_var)
+
         # Add new reference to self in requested object
         if reference_name is not None:
-            obj = device.find_or_create(reference_name, reference_type, *args, **kwargs)
+            obj = parent.find_or_create(reference_name, reference_type, **kwargs)
             var = getattr(obj, reference_var)
             if var is None:
+                update_needed = True
                 setattr(obj, reference_var, [self])
                 if update: obj.update(reference_var)
             elif hasattr(var, "__iter__") and self not in var and str(self) not in var:
+                update_needed = True
                 var.append(self)
                 if update: obj.update(reference_var)
             elif hasattr(var, "__iter__"):
                 # The reference already exists so do nothing
                 pass
             elif var != self and var != str(self):
+                update_needed = True
                 setattr(obj, reference_var, self)
                 if update: obj.update(reference_var)
-            return obj
+            if not return_boolean:
+                return obj
+
+        if return_boolean:
+            return update_needed
 
     def xml_merge(self, root, elements):
         """Merges other elements into the root element.
@@ -2920,7 +2986,8 @@ class VsysOperations(VersionedPanObject):
             device = self.nearest_pandevice()
             device.active().xapi.delete(xpath, retry_on_peer=True)
 
-    def set_vsys(self, vsys_id, refresh=False, update=False, running_config=False):
+    def set_vsys(self, vsys_id, refresh=False, update=False,
+                 running_config=False, return_boolean=False):
         """Set the vsys for this interface.
 
         Creates a reference to this interface in the specified vsys and
@@ -2934,27 +3001,37 @@ class VsysOperations(VersionedPanObject):
             update (bool): Apply the changes to the device (Default: False)
             running_config (bool): If refresh is True, refresh from the running
                 configuration (Default: False)
+            return_boolean (bool): Return a boolean saying if an update
+                is/was needed instead of a Vsys object.
 
         Returns:
             Vsys: The vsys for this interface after the operation completes
 
         """
-        param_name = self.XPATH_IMPORT.split('/')[-1]
+        if refresh and running_config:
+            msg = "Can't refresh vsys from running config in set_vsys"
+            raise ValueError(msg)
 
-        if refresh:
-            if running_config:
-                msg = "Can't refresh vsys from running config in set_vsys"
-                raise ValueError(msg)
+        # Don't import HA or aggregate-group interfaces.
+        if getattr(self, 'mode', '') in ('ha', 'aggregate-group'):
+            return False
 
-            import pandevice.device
-            device = self.nearest_pandevice()
+        import_to_vsys_param = {
+            'vlan': 'vlans',
+            'virtual-wire': 'virtual_wires',
+            'virtual-router': 'virtual_routers',
+            'interface': 'interface',
+        }
+        for key, param_name in import_to_vsys_param.items():
+            if self.XPATH_IMPORT.endswith('/{0}'.format(key)):
+                break
+        else:
+            raise ValueError('Unknown import type: {0}'.format(
+                self.XPATH_IMPORT))
 
-            all_vsys = pandevice.device.Vsys.refreshall(device, name_only=True)
-            for a_vsys in all_vsys:
-                a_vsys.refresh_variable(param_name)
-
-        return self._set_reference(vsys_id, pandevice.device.Vsys, param_name,
-            True, refresh=False, update=update, running_config=running_config)
+        from pandevice.device import Vsys
+        return self._set_reference(vsys_id, Vsys, param_name, True, refresh,
+            update, running_config, return_boolean, True)
 
     @classmethod
     def refreshall(cls, parent, running_config=False, add=True,
