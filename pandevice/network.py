@@ -286,8 +286,8 @@ class Interface(VsysOperations):
         """
         return self.state == 'up'
 
-    def set_zone(self, zone_name, mode=None, refresh=False,
-                 update=False, running_config=False):
+    def set_zone(self, zone_name, mode=None, refresh=False, update=False,
+                 running_config=False, return_type='object'):
         """Set the zone for this interface
 
         Creates a reference to this interface in the specified zone and removes
@@ -304,6 +304,12 @@ class Interface(VsysOperations):
             update (bool): Apply the changes to the device (Default: False)
             running_config: If refresh is True, refresh from the running
                 configuration (Default: False)
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the Zone in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
 
         Returns:
             Zone: The zone for this interface after the operation completes
@@ -311,12 +317,16 @@ class Interface(VsysOperations):
         """
         if mode is None:
             mode = self.DEFAULT_MODE
+        elif self.vsys == 'shared':
+            return False
 
         return self._set_reference(
             zone_name, Zone, "interface", True, refresh,
-            update, running_config, mode=mode)
+            update, running_config, return_type, False, mode=mode)
 
-    def set_virtual_router(self, virtual_router_name, refresh=False, update=False, running_config=False):
+    def set_virtual_router(self, virtual_router_name, refresh=False,
+                           update=False, running_config=False,
+                           return_type='object'):
         """Set the virtual router for this interface
 
         Creates a reference to this interface in the specified virtual router
@@ -331,17 +341,23 @@ class Interface(VsysOperations):
             update (bool): Apply the changes to the device (Default: False)
             running_config: If refresh is True, refresh from the running
                 configuration (Default: False)
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the VirtualRouter in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
 
         Returns:
             Zone: The zone for this interface after the operation completes
 
         """
-        return self._set_reference(virtual_router_name, VirtualRouter,
-                                   "interface", True, refresh, update,
-                                   running_config)
+        return self._set_reference(
+            virtual_router_name, VirtualRouter, "interface", True, refresh,
+            update, running_config, return_type, False)
 
     def set_vlan(self, vlan_name, refresh=False,
-                 update=False, running_config=False):
+                 update=False, running_config=False, return_type='object'):
         """Set the vlan for this interface
 
         Creates a reference to this interface in the specified vlan and removes
@@ -356,20 +372,27 @@ class Interface(VsysOperations):
             update (bool): Apply the changes to the device (Default: False)
             running_config: If refresh is True, refresh from the running
                 configuration (Default: False)
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the Vlan in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
 
         Raises:
             AttributeError: if this class is not allowed to use this function.
 
         Returns:
-            Zone: The zone for this interface after the operation completes
+            Vlan: The VLAN for this interface after the operation completes
 
         """
         if not self.ALLOW_SET_VLAN:
             msg = 'Class "{0}" cannot invoke this function'
             raise AttributeError(msg.format(self.__class__))
 
-        return self._set_reference(vlan_name, Vlan, "interface", True,
-                                   refresh, update, running_config)
+        return self._set_reference(
+            vlan_name, Vlan, "interface", True,
+            refresh, update, running_config, return_type, False)
 
     def get_counters(self):
         """Pull the counters for an interface
@@ -652,7 +675,8 @@ class AbstractSubinterface(object):
         interface.parent = self.parent
         return interface._set_reference(
             virtual_router_name, VirtualRouter, "interface", True,
-            refresh=False, update=update, running_config=running_config)
+            refresh=False, update=update, running_config=running_config,
+            return_type='object', name_only=False)
 
     def get_layered_subinterface(self, mode, add=True):
         """Instantiate a regular subinterface type from this AbstractSubinterface
@@ -842,7 +866,7 @@ class PhysicalInterface(Interface):
 
     """
     def set_zone(self, zone_name, mode=None, refresh=False,
-                 update=False, running_config=False):
+                 update=False, running_config=False, return_type='object'):
         """Set the zone for this interface
 
         Creates a reference to this interface in the specified zone and removes
@@ -859,6 +883,12 @@ class PhysicalInterface(Interface):
             update (bool): Apply the changes to the device (Default: False)
             running_config: If refresh is True, refresh from the running
                 configuration (Default: False)
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the Zone in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
 
         Returns:
             Zone: The zone for this interface after the operation completes
@@ -868,7 +898,7 @@ class PhysicalInterface(Interface):
             mode = self.mode
 
         return super(PhysicalInterface, self).set_zone(
-            zone_name, mode, refresh, update, running_config)
+            zone_name, mode, refresh, update, running_config, return_type)
 
 
 class EthernetInterface(PhysicalInterface):
