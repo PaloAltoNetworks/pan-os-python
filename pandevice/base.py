@@ -1369,23 +1369,53 @@ class PanObject(object):
 
     def _set_reference(self, reference_name, reference_type, reference_var,
                        exclusive, refresh, update, running_config,
-                       return_boolean, name_only, **kwargs):
+                       return_type, name_only, **kwargs):
         """Used by helper methods to set references between objects
 
         For example, set_zone() would set the zone for an interface by creating a reference from
         the zone to the interface. If the desired reference already exists then nothing happens.
 
+        This function has two modes:  refresh=True and refresh=False.  You
+        should only ever use refresh=False if:
+
+            1) all reference objects are in the current pandevice object tree
+            2) all reference objects are children attached to nearest_pandevice()
+            3) this is for firewall only, not a template / template stack
+            4) you're using firewall.vsys, not the device.Vsys object
+
+        If any of the above do not apply, you should be using refresh=True.
+
         """
         parent = None
         update_needed = False
 
+        if return_type not in ('bool', 'object'):
+            raise ValueError('Unknown return_type specified: {0}'.format(
+                             return_type))
+
         if refresh:
+            """
+            pandevice is too flexible:  users can use simple vsys mode or a
+            device.Vsys object, which means vsys importables can be attached
+            to a Vsys object or a Firewall.  But a Vsys object can also be
+            attached to a Firewall or a Template or a TemplateStack.  So
+            create a separate pandevice object tree to operate on, leaving
+            the user's tree alone, but making it so we know where things are.
+
+            Basically, we need a pandevice object tree where all objects are
+            are sibling objects, just like refresh=False assumes.  Doing
+            this allows the rest of this function to operate as before.
+            """
             from pandevice.firewall import Firewall
             from pandevice.panorama import Panorama, Template, TemplateStack
             from pandevice.device import Vsys
 
             new_tree = None
             if reference_type.ROOT == Root.VSYS:
+                # If the reference type belongs in a vsys (Zone), then
+                # initialize the new tree with a Vsys object.  Otherwise do not
+                # have a vsys specified as we don't care where an object is
+                # or is not imported into.
                 parent = Vsys(self.vsys or 'vsys1')
                 new_tree = parent
 
@@ -1478,10 +1508,10 @@ class PanObject(object):
                 update_needed = True
                 setattr(obj, reference_var, self)
                 if update: obj.update(reference_var)
-            if not return_boolean:
+            if return_type == 'object':
                 return obj
 
-        if return_boolean:
+        if return_type == 'bool':
             return update_needed
 
     def xml_merge(self, root, elements):
@@ -2987,7 +3017,7 @@ class VsysOperations(VersionedPanObject):
             device.active().xapi.delete(xpath, retry_on_peer=True)
 
     def set_vsys(self, vsys_id, refresh=False, update=False,
-                 running_config=False, return_boolean=False):
+                 running_config=False, return_type='object'):
         """Set the vsys for this interface.
 
         Creates a reference to this interface in the specified vsys and
@@ -3001,8 +3031,12 @@ class VsysOperations(VersionedPanObject):
             update (bool): Apply the changes to the device (Default: False)
             running_config (bool): If refresh is True, refresh from the running
                 configuration (Default: False)
-            return_boolean (bool): Return a boolean saying if an update
-                is/was needed instead of a Vsys object.
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the device.Vsys in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
 
         Returns:
             Vsys: The vsys for this interface after the operation completes
@@ -3031,7 +3065,7 @@ class VsysOperations(VersionedPanObject):
 
         from pandevice.device import Vsys
         return self._set_reference(vsys_id, Vsys, param_name, True, refresh,
-            update, running_config, return_boolean, True)
+            update, running_config, return_type, True)
 
     @classmethod
     def refreshall(cls, parent, running_config=False, add=True,
