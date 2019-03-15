@@ -3,15 +3,24 @@
 History
 =======
 
-0.7.0
+0.7.1
 -----
 
 Released: Pending
 
 Status: Alpha
 
+0.7.0
+-----
+
+Released: 2019-03-15
+
+Status: Alpha
+
 - Added `next-vr` as an option for static route next hop types
 - Updated `set_vsys()` / `set_virtual_router()` / `set_vlan()` / `set_zone()` work with templates and template stacks
+- Added panorama functions for VM auth keys
+- Added child object support for template stacks
 - Added `objects.CustomUrlCategory`
 - Added `network.Bgp`
 - Added `network.RedistributionProfile`
