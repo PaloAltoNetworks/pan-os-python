@@ -129,7 +129,7 @@ class Vsys(VersionedPanObject):
         self._xpaths.add_profile(value='/vsys')
         self._xpaths.add_profile(
             value='{0}/vsys'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
@@ -269,7 +269,7 @@ class SystemSettings(VersionedPanObject):
         self._xpaths.add_profile(value='/deviceconfig/system')
         self._xpaths.add_profile(
             value='{0}/deviceconfig/system'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
@@ -340,7 +340,7 @@ class PasswordProfile(VersionedPanObject):
         self._xpaths.add_profile(value='/password-profile')
         self._xpaths.add_profile(
             value='{0}/password-profile'.format(self._TEMPLATE_MGTCONFIG_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
@@ -389,7 +389,7 @@ class Administrator(VersionedPanObject):
         self._xpaths.add_profile(value='/users')
         self._xpaths.add_profile(
             value='{0}/users'.format(self._TEMPLATE_MGTCONFIG_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
