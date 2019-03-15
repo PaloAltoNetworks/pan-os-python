@@ -188,6 +188,26 @@ class TemplateStack(VersionedPanObject):
     """
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
+    CHILDTYPES = (
+        "device.Vsys",
+        "device.SystemSettings",
+        "device.PasswordProfile",
+        "device.Administrator",
+        "ha.HighAvailability",
+        "network.EthernetInterface",
+        "network.AggregateInterface",
+        "network.LoopbackInterface",
+        "network.TunnelInterface",
+        "network.VlanInterface",
+        "network.Vlan",
+        "network.VirtualRouter",
+        "network.ManagementProfile",
+        "network.VirtualWire",
+        "network.IkeGateway",
+        "network.IpsecTunnel",
+        "network.IpsecCryptoProfile",
+        "network.IkeCryptoProfile",
+    )
 
     def _setup(self):
         # xpaths
@@ -204,6 +224,15 @@ class TemplateStack(VersionedPanObject):
             'devices', vartype='entry', path='devices'))
 
         self._params = tuple(params)
+
+    def create_similar(self):
+        raise NotImplementedError('This is not supported for template stacks')
+
+    def apply_similar(self):
+        raise NotImplementedError('This is not supported for template stacks')
+
+    def delete_similar(self):
+        raise NotImplementedError('This is not supported for template stacks')
 
 
 class Panorama(base.PanDevice):

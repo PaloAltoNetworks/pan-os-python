@@ -314,7 +314,7 @@ class PanObject(object):
                 # Either panorama.DeviceGroup or device.Vsys.
                 label = p.VSYS_LABEL
                 vsys = p.vsys
-            elif p.__class__.__name__ == 'Template':
+            elif p.__class__.__name__ in ('Template', 'TemplateStack'):
                 # Hit a template, make sure that the appropriate /config/...
                 # xpath has been saved.
                 if not path[0].startswith('/config/'):
@@ -2981,6 +2981,13 @@ class VsysOperations(VersionedPanObject):
         if vsys is None:
             vsys = self.vsys
 
+        # There are no vsys imports in template stacks.
+        p = self
+        while p is not None:
+            if p.__class__.__name__ == 'TemplateStack':
+                return
+            p = p.parent
+
         if vsys != "shared" and vsys is not None and self.XPATH_IMPORT is not None:
             xpath = self.xpath_import_base(vsys)
             element = '<member>{0}</member>'.format(self.uid)
@@ -2991,7 +2998,7 @@ class VsysOperations(VersionedPanObject):
         template = ''
         p = self
         while p is not None:
-            if p.__class__.__name__ == 'Template':
+            if p.__class__.__name__ in ('Template', 'TemplateStack'):
                 template = p.xpath()
                 break
             p = p.parent
@@ -3009,6 +3016,13 @@ class VsysOperations(VersionedPanObject):
         """
         if vsys is None:
             vsys = self.vsys
+
+        # There are no vsys imports in template stacks.
+        p = self
+        while p is not None:
+            if p.__class__.__name__ == 'TemplateStack':
+                return
+            p = p.parent
 
         if vsys != "shared" and vsys is not None and self.XPATH_IMPORT is not None:
             xpath = "{0}/member[text()='{1}']".format(
@@ -3049,6 +3063,16 @@ class VsysOperations(VersionedPanObject):
         # Don't import HA or aggregate-group interfaces.
         if getattr(self, 'mode', '') in ('ha', 'aggregate-group'):
             return False
+
+        # There are no vsys imports in template stacks.
+        p = self
+        while p is not None:
+            if p.__class__.__name__ == 'TemplateStack':
+                if return_type == 'bool':
+                    return False
+                return
+            p = p.parent
+
 
         import_to_vsys_param = {
             'vlan': 'vlans',
