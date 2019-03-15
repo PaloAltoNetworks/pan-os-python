@@ -66,6 +66,7 @@ class DeviceGroup(VersionedPanObject):
         "objects.ApplicationGroup",
         "objects.ApplicationFilter",
         "objects.SecurityProfileGroup",
+        "objects.CustomUrlCategory",
     )
 
     def _setup(self):
@@ -187,6 +188,26 @@ class TemplateStack(VersionedPanObject):
     """
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
+    CHILDTYPES = (
+        "device.Vsys",
+        "device.SystemSettings",
+        "device.PasswordProfile",
+        "device.Administrator",
+        "ha.HighAvailability",
+        "network.EthernetInterface",
+        "network.AggregateInterface",
+        "network.LoopbackInterface",
+        "network.TunnelInterface",
+        "network.VlanInterface",
+        "network.Vlan",
+        "network.VirtualRouter",
+        "network.ManagementProfile",
+        "network.VirtualWire",
+        "network.IkeGateway",
+        "network.IpsecTunnel",
+        "network.IpsecCryptoProfile",
+        "network.IkeCryptoProfile",
+    )
 
     def _setup(self):
         # xpaths
@@ -203,6 +224,15 @@ class TemplateStack(VersionedPanObject):
             'devices', vartype='entry', path='devices'))
 
         self._params = tuple(params)
+
+    def create_similar(self):
+        raise NotImplementedError('This is not supported for template stacks')
+
+    def apply_similar(self):
+        raise NotImplementedError('This is not supported for template stacks')
+
+    def delete_similar(self):
+        raise NotImplementedError('This is not supported for template stacks')
 
 
 class Panorama(base.PanDevice):
@@ -522,3 +552,61 @@ class Panorama(base.PanDevice):
             self.extend(firewall_instances)
 
         return firewall_instances + devicegroup_instances
+
+    def generate_vm_auth_key(self, lifetime):
+        """Generates a VM auth key to be placed in a VM's init-cfg.txt.
+
+        Args:
+            lifetime(int): The lifetime (in hours).
+
+        Raises:
+            PanDeviceError
+
+        Returns:
+            dict: has "authkey" and "expires" keys.
+
+        """
+        cmd = 'request bootstrap vm-auth-key generate lifetime "{0}"'
+
+        # Raises PanDeviceError.
+        resp = self.op(cmd.format(lifetime))
+
+        data = resp.find('./result')
+        if data is None:
+            raise err.PanDeviceError('No result in returned XML')
+
+        tokens = data.text.split()
+        ans = {
+            'authkey': tokens[3],
+            'expires': ' '.join(tokens[-2:]).rstrip(),
+        }
+
+        return ans
+
+    def get_vm_auth_keys(self):
+        """Returns the current VM auth keys.
+
+        Raises:
+            PanDeviceError
+
+        Returns:
+            list: list of dicts.  Each dict has "authkey" and "expires" keys.
+
+        """
+        cmd = 'request bootstrap vm-auth-key show'
+
+        # Raises PanDeviceError.
+        resp = self.op(cmd)
+
+        data = resp.find('./result')
+        if data is None:
+            raise err.PanDeviceError('No result in returned XML')
+
+        ans = []
+        for x in data.findall('./bootstrap-vm-auth-keys/entry'):
+            ans.append({
+                'authkey': x.find('./vm-auth-key').text,
+                'expires': x.find('./expiry-time').text,
+            })
+
+        return ans

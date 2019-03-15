@@ -114,7 +114,7 @@ class Zone(VersionedPanObject):
         self._xpaths.add_profile(value='/zone')
         self._xpaths.add_profile(
             value='{0}/zone'.format(self._TEMPLATE_VSYS_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
@@ -185,7 +185,7 @@ class Vlan(VsysOperations):
         self._xpaths.add_profile(value='/network/vlan')
         self._xpaths.add_profile(
             value='{0}/network/vlan'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # xpath_imports
         self._xpath_imports.add_profile(value='/network/vlan')
@@ -286,8 +286,8 @@ class Interface(VsysOperations):
         """
         return self.state == 'up'
 
-    def set_zone(self, zone_name, mode=None, refresh=False,
-                 update=False, running_config=False):
+    def set_zone(self, zone_name, mode=None, refresh=False, update=False,
+                 running_config=False, return_type='object'):
         """Set the zone for this interface
 
         Creates a reference to this interface in the specified zone and removes
@@ -304,6 +304,12 @@ class Interface(VsysOperations):
             update (bool): Apply the changes to the device (Default: False)
             running_config: If refresh is True, refresh from the running
                 configuration (Default: False)
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the Zone in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
 
         Returns:
             Zone: The zone for this interface after the operation completes
@@ -311,12 +317,16 @@ class Interface(VsysOperations):
         """
         if mode is None:
             mode = self.DEFAULT_MODE
+        elif self.vsys == 'shared':
+            return False
 
         return self._set_reference(
             zone_name, Zone, "interface", True, refresh,
-            update, running_config, mode=mode)
+            update, running_config, return_type, False, mode=mode)
 
-    def set_virtual_router(self, virtual_router_name, refresh=False, update=False, running_config=False):
+    def set_virtual_router(self, virtual_router_name, refresh=False,
+                           update=False, running_config=False,
+                           return_type='object'):
         """Set the virtual router for this interface
 
         Creates a reference to this interface in the specified virtual router
@@ -331,17 +341,23 @@ class Interface(VsysOperations):
             update (bool): Apply the changes to the device (Default: False)
             running_config: If refresh is True, refresh from the running
                 configuration (Default: False)
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the VirtualRouter in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
 
         Returns:
             Zone: The zone for this interface after the operation completes
 
         """
-        return self._set_reference(virtual_router_name, VirtualRouter,
-                                   "interface", True, refresh, update,
-                                   running_config)
+        return self._set_reference(
+            virtual_router_name, VirtualRouter, "interface", True, refresh,
+            update, running_config, return_type, False)
 
     def set_vlan(self, vlan_name, refresh=False,
-                 update=False, running_config=False):
+                 update=False, running_config=False, return_type='object'):
         """Set the vlan for this interface
 
         Creates a reference to this interface in the specified vlan and removes
@@ -356,20 +372,27 @@ class Interface(VsysOperations):
             update (bool): Apply the changes to the device (Default: False)
             running_config: If refresh is True, refresh from the running
                 configuration (Default: False)
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the Vlan in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
 
         Raises:
             AttributeError: if this class is not allowed to use this function.
 
         Returns:
-            Zone: The zone for this interface after the operation completes
+            Vlan: The VLAN for this interface after the operation completes
 
         """
         if not self.ALLOW_SET_VLAN:
             msg = 'Class "{0}" cannot invoke this function'
             raise AttributeError(msg.format(self.__class__))
 
-        return self._set_reference(vlan_name, Vlan, "interface", True,
-                                   refresh, update, running_config)
+        return self._set_reference(
+            vlan_name, Vlan, "interface", True,
+            refresh, update, running_config, return_type, False)
 
     def get_counters(self):
         """Pull the counters for an interface
@@ -531,7 +554,7 @@ class VirtualWire(VsysOperations):
         self._xpaths.add_profile(value='/network/virtual-wire')
         self._xpaths.add_profile(
             value='{0}/network/virtual-wire'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/virtual-wire')
@@ -650,7 +673,10 @@ class AbstractSubinterface(object):
         """
         interface = Layer3Subinterface(self.name, self.tag)
         interface.parent = self.parent
-        return interface._set_reference(virtual_router_name, VirtualRouter, "interface", True, refresh=False, update=update, running_config=running_config)
+        return interface._set_reference(
+            virtual_router_name, VirtualRouter, "interface", True,
+            refresh=False, update=update, running_config=running_config,
+            return_type='object', name_only=False)
 
     def get_layered_subinterface(self, mode, add=True):
         """Instantiate a regular subinterface type from this AbstractSubinterface
@@ -734,7 +760,7 @@ class Layer3Subinterface(Subinterface):
                 self._TEMPLATE_DEVICE_XPATH,
                 self._BASE_INTERFACE_TYPE,
                 self._BASE_INTERFACE_NAME),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -811,7 +837,7 @@ class Layer2Subinterface(Subinterface):
                 self._TEMPLATE_DEVICE_XPATH,
                 self._BASE_INTERFACE_TYPE,
                 self._BASE_INTERFACE_NAME),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -840,7 +866,7 @@ class PhysicalInterface(Interface):
 
     """
     def set_zone(self, zone_name, mode=None, refresh=False,
-                 update=False, running_config=False):
+                 update=False, running_config=False, return_type='object'):
         """Set the zone for this interface
 
         Creates a reference to this interface in the specified zone and removes
@@ -857,6 +883,12 @@ class PhysicalInterface(Interface):
             update (bool): Apply the changes to the device (Default: False)
             running_config: If refresh is True, refresh from the running
                 configuration (Default: False)
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the Zone in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
 
         Returns:
             Zone: The zone for this interface after the operation completes
@@ -866,7 +898,7 @@ class PhysicalInterface(Interface):
             mode = self.mode
 
         return super(PhysicalInterface, self).set_zone(
-            zone_name, mode, refresh, update, running_config)
+            zone_name, mode, refresh, update, running_config, return_type)
 
 
 class EthernetInterface(PhysicalInterface):
@@ -921,7 +953,7 @@ class EthernetInterface(PhysicalInterface):
         self._xpaths.add_profile(value='/network/interface/ethernet')
         self._xpaths.add_profile(
             value='{0}/network/interface/ethernet'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -1052,7 +1084,7 @@ class AggregateInterface(PhysicalInterface):
         self._xpaths.add_profile(value='/network/interface/aggregate-ethernet')
         self._xpaths.add_profile(
             value='{0}/network/interface/aggregate-ethernet'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -1142,7 +1174,7 @@ class VlanInterface(Interface):
         self._xpaths.add_profile(value='/network/interface/vlan/units')
         self._xpaths.add_profile(
             value='{0}/network/interface/vlan/units'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -1213,7 +1245,7 @@ class LoopbackInterface(Interface):
         self._xpaths.add_profile(value='/network/interface/loopback/units')
         self._xpaths.add_profile(
             value='{0}/network/interface/loopback/units'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -1273,7 +1305,7 @@ class TunnelInterface(Interface):
         self._xpaths.add_profile(value='/network/interface/tunnel/units')
         self._xpaths.add_profile(
             value='{0}/network/interface/tunnel/units'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/interface')
@@ -1305,8 +1337,8 @@ class StaticRoute(VersionedPanObject):
     Args:
         name (str): The name
         destination (str): Destination network
-        nexthop_type (str): ip-address or discard
-        nexthop (str): Next hop IP address
+        nexthop_type (str): ip-address, discard, or next-vr
+        nexthop (str): Next hop IP address or Next VR Name
         interface (str): Next hop interface
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
@@ -1325,7 +1357,7 @@ class StaticRoute(VersionedPanObject):
             'destination', path='destination'))
         params.append(VersionedParamPath(
             'nexthop_type', default='ip-address',
-            values=['discard', 'ip-address'],
+            values=['discard', 'ip-address', 'next-vr'],
             path='nexthop/{nexthop_type}'))
         params.append(VersionedParamPath(
             'nexthop', path='nexthop/{nexthop_type}'))
@@ -1380,6 +1412,7 @@ class StaticRouteV6(VersionedPanObject):
 
         self._params = tuple(params)
 
+
 class VirtualRouter(VsysOperations):
     """Virtual router
 
@@ -1404,6 +1437,7 @@ class VirtualRouter(VsysOperations):
         "network.StaticRouteV6",
         "network.RedistributionProfile",
         "network.Ospf",
+        "network.Bgp",
     )
 
     def _setup(self):
@@ -1411,7 +1445,7 @@ class VirtualRouter(VsysOperations):
         self._xpaths.add_profile(value='/network/virtual-router')
         self._xpaths.add_profile(
             value='{0}/network/virtual-router'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # xpath imports
         self._xpath_imports.add_profile(value='/network/virtual-router')
@@ -1436,7 +1470,61 @@ class VirtualRouter(VsysOperations):
         self._params = tuple(params)
 
 
-class RedistributionProfile(VersionedPanObject):
+class RedistributionProfileBase(VersionedPanObject):
+    """Redistribution Profile
+
+    Args:
+        name (str): Name of profile
+        priority (int): Priority id
+        action (str): 'no-redist' or 'redist'
+        filter_type (tuple): Any of 'static', 'connect', 'rip', 'ospf', or 'bgp'
+        filter_interface (tuple): Filter interface
+        filter_destination (tuple): Filter destination
+        filter_nexthop (tuple): Filter nexthop
+        ospf_filter_pathtype (tuple): Any of 'intra-area', 'inter-area', 'ext-1', or 'ext-2
+        ospf_filter_area (tuple): OSPF filter on area
+        ospf_filter_tag (tuple): OSPF filter on tag
+        bgp_filter_community (tuple): BGP filter on community
+        bgp_filter_extended_community (tuple): BGP filter on extended community
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # self._xpaths.add_profile(value='/protocol/redist-profile')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'priority', vartype='int'))
+        params.append(VersionedParamPath(
+            'action', values=['no-redist', 'redist'], path='action/{action}'))
+        params.append(VersionedParamPath(
+            'filter_type', path='filter/type', vartype='member'))
+        params.append(VersionedParamPath(
+            'filter_interface', path='filter/interface', vartype='member'))
+        params.append(VersionedParamPath(
+            'filter_destination', path='filter/destination', vartype='member'))
+        params.append(VersionedParamPath(
+            'filter_nexthop', path='filter/nexthop', vartype='member'))
+        params.append(VersionedParamPath(
+            'ospf_filter_pathtype', path='filter/ospf/path-type',
+            vartype='member', values=['intra-area', 'inter-area', 'ext-1', 'ext-2']))
+        params.append(VersionedParamPath(
+            'ospf_filter_area', path='filter/ospf/area', vartype='member'))
+        params.append(VersionedParamPath(
+            'ospf_filter_tag', path='filter/ospf/tag', vartype='member'))
+        params.append(VersionedParamPath(
+            'bgp_filter_community', path='filter/bgp/community',
+            vartype='member'))
+        params.append(VersionedParamPath(
+            'bgp_filter_extended_community',
+            path='filter/bgp/extended-community', vartype='member'))
+
+        self._params = tuple(params)
+
+
+class RedistributionProfile(RedistributionProfileBase):
     """Redistribution Profile
 
     Args:
@@ -1459,35 +1547,33 @@ class RedistributionProfile(VersionedPanObject):
     def _setup(self):
         self._xpaths.add_profile(value='/protocol/redist-profile')
 
-        params = []
+        RedistributionProfileBase._setup(self)
 
-        params.append(VersionedParamPath(
-            'priority', vartype='int'))
-        params.append(VersionedParamPath(
-            'action', values=['no-redist', 'redist'], path='action/{action}'))
-        params.append(VersionedParamPath(
-            'filter_type', path='filter/type', vartype='member'))
-        params.append(VersionedParamPath(
-            'filter_interface', path='filter/interface', vartype='member'))
-        params.append(VersionedParamPath(
-            'filter_destination', path='filter/destination', vartype='member'))
-        params.append(VersionedParamPath(
-            'filter_nexthop', path='filter/nexthop', vartype='member'))
-        params.append(VersionedParamPath(
-            'ospf_filter_pathtype', path='filter/ospf/path-type',
-            vartype='member'))
-        params.append(VersionedParamPath(
-            'ospf_filter_area', path='filter/ospf/area', vartype='member'))
-        params.append(VersionedParamPath(
-            'ospf_filter_tag', path='filter/ospf/tag', vartype='member'))
-        params.append(VersionedParamPath(
-            'bgp_filter_community', path='filter/bgp/community',
-            vartype='member'))
-        params.append(VersionedParamPath(
-            'bgp_filter_extended_community',
-            path='filter/bgp/extended-community', vartype='member'))
 
-        self._params = tuple(params)
+class RedistributionProfileIPv6(RedistributionProfileBase):
+    """Redistribution Profile
+
+    Args:
+        name (str): Name of profile
+        priority (int): Priority id
+        action (str): 'no-redist' or 'redist'
+        filter_type (tuple): Any of 'static', 'connect', 'rip', 'ospf', or 'bgp'
+        filter_interface (tuple): Filter interface
+        filter_destination (tuple): Filter destination
+        filter_nexthop (tuple): Filter nexthop
+        ospf_filter_pathtype (tuple): Any of 'intra-area', 'inter-area', 'ext-1', or 'ext-2
+        ospf_filter_area (tuple): OSPF filter on area
+        ospf_filter_tag (tuple): OSPF filter on tag
+        bgp_filter_community (tuple): BGP filter on community
+        bgp_filter_extended_community (tuple): BGP filter on extended community
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/protocol/redist-profile-ipv6')
+
+        RedistributionProfileBase._setup(self)
 
 
 class Ospf(VersionedPanObject):
@@ -1810,6 +1896,894 @@ class OspfExportRules(VersionedPanObject):
         self._params = tuple(params)
 
 
+class Bgp(VersionedPanObject):
+    """BGP Process
+
+    Args:
+        enable (bool): Enable BGP (Default: True)
+        router_id (str): Router ID in IP format (eg. 1.1.1.1)
+        reject_default_route (bool): Reject default route
+        allow_redist_default_route (bool): Allow redistribution in default route
+        install_route (bool): Populate BGP learned route to global route table
+        ecmp_multi_as (bool): Support multiple AS in ECMP
+        enforce_first_as (bool): Enforce First AS for EBGP
+        local_as (int): local AS number
+        global_bfd_profile (str): BFD Profile
+
+    """
+    NAME = None
+    CHILDTYPES = (
+        "network.BgpRoutingOptions",
+        "network.BgpAuthProfile",
+        "network.BgpDampeningProfile",
+        "network.BgpPeerGroup",
+        "network.BgpPolicyImportRule",
+        "network.BgpPolicyExportRule",
+        "network.BgpPolicyConditionalAdvertisement",
+        "network.BgpPolicyAggregationAddress",
+        "network.BgpRedistributionRule",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/protocol/bgp')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', default=True, path='enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'router_id'))
+        params.append(VersionedParamPath(
+            'reject_default_route', default=True, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'allow_redist_default_route', default=False, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'install_route', default=False, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'ecmp_multi_as', default=False, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'enforce_first_as', default=True, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'local_as', vartype='str'))
+        params.append(VersionedParamPath(
+            'global_bfd_profile', path='global-bfd/profile'))
+
+        self._params = tuple(params)
+
+
+class BgpRoutingOptions(VersionedPanObject):
+    """BGP Routing Options
+
+    Args:
+        as_format (str): AS format ('2-byte'/'4-byte')
+        always_compare_med (bool): always compare MEDs
+        deterministic_med_comparison (bool): deterministic MEDs comparison
+        default_local_preference (int): default local preference
+        graceful_restart_enable (bool): enable graceful restart
+        gr_stale_route_time (int): time to remove stale routes after peer restart (in seconds)
+        gr_local_restart_time (int): local restart time to advertise to peer (in seconds)
+        gr_max_peer_restart_time (int): maximum of peer restart time accepted (in seconds)
+        reflector_cluster_id (str): route reflector cluster ID
+        confederation_member_as (str): 32-bit value in decimal or dot decimal AS.AS format
+        aggregate_med (bool): aggregate route only if they have same MED attributes
+
+    """
+    NAME = None
+    SUFFIX = None
+    CHILDTYPES = (
+        "network.BgpOutboundRouteFilter",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/routing-options')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'as_format', default='2-byte', values=['2-byte', '4-byte']))
+        params.append(VersionedParamPath(
+            'always_compare_med', path='med/always-compare-med',
+            vartype='yesno'))
+        params.append(VersionedParamPath(
+            'deterministic_med_comparison', path='med/deterministic-med-comparison',
+            vartype='yesno'))
+        params.append(VersionedParamPath(
+            'default_local_preference', vartype='int'))
+        params.append(VersionedParamPath(
+            'graceful_restart_enable', path='graceful-restart/enable',
+            vartype='yesno'))
+        params.append(VersionedParamPath(
+            'gr_stale_route_time', path='graceful-restart/stale-route-time',
+            vartype='int'))
+        params.append(VersionedParamPath(
+            'gr_local_restart_time', path='graceful-restart/local-restart-time',
+            vartype='int'))
+        params.append(VersionedParamPath(
+            'gr_max_peer_restart_time', path='graceful-restart/max-peer-restart-time',
+            vartype='int'))
+        params.append(VersionedParamPath(
+            'reflector_cluster_id'))
+        params.append(VersionedParamPath(
+            'confederation_member_as', default=None))
+        params.append(VersionedParamPath(
+            'aggregate_med', path='aggregate/aggregate-med', vartype='yesno'))
+
+        self._params = tuple(params)
+
+
+class BgpOutboundRouteFilter(VersionedPanObject):
+    """BGP Outbound Route Filtering
+
+    NOTE: This functionality is not enabled yet in PanOS
+
+    Args:
+        enable (bool): enable prefix-based outbound route filtering.
+        max_recieved_entries (int): maximum of ORF prefixes to receive.
+        cisco_prefix_mode (bool): ORF vendor-compatible mode
+
+    """
+    NAME = None
+    SUFFIX = None
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/outbound-route-filter')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', path='enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'max_received_entries', path='max-received-entries', vartype='int'))
+        params.append(VersionedParamPath(
+            'cisco_prefix_mode', path='cisco-prefix-mode', vartype='yesno'))
+
+        self._params = tuple(params)
+
+
+class BgpDampeningProfile(VersionedPanObject):
+    """BGP Dampening Profile
+
+    Args:
+        name (str): Name of Dampening Profile
+        enable (bool): Enable profile (Default: True)
+        cutoff (float): Cutoff threshold value
+        reuse (float): Reuse threshold value
+        max_hold_time (int): Maximum of hold-down time (in seconds)
+        decay_half_life_reachable (int): Decay half-life while reachable (in seconds)
+        decay_half_life_unreachable (int): Decay half-life while unreachable (in seconds)
+
+    """
+    _DEFAULT_NAME = 'default'
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/dampening-profile')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'cutoff', vartype='float'))
+        params.append(VersionedParamPath(
+            'reuse', vartype='float'))
+        params.append(VersionedParamPath(
+            'max_hold_time', vartype='int'))
+        params.append(VersionedParamPath(
+            'decay_half_life_reachable', vartype='int'))
+        params.append(VersionedParamPath(
+            'decay_half_life_unreachable', vartype='int'))
+
+        self._params = tuple(params)
+
+
+class BgpAuthProfile(VersionedPanObject):
+    """BGP Authentication Profile
+
+    Args:
+        name (str): Name of Auth Profile
+        secret (str): shared secret for the TCP MD5 authentication.
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/auth-profile')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'secret', vartype='encrypted'))
+
+        self._params = tuple(params)
+
+
+class BgpPeerGroup(VersionedPanObject):
+    """BGP Peer Group
+
+    Args:
+        name (str): Name of BGP Peer Group
+        enable (bool): Enable Peer Group (Default: True)
+        aggregated_confed_as_path (bool): the peers understand aggregated confederation AS path
+        soft_reset_with_stored_info (bool): soft reset with stored info
+        type (str): peer group type I('ebgp')/I('ibgp')/I('ebgp-confed')/I('ibgp-confed')
+        export_nexthop (str): export locally resolved nexthop I('resolve')/I('use-self')
+        import_nexthop (str): override nexthop with peer address I('original')/I('use-peer'), only with 'ebgp'
+        remove_private_as (bool): remove private AS when exporting route, only with 'ebgp'
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPeer",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/peer-group')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'aggregated_confed_as_path', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'soft_reset_with_stored_info', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'type', path='type/{type}', default='ebgp',
+            values=('ebgp', 'ibgp', 'ebgp-confed', 'ibgp-confed')))
+        params.append(VersionedParamPath(
+            'export_nexthop', path='type/{type}/export-nexthop', values=('resolve', 'use-self')))
+        params.append(VersionedParamPath(
+            'import_nexthop', condition={'type': 'ebgp'},
+            path='type/{type}/import-nexthop', values=('original', 'use-peer')))
+        params.append(VersionedParamPath(
+            'remove_private_as', condition={'type': 'ebgp'},
+            path='type/{type}/remove-private-as', vartype='yesno'))
+
+        self._params = tuple(params)
+
+
+class BgpPeer(VersionedPanObject):
+    """BGP Peer
+
+    Args:
+        name (str): Name of BGP Peer
+        enable (bool): Enable Peer (Default: True)
+        peer_as (str): peer AS number
+        enable_mp_bgp (bool): enable MP-BGP extentions
+        address_family_identifier (str): peer address family type
+            * ipv4
+            * ipv6
+        subsequent_address_unicast (bool): select SAFI for this peer
+        subsequent_address_multicast (bool): select SAFI for this peer
+        local_interface (str): interface to accept BGP session
+        local_interface_ip (str): specify exact IP address if interface has multiple addresses
+        peer_address_ip (str): IP address of peer
+        connection_authentication (str): BGP auth profile name
+        connection_keep_alive_interval (int): keep-alive interval (in seconds)
+        connection_min_route_adv_interval (int): Minimum Route Advertisement Interval (in seconds)
+        connection_multihop (int): IP TTL value used for sending BGP packet. set to 0 means eBGP use 2, iBGP use 255
+        connection_open_delay_time (int): open delay time (in seconds)
+        connection_hold_time (int): hold time (in seconds)
+        connection_idle_hold_time (int): idle hold time (in seconds)
+        connection_incoming_allow (bool): allow incoming connections
+        connection_outgoing_allow (bool): allow outgoing connections
+        connection_incoming_remote_port (int): restrict remote port for incoming BGP connections
+        connection_outgoing_local_port (int): use specific local port for outgoing BGP connections
+        enable_sender_side_loop_detection (bool):
+        reflector_client (str):
+            * non-client
+            * client
+            * meshed-client
+        peering_type (str):
+            * unspecified
+            * bilateral
+        # aggregated_confed_as_path (bool): this peer understands aggregated confederation AS path
+        max_prefixes (int): maximum of prefixes to receive from peer
+        # max_orf_entries (int): maximum of ORF entries accepted from peer
+        # soft_reset_with_stored_info (bool): soft reset with stored info
+        bfd_profile (str): BFD configuration
+            * Inherit-vr-global-setting
+            * None
+            * Pre-existing BFD profile name
+            * None
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/peer')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', path='enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'peer_as', path='peer-as'))
+        params.append(VersionedParamPath(
+            'enable_mp_bgp', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'address_family_identifier', condition={'enable_mp_bgp': True},
+            values=('ipv4', 'ipv6')))
+        params.append(VersionedParamPath(
+            'subsequent_address_unicast', condition={'enable_mp_bgp': True},
+            path='subsequent-address-family-identifier/unicast', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'subsequent_address_multicast', condition={'enable_mp_bgp': True},
+            path='subsequent-address-family-identifier/multicast', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'local_interface', path='local-address/interface'))
+        params.append(VersionedParamPath(
+            'local_interface_ip', path='local-address/ip'))
+        params.append(VersionedParamPath(
+            'peer_address_ip', path='peer-address/ip'))
+        params.append(VersionedParamPath(
+            'connection_authentication', path='connection-options/authentication'))
+        params.append(VersionedParamPath(
+            'connection_keep_alive_interval',
+            path='connection-options/keep-alive-interval', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_min_route_adv_interval',
+            path='connection-options/min-route-adv-interval', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_multihop',
+            path='connection-options/multihop', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_open_delay_time',
+            path='connection-options/open-delay-time', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_hold_time',
+            path='connection-options/hold-time', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_idle_hold_time',
+            path='connection-options/idle-hold-time', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_incoming_allow',
+            path='connection-options/incoming-bgp-connection/allow', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'connection_outgoing_allow',
+            path='connection-options/outgoing-bgp-connection/allow', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'connection_incoming_remote_port',
+            path='connection-options/incoming-bgp-connection/remote-port', vartype='int'))
+        params.append(VersionedParamPath(
+            'connection_outgoing_local_port',
+            path='connection-options/outgoing-bgp-connection/local-port', vartype='int'))
+        params.append(VersionedParamPath(
+            'enable_sender_side_loop_detection', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'reflector_client', values=('non-client', 'client', 'meshed-client')))
+        params.append(VersionedParamPath(
+            'peering_type', values=('unspecified', 'bilateral')))
+        # params.append(VersionedParamPath(
+        #     'aggregated_confed_as_path', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'max_prefixes'))
+        # params.append(VersionedParamPath(
+        #     'max_orf_entries', vartype='int'))
+        # params.append(VersionedParamPath(
+        #     'soft_reset_with_stored_info', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'bfd_profile', path='bfd/profile'))
+
+        self._params = tuple(params)
+
+
+class BgpPolicyFilter(VersionedPanObject):
+    """Base class for BGP Policy Match Filters
+
+    Do not instantiate this class, use one of:
+        * BgpPolicyImportRule
+        * BgpPolicyExportRule
+
+    Args:
+        name (str): Name of filter
+        enable (bool): Enable rule.
+        match_afi (str): Address Family Identifier
+            * ip
+            * ipv6
+        match_safi (str): Subsequent Address Family Identifier
+            * ip
+            * ipv6
+        match_route_table (str): Route table to match rule
+            * unicast
+            * multicast
+            * both
+        match_nexthop (list): Next-hop attributes
+        match_from_peer (list): Filter by peer that sent this route
+        match_med (int): Multi-Exit Discriminator
+        match_as_path_regex (str): AS-path regular expression
+        match_community_regex (str): Community AS-path regular expression
+        match_extended_community_regex (str): Extended Community AS-path regular expression
+
+    """
+    # SUFFIX = None
+
+    def _setup(self):
+        # disabled because this is a base class
+        # self._xpaths.add_profile(value='/policy')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'match_afi', path='match/afi', default=None, values=('ip', 'ipv6')))
+        params.append(VersionedParamPath(
+            'match_safi', path='match/safi', default=None, values=('ip', 'ipv6')))
+        params.append(VersionedParamPath(
+            'match_route_table', path='match/route-table', default='unicast',
+            values=('unicast', 'multicast', 'both')))
+        params.append(VersionedParamPath(
+            'match_nexthop', path='match/nexthop', vartype='member'))
+        params.append(VersionedParamPath(
+            'match_from_peer', path='match/from-peer', vartype='member'))
+        params.append(VersionedParamPath(
+            'match_med', path='match/med', vartype='int'))
+        params.append(VersionedParamPath(
+            'match_as_path_regex', path='match/as-path/regex'))
+        params.append(VersionedParamPath(
+            'match_community_regex', path='match/community/regex'))
+        params.append(VersionedParamPath(
+            'match_extended_community_regex', path='match/extended-community/regex'))
+
+        self._params = tuple(params)
+
+
+class BgpPolicyNonExistFilter(BgpPolicyFilter):
+    """BGP Policy Non-Exist Filter
+
+    ** Most of the arguments are derived from the BgpPolicyFilter class
+
+    Args:
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicyAddressPrefix",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/non-exist-filters')
+
+        BgpPolicyFilter._setup(self)
+
+
+class BgpPolicyAdvertiseFilter(BgpPolicyFilter):
+    """BGP Policy Advertise Filter
+
+    ** Most of the arguments are derived from the BgpPolicyFilter class
+
+    Args:
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicyAddressPrefix",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/advertise-filters')
+
+        BgpPolicyFilter._setup(self)
+
+
+class BgpPolicySuppressFilter(BgpPolicyFilter):
+    """BGP Policy Suppress Filter
+
+    ** Most of the arguments are derived from the BgpPolicyFilter class
+
+    Args:
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicyAddressPrefix",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/suppress-filters')
+
+        BgpPolicyFilter._setup(self)
+
+
+class BgpPolicyConditionalAdvertisement(VersionedPanObject):
+    """BGP Conditional Advertisement Policy
+
+    Args:
+        name (str): Name of Conditional Advertisement Policy
+        enable (bool): enable prefix-based outbound route filtering.
+        used_by (list): peer-groups that use this rule.
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicyNonExistFilter",
+        "network.BgpPolicyAdvertiseFilter",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/policy/conditional-advertisement/policy')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'used_by', vartype='member'))
+
+        self._params = tuple(params)
+
+
+class BgpPolicyRule(BgpPolicyFilter):
+    """Base class for BGP Policy Import/Export Rules
+
+    Do not instantiate this class, use one of:
+        * BgpPolicyImportRule
+        * BgpPolicyExportRule
+
+    Args:
+        enable (bool): Enable rule.
+        used_by (list): Peer-groups that use this rule.
+        match_afi (str): Address Family Identifier
+            * ip
+            * ipv6
+        match_safi (str): Subsequent Address Family Identifier
+            * ip
+            * ipv6
+        match_route_table (str): Route table to match rule
+            * unicast
+            * multicast
+            * both
+        match_nexthop (list): Next-hop attributes
+        match_from_peer (list): Filter by peer that sent this route
+        match_med (int): Multi-Exit Discriminator
+        match_as_path_regex (str): AS-path regular expression
+        match_community_regex (str): AS-path regular expression
+        match_extended_community_regex (str): AS-path regular expression
+        action_local_preference (int): New local preference value
+        action_med (int): New MED value
+        action_nexthop (str): Nexthop address
+        action_origin (str): New route origin
+            * igp
+            * egp
+            * incomplete
+        action_as_path_limit (int): Add AS path limit attribute if it does not exist
+        action_as_path_type (str): AS path update options
+            * none (string, not to be confused with the Python type None)
+            * remove
+            * prepend
+            * remove-and-prepend
+        action_as_path_prepend_times (int): Prepend local AS for specified number of times
+            * only valid when action_as_path_type is 'prepend' or 'remove-and-prepend'
+        action_community (str): Community update options
+            * none (string, not to be confused with the Python type None)
+            * remove-all
+            * remove-regex
+            * append
+            * overwrite
+        action_community_argument (str): Argument to the action community value if needed
+            * None
+            * local-as
+            * no-advertise
+            * no-export
+            * nopeer
+            * regex
+            * 32-bit value
+            * AS:VAL
+        action_extended_community (str): Extended community update options
+            * none (string, not to be confused with the Python type None)
+            * remove-all
+            * remove-regex
+            * append
+            * overwrite
+        action_extended_community_argument (str): Argument to the action extended community value if needed
+
+    """
+    # SUFFIX = None
+
+    def _setup(self):
+        # disabled because this is a base class
+        # self._xpaths.add_profile(value='/policy')
+        BgpPolicyFilter._setup(self)
+
+        params = list(self._params)
+
+        params.append(VersionedParamPath(
+            'used_by', vartype='member'))
+        params.append(VersionedParamPath(
+            'action', path='action/{action}',
+            default='allow', values=('allow', 'deny')))
+        params.append(VersionedParamPath(
+            'action_local_preference', condition={'action': 'allow'},
+            path='action/{action}/update/local-preference', vartype='int'))
+        params.append(VersionedParamPath(
+            'action_med', condition={'action': 'allow'},
+            path='action/{action}/update/med', vartype='int'))
+        params.append(VersionedParamPath(
+            'action_nexthop', condition={'action': 'allow'},
+            path='action/{action}/update/nexthop'))
+        params.append(VersionedParamPath(
+            'action_origin', default='incomplete', condition={'action': 'allow'},
+            path='action/{action}/update/origin', values=('igp', 'egp', 'incomplete')))
+        params.append(VersionedParamPath(
+            'action_as_path_limit', condition={'action': 'allow'},
+            path='action/{action}/update/as-path-limit', vartype='int'))
+        params.append(VersionedParamPath(
+            'action_as_path_type', condition={'action': 'allow'}, default='none',
+            path='action/{action}/update/as-path/{action_as_path_type}',
+            values=('none', 'remove', 'prepend', 'remove-and-prepend')))
+        params.append(VersionedParamPath(
+            'action_as_path_prepend_times',
+            condition={'action': 'allow', 'action_as_path_type': ['prepend', 'remove-and-prepend']},
+            path='action/{action}/update/as-path/{action_as_path_type}', vartype='int'))
+        params.append(VersionedParamPath(
+            'action_community_type', condition={'action': 'allow'}, default='none',
+            path='action/{action}/update/community/{action_community_type}',
+            values=('none', 'remove-all', 'remove-regex', 'append', 'overwrite')))
+        params.append(VersionedParamPath(
+            'action_community_argument', default=None,
+            condition={'action': 'allow', 'action_community_type': ['remove-regex', 'append', 'overwrite']},
+            path='action/{action}/update/community/{action_community_type}'))
+        params.append(VersionedParamPath(
+            'action_extended_community_type', condition={'action': 'allow'}, default='none',
+            path='action/{action}/update/extended-community/{action_extended_community_type}',
+            values=('none', 'remove-all', 'remove-regex', 'append', 'overwrite')))
+        params.append(VersionedParamPath(
+            'action_extended_community_argument', default=None,
+            condition={'action': 'allow', 'action_extended_community_type': ['remove-regex', 'append', 'overwrite']},
+            path='action/{action}/update/extended-community/{action_extended_community_type}'))
+
+        self._params = tuple(params)
+
+
+class BgpPolicyImportRule(BgpPolicyRule):
+    """BGP Policy Import Rule
+
+    ** Most of the arguments are derived from the BgpPolicyRule class
+       See the arguments listed there for the full list shared between
+       the BgpPolicyImportRule and BgpPolicyExportRule classes
+
+    Args:
+        action_dampening (str): Route flap dampening profile
+        action_weight (int): New weight value
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicyAddressPrefix",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/policy/import/rules')
+
+        BgpPolicyRule._setup(self)
+
+        params = list(self._params)
+
+        params.append(VersionedParamPath(
+            'action_dampening', path='action/{action}/dampening',
+            condition={'action': 'allow'}))
+        params.append(VersionedParamPath(
+            'action_weight', path='action/{action}/update/weight',
+            condition={'action': 'allow'}, vartype='int'))
+
+        self._params = tuple(params)
+
+
+class BgpPolicyExportRule(BgpPolicyRule):
+    """BGP Policy Export Rule
+
+    ** Most of the arguments are derived from the BgpPolicyRule class
+       See the arguments listed there for the full list shared between
+       the BgpPolicyImportRule and BgpPolicyExportRule classes
+
+    Args:
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicyAddressPrefix",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/policy/export/rules')
+
+        BgpPolicyRule._setup(self)
+
+
+class BgpPolicyAddressPrefix(VersionedPanObject):
+    """BGP Policy Address Prefix with Exact
+
+    Args:
+        name (str): address prefix
+        exact (str): match exact prefix length
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/match/address-prefix')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'exact', default=None, vartype='yesno'))
+
+        self._params = tuple(params)
+
+
+class BgpPolicyAggregationAddress(VersionedPanObject):
+    """BGP Policy Aggregation Address
+
+    Args:
+        name (str): Sddress prefix
+        enable (bool): Enable aggregation for this prefix
+        prefix (str): Aggregating address prefix
+        summary (bool): Summarize route
+        as_set (bool): Generate AS-set attribute
+        attr_local_preference (int): New local preference value
+        attr_med (int): New MED value
+        attr_weight (int): New weight value
+        attr_nexthop (str): Nexthop address
+        attr_origin (str): New route origin
+            * igp
+            * egp
+            * incomplete
+        attr_as_path_limit (int): Add AS path limit attribute if it does not exist
+        attr_as_path_type (str): AS path update options
+            * none (string, not to be confused with the Python type None)
+            * remove
+            * prepend
+            * remove-and-prepend
+        attr_as_path_prepend_times (int): Prepend local AS for specified number of times
+            * only valid when attr_as_path_type is 'prepend' or 'remove-and-prepend'
+        attr_community_type (str): Community update options
+            * none (string, not to be confused with the Python type None)
+            * remove-all
+            * remove-regex
+            * append
+            * overwrite
+        attr_community_argument (str): Argument to the attr community value if needed
+            * None
+            * local-as
+            * no-advertise
+            * no-export
+            * nopeer
+            * regex
+            * 32-bit value
+            * AS:VAL
+        attr_extended_community_type (str): Extended community update options
+            * none (string, not to be confused with the Python type None)
+            * remove-all
+            * remove-regex
+            * append
+            * overwrite
+        attr_extended_community_argument (str): Argument to the attr extended community value if needed
+
+    """
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.BgpPolicySuppressFilter",
+        "network.BgpPolicyAdvertiseFilter",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/policy/aggregation/address')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', default=True, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'prefix'))
+        params.append(VersionedParamPath(
+            'summary', default=False, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'as_set', default=False, vartype='yesno'))
+        params.append(VersionedParamPath(
+            'attr_local_preference', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/local-preference', vartype='int'))
+        params.append(VersionedParamPath(
+            'attr_med', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/med', vartype='int'))
+        params.append(VersionedParamPath(
+            'attr_weight', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/weight', vartype='int'))
+        params.append(VersionedParamPath(
+            'attr_nexthop', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/nexthop'))
+        params.append(VersionedParamPath(
+            'attr_origin', default='incomplete', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/origin', values=('igp', 'egp', 'incomplete')))
+        params.append(VersionedParamPath(
+            'attr_as_path_limit', condition={'attr': 'allow'},
+            path='aggregate-route-attributes/as-path-limit', vartype='int'))
+        params.append(VersionedParamPath(
+            'attr_as_path_type', condition={'attr': 'allow'}, default='none',
+            path='aggregate-route-attributes/as-path/{attr_as_path_type}',
+            values=('none', 'remove', 'prepend', 'remove-and-prepend')))
+        params.append(VersionedParamPath(
+            'attr_as_path_prepend_times',
+            condition={'attr': 'allow', 'attr_as_path_type': ['prepend', 'remove-and-prepend']},
+            path='aggregate-route-attributes/as-path/{attr_as_path_type}', vartype='int'))
+        params.append(VersionedParamPath(
+            'attr_community_type', condition={'attr': 'allow'}, default='none',
+            path='aggregate-route-attributes/community/{attr_community_type}',
+            values=('none', 'remove-all', 'remove-regex', 'append', 'overwrite')))
+        params.append(VersionedParamPath(
+            'attr_community_argument', default=None,
+            condition={'attr': 'allow', 'attr_community_type': ['remove-regex', 'append', 'overwrite']},
+            path='aggregate-route-attributes/community/{attr_community_type}'))
+        params.append(VersionedParamPath(
+            'attr_extended_community_type', condition={'attr': 'allow'}, default='none',
+            path='aggregate-route-attributes/extended-community/{attr_extended_community_type}',
+            values=('none', 'remove-all', 'remove-regex', 'append', 'overwrite')))
+        params.append(VersionedParamPath(
+            'attr_extended_community_argument', default=None,
+            condition={'attr': 'allow', 'attr_extended_community_type': ['remove-regex', 'append', 'overwrite']},
+            path='aggregate-route-attributes/extended-community/{attr_extended_community_type}'))
+
+        self._params = tuple(params)
+
+
+class BgpRedistributionRule(VersionedPanObject):
+    """BGP Policy Address Prefix with Exact
+
+    Args:
+        name (str): Redistribution profile name
+        enable (bool): Enable redistribution rule.
+        address_family_identifier (str): Select redistribution profile type
+            * ipv4
+            * ipv6
+        route_table (str): Select destination SAFI for redistribution
+            * unicast
+            * multicast
+            * both
+        set_origin (str): Add the ORIGIN path attribute
+            * igp
+            * egp
+            * incomplete
+        set_med (int): Add the MULTI_EXIT_DISC path attribute
+        set_local_preference (int): Add the LOCAL_PREF path attribute
+        set_as_path_limit (int): Add the AS_PATHLIMIT path attribute
+        set_community (list): Add the COMMUNITY path attribute
+        set_extended_community (list): Add the EXTENDED COMMUNITY path attribute
+        metric (int): Metric value
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/redist-rules')
+
+        params = []
+
+        params.append(VersionedParamPath(
+            'enable', vartype='yesno'))
+        params.append(VersionedParamPath(
+            'address_family_identifier', default='ipv4', values=('ipv4', 'ipv6')))
+        params.append(VersionedParamPath(
+            'route_table', default='unicast',
+            values=('unicast', 'multicast', 'both')))
+        params.append(VersionedParamPath(
+            'set_origin', default='incomplete', values=('igp', 'egp', 'incomplete')))
+        params.append(VersionedParamPath(
+            'set_med', vartype='int'))
+        params.append(VersionedParamPath(
+            'set_local_preference', vartype='int'))
+        params.append(VersionedParamPath(
+            'set_as_path_limit', vartype='int'))
+        params.append(VersionedParamPath(
+            'set_community', vartype='member'))
+        params.append(VersionedParamPath(
+            'set_extended_community', vartype='member'))
+        params.append(VersionedParamPath(
+            'metric', vartype='int'))
+
+        self._params = tuple(params)
+
+
 class ManagementProfile(VersionedPanObject):
     """Interface management provile.
 
@@ -1846,7 +2820,7 @@ class ManagementProfile(VersionedPanObject):
             value='/network/profiles/interface-management-profile')
         self._xpaths.add_profile(
             value='{0}/network/profiles/interface-management-profile'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
@@ -1926,7 +2900,7 @@ class IkeGateway(VersionedPanObject):
         self._xpaths.add_profile(value='/network/ike/gateway')
         self._xpaths.add_profile(
             value='{0}/network/ike/gateway'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
@@ -2162,7 +3136,7 @@ class IpsecTunnel(VersionedPanObject):
         self._xpaths.add_profile(value='/network/tunnel/ipsec')
         self._xpaths.add_profile(
             value='{0}/network/tunnel/ipsec'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
@@ -2407,7 +3381,7 @@ class IpsecTunnelIpv4ProxyId(VersionedPanObject):
         self._xpaths.add_profile(value='/auto-key/proxy-id')
         self._xpaths.add_profile(
             value='{0}/auto-key/proxy-id'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
@@ -2457,7 +3431,7 @@ class IpsecTunnelIpv6ProxyId(VersionedPanObject):
         self._xpaths.add_profile(value='/auto-key/proxy-id-v6')
         self._xpaths.add_profile(
             value='{0}/auto-key/proxy-id-v6'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
@@ -2514,7 +3488,7 @@ class IpsecCryptoProfile(VersionedPanObject):
             value='/network/ike/crypto-profiles/ipsec-crypto-profiles')
         self._xpaths.add_profile(
             value='{0}/network/ike/crypto-profiles/ipsec-crypto-profiles'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []
@@ -2675,7 +3649,7 @@ class IkeCryptoProfile(VersionedPanObject):
             value='/network/ike/crypto-profiles/ike-crypto-profiles')
         self._xpaths.add_profile(
             value='{0}/network/ike/crypto-profiles/ike-crypto-profiles'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', ))
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []

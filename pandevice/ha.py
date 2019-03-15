@@ -303,6 +303,9 @@ class HighAvailability(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value='/deviceconfig/high-availability')
+        self._xpaths.add_profile(
+            value='{0}/deviceconfig/high-availability'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', 'TemplateStack'))
 
         # params
         params = []

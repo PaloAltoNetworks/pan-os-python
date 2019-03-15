@@ -3,6 +3,47 @@
 History
 =======
 
+0.7.1
+-----
+
+Released: Pending
+
+Status: Alpha
+
+0.7.0
+-----
+
+Released: 2019-03-15
+
+Status: Alpha
+
+- Added `next-vr` as an option for static route next hop types
+- Updated `set_vsys()` / `set_virtual_router()` / `set_vlan()` / `set_zone()` work with templates and template stacks
+- Added panorama functions for VM auth keys
+- Added child object support for template stacks
+- Added `objects.CustomUrlCategory`
+- Added `network.Bgp`
+- Added `network.RedistributionProfile`
+- Added `network.RedistributionProfileIPv6`
+- Added `network.BgpRoutingOptions`
+- Added `network.BgpOutboundRouteFilter`
+- Added `network.BgpDampeningProfile`
+- Added `network.BgpAuthProfile`
+- Added `network.BgpPeerGroup`
+- Added `network.BgpPeer`
+- Added `network.BgpPolicyFilter`
+- Added `network.BgpPolicyNonExistFilter`
+- Added `network.BgpPolicyAdvertiseFilter`
+- Added `network.BgpPolicySuppressFilter`
+- Added `network.BgpPolicyConditionalAdvertisement`
+- Added `network.BgpPolicyRule`
+- Added `network.BgpPolicyImportRule`
+- Added `network.BgpPolicyExportRule`
+- Added `network.BgpPolicyAddressPrefix`
+- Added `network.BgpPolicyAggregationAddress`
+- Added `network.BgpRedistributionRule`
+- Minor bug fixes
+
 0.6.6
 -----
 
