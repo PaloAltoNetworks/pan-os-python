@@ -3093,17 +3093,21 @@ class VsysOperations(VersionedPanObject):
 
     @classmethod
     def refreshall(cls, parent, running_config=False, add=True,
-                   exceptions=False, name_only=False):
+                   exceptions=False, name_only=False,
+                   matching_vsys=True):
         instances = super(VsysOperations, cls).refreshall(
             parent, running_config, add=False,
             exceptions=exceptions, name_only=name_only)
+
+        if not matching_vsys:
+            return instances
 
         # Versioned objects need a PanDevice to get the version from, so
         # set the child's parent before accessing XPATH.
         class_instance = cls()
         class_instance.parent = parent
 
-        # Filter out instances that are not in this vlan's imports
+        # Filter out instances that are not in this vsys's imports
         device = parent.nearest_pandevice()
         api_action = device.xapi.show if running_config else device.xapi.get
         if parent.vsys != "shared" and parent.vsys is not None and class_instance.XPATH_IMPORT is not None:
