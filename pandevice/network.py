@@ -1436,6 +1436,7 @@ class VirtualRouter(VsysOperations):
         "network.StaticRoute",
         "network.StaticRouteV6",
         "network.RedistributionProfile",
+        "network.RedistributionProfileIPv6",
         "network.Ospf",
         "network.Bgp",
     )
