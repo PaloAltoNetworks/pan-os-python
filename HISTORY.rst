@@ -3,12 +3,22 @@
 History
 =======
 
-0.7.1
+0.8.1
 -----
 
 Released: Pending
 
 Status: Alpha
+
+0.8.0
+-----
+
+Released: 2019-03-25
+
+Status: Alpha
+
+- Added flag to control VsysOperation's filtering on `refreshall()`
+- Fixed virtual router's childtypes - `RedistributionProfileIPv6` now shows up
 
 0.7.0
 -----
