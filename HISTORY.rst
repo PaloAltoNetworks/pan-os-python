@@ -3,12 +3,22 @@
 History
 =======
 
-0.8.1
+0.9.1
 -----
 
 Released: Pending
 
 Status: Alpha
+
+0.9.0
+-----
+
+Released: 2019-04-22
+
+Status: Alpha
+
+- Added `VlanInterface.set_vlan_interface()`
+- Minor bug fix
 
 0.8.0
 -----
