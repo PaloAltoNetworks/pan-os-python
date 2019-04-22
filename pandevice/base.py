@@ -1368,7 +1368,7 @@ class PanObject(object):
             return yesno(value)
 
     def _set_reference(self, reference_name, reference_type, reference_var,
-                       exclusive, refresh, update, running_config,
+                       var_type, exclusive, refresh, update, running_config,
                        return_type, name_only, **kwargs):
         """Used by helper methods to set references between objects
 
@@ -1468,46 +1468,52 @@ class PanObject(object):
         if exclusive:
             for obj in allobjects:
                 references = getattr(obj, reference_var)
-                if references is None:
+                if not references:
                     continue
-                elif hasattr(references, "__iter__") and self in references:
-                    if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
-                        continue
+                elif reference_name is not None and obj.uid == reference_name:
+                    continue
+                elif isinstance(references, list) and self in references:
                     update_needed = True
                     references.remove(self)
-                    if update: obj.update(reference_var)
-                elif hasattr(references, "__iter__") and str(self) in references:
-                    if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
-                        continue
+                    if update:
+                        obj.update(reference_var)
+                elif isinstance(references, list) and str(self) in references:
                     update_needed = True
                     references.remove(str(self))
-                    if update: obj.update(reference_var)
+                    if update:
+                        obj.update(reference_var)
                 elif references == self or references == str(self):
-                    if reference_name is not None and str(getattr(obj, reference_type.NAME)) == reference_name:
-                        continue
                     update_needed = True
-                    references = None
-                    if update: obj.update(reference_var)
+                    setattr(obj, reference_var, None)
+                    if update:
+                        obj.update(reference_var)
 
         # Add new reference to self in requested object
         if reference_name is not None:
             obj = parent.find_or_create(reference_name, reference_type, **kwargs)
             var = getattr(obj, reference_var)
-            if var is None:
-                update_needed = True
-                setattr(obj, reference_var, [self])
-                if update: obj.update(reference_var)
-            elif hasattr(var, "__iter__") and self not in var and str(self) not in var:
-                update_needed = True
-                var.append(self)
-                if update: obj.update(reference_var)
-            elif hasattr(var, "__iter__"):
-                # The reference already exists so do nothing
-                pass
+            if var_type == 'list':
+                if var is None:
+                    update_needed = True
+                    setattr(obj, reference_var, [self, ])
+                    if update:
+                        obj.update(reference_var)
+                elif not isinstance(var, list):
+                    if var != self and var != str(self):
+                        update_needed = True
+                        setattr(obj, reference_var, [var, self])
+                        if update:
+                            obj.update(reference_var)
+                elif self not in var and str(self) not in var:
+                    update_needed = True
+                    var.append(self)
+                    if update:
+                        obj.update(reference_var)
             elif var != self and var != str(self):
                 update_needed = True
                 setattr(obj, reference_var, self)
-                if update: obj.update(reference_var)
+                if update:
+                    obj.update(reference_var)
             if return_type == 'object':
                 return obj
 
@@ -3088,8 +3094,8 @@ class VsysOperations(VersionedPanObject):
                 self.XPATH_IMPORT))
 
         from pandevice.device import Vsys
-        return self._set_reference(vsys_id, Vsys, param_name, True, refresh,
-            update, running_config, return_type, True)
+        return self._set_reference(vsys_id, Vsys, param_name, 'list',
+            True, refresh, update, running_config, return_type, True)
 
     @classmethod
     def refreshall(cls, parent, running_config=False, add=True,

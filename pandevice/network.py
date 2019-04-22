@@ -321,7 +321,7 @@ class Interface(VsysOperations):
             return False
 
         return self._set_reference(
-            zone_name, Zone, "interface", True, refresh,
+            zone_name, Zone, "interface", 'list', True, refresh,
             update, running_config, return_type, False, mode=mode)
 
     def set_virtual_router(self, virtual_router_name, refresh=False,
@@ -353,8 +353,8 @@ class Interface(VsysOperations):
 
         """
         return self._set_reference(
-            virtual_router_name, VirtualRouter, "interface", True, refresh,
-            update, running_config, return_type, False)
+            virtual_router_name, VirtualRouter, "interface", 'list',
+            True, refresh, update, running_config, return_type, False)
 
     def set_vlan(self, vlan_name, refresh=False,
                  update=False, running_config=False, return_type='object'):
@@ -391,7 +391,7 @@ class Interface(VsysOperations):
             raise AttributeError(msg.format(self.__class__))
 
         return self._set_reference(
-            vlan_name, Vlan, "interface", True,
+            vlan_name, Vlan, "interface", 'list', True,
             refresh, update, running_config, return_type, False)
 
     def get_counters(self):
@@ -674,7 +674,7 @@ class AbstractSubinterface(object):
         interface = Layer3Subinterface(self.name, self.tag)
         interface.parent = self.parent
         return interface._set_reference(
-            virtual_router_name, VirtualRouter, "interface", True,
+            virtual_router_name, VirtualRouter, "interface", 'list', True,
             refresh=False, update=update, running_config=running_config,
             return_type='object', name_only=False)
 
@@ -1219,6 +1219,37 @@ class VlanInterface(Interface):
             path='dhcp-client/default-route-metric', vartype='int'))
 
         self._params = tuple(params)
+
+    def set_vlan_interface(self, vlan_name, refresh=False,
+                update=False, running_config=False, return_type='object'):
+        """Sets the VLAN's VLAN interface to this VLAN interface
+
+        Creates a reference to this interface in the specified vlan and removes
+        references to this interface from all other VLANs.  The vlan will
+        be created if it doesn't exist.
+
+        Args:
+            vlan_name (str): The name of the vlan or
+                a :class:`pandevice.network.Vlan` instance
+            refresh (bool): Refresh the relevant current state of the device
+                before taking action (Default: False)
+            update (bool): Apply the changes to the device (Default: False)
+            running_config: If refresh is True, refresh from the running
+                configuration (Default: False)
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the Vlan in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
+
+        Returns:
+            Vlan: The VLAN for this interface after the operation completes
+
+        """
+        return self._set_reference(
+            vlan_name, Vlan, 'virtual_interface', 'string', True,
+            refresh, update, running_config, return_type, False)
 
 
 class LoopbackInterface(Interface):
