@@ -3,12 +3,21 @@
 History
 =======
 
-0.9.1
+0.9.2
 -----
 
 Released: Pending
 
 Status: Alpha
+
+0.9.1
+-----
+
+Released: 2019-04-24
+
+Status: Alpha
+
+- Added additional handling for authcode activation responses from PAN-OS.
 
 0.9.0
 -----
