@@ -4678,7 +4678,7 @@ class PanDevice(PanObject):
                     'VM Device License installed. Restarting pan services.',
                 )
                 for msg in acceptable_errors:
-                    if msg in err_msg:
+                    if msg in self.xapi.xml_document:
                         return
                 raise pan.xapi.PanXapiError('{0} | xml_document={1}'.format(
                                             err_msg, self.xapi.xml_document))
