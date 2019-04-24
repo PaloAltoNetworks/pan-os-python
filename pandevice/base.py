@@ -4653,8 +4653,37 @@ class PanDevice(PanObject):
         Raises:
             PanActivateFeatureAuthCodeError
         """
-        result = self.op('request license fetch auth-code "{0}"'.format(
-                         code))
+        try:
+            result = self.op('request license fetch auth-code "{0}"'.format(code))
+        except pan.xapi.PanXapiError as e:
+            '''
+            pan-python can handle both XML responses & plaintext responses from
+            a PAN-OS, and it makes this determination based on headers that are
+            sent back from any given action.  Raw XML text returned is stored
+            in pan.xapi.PanXapi.xml_document, and the raw plain text is stored
+            in pan.xapi.PanXapi.text_document.
+
+            When it comes to licensing, it's been observed that PAN-OS can
+            send back a response with Content-Type: application/xml, but the
+            content isn't actually XML, it's plain text.  When this happens,
+            pan-python wraps the xml.etree.ElementTree error and returns
+            a PanXapiError instead that mentions the parsing problem.
+
+            So, check the not-actually-XML response sent back to see if the
+            licensing operation was actually successful.
+            '''
+            err_msg = '{0}'.format(e)
+            if err_msg.startswith('ElementTree.fromstring ParseError:'):
+                acceptable_errors = (
+                    'VM Device License installed. Restarting pan services.',
+                )
+                for msg in acceptable_errors:
+                    if msg in self.xapi.xml_document:
+                        return
+                raise pan.xapi.PanXapiError('{0} | xml_document={1}'.format(
+                                            err_msg, self.xapi.xml_document))
+            else:
+                raise
 
         if result.attrib.get('status') != 'success':
             raise err.PanActivateFeatureAuthCodeError(
