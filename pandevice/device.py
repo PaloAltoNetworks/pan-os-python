@@ -262,6 +262,7 @@ class SystemSettings(VersionedPanObject):
     CHILDTYPES = (
         "device.NTPServerPrimary",
         "device.NTPServerSecondary",
+        "device.Telemetry",
     )
 
     def _setup(self):
@@ -452,3 +453,54 @@ class Administrator(VersionedPanObject):
         dev = self.nearest_pandevice()
         self.password_hash = dev.request_password_hash(new_password)
         self.update('password_hash')
+
+
+class Telemetry(VersionedPanObject):
+    """Share telemetry data with Palo Alto Networks.
+
+    Join other Palo Alto Networks customers in a global sharing community,
+    helping to raise the bar against the latest attack techniques. Your
+    participation allows us to deliver new threat prevention controls across
+    the attack lifecycle. Choose the type of data you share across
+    applications, threat intelligence, and device health information to improve
+    the fidelity of the protections we deliver. This is an opt-in feature
+    controlled with granular policy, and we encourage you to join the
+    community.
+
+    Add only one of these to a firewall.
+
+    Args:
+        app_reports (bool): Application reports
+        threat_reports (bool): Threat preventioin reports
+        url_reports (bool): URL reports
+        file_type_reports (bool): File type identification reports
+        threat_data (bool): Threat prevention data
+        threat_pcaps (bool): Enable sending packet captures with threat
+            prevention information.  This requires that "threat_data" also be
+            enabled.
+        product_usage_stats (bool): Health and performance reports
+        passive_dns_monitoring (bool): Passive DNS monitoring
+
+    """
+    NAME = None
+    ROOT = Root.DEVICE
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/update-schedule/statistics-service')
+
+        bool_params = (
+            ('app_reports', 'application-reports'),
+            ('threat_reports', 'threat-prevention-reports'),
+            ('url_reports', 'url-reports'),
+            ('file_type_reports', 'file-identification-reports'),
+            ('threat_data', 'threat-prevention-information'),
+            ('threat_pcaps', 'threat-prevention-pcap'),
+            ('product_usage_stats', 'health-performance-reports'),
+            ('passive_dns_monitoring', 'passive-dns-monitoring'),
+        )
+
+        self._params = tuple(
+            VersionedParamPath(param, vartype='yesno', path=path)
+            for param, path in bool_params
+        )
