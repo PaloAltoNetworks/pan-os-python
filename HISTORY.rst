@@ -3,12 +3,21 @@
 History
 =======
 
-0.9.2
+0.11.0
 -----
 
 Released: Pending
 
 Status: Alpha
+
+0.10.0
+------
+
+Released: 2019-05-07
+
+Status: Alpha
+
+- Added `device.Telemetry`
 
 0.9.1
 -----
