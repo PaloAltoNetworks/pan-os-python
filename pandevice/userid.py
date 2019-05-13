@@ -299,6 +299,19 @@ class UserId(object):
             dict: ip addresses as keys with tags as values
 
         """
+        start = 1
+        limit = 500
+        addresses = {}
+        while True:
+            newaddr = self.get_registered_ip_loop(ip, tags, prefix, start, limit)
+            rescnt = len(newaddr.keys())
+            addresses.update(newaddr)
+            if (rescnt < limit):
+                break
+            start += limit
+        return addresses
+
+    def get_registered_ip_loop(self, ip=None, tags=None, prefix=None, start=1, limit=500):
         if prefix is None:
             prefix = self.prefix
         root = ET.Element("show")
@@ -308,6 +321,11 @@ class UserId(object):
             cmd = ET.SubElement(cmd, "registered-address")
         else:
             cmd = ET.SubElement(cmd, "registered-ip")
+        sp = ET.SubElement(cmd, "start-point")
+        sp.text = str(start)
+        lim = ET.SubElement(cmd, "limit")
+        lim.text = str(limit)
+        ET.SubElement(cmd, "all")
         # Add arguments to command
         ip = list(set(string_or_list_or_none(ip)))
         tags = list(set(string_or_list_or_none(tags)))
