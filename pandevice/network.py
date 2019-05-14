@@ -3783,3 +3783,68 @@ class IkeCryptoProfile(VersionedPanObject):
                         token))
 
         self.encryption = normalized
+
+
+class GreTunnel(VersionedPanObject):
+    """GRE Tunnel configuration.
+
+    Note:  This is valid for PAN-OS 9.0+
+
+    Args:
+        name: GRE tunnel name.
+        interface: Interface to terminate tunnel.
+        local_address_type: Type of local address.  Can be "ip" (default) or
+            "floating-ip".
+        local_address_value: IP address value.
+        peer_address: Peer IP address.
+        tunnel_interface: To apply GRE tunnels to tunnel interface.
+        ttl (int): TTL.
+        copy_tos (bool): Copy IP TOS bits from inner packet to GRE packet.
+        enable_keep_alive (bool): Enable tunnel monitoring.
+        keep_alive_interval (int): Interval.
+        keep_alive_retry (int): Retry.
+        keep_alive_hold_timer (int): Hold timer.
+        disabled (bool): Disable the GRE tunnel.
+
+    """
+    SUFFIX = ENTRY
+    ROOT = Root.DEVICE
+
+    def _setup(self):
+        self._xpaths.add_profile(value='/network/tunnel/gre')
+        self._xpaths.add_profile(
+            value='{0}/network/tunnel/gre'.format(self._TEMPLATE_DEVICE_XPATH),
+            parents=('Template', 'TemplateStack'))
+
+        # Hidden when default: all keep alive, ttl
+        params = []
+        params.append(VersionedParamPath(
+            'interface', path='local-address/interface'))
+        params.append(VersionedParamPath(
+            'local_address_type', default='ip', values=['ip', 'floating-ip'],
+            path='local-address/{local_address_type}',))
+        params.append(VersionedParamPath(
+            'local_address_value', path='local-address/{local_address_type}'))
+        params.append(VersionedParamPath(
+            'peer_address', path='peer-address/ip'))
+        params.append(VersionedParamPath(
+            'tunnel_interface', path='tunnel-interface'))
+        params.append(VersionedParamPath(
+            'ttl', default=64, vartype='int', path='ttl'))
+        params.append(VersionedParamPath(
+            'copy_tos', vartype='yesno', path='copy-tos'))
+        params.append(VersionedParamPath(
+            'enable_keep_alive', vartype='yesno', path='keep-alive/enable'))
+        params.append(VersionedParamPath(
+            'keep_alive_interval', default=10, vartype='int',
+            path='keep-alive/interval'))
+        params.append(VersionedParamPath(
+            'keep_alive_retry', default=3, vartype='int',
+            path='keep-alive/retry'))
+        params.append(VersionedParamPath(
+            'keep_alive_hold_timer', default=5, vartype='int',
+            path='keep-alive/hold-timer'))
+        params.append(VersionedParamPath(
+            'disabled', vartype='yesno', path='disabled'))
+
+        self._params = tuple(params)

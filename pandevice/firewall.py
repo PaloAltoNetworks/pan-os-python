@@ -91,6 +91,7 @@ class Firewall(PanDevice):
         "network.IpsecTunnel",
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
+        "network.GreTunnel",
     )
 
     def __init__(self,

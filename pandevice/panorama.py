@@ -126,6 +126,7 @@ class Template(VersionedPanObject):
         "network.IpsecTunnel",
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
+        "network.GreTunnel",
     )
 
     def _setup(self):
@@ -207,6 +208,7 @@ class TemplateStack(VersionedPanObject):
         "network.IpsecTunnel",
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
+        "network.GreTunnel",
     )
 
     def _setup(self):
