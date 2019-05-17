@@ -2322,6 +2322,33 @@ class VersionedPanObject(PanObject):
 
         self.xml_merge(ans, itertools.chain(*iterchain))
 
+        # Now that the whole element is built, mixin an attrib vartypes.
+        for p in paths:
+            if p.vartype != 'attrib':
+                continue
+            attrib_path = p.path.split('/')
+            attrib_name = attrib_path.pop()
+            attrib_value = settings[p.param]
+            if attrib_value is None or p.exclude:
+                continue
+            e = ans
+            find_path = ['.', ]
+            for ap in attrib_path:
+                if not ap:
+                    continue
+                if ap.startswith('entry '):
+                    junk, var_to_use = ap.split()
+                    sol_value = pandevice.string_or_list(settings[var_to_use])[0]
+                    find_path.append("entry[@name='{0}']".format(sol_val))
+                elif ap == "entry[@name='localhost.localdomain']":
+                    find_path.append(ap)
+                else:
+                    find_path.append(ap.format(**settings))
+            if len(find_path) > 1:
+                e = e.find('/'.join(find_path))
+            if e is not None:
+                e.attrib[attrib_name] = attrib_value
+
         return ans
 
     def equal(self, panobject, force=False, compare_children=True):
@@ -2712,6 +2739,8 @@ class ParamPath(object):
 
         # Check if this should return None instead of an element
         if self.exclude:
+            return None
+        elif self.vartype == 'attrib':
             return None
         elif value is None and self.vartype != 'stub':
             return None

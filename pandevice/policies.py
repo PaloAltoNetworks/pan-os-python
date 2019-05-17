@@ -182,6 +182,12 @@ class SecurityRule(VersionedPanObject):
                 p, vartype='member',
                 path='profile-setting/profiles/{0}'.format(p)))
 
+        params.append(VersionedParamPath(
+            'uuid', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            vartype='attrib', path='uuid')
+
         self._params = tuple(params)
 
 
@@ -429,5 +435,10 @@ class NatRule(VersionedPanObject):
             '8.1.0',
             path='dynamic-destination-translation/distribution',
             values=('round-robin', ))
+        params.append(VersionedParamPath(
+            'uuid', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            vartype='attrib', path='uuid')
 
         self._params = tuple(params)
