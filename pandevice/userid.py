@@ -298,17 +298,36 @@ class UserId(object):
         Returns:
             dict: ip addresses as keys with tags as values
 
+        Raises:
+            PanDeviceError if running PAN-OS < 8.0 and a logfile is returned
+                instead of IP/tag mapings.
+
         """
+        if self.device is None:
+            raise err.PanDeviceNotSet('No device set for this userid instance')
+        version = self.device.retrieve_panos_version()
+
         if prefix is None:
             prefix = self.prefix
+
+        # Build up the command.
+        limit = 0
+        start_elm = None
+        start_offset = 1
         root = ET.Element("show")
         cmd = ET.SubElement(root, "object")
-        # Simple check to determine which command to use
-        if self.device and self.device.version and PanOSVersion('6.1.0') > self.device.version:
-            cmd = ET.SubElement(cmd, "registered-address")
-        else:
+        if version >= (6, 1, 0):
             cmd = ET.SubElement(cmd, "registered-ip")
-        # Add arguments to command
+            if version >= (8, 0, 0):
+                # PAN-OS 8.0+ supports paging.
+                limit = 500
+                ET.SubElement(cmd, "limit").text = '{0}'.format(limit)
+                start_elm = ET.SubElement(cmd, 'start-point')
+                start_elm.text = '{0}'.format(start_offset)
+        else:
+            cmd = ET.SubElement(cmd, "registered-address")
+
+        # Add ip/tag filter arguments to command.
         ip = list(set(string_or_list_or_none(ip)))
         tags = list(set(string_or_list_or_none(tags)))
         tags = [prefix+t for t in tags]
@@ -318,22 +337,44 @@ class UserId(object):
         if len(ip) == 1:
             ip_element = ET.SubElement(cmd, "ip")
             ip_element.text = ip[0]
-        root = self.device.op(cmd=ET.tostring(root), vsys=self.device.vsys, cmd_xml=False)
-        entries = root.findall("./result/entry")
+
         addresses = {}
-        for entry in entries:
-            c_ip = entry.get("ip")
-            if ip and c_ip not in ip:
-                continue
-            members = entry.findall("./tag/member")
-            c_tags = []
-            for member in members:
-                tag = member.text
-                if not prefix or tag.startswith(prefix):
-                    if not tags or tag in tags:
-                        c_tags.append(tag)
-            if c_tags:
-                addresses[c_ip] = c_tags
+        while True:
+            resp = self.device.op(cmd=ET.tostring(root, encoding='utf-8'),
+                                  vsys=self.device.vsys, cmd_xml=False)
+
+            # PAN-OS 7.1 and lower can return "outfile" instead of actual results.
+            outfile = resp.find('./result/msg/line/outfile')
+            if outfile is not None:
+                msg = [
+                    'PAN-OS returned "{0}" instead of IP/tag mappings'.format(
+                        outfile.text),
+                    'please upgrade to PAN-OS 8.0+',
+                ]
+                raise err.PanDeviceError(', '.join(msg))
+
+            entries = resp.findall("./result/entry")
+            for entry in entries:
+                c_ip = entry.get("ip")
+                if ip and c_ip not in ip:
+                    continue
+                members = entry.findall("./tag/member")
+                c_tags = []
+                for member in members:
+                    tag = member.text
+                    if not prefix or tag.startswith(prefix):
+                        if not tags or tag in tags:
+                            c_tags.append(tag)
+                if c_tags:
+                    addresses[c_ip] = c_tags
+
+            if start_elm is None or limit == 0 or len(entries) < limit:
+                break
+
+            start_offset += len(entries)
+            start_elm.text = '{0}'.format(start_offset)
+
+        # Done.
         return addresses
 
     def clear_registered_ip(self, ip=None, tags=None, prefix=None):
