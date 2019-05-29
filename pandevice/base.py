@@ -1911,6 +1911,23 @@ class PanObject(object):
             return self.parent.fulltree()
         return self.tree()
 
+    def retrieve_panos_version(self):
+        """Gets the panos_version of the closest PanDevice.
+
+        If this object is not attached to a PanDevice, then a very large
+        number is returned to ensure that the newest version of the
+        object and xpath is presented to the user.
+
+        Returns:
+            tuple: The version as (x, y, z)
+        """
+        try:
+            device = self.nearest_pandevice()
+            panos_version = device.get_device_version()
+        except (err.PanDeviceNotSet, err.PanApiKeyNotSet):
+            panos_version = self._UNKNOWN_PANOS_VERSION
+
+        return panos_version
 
 
 class VersioningSupport(object):
@@ -2256,24 +2273,6 @@ class VersionedPanObject(PanObject):
             pass
 
         return list(ans)
-
-    def retrieve_panos_version(self):
-        """Gets the panos_version of the closest PanDevice.
-
-        If this object is not attached to a PanDevice, then a very large
-        number is returned to ensure that the newest version of the
-        object and xpath is presented to the user.
-
-        Returns:
-            tuple: The version as (x, y, z)
-        """
-        try:
-            device = self.nearest_pandevice()
-            panos_version = device.get_device_version()
-        except (err.PanDeviceNotSet, err.PanApiKeyNotSet):
-            panos_version = self._UNKNOWN_PANOS_VERSION
-
-        return panos_version
 
     def _build_element_info(self):
         panos_version = self.retrieve_panos_version()
