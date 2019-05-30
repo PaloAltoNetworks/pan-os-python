@@ -8,36 +8,6 @@ except ImportError:
     from distutils.core import setup
 
 
-setup_kwargs = {}
-
-try:
-    from setuptools.command.test import test as TestCommand
-except ImportError:
-    setup_kwargs.setdefault('setup_requires', [])
-    setup_kwargs['setup_requires'].append('pytest-runner')
-else:
-    import sys
-
-    class PyTest(TestCommand):
-        user_options = [("pytest-args=", "a", "Arguments to pass to pytest")]
-
-        def initialize_options(self):
-            TestCommand.initialize_options(self)
-            self.pytest_args = ""
-
-        def run_tests(self):
-            import shlex
-
-            # import here, cause outside the eggs aren't loaded
-            import pytest
-
-            errno = pytest.main(shlex.split(self.pytest_args))
-            sys.exit(errno)
-
-    setup_kwargs.setdefault('cmdclass', {})
-    setup_kwargs['cmdclass']['pytest'] = PyTest
-
-
 readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
@@ -51,7 +21,7 @@ test_requirements = [
     'pytest',
 ]
 
-setup(
+setup_kwargs = dict(
     name='pandevice',
     version='0.10.0',
     description='Framework for interacting with Palo Alto Networks devices via API',
@@ -82,5 +52,34 @@ setup(
     ],
     test_suite='tests',
     tests_require=test_requirements,
-    **setup_kwargs,
 )
+
+try:
+    from setuptools.command.test import test as TestCommand
+except ImportError:
+    setup_kwargs.setdefault('setup_requires', [])
+    setup_kwargs['setup_requires'].append('pytest-runner')
+else:
+    import sys
+
+    class PyTest(TestCommand):
+        user_options = [("pytest-args=", "a", "Arguments to pass to pytest")]
+
+        def initialize_options(self):
+            TestCommand.initialize_options(self)
+            self.pytest_args = ""
+
+        def run_tests(self):
+            import shlex
+
+            # import here, cause outside the eggs aren't loaded
+            import pytest
+
+            errno = pytest.main(shlex.split(self.pytest_args))
+            sys.exit(errno)
+
+    setup_kwargs.setdefault('cmdclass', {})
+    setup_kwargs['cmdclass']['pytest'] = PyTest
+
+
+setup(**setup_kwargs)
