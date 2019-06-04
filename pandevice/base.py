@@ -2579,6 +2579,27 @@ class VersionedParamPath(VersioningSupport):
             self.default, id(self))
 
 
+class ValueEntry(VersionedPanObject):
+    """Base class for objects that only have a value element.
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    LOCATION = None
+
+    def _setup(self):
+        if self.LOCATION is None:
+            raise Exception('{0}.LOCATION is unset'.format(self.__class__))
+
+        # xpath
+        self._xpaths.add_profile(value=self.LOCATION)
+
+        # params
+        self._params = (
+            VersionedParamPath('value', path='value'),
+        )
+
+
 class VarPath(object):
     """Configuration variable within the object
 

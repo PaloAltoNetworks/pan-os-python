@@ -20,6 +20,7 @@ from pandevice.base import PanObject, Root, MEMBER, ENTRY
 from pandevice.base import VarPath as Var
 from pandevice.base import VersionedPanObject
 from pandevice.base import VersionedParamPath
+from pandevice.base import ValueEntry
 
 # import other parts of this pandevice package
 from pandevice import getlogger
@@ -504,3 +505,982 @@ class Telemetry(VersionedPanObject):
             VersionedParamPath(param, vartype='yesno', path=path)
             for param, path in bool_params
         )
+
+
+class SnmpServerProfile(VersionedPanObject):
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "device.SnmpV2cServerProfile",
+        "device.SnmpV3ServerProfile",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/log-settings/snmptrap')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'version', default='v2c', values=['v2c', 'v3'],
+            path='version/{version}'))
+
+        self._params = tuple(params)
+
+
+class SnmpV2cServerProfile(VersionedPanObject):
+    """SNMP V2C server profile.
+
+    Args:
+        name (str): The name
+        manager (str): IP address or FQDN of SNMP manager to use
+        community (str): SNMP community
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/version/v2c/server')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'manager', path='manager'))
+        params.append(VersionedParamPath(
+            'community', path='community'))
+
+        self._params = tuple(params)
+
+
+class SnmpV3ServerProfile(VersionedPanObject):
+    """SNMP V2C server profile.
+
+    Args:
+        name (str): The name
+        manager (str): IP address or FQDN of SNMP manager to use
+        user (str): User
+        engine_id (str): A hex number
+        auth_password (str): Authentication protocol password
+        priv_password (str): Privacy protocol password
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/version/v3/server')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'manager', path='manager'))
+        params.append(VersionedParamPath(
+            'user', path='user'))
+        params.append(VersionedParamPath(
+            'engine_id', path='engineid'))
+        params.append(VersionedParamPath(
+            'auth_password', vartype='encrypted', path='authpwd'))
+        params.append(VersionedParamPath(
+            'priv_password', vartype='encrypted', path='privpwd'))
+
+        self._params = tuple(params)
+
+
+class EmailServerProfile(VersionedPanObject):
+    """An email server profile.
+
+    Args:
+        name (str): The name
+        config (str): Custom config log format
+        system (str): Custom system log format
+        threat (str): Custom threat log format
+        traffic (str): Custom traffic log format
+        hip_match (str): Custom HIP match log format
+        url (str): (PAN-OS 8.0+) Custom URL log format
+        data (str): (PAN-OS 8.0+) Custom data log format
+        wildfire (str): (PAN-OS 8.0+) Custom WildFire log format
+        tunnel (str): (PAN-OS 8.0+) Custom tunnel log format
+        user_id (str): (PAN-OS 8.0+) Custom user-ID log format
+        gtp (str): (PAN-OS 8.0+) Custom GTP log format
+        auth (str): (PAN-OS 8.0+) Custom authentication log format
+        sctp (str): (PAN-OS 8.1+) Custom SCTP log format
+        iptag (str): (PAN-OS 9.0+) Custom Iptag log format
+        escaped_characters (str): Characters to be escaped
+        escape_character (str): Escape character
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "device.EmailServer",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/log-settings/email')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'config', path='format/config'))
+        params.append(VersionedParamPath(
+            'system', path='format/system'))
+        params.append(VersionedParamPath(
+            'threat', path='format/threat'))
+        params.append(VersionedParamPath(
+            'traffic', path='format/traffic'))
+        params.append(VersionedParamPath(
+            'hip_match', path='format/hip-match'))
+        params.append(VersionedParamPath(
+            'url', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/url')
+        params.append(VersionedParamPath(
+            'data', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/data')
+        params.append(VersionedParamPath(
+            'wildfire', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/wildfire')
+        params.append(VersionedParamPath(
+            'tunnel', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/tunnel')
+        params.append(VersionedParamPath(
+            'user_id', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/userid')
+        params.append(VersionedParamPath(
+            'gtp', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/gtp')
+        params.append(VersionedParamPath(
+            'auth', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/auth')
+        params.append(VersionedParamPath(
+            'sctp', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            path='format/sctp')
+        params.append(VersionedParamPath(
+            'iptag', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            path='format/iptag')
+        params.append(VersionedParamPath(
+            'escaped_characters', path='escaping/escaped-characters'))
+        params.append(VersionedParamPath(
+            'escape_character', path='escaping/escape_character'))
+
+        self._params = tuple(params)
+
+
+class EmailServer(VersionedPanObject):
+    """An email server in a email server profile.
+
+    Args:
+        name (str): The name
+        display_name (str): Display name
+        from (str): From email address
+        to (str): To email address
+        additional_recipient (str): Additional destination email address
+        email_gateway (str): IP address or FQDN of SMTP gateway to use
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/server')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'display_name', path='display-name'))
+        params.append(VersionedParamPath(
+            'from', path='from'))
+        params.append(VersionedParamPath(
+            'to', path='to'))
+        params.append(VersionedParamPath(
+            'additional_recipient', path='and-also-to'))
+        params.append(VersionedParamPath(
+            'email_gateway', path='gateway'))
+
+        self._params = tuple(params)
+
+
+class SyslogServerProfile(VersionedPanObject):
+    """A syslog server profile.
+
+    Args:
+        name (str): The name
+        config (str): Custom config log format
+        system (str): Custom system log format
+        threat (str): Custom threat log format
+        traffic (str): Custom traffic log format
+        hip_match (str): Custom HIP match log format
+        url (str): (PAN-OS 8.0+) Custom URL log format
+        data (str): (PAN-OS 8.0+) Custom data log format
+        wildfire (str): (PAN-OS 8.0+) Custom WildFire log format
+        tunnel (str): (PAN-OS 8.0+) Custom tunnel log format
+        user_id (str): (PAN-OS 8.0+) Custom user-ID log format
+        gtp (str): (PAN-OS 8.0+) Custom GTP log format
+        auth (str): (PAN-OS 8.0+) Custom authentication log format
+        sctp (str): (PAN-OS 8.1+) Custom SCTP log format
+        iptag (str): (PAN-OS 9.0+) Custom Iptag log format
+        escaped_characters (str): Characters to be escaped
+        escape_character (str): Escape character
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "device.SyslogServer",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/log-settings/syslog')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'config', path='format/config'))
+        params.append(VersionedParamPath(
+            'system', path='format/system'))
+        params.append(VersionedParamPath(
+            'threat', path='format/threat'))
+        params.append(VersionedParamPath(
+            'traffic', path='format/traffic'))
+        params.append(VersionedParamPath(
+            'hip_match', path='format/hip-match'))
+        params.append(VersionedParamPath(
+            'url', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/url')
+        params.append(VersionedParamPath(
+            'data', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/data')
+        params.append(VersionedParamPath(
+            'wildfire', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/wildfire')
+        params.append(VersionedParamPath(
+            'tunnel', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/tunnel')
+        params.append(VersionedParamPath(
+            'user_id', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/userid')
+        params.append(VersionedParamPath(
+            'gtp', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/gtp')
+        params.append(VersionedParamPath(
+            'auth', exclude=True))
+        params[-1].add_profile(
+            '8.0.0',
+            path='format/auth')
+        params.append(VersionedParamPath(
+            'sctp', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            path='format/sctp')
+        params.append(VersionedParamPath(
+            'iptag', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            path='format/iptag')
+        params.append(VersionedParamPath(
+            'escaped_characters', path='escaping/escaped-characters'))
+        params.append(VersionedParamPath(
+            'escape_character', path='escaping/escape_character'))
+
+        self._params = tuple(params)
+
+
+class SyslogServer(VersionedPanObject):
+    """A single syslog server in a syslog server profile.
+
+    Args:
+        name (str): The name
+        server (str): IP address or FQDN of the syslog server
+        transport (str): Syslog transport.  Valid values are UDP (default),
+            TCP, or SSL.
+        port (int): Syslog port number.
+        format (str): Format of the syslog message.  Valid values are BSD
+            (default) or IETF.
+        facility (str): Syslog facility.  Valid values are LOG_USER (default),
+            or LOG_LOCAL0 through LOG_LOCAL7.
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/server')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'server', path='server'))
+        params.append(VersionedParamPath(
+            'transport', default='UDP', values=['UDP', 'TCP', 'SSL'],
+            path='transport'))
+        params.append(VersionedParamPath(
+            'port', vartype='int', path='port'))
+        params.append(VersionedParamPath(
+            'format', default='BSD', values=['BSD', 'IETF'], path='format'))
+        params.append(VersionedParamPath(
+            'facility', default='LOG_USER', path='facility',
+            values=['LOG_USER', ] + ['LOG_LOCAL{0}'.format(x) for x in range(8)]))
+
+        self._params = tuple(params)
+
+
+class HttpServerProfile(VersionedPanObject):
+    """A HTTP server profile.
+
+    Note:  This is valid for PAN-OS 8.0+.
+
+    Args:
+        name (str): The name
+        tag_registration (bool): The server should have User-ID agent running
+            in order for tag registration to work
+        config_name (str): Name for custom config format
+        config_uri_format (str): URI format for custom config format
+        config_payload (str): Payload for custom config format
+        system_name (str): Name for custom system format
+        system_uri_format (str): URI format for custom system format
+        system_payload (str): Payload for custom system format
+        threat_name (str): Name for custom threat format
+        threat_uri_format (str): URI format for custom threat format
+        threat_payload (str): Payload for custom threat format
+        traffic_name (str): Name for custom traffic format
+        traffic_uri_format (str): URI format for custom traffic format
+        traffic_payload (str): Payload for custom traffic format
+        hip_match_name (str): Name for custom HIP match format
+        hip_match_uri_format (str): URI format for custom HIP match format
+        hip_match_payload (str): Payload for custom HIP match format
+        url_name (str): Name for custom url format
+        url_uri_format (str): URI format for custom url format
+        url_payload (str): Payload for custom url format
+        data_name (str): Name for custom data format
+        data_uri_format (str): URI format for custom data format
+        data_payload (str): Payload for custom data format
+        wildfire_name (str): Name for custom wildfire format
+        wildfire_uri_format (str): URI format for custom wildfire format
+        wildfire_payload (str): Payload for custom wildfire format
+        tunnel_name (str): Name for custom tunnel format
+        tunnel_uri_format (str): URI format for custom tunnel format
+        tunnel_payload (str): Payload for custom tunnel format
+        user_id_name (str): Name for custom User-ID format
+        user_id_uri_format (str): URI format for custom User-ID format
+        user_id_payload (str): Payload for custom User-ID format
+        gtp_name (str): Name for custom GTP format
+        gtp_uri_format (str): URI format for custom GTP format
+        gtp_payload (str): Payload for custom GTP format
+        auth_name (str): Name for custom auth format
+        auth_uri_format (str): URI format for custom auth format
+        auth_payload (str): Payload for custom auth format
+        sctp_name (str): Name for custom SCTP format
+        sctp_uri_format (str): URI format for custom SCTP format
+        sctp_payload (str): Payload for custom SCTP format
+        iptag_name (str): Name for custom IP tag format
+        iptag_uri_format (str): URI format for custom IP tag format
+        iptag_payload (str): Payload for custom IP tag format
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "device.HttpServer",
+        "device.HttpConfigHeader",
+        "device.HttpConfigParam",
+        "device.HttpSystemHeader",
+        "device.HttpSystemParam",
+        "device.HttpThreatHeader",
+        "device.HttpThreatParam",
+        "device.HttpTrafficHeader",
+        "device.HttpTrafficParam",
+        "device.HttpHipMatchHeader",
+        "device.HttpHipMatchParam",
+        "device.HttpUrlHeader",
+        "device.HttpUrlParam",
+        "device.HttpDataHeader",
+        "device.HttpDataParam",
+        "device.HttpWildfireHeader",
+        "device.HttpWildfireParam",
+        "device.HttpTunnelHeader",
+        "device.HttpTunnelParam",
+        "device.HttpUserIdHeader",
+        "device.HttpUserIdParam",
+        "device.HttpGtpHeader",
+        "device.HttpGtpParam",
+        "device.HttpAuthHeader",
+        "device.HttpAuthParam",
+        "device.HttpSctpHeader",
+        "device.HttpSctpParam",
+        "device.HttpIpTagHeader",
+        "device.HttpIpTagParam",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/log-settings/http')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'tag_registration', vartype='yesno', path='tag-registration'))
+        params.append(VersionedParamPath(
+            'config_name', path='format/config/name'))
+        params.append(VersionedParamPath(
+            'config_uri_format', path='format/config/url-format'))
+        params.append(VersionedParamPath(
+            'config_payload', path='format/config/payload'))
+        params.append(VersionedParamPath(
+            'system_name', path='format/system/name'))
+        params.append(VersionedParamPath(
+            'system_uri_format', path='format/system/url-format'))
+        params.append(VersionedParamPath(
+            'system_payload', path='format/system/payload'))
+        params.append(VersionedParamPath(
+            'threat_name', path='format/threat/name'))
+        params.append(VersionedParamPath(
+            'threat_uri_format', path='format/threat/url-format'))
+        params.append(VersionedParamPath(
+            'threat_payload', path='format/threat/payload'))
+        params.append(VersionedParamPath(
+            'traffic_name', path='format/traffic/name'))
+        params.append(VersionedParamPath(
+            'traffic_uri_format', path='format/traffic/url-format'))
+        params.append(VersionedParamPath(
+            'traffic_payload', path='format/traffic/payload'))
+        params.append(VersionedParamPath(
+            'hip_match_name', path='format/hip-match/name'))
+        params.append(VersionedParamPath(
+            'hip_match_uri_format', path='format/hip-match/url-format'))
+        params.append(VersionedParamPath(
+            'hip_match_payload', path='format/hip-match/payload'))
+        params.append(VersionedParamPath(
+            'url_name', path='format/url/name'))
+        params.append(VersionedParamPath(
+            'url_uri_format', path='format/url/url-format'))
+        params.append(VersionedParamPath(
+            'url_payload', path='format/url/payload'))
+        params.append(VersionedParamPath(
+            'data_name', path='format/data/name'))
+        params.append(VersionedParamPath(
+            'data_uri_format', path='format/data/url-format'))
+        params.append(VersionedParamPath(
+            'data_payload', path='format/data/payload'))
+        params.append(VersionedParamPath(
+            'wildfire_name', path='format/wildfire/name'))
+        params.append(VersionedParamPath(
+            'wildfire_uri_format', path='format/wildfire/url-format'))
+        params.append(VersionedParamPath(
+            'wildfire_payload', path='format/wildfire/payload'))
+        params.append(VersionedParamPath(
+            'tunnel_name', path='format/tunnel/name'))
+        params.append(VersionedParamPath(
+            'tunnel_uri_format', path='format/tunnel/url-format'))
+        params.append(VersionedParamPath(
+            'tunnel_payload', path='format/tunnel/payload'))
+        params.append(VersionedParamPath(
+            'user_id_name', path='format/userid/name'))
+        params.append(VersionedParamPath(
+            'user_id_uri_format', path='format/userid/url-format'))
+        params.append(VersionedParamPath(
+            'user_id_payload', path='format/userid/payload'))
+        params.append(VersionedParamPath(
+            'gtp_name', path='format/gtp/name'))
+        params.append(VersionedParamPath(
+            'gtp_uri_format', path='format/gtp/url-format'))
+        params.append(VersionedParamPath(
+            'gtp_payload', path='format/gtp/payload'))
+        params.append(VersionedParamPath(
+            'auth_name', path='format/auth/name'))
+        params.append(VersionedParamPath(
+            'auth_uri_format', path='format/auth/url-format'))
+        params.append(VersionedParamPath(
+            'auth_payload', path='format/auth/payload'))
+        params.append(VersionedParamPath(
+            'sctp_name', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            path='format/sctp/name')
+        params.append(VersionedParamPath(
+            'sctp_uri_format', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            path='format/sctp/url-format')
+        params.append(VersionedParamPath(
+            'sctp_payload', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            path='format/sctp/payload')
+        params.append(VersionedParamPath(
+            'iptag_name', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            path='format/iptag/name')
+        params.append(VersionedParamPath(
+            'iptag_uri_format', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            path='format/iptag/url-format')
+        params.append(VersionedParamPath(
+            'iptag_payload', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            path='format/iptag/payload')
+
+        self._params = tuple(params)
+
+
+class HttpServer(VersionedPanObject):
+    """A single HTTP server in a HTTP server profile.
+
+    Args:
+        name (str): The name
+        address (str): IP address or FQDN of HTTP server to use
+        protocol (str): HTTPS (default) or HTTP
+        port (int): Port number
+        tls_version (str): (PAN-OS 9.0+) TLS handshake protocol version
+        certificate_profile (str): (PAN-OS 9.0+) Certificate profile for
+            validating server certificate
+        http_method (str): HTTP method to use
+        username (str): Username for basic HTTP auth
+        password (str): Password for basic HTTP auth
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/server')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'address', path='address'))
+        params.append(VersionedParamPath(
+            'protocol', default='HTTPS',
+            values=['HTTP', 'HTTPS'], path='protocol'))
+        params.append(VersionedParamPath(
+            'port', default=443, vartype='int', path='port'))
+        params.append(VersionedParamPath(
+            'tls_version', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            values=['1.0', '1.1', '1.2'], path='tls-version')
+        params.append(VersionedParamPath(
+            'certificate_profile', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            path='certificate-profile')
+        params.append(VersionedParamPath(
+            'http_method', default='POST', path='http-method'))
+        params.append(VersionedParamPath(
+            'username', path='username'))
+        params.append(VersionedParamPath(
+            'password', vartype='encrypted', path='password'))
+
+        self._params = tuple(params)
+
+
+class HttpConfigHeader(ValueEntry):
+    """HTTP header for config.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/config/headers'
+
+
+class HttpConfigParam(ValueEntry):
+    """HTTP param for config.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/config/params'
+
+
+class HttpSystemHeader(ValueEntry):
+    """HTTP header for system.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/system/headers'
+
+
+class HttpSystemParam(ValueEntry):
+    """HTTP param for system.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/system/params'
+
+
+class HttpThreatHeader(ValueEntry):
+    """HTTP header for threat.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/threat/headers'
+
+
+class HttpThreatParam(ValueEntry):
+    """HTTP param for threat.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/threat/params'
+
+
+class HttpTrafficHeader(ValueEntry):
+    """HTTP header for traffic.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/traffic/headers'
+
+
+class HttpTrafficParam(ValueEntry):
+    """HTTP param for traffic.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/traffic/params'
+
+
+class HttpHipMatchHeader(ValueEntry):
+    """HTTP header for HIP match.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/hip-match/headers'
+
+
+class HttpHipMatchParam(ValueEntry):
+    """HTTP param for HIP match.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/hip-match/params'
+
+
+class HttpUrlHeader(ValueEntry):
+    """HTTP header for URL.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/url/headers'
+
+
+class HttpUrlParam(ValueEntry):
+    """HTTP param for URL.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/url/params'
+
+
+class HttpDataHeader(ValueEntry):
+    """HTTP header for data.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/data/headers'
+
+
+class HttpDataParam(ValueEntry):
+    """HTTP param for data.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/data/params'
+
+
+class HttpWildfireHeader(ValueEntry):
+    """HTTP header for WildFire.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/wildfire/headers'
+
+
+class HttpWildfireParam(ValueEntry):
+    """HTTP param for WildFire.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/wildfire/params'
+
+
+class HttpTunnelHeader(ValueEntry):
+    """HTTP header for tunnel.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/tunnel/headers'
+
+
+class HttpTunnelParam(ValueEntry):
+    """HTTP param for tunnel.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/tunnel/params'
+
+
+class HttpUserIdHeader(ValueEntry):
+    """HTTP header for user-ID.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/userid/headers'
+
+
+class HttpUserIdParam(ValueEntry):
+    """HTTP param for user-ID.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/userid/params'
+
+
+class HttpGtpHeader(ValueEntry):
+    """HTTP header for GTP.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/gtp/headers'
+
+
+class HttpGtpParam(ValueEntry):
+    """HTTP param for GTP.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/gtp/params'
+
+
+class HttpAuthHeader(ValueEntry):
+    """HTTP header for auth.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/auth/headers'
+
+
+class HttpAuthParam(ValueEntry):
+    """HTTP param for auth.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/auth/params'
+
+
+class HttpSctpHeader(ValueEntry):
+    """HTTP header for SCTP.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/sctp/headers'
+
+
+class HttpSctpParam(ValueEntry):
+    """HTTP param for SCTP.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/sctp/params'
+
+
+class HttpIpTagHeader(ValueEntry):
+    """HTTP header for IP tag.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+    LOCATION = '/format/iptag/headers'
+
+
+class HttpIpTagParam(ValueEntry):
+    """HTTP param for IP tag.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+    LOCATION = '/format/iptag/params'
