@@ -104,6 +104,10 @@ class Vsys(VersionedPanObject):
     SUFFIX = ENTRY
     CHILDTYPES = (
         "device.VsysResources",
+        "device.SnmpServerProfile",
+        "device.EmailServerProfile",
+        "device.SyslogServerProfile",
+        "device.HttpServerProfile",
         "objects.AddressObject",
         "objects.AddressGroup",
         "objects.ServiceObject",
@@ -113,6 +117,7 @@ class Vsys(VersionedPanObject):
         "objects.ApplicationFilter",
         "objects.SecurityProfileGroup",
         "objects.CustomUrlCategory",
+        "objects.LogForwardingProfile",
         "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",
