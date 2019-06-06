@@ -6,9 +6,18 @@ History
 0.11.0
 -----
 
-Released: Pending
+Released: 2019-06-06
 
 Status: Alpha
+
+- Added `network.GreTunnel`
+- Added `uuid` params for security and NAT rules
+- Fixed User-ID's `get_registered_ip()`
+- Added `objects.LogForwardingProfile` and related sub-objects
+- Added `device.SnmpServerProfile` and related sub-objects
+- Added `device.EmailServerProfile` and related sub-objects
+- Added `device.SyslogServerProfile` and related sub-objects
+- Added `device.HttpServerProfile` and related sub-objects
 
 0.10.0
 ------
