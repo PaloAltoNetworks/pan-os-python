@@ -67,6 +67,11 @@ class Firewall(PanDevice):
         "device.SystemSettings",
         "device.PasswordProfile",
         "device.Administrator",
+        "device.Telemetry",
+        "device.SnmpServerProfile",
+        "device.EmailServerProfile",
+        "device.SyslogServerProfile",
+        "device.HttpServerProfile",
         "ha.HighAvailability",
         "objects.AddressObject",
         "objects.AddressGroup",
@@ -77,6 +82,7 @@ class Firewall(PanDevice):
         "objects.ApplicationFilter",
         "objects.SecurityProfileGroup",
         "objects.CustomUrlCategory",
+        "objects.LogForwardingProfile",
         "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",
@@ -91,6 +97,7 @@ class Firewall(PanDevice):
         "network.IpsecTunnel",
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
+        "network.GreTunnel",
     )
 
     def __init__(self,

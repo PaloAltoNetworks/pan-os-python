@@ -1911,6 +1911,23 @@ class PanObject(object):
             return self.parent.fulltree()
         return self.tree()
 
+    def retrieve_panos_version(self):
+        """Gets the panos_version of the closest PanDevice.
+
+        If this object is not attached to a PanDevice, then a very large
+        number is returned to ensure that the newest version of the
+        object and xpath is presented to the user.
+
+        Returns:
+            tuple: The version as (x, y, z)
+        """
+        try:
+            device = self.nearest_pandevice()
+            panos_version = device.get_device_version()
+        except (err.PanDeviceNotSet, err.PanApiKeyNotSet):
+            panos_version = self._UNKNOWN_PANOS_VERSION
+
+        return panos_version
 
 
 class VersioningSupport(object):
@@ -2257,24 +2274,6 @@ class VersionedPanObject(PanObject):
 
         return list(ans)
 
-    def retrieve_panos_version(self):
-        """Gets the panos_version of the closest PanDevice.
-
-        If this object is not attached to a PanDevice, then a very large
-        number is returned to ensure that the newest version of the
-        object and xpath is presented to the user.
-
-        Returns:
-            tuple: The version as (x, y, z)
-        """
-        try:
-            device = self.nearest_pandevice()
-            panos_version = device.get_device_version()
-        except (err.PanDeviceNotSet, err.PanApiKeyNotSet):
-            panos_version = self._UNKNOWN_PANOS_VERSION
-
-        return panos_version
-
     def _build_element_info(self):
         panos_version = self.retrieve_panos_version()
         settings = {}
@@ -2321,6 +2320,33 @@ class VersionedPanObject(PanObject):
             iterchain += (self._subelements(comparable), )
 
         self.xml_merge(ans, itertools.chain(*iterchain))
+
+        # Now that the whole element is built, mixin an attrib vartypes.
+        for p in paths:
+            if p.vartype != 'attrib':
+                continue
+            attrib_path = p.path.split('/')
+            attrib_name = attrib_path.pop()
+            attrib_value = settings[p.param]
+            if attrib_value is None or p.exclude:
+                continue
+            e = ans
+            find_path = ['.', ]
+            for ap in attrib_path:
+                if not ap:
+                    continue
+                if ap.startswith('entry '):
+                    junk, var_to_use = ap.split()
+                    sol_value = pandevice.string_or_list(settings[var_to_use])[0]
+                    find_path.append("entry[@name='{0}']".format(sol_val))
+                elif ap == "entry[@name='localhost.localdomain']":
+                    find_path.append(ap)
+                else:
+                    find_path.append(ap.format(**settings))
+            if len(find_path) > 1:
+                e = e.find('/'.join(find_path))
+            if e is not None:
+                e.attrib[attrib_name] = attrib_value
 
         return ans
 
@@ -2553,6 +2579,27 @@ class VersionedParamPath(VersioningSupport):
             self.default, id(self))
 
 
+class ValueEntry(VersionedPanObject):
+    """Base class for objects that only have a value element.
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    LOCATION = None
+
+    def _setup(self):
+        if self.LOCATION is None:
+            raise Exception('{0}.LOCATION is unset'.format(self.__class__))
+
+        # xpath
+        self._xpaths.add_profile(value=self.LOCATION)
+
+        # params
+        self._params = (
+            VersionedParamPath('value', path='value'),
+        )
+
+
 class VarPath(object):
     """Configuration variable within the object
 
@@ -2712,6 +2759,8 @@ class ParamPath(object):
 
         # Check if this should return None instead of an element
         if self.exclude:
+            return None
+        elif self.vartype == 'attrib':
             return None
         elif value is None and self.vartype != 'stub':
             return None

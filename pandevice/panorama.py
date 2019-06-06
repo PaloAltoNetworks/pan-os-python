@@ -58,8 +58,6 @@ class DeviceGroup(VersionedPanObject):
         "firewall.Firewall",
         "objects.AddressObject",
         "objects.AddressGroup",
-        "policies.PreRulebase",
-        "policies.PostRulebase",
         "objects.ServiceObject",
         "objects.ServiceGroup",
         "objects.ApplicationObject",
@@ -67,6 +65,9 @@ class DeviceGroup(VersionedPanObject):
         "objects.ApplicationFilter",
         "objects.SecurityProfileGroup",
         "objects.CustomUrlCategory",
+        "objects.LogForwardingProfile",
+        "policies.PreRulebase",
+        "policies.PostRulebase",
     )
 
     def _setup(self):
@@ -126,6 +127,7 @@ class Template(VersionedPanObject):
         "network.IpsecTunnel",
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
+        "network.GreTunnel",
     )
 
     def _setup(self):
@@ -207,6 +209,7 @@ class TemplateStack(VersionedPanObject):
         "network.IpsecTunnel",
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
+        "network.GreTunnel",
     )
 
     def _setup(self):
@@ -257,6 +260,10 @@ class Panorama(base.PanDevice):
     CHILDTYPES = (
         "device.Administrator",
         "device.PasswordProfile",
+        "device.SnmpServerProfile",
+        "device.EmailServerProfile",
+        "device.SyslogServerProfile",
+        "device.HttpServerProfile",
         "firewall.Firewall",
         "panorama.DeviceGroup",
         "panorama.Template",

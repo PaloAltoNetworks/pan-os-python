@@ -518,6 +518,7 @@ class CustomUrlCategory(VersionedPanObject):
     """Custom url category group
 
     Args:
+        name (str): The name
         url_value (list): Values to include in custom URL category object
         description (str): Description of this object
 
@@ -536,5 +537,166 @@ class CustomUrlCategory(VersionedPanObject):
             'url_value', path='list', vartype='member'))
         params.append(VersionedParamPath(
             'description', path='description'))
+
+        self._params = tuple(params)
+
+
+class LogForwardingProfile(VersionedPanObject):
+    """A log forwarding profile.
+
+    Note:  This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The name
+        description (str): The description
+        enhanced_logging (bool): (PAN-OS 8.1+) Enabling enhanced application
+            logging
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "objects.LogForwardingProfileMatchList",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/log-settings/profiles')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'description', path='description'))
+        params.append(VersionedParamPath(
+            'enhanced_logging', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            vartype='yesno', path='enhanced-application-logging')
+
+        self._params = tuple(params)
+
+
+class LogForwardingProfileMatchList(VersionedPanObject):
+    """A log forwarding profile match list entry.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The name
+        description (str): Description
+        log_type (str): Log type. Valid values are traffic, threat, wildfire,
+            url, data, gtp, tunnel, auth, or sctp (PAN-OS 8.1+).
+        filter (str): The filter.
+        send_to_panorama (bool): Send to panorama or not
+        snmp_profiles (str/list): List of SnmpServerProfiles.
+        email_profiles (str/list): List of EmailServerProfiles.
+        syslog_profiles (str/list): List of SyslogServerProfiles.
+        http_profiles (str/list): List of HttpServerProfiles.
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "objects.LogForwardingProfileMatchListAction",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/match-list')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'description', path='action-desc'))
+        params.append(VersionedParamPath(
+            'log_type', path='log-type',
+            values=['traffic', 'threat', 'wildfire', 'url', 'data',
+                    'gtp', 'tunnel', 'auth']))
+        params[-1].add_profile(
+            '8.1.0',
+            path='log-type', values=['traffic', 'threat', 'wildfire', 'url',
+                                     'data', 'gtp', 'tunnel', 'auth', 'sctp'])
+        params.append(VersionedParamPath(
+            'filter', path='filter'))
+        params.append(VersionedParamPath(
+            'send_to_panorama', vartype='yesno', path='send-to-panorama'))
+        params.append(VersionedParamPath(
+            'snmp_profiles', vartype='member', path='send-snmptrap'))
+        params.append(VersionedParamPath(
+            'email_profiles', vartype='member', path='send-email'))
+        params.append(VersionedParamPath(
+            'syslog_profiles', vartype='member', path='send-syslog'))
+        params.append(VersionedParamPath(
+            'http_profiles', vartype='member', path='send-http'))
+
+        self._params = tuple(params)
+
+
+class LogForwardingProfileMatchListAction(VersionedPanObject):
+    """Action for a log forwarding profile match list entry.
+
+    Note: This is valid for PAN-OS 8.0+
+
+    Args:
+        name (str): The name
+        action_type (str): Action type.  Valid values are tagging (default)
+            or (PAN-OS 8.1+) integration.
+        action (str): The action.  Valid values are add-tag, remove-tag, or
+            (PAN-OS 8.1+) Azure-Security-Center-Integration.
+        target (str): The target.  Valid values are source-address or
+            destination-address.
+        registration (str): Registration.  Valid values are localhost,
+            panorama, or remote.
+        http_profile (str): The HTTP profile for registration of "remote".
+        tags (str/list): List of administrative tags.
+        timeout (int): (PAN-OS 9.0+) Timeout in minutes
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/actions')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'action_type', default='tagging', values=['tagging', ],
+            path='type/{action_type}'))
+        params[-1].add_profile(
+            '8.1.0',
+            values=['tagging', 'integration'], path='type/{action_type}')
+        params.append(VersionedParamPath(
+            'action', path='type/{action_type}/action',
+            values=['add-tag', 'remove-tag']))
+        params[-1].add_profile(
+            '8.1.0',
+            path='type/{action_type}/action',
+            values=['Azure-Security-Center-Integration',
+                    'add-tag', 'remove-tag'])
+        params.append(VersionedParamPath(
+            'target', path='type/{action_type}/target',
+            condition={'action_type': 'tagging'},
+            values=['source-address', 'destination-address']))
+        params.append(VersionedParamPath(
+            'registration', values=['localhost', 'panorama', 'remote'],
+            condition={'action_type': 'tagging'},
+            path='type/{action_type}/registration/{registration}'))
+        params.append(VersionedParamPath(
+            'http_profile',
+            condition={'action_type': 'tagging', 'registration': 'remote'},
+            path='type/{action_type}/registration/{registration}/http-profile'))
+        params.append(VersionedParamPath(
+            'tags', condition={'action_type': 'tagging'},
+            vartype='member', path='type/{action_type}/tags'))
+        params.append(VersionedParamPath(
+            'timeout', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            vartype='int', path='timeout')
 
         self._params = tuple(params)
