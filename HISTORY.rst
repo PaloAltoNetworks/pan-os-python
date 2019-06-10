@@ -3,6 +3,17 @@
 History
 =======
 
+0.11.1
+------
+
+Released: 2019-06-10
+
+Status: Alpha
+
+- Changed various log forwarding class names
+- Fixed numerous docstrings
+- Fixed some parameter paths
+
 0.11.0
 -----
 
