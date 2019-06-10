@@ -697,6 +697,7 @@ class LogForwardingProfileMatchListAction(VersionedPanObject):
             'timeout', exclude=True))
         params[-1].add_profile(
             '9.0.0',
-            vartype='int', path='timeout')
+            vartype='int', path='type/{action_type}/timeout',
+            condition={'action_type': 'tagging'})
 
         self._params = tuple(params)

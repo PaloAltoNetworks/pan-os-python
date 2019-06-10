@@ -513,11 +513,19 @@ class Telemetry(VersionedPanObject):
 
 
 class SnmpServerProfile(VersionedPanObject):
+    """SNMP server profile.
+
+    Args:
+        name (str): The name
+        version (str): SNMP version.  Valid values are v2c (default) or
+            v3.
+
+    """
     ROOT = Root.VSYS
     SUFFIX = ENTRY
     CHILDTYPES = (
-        "device.SnmpV2cServerProfile",
-        "device.SnmpV3ServerProfile",
+        "device.SnmpV2cServer",
+        "device.SnmpV3Server",
     )
 
     def _setup(self):
@@ -534,8 +542,8 @@ class SnmpServerProfile(VersionedPanObject):
         self._params = tuple(params)
 
 
-class SnmpV2cServerProfile(VersionedPanObject):
-    """SNMP V2C server profile.
+class SnmpV2cServer(VersionedPanObject):
+    """SNMP V2C server in a server.
 
     Args:
         name (str): The name
@@ -561,8 +569,8 @@ class SnmpV2cServerProfile(VersionedPanObject):
         self._params = tuple(params)
 
 
-class SnmpV3ServerProfile(VersionedPanObject):
-    """SNMP V2C server profile.
+class SnmpV3Server(VersionedPanObject):
+    """SNMP V3 server.
 
     Args:
         name (str): The name
@@ -704,8 +712,8 @@ class EmailServer(VersionedPanObject):
         display_name (str): Display name
         from (str): From email address
         to (str): To email address
-        additional_recipient (str): Additional destination email address
-        email_gateway (str): IP address or FQDN of SMTP gateway to use
+        also_to (str): Additional destination email address
+        email_gateway (str): IP address or FQDN of email gateway to use
 
     """
     ROOT = Root.VSYS
@@ -725,7 +733,7 @@ class EmailServer(VersionedPanObject):
         params.append(VersionedParamPath(
             'to', path='to'))
         params.append(VersionedParamPath(
-            'additional_recipient', path='and-also-to'))
+            'also_to', path='and-also-to'))
         params.append(VersionedParamPath(
             'email_gateway', path='gateway'))
 
@@ -917,12 +925,12 @@ class HttpServerProfile(VersionedPanObject):
         auth_name (str): Name for custom auth format
         auth_uri_format (str): URI format for custom auth format
         auth_payload (str): Payload for custom auth format
-        sctp_name (str): Name for custom SCTP format
-        sctp_uri_format (str): URI format for custom SCTP format
-        sctp_payload (str): Payload for custom SCTP format
-        iptag_name (str): Name for custom IP tag format
-        iptag_uri_format (str): URI format for custom IP tag format
-        iptag_payload (str): Payload for custom IP tag format
+        sctp_name (str): (PAN-OS 8.1+) Name for custom SCTP format
+        sctp_uri_format (str): (PAN-OS 8.1+) URI format for custom SCTP format
+        sctp_payload (str): (PAN-OS 8.1+) Payload for custom SCTP format
+        iptag_name (str): (PAN-OS 9.0+) Name for custom IP tag format
+        iptag_uri_format (str): (PAN-OS 9.0+) URI format for custom IP tag format
+        iptag_payload (str): (PAN-OS 9.0+) Payload for custom IP tag format
 
     """
     ROOT = Root.VSYS
@@ -1081,11 +1089,12 @@ class HttpServer(VersionedPanObject):
         name (str): The name
         address (str): IP address or FQDN of HTTP server to use
         protocol (str): HTTPS (default) or HTTP
-        port (int): Port number
-        tls_version (str): (PAN-OS 9.0+) TLS handshake protocol version
+        port (int): Port number (default: 443).
+        tls_version (str): (PAN-OS 9.0+) TLS handshake protocol version.  Valid
+            values are 1.0, 1.1, or 1.2.
         certificate_profile (str): (PAN-OS 9.0+) Certificate profile for
             validating server certificate
-        http_method (str): HTTP method to use
+        http_method (str): HTTP method to use (default: POST).
         username (str): Username for basic HTTP auth
         password (str): Password for basic HTTP auth
 
