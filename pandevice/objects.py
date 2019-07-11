@@ -75,6 +75,7 @@ class AddressGroup(VersionedPanObject):
     """Address Group
 
     Args:
+        name (str): Name of the address group
         static_value (list): Values for a static address group
         dynamic_value (str): Registered-ip tags for a dynamic address group
         description (str): Description of this object
