@@ -128,6 +128,7 @@ class Template(VersionedPanObject):
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
         "network.GreTunnel",
+        "panorama.TemplateVariable",
     )
 
     def _setup(self):
@@ -210,6 +211,7 @@ class TemplateStack(VersionedPanObject):
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
         "network.GreTunnel",
+        "panorama.TemplateVariable",
     )
 
     def _setup(self):
@@ -236,6 +238,48 @@ class TemplateStack(VersionedPanObject):
 
     def delete_similar(self):
         raise NotImplementedError('This is not supported for template stacks')
+
+
+class TemplateVariable(VersionedPanObject):
+    """Template or template stack variable.
+
+    Args:
+        name: The name.
+        value: The variable value.
+        variable_type: The variable type:
+                * ip-netmask (default)
+                * ip-range
+                * fqdn
+                * group-id
+                * interface
+                * device-priority (PAN-OS 9.0+)
+                * device-id (PAN-OS 9.0+)
+
+    """
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/variable')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'value', path='type/{variable_type}'))
+        params.append(VersionedParamPath(
+            'varaible_type', default='ip-netmask', path='type/{variable_type}',
+            values=['ip-netmask', 'ip-range', 'fqdn', 'group-id', 'interface']))
+        params[-1].add_profile(
+            '9.0.0',
+            path='type/{variable_type}',
+            values=[
+                'ip-netmask', 'ip-range', 'fqdn', 'group-id',
+                'interface', 'device-priority', 'device-id',
+            ])
+
+        self._params = tuple(params)
 
 
 class Panorama(base.PanDevice):
