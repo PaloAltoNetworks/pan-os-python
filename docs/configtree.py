@@ -42,7 +42,7 @@ nodestyle = {
     'network':   'fillcolor=lightcyan',
     'objects':   'fillcolor=lemonchiffon',
     'policies':  'fillcolor=lightsalmon',
-    'panorama':  'fillcolor=lightgreen',
+    'panorama':  'fillcolor=darkseagreen2',
 }
 
 
