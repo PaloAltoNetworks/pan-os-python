@@ -4204,29 +4204,34 @@ class PanDevice(PanObject):
 
     # Commit methods
 
-    def commit(self, sync=False, exception=False, cmd=None):
+    def commit(self, sync=False, exception=False, cmd=None, admin=None):
         """Trigger a commit
 
         Args:
             sync (bool): Block until the commit is finished (Default: False)
             exception (bool): Create an exception on commit errors (Default: False)
             cmd (str): Commit options in XML format
+            admin (str/list): name or list of admins whose changes need to be committed 
 
         Returns:
             dict: Commit results
 
         """
         self._logger.debug("Commit initiated on device: %s" % (self.id,))
-        return self._commit(sync=sync, exception=exception, cmd=cmd)
+        return self._commit(sync=sync, exception=exception, cmd=cmd, admin=admin)
 
     def _commit(self, cmd=None, exclude=None, commit_all=False,
-                sync=False, sync_all=False, exception=False):
+                sync=False, sync_all=False, exception=False, admin=None):
         """Internal use commit helper method.
 
         :param exclude:
             Can be:
                 device-and-network
                 policy-and-objects
+
+        :param admin:
+            name of specific admin which changes need to be committed
+
         :param sync:
             Synchronous commit, ie. wait for job to finish
         :return:
@@ -4247,10 +4252,22 @@ class PanDevice(PanObject):
             pass
         else:
             cmd = ET.Element("commit")
-            if exclude is not None:
-                excluded = ET.SubElement(cmd, "partial")
-                excluded = ET.SubElement(excluded, exclude)
-            cmd = ET.tostring(cmd, encoding='utf-8')
+            if exclude is not None or admin is not None:
+                if admin is not None:
+                    excluded = ET.SubElement(cmd, "partial")
+                    excluded = ET.SubElement(excluded, "admin")
+                    if isinstance(admin, str):
+                        admin = [admin]
+                    admin_length = len(admin)
+                    for i in range(admin_length):
+                        admin_xml = ET.SubElement (excluded, "member")
+                        admin_xml.text = admin[i]
+                    cmd = ET.tostring(cmd, encoding='utf-8')
+                if exclude is not None:
+                    excluded = ET.SubElement(cmd, "partial")
+                    excluded = ET.SubElement(excluded, exclude)
+                    cmd = ET.tostring(cmd, encoding='utf-8')
+          
         logger.debug(self.id + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s" % (str(commit_all),
                                                                                                        str(sync),
                                                                                                        str(sync_all),
@@ -4268,6 +4285,7 @@ class PanDevice(PanObject):
                                            timeout=self.timeout,
                                            retry_on_peer=True,
                                            )
+
         # Set locks off
         self.config_changed = []
         self.config_locked = False
