@@ -4262,7 +4262,7 @@ class PanDevice(PanObject):
                         admin_xml.text = admin
                 if exclude is not None:
                     excluded = ET.SubElement(partial, exclude)
-                cmd = ET.tostring(cmd, encoding='utf-8')
+            cmd = ET.tostring(cmd, encoding='utf-8')
           
         logger.debug(self.id + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s" % (str(commit_all),
                                                                                                        str(sync),
