@@ -632,6 +632,21 @@ class PanObject(object):
             device.xapi.edit(xpath, ET.tostring(element, encoding='utf-8'),
                              retry_on_peer=self.HA_SYNC)
 
+    def rename(self, new_name):
+        """Change the name of this object.
+
+        **Modifies the live device**
+
+        Args:
+            new_name (str): The new UID for this object.
+
+        """
+        dev = self.nearest_pandevice()
+        logger.debug('{0}: rename called on {1} object "{2}"'.format(
+                dev.id, type(self), self.uid))
+        dev.set_config_changed()
+        dev.xapi.rename(self.xpath(), new_name)
+
     def move(self, location, ref=None, update=True):
         """Moves the current object.
 
