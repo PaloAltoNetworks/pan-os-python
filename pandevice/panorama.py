@@ -256,6 +256,7 @@ class TemplateVariable(VersionedPanObject):
                 * device-id (PAN-OS 9.0+)
 
     """
+    TEMPLATE_NATIVE = True
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 

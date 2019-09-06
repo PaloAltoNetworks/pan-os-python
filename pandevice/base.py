@@ -69,6 +69,7 @@ class PanObject(object):
     CHILDTYPES = ()
     CHILDMETHODS = ()
     HA_SYNC = True
+    TEMPLATE_NATIVE = False
 
     def __init__(self, *args, **kwargs):
         # Set the 'name' variable
@@ -315,12 +316,13 @@ class PanObject(object):
                 label = p.VSYS_LABEL
                 vsys = p.vsys
             elif p.__class__.__name__ in ('Template', 'TemplateStack'):
-                # Hit a template, make sure that the appropriate /config/...
-                # xpath has been saved.
-                if not path[0].startswith('/config/'):
-                    path.insert(0, self.xpath_root(root, vsys, label))
-                vsys = p.vsys
-                root = p.ROOT
+                if not self.TEMPLATE_NATIVE:
+                    # Hit a template, make sure that the appropriate /config/...
+                    # xpath has been saved.
+                    if not path[0].startswith('/config/'):
+                        path.insert(0, self.xpath_root(root, vsys, label))
+                    vsys = p.vsys
+                    root = p.ROOT
 
         return ''.join(path)
 
