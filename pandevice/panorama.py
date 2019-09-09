@@ -270,7 +270,7 @@ class TemplateVariable(VersionedPanObject):
         params.append(VersionedParamPath(
             'value', path='type/{variable_type}'))
         params.append(VersionedParamPath(
-            'varaible_type', default='ip-netmask', path='type/{variable_type}',
+            'variable_type', default='ip-netmask', path='type/{variable_type}',
             values=['ip-netmask', 'ip-range', 'fqdn', 'group-id', 'interface']))
         params[-1].add_profile(
             '9.0.0',
