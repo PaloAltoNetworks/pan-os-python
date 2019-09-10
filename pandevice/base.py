@@ -637,6 +637,10 @@ class PanObject(object):
 
         **Modifies the live device**
 
+        NOTE:  This does not change any references that may exist in your
+        pandevice object hierarchy, but it does update the name of the
+        object itself.
+
         Args:
             new_name (str): The new UID for this object.
 
@@ -646,6 +650,7 @@ class PanObject(object):
                 dev.id, type(self), self.uid))
         dev.set_config_changed()
         dev.xapi.rename(self.xpath(), new_name)
+        setattr(self, self.NAME, new_name)
 
     def move(self, location, ref=None, update=True):
         """Moves the current object.
