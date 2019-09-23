@@ -1009,10 +1009,10 @@ class EthernetInterface(PhysicalInterface):
             condition={'mode': 'layer3'}))
         params.append(VersionedParamPath(
             'lldp_enabled', path='{mode}/lldp/enable', vartype='yesno',
-            condition={'mode': 'layer2'}))
+            condition={'mode': ['layer2', 'layer3', 'virtual-wire']}))
         params.append(VersionedParamPath(
             'lldp_profile', path='{mode}/lldp/profile',
-            condition={'mode': 'layer2'}))
+            condition={'mode': ['layer2', 'layer3', 'virtual-wire']}))
         params.append(VersionedParamPath(
             'netflow_profile_l2', path='{mode}/netflow-profile',
             condition={'mode': 'layer2'}))
