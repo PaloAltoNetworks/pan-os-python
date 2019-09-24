@@ -347,7 +347,10 @@ class Firewall(PanDevice):
     def show_system_resources(self):
         self.xapi.op(cmd="show system resources", cmd_xml=True)
         result = self.xapi.xml_root()
-        regex = re.compile(r"load average: ([\d.]+).* ([\d.]+)%id.*Mem:.*?([\d.]+)k total.*?([\d]+)k free", re.DOTALL)
+        if self._version_info >= (9, 0, 0):
+            regex = re.compile(r'load average: ([\d\.]+).*? ([\d\.]+) id,.*KiB Mem : (\d+) total,.*? (\d+) free', re.DOTALL)
+        else:
+            regex = re.compile(r"load average: ([\d.]+).* ([\d.]+)%id.*Mem:.*?([\d.]+)k total.*?([\d]+)k free", re.DOTALL)
         match = regex.search(result)
         if match:
             """

@@ -34,15 +34,15 @@ footer = "}\n"
 
 
 nodestyle = {
-    #'Firewall':  '',
-    #'Panorama':  '',
+    # 'Firewall':  '',
+    # 'Panorama':  '',
     'device':    'fillcolor=lightpink',
     'firewall':  'fillcolor=lightblue',
     'ha':        'fillcolor=lavender',
     'network':   'fillcolor=lightcyan',
     'objects':   'fillcolor=lemonchiffon',
     'policies':  'fillcolor=lightsalmon',
-    'panorama':  'fillcolor=lightgreen',
+    'panorama':  'fillcolor=darkseagreen2',
 }
 
 
@@ -145,7 +145,7 @@ def create_object_diagram(directory=None):
     if directory is not None:
         mkdir_p(directory)
         path = directory + "/"
-    for module, lines in output.iteritems():
+    for module, lines in output.items():
         if not lines:
             continue
         moduleout = "".join(lines)

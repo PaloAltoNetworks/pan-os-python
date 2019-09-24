@@ -69,6 +69,7 @@ class PanObject(object):
     CHILDTYPES = ()
     CHILDMETHODS = ()
     HA_SYNC = True
+    TEMPLATE_NATIVE = False
 
     def __init__(self, *args, **kwargs):
         # Set the 'name' variable
@@ -315,12 +316,13 @@ class PanObject(object):
                 label = p.VSYS_LABEL
                 vsys = p.vsys
             elif p.__class__.__name__ in ('Template', 'TemplateStack'):
-                # Hit a template, make sure that the appropriate /config/...
-                # xpath has been saved.
-                if not path[0].startswith('/config/'):
-                    path.insert(0, self.xpath_root(root, vsys, label))
-                vsys = p.vsys
-                root = p.ROOT
+                if not self.TEMPLATE_NATIVE:
+                    # Hit a template, make sure that the appropriate /config/...
+                    # xpath has been saved.
+                    if not path[0].startswith('/config/'):
+                        path.insert(0, self.xpath_root(root, vsys, label))
+                    vsys = p.vsys
+                    root = p.ROOT
 
         return ''.join(path)
 
@@ -629,6 +631,26 @@ class PanObject(object):
             var_path._set_inner_xml_tag_text(element, value)
             device.xapi.edit(xpath, ET.tostring(element, encoding='utf-8'),
                              retry_on_peer=self.HA_SYNC)
+
+    def rename(self, new_name):
+        """Change the name of this object.
+
+        **Modifies the live device**
+
+        NOTE:  This does not change any references that may exist in your
+        pandevice object hierarchy, but it does update the name of the
+        object itself.
+
+        Args:
+            new_name (str): The new UID for this object.
+
+        """
+        dev = self.nearest_pandevice()
+        logger.debug('{0}: rename called on {1} object "{2}"'.format(
+                dev.id, type(self), self.uid))
+        dev.set_config_changed()
+        dev.xapi.rename(self.xpath(), new_name)
+        setattr(self, self.NAME, new_name)
 
     def move(self, location, ref=None, update=True):
         """Moves the current object.
@@ -4204,29 +4226,34 @@ class PanDevice(PanObject):
 
     # Commit methods
 
-    def commit(self, sync=False, exception=False, cmd=None):
+    def commit(self, sync=False, exception=False, cmd=None, admins=None):
         """Trigger a commit
 
         Args:
             sync (bool): Block until the commit is finished (Default: False)
             exception (bool): Create an exception on commit errors (Default: False)
             cmd (str): Commit options in XML format
+            admins (str/list): name or list of admins whose changes need to be committed 
 
         Returns:
             dict: Commit results
 
         """
         self._logger.debug("Commit initiated on device: %s" % (self.id,))
-        return self._commit(sync=sync, exception=exception, cmd=cmd)
+        return self._commit(sync=sync, exception=exception, cmd=cmd, admins=admins)
 
     def _commit(self, cmd=None, exclude=None, commit_all=False,
-                sync=False, sync_all=False, exception=False):
+                sync=False, sync_all=False, exception=False, admins=None):
         """Internal use commit helper method.
 
         :param exclude:
             Can be:
                 device-and-network
                 policy-and-objects
+
+        :param admins:
+            string or list containing specific admin user(s) whose changes need to be committed
+
         :param sync:
             Synchronous commit, ie. wait for job to finish
         :return:
@@ -4247,10 +4274,18 @@ class PanDevice(PanObject):
             pass
         else:
             cmd = ET.Element("commit")
-            if exclude is not None:
-                excluded = ET.SubElement(cmd, "partial")
-                excluded = ET.SubElement(excluded, exclude)
+            if exclude is not None or admins is not None:
+                partial = ET.SubElement(cmd,"partial")
+                if admins is not None:
+                    partial_admin = ET.SubElement(partial, "admin")
+                    admins = pandevice.string_or_list(admins)
+                    for admin in admins:
+                        admin_xml = ET.SubElement(partial_admin, "member")
+                        admin_xml.text = admin
+                if exclude is not None:
+                    excluded = ET.SubElement(partial, exclude)
             cmd = ET.tostring(cmd, encoding='utf-8')
+          
         logger.debug(self.id + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s" % (str(commit_all),
                                                                                                        str(sync),
                                                                                                        str(sync_all),
@@ -4268,6 +4303,7 @@ class PanDevice(PanObject):
                                            timeout=self.timeout,
                                            retry_on_peer=True,
                                            )
+
         # Set locks off
         self.config_changed = []
         self.config_locked = False

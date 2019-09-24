@@ -352,6 +352,10 @@ class Interface(VsysOperations):
             Zone: The zone for this interface after the operation completes
 
         """
+        # Don't add HA or aggregate-group interfaces to virtual router.
+        if getattr(self, 'mode', '') in ('ha', 'aggregate-group'):
+            return False
+
         return self._set_reference(
             virtual_router_name, VirtualRouter, "interface", 'list',
             True, refresh, update, running_config, return_type, False)
@@ -739,6 +743,7 @@ class Layer3Subinterface(Subinterface):
         enable_dhcp (bool): Enable DHCP on this interface
         create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
         dhcp_default_route_metric (int): Metric for the DHCP default route
+        decrypt_forward (bool): (PAN-OS 8.1+) Decrypt forward.
 
     """
     DEFAULT_MODE = 'layer3'
@@ -805,6 +810,11 @@ class Layer3Subinterface(Subinterface):
         params.append(VersionedParamPath(
             'dhcp_default_route_metric',
             path='dhcp-client/default-route-metric', vartype='int'))
+        params.append(VersionedParamPath(
+            'decrypt_forward', vartype='yesno', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            vartype='yesno', path='decrypt-forward')
 
         self._params = tuple(params)
 
@@ -933,11 +943,19 @@ class EthernetInterface(PhysicalInterface):
         link_state (str): Link state: eg. auto, up, down
         aggregate_group (str): Aggregate interface (eg. ae1)
         comment (str): The interface's comment
-        ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
-        ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+        ipv4_mss_adjust(int): (PAN-OS 7.1+) TCP MSS adjustment for ipv4
+        ipv6_mss_adjust(int): (PAN-OS 7.1+) TCP MSS adjustment for ipv6
         enable_dhcp (bool): Enable DHCP on this interface
         create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
         dhcp_default_route_metric (int): Metric for the DHCP default route
+        enable_untagged_subinterface (bool): (PAN-OS 7.1+) Enable untagged
+            subinterface
+        decrypt_forward (bool): (PAN-OS 8.1+) Decrypt forward.
+        rx_policing_rate (int): (PAN-OS 8.1+) Receive policing rate
+        tx_policing_rate (int): (PAN-OS 8.1+) Transmit policing rate
+        dhcp_send_hostname_enable (bool): Enable send firewall or custom hostname
+            to DHCP server
+        dhcp_send_hostname_value (string): Set interface hostname
 
     """
     ALLOW_SET_VLAN = True
@@ -991,10 +1009,10 @@ class EthernetInterface(PhysicalInterface):
             condition={'mode': 'layer3'}))
         params.append(VersionedParamPath(
             'lldp_enabled', path='{mode}/lldp/enable', vartype='yesno',
-            condition={'mode': 'layer2'}))
+            condition={'mode': ['layer2', 'layer3', 'virtual-wire']}))
         params.append(VersionedParamPath(
             'lldp_profile', path='{mode}/lldp/profile',
-            condition={'mode': 'layer2'}))
+            condition={'mode': ['layer2', 'layer3', 'virtual-wire']}))
         params.append(VersionedParamPath(
             'netflow_profile_l2', path='{mode}/netflow-profile',
             condition={'mode': 'layer2'}))
@@ -1032,6 +1050,42 @@ class EthernetInterface(PhysicalInterface):
             'dhcp_default_route_metric',
             path='{mode}/dhcp-client/default-route-metric',
             vartype='int', condition={'mode': 'layer3'}))
+        params.append(VersionedParamPath(
+            'enable_untagged_subinterface', exclude=True))
+        params[-1].add_profile(
+            '7.1.0',
+            vartype='yesno', condition={'mode': 'layer3'},
+            path='{mode}/untagged-sub-interface')
+        params.append(VersionedParamPath(
+            'decrypt_forward', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            vartype='yesno', condition={'mode': 'layer3'},
+            path='{mode}/decrypt-forward')
+        params.append(VersionedParamPath(
+            'rx_policing_rate', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            vartype='int', condition={'mode': 'layer3'},
+            path='{mode}/policing/rx-rate')
+        params.append(VersionedParamPath(
+            'tx_policing_rate', exclude=True))
+        params[-1].add_profile(
+            '8.1.0',
+            vartype='int', condition={'mode': 'layer3'},
+            path='{mode}/policing/tx-rate')
+        params.append(VersionedParamPath(
+            'dhcp_send_hostname_enable', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            vartype='yesno', condition={'mode': 'layer3'},
+            path='{mode}/dhcp-client/send-hostname/enable')
+        params.append(VersionedParamPath(
+            'dhcp_send_hostname_value', exclude=True))
+        params[-1].add_profile(
+            '9.0.0',
+            condition={'mode': 'layer3'},
+            path='{mode}/dhcp-client/send-hostname/hostname')
 
         self._params = tuple(params)
 
