@@ -3,6 +3,25 @@
 History
 =======
 
+0.12.0
+------
+
+Released: 2019-09-24
+
+Status: Alpha
+
+New Classes:
+
+- `panorama.TemplateVariable`
+
+Other updates:
+
+- New params added to ethernet interfaces
+- Fixed `show_system_resources()` for PAN-OS 9.0+
+- Added `.rename()` to rename objects.
+- Documentation fixes
+- Various bug fixes
+
 0.11.1
 ------
 
