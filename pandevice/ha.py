@@ -278,6 +278,7 @@ class HighAvailability(VersionedPanObject):
         description (str): Description for HA pairing
         config_sync (bool): Enabled configuration synchronization (Default: True)
         peer_ip (str): HA Peer's HA1 IP address
+        peer_ip_backup (str): HA Peer's HA1 backup IP address
         mode (str): Mode of HA: 'active-passive' or 'active-active' (Default: 'active-passive')
         passive_link_state (str): Passive link state
         state_sync (bool): Enabled state synchronization (Default: False)
@@ -331,9 +332,14 @@ class HighAvailability(VersionedPanObject):
             path='group/configuration-synchronization/enabled')
         params.append(VersionedParamPath(
             'peer_ip', path='group/entry group_id/peer-ip'))
+        params.append(VersionedParamPath(
+            'peer_ip_backup', path='group/entry group_id/peer-ip-backup'))
         params[-1].add_profile(
             '8.1.0',
             path='group/peer-ip')
+        params[-1].add_profile(
+            '8.1.0',
+            path='group/peer-ip-backup')
         params.append(VersionedParamPath(
             'mode', default='active-passive',
             values=('active-passive', 'active-active'),

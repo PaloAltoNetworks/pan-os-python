@@ -158,6 +158,7 @@ class TestElementStr_7_0(unittest.TestCase):
             b'<description>my ha conf description</description>',
             b'<configuration-synchronization><enabled>yes</enabled>',
             b'</configuration-synchronization><peer-ip>10.5.1.5</peer-ip>',
+            b'<peer-ip-backup>10.6.1.5</peer-ip-backup>',
             b'<mode><active-passive><passive-link-state>passive state',
             b'</passive-link-state></active-passive></mode>',
             b'<state-synchronization><enabled>no</enabled><ha2-keep-alive>',
@@ -184,7 +185,7 @@ class TestElementStr_7_0(unittest.TestCase):
             link_duplex='auto')
         ha_config = pandevice.ha.HighAvailability(
             'my high availability config', True, '1', 'my ha conf description',
-            True, '10.5.1.5', 'active-passive', 'passive state', False, True,
+            True, '10.5.1.5', '10.6.1.5', 'active-passive', 'passive state', False, True,
             'ha2 do stuff', 2)
 
         ha_config.add(h1o)
