@@ -1200,12 +1200,6 @@ class AggregateInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'lacp_enable',
             vartype='yesno', path='{mode}/lacp/enable'))
-        params.append(VersionedParamPath(
-            'enable_untagged_subinterface', exclude=True))
-        params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno', condition={'mode': 'layer3'},
-            path='{mode}/untagged-sub-interface')
         self._params = tuple(params)
 
 
