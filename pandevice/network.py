@@ -1119,9 +1119,6 @@ class AggregateInterface(PhysicalInterface):
         enable_dhcp (bool): Enable DHCP on this interface
         create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
         dhcp_default_route_metric (int): Metric for the DHCP default route
-        lacp_enable (bool): Enable LACP
-        lacp_mode (str): Set LACP mode to 'active' or 'passive'
-        lacp_rate (str): Set LACP transmission rate to 'fast' or 'slow'
 
     """
     ALLOW_SET_VLAN = True
@@ -1184,7 +1181,7 @@ class AggregateInterface(PhysicalInterface):
             '7.1.0', condition={'mode': 'layer3'},
             path='{mode}/adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            '{mode}/ipv6_mss_adjust', exclude=True))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0', condition={'mode': 'layer3'},
             path='{mode}/adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
