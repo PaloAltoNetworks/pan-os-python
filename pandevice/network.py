@@ -1158,7 +1158,7 @@ class AggregateInterface(PhysicalInterface):
             path='{mode}/interface-management-profile'))
         params.append(VersionedParamPath(
             'mtu', condition={'mode': 'layer3'},
-            path='mtu', vartype='int'))
+            path='{mode}/mtu', vartype='int'))
         params.append(VersionedParamPath(
             'adjust_tcp_mss', condition={'mode': 'layer3'},
             path='{path}/adjust-tcp-mss', vartype='yesno'))
