@@ -1198,7 +1198,7 @@ class AggregateInterface(PhysicalInterface):
             vartype='int', condition={'mode': 'layer3'}))
         params.append(VersionedParamPath(
             'enable_lacp',
-            vartype='yesno', path='{mode}/lacp/enabled'))
+            vartype='yesno', path='{mode}/lacp/enable'))
         self._params = tuple(params)
 
 
