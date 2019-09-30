@@ -1200,13 +1200,13 @@ class AggregateInterface(PhysicalInterface):
             path='{mode}/dhcp-client/default-route-metric',
             vartype='int', condition={'mode': 'layer3'}))
         params.append(VersionedParamPath(
-            'lacp_enabled', path='lacp/enable',
+            'lacp_enabled', path='{mode}/lacp/enable',
             vartype='yesno'))
         params.append(VersionedParamPath(
-            'lacp_mode', path='lacp/mode',
+            'lacp_mode', path='{mode}/lacp/mode',
             vartype='str', values=('active', 'passive')))
         params.append(VersionedParamPath(
-            'lacp_rate', path='lacp/rate',
+            'lacp_rate', path='{mode}/lacp/rate',
             vartype='str', values=('fast', 'slow')))
 
         self._params = tuple(params)
