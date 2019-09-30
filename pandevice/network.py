@@ -1119,6 +1119,7 @@ class AggregateInterface(PhysicalInterface):
         enable_dhcp (bool): Enable DHCP on this interface
         create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
         dhcp_default_route_metric (int): Metric for the DHCP default route
+        enable_lacp (bool): Enables LACP
 
     """
     ALLOW_SET_VLAN = True
@@ -1161,11 +1162,11 @@ class AggregateInterface(PhysicalInterface):
             path='{mode}/mtu', vartype='int'))
         params.append(VersionedParamPath(
             'adjust_tcp_mss', condition={'mode': 'layer3'},
-            path='{path}/adjust-tcp-mss', vartype='yesno'))
+            path='{path}/adjust-tcp-mss/enable', vartype='yesno'))
         params[-1].add_profile(
             '7.1.0',
             condition={'mode': 'layer3'},
-            vartype='yesno', path='{mode}adjust-tcp-mss/enable')
+            vartype='yesno', path='{mode}/adjust-tcp-mss/enable')
         params.append(VersionedParamPath(
             'netflow_profile',
             path='{mode}/netflow-profile'))
@@ -1176,12 +1177,14 @@ class AggregateInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', exclude=True))
+            'ipv4_mss_adjust', condition={'mode': 'layer3'},
+            path='{mode}/adjust-tcp-mss/ipv4-mss-adjustment'))
         params[-1].add_profile(
             '7.1.0', condition={'mode': 'layer3'},
             path='{mode}/adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', exclude=True))
+            'ipv6_mss_adjust', condition={'mode': 'layer3'},
+            path='{mode}/adjust-tcp-mss/ipv6-mss-adjustment'))
         params[-1].add_profile(
             '7.1.0', condition={'mode': 'layer3'},
             path='{mode}/adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
@@ -1197,7 +1200,7 @@ class AggregateInterface(PhysicalInterface):
             path='{mode}/dhcp-client/default-route-metric',
             vartype='int', condition={'mode': 'layer3'}))
         params.append(VersionedParamPath(
-            'enable_lacp',
+            'lacp_enable',
             vartype='yesno', path='{mode}/lacp/enable'))
         self._params = tuple(params)
 
