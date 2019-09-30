@@ -1177,14 +1177,12 @@ class AggregateInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
-            'ipv4_mss_adjust', condition={'mode': 'layer3'},
-            path='{mode}/adjust-tcp-mss/ipv4-mss-adjustment'))
+            'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0', condition={'mode': 'layer3'},
             path='{mode}/adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
-            'ipv6_mss_adjust', condition={'mode': 'layer3'},
-            path='{mode}/adjust-tcp-mss/ipv6-mss-adjustment'))
+            'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
             '7.1.0', condition={'mode': 'layer3'},
             path='{mode}/adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
@@ -1202,6 +1200,12 @@ class AggregateInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'lacp_enable',
             vartype='yesno', path='{mode}/lacp/enable'))
+        params.append(VersionedParamPath(
+            'enable_untagged_subinterface', exclude=True))
+        params[-1].add_profile(
+            '7.1.0',
+            vartype='yesno', condition={'mode': 'layer3'},
+            path='{mode}/untagged-sub-interface')
         self._params = tuple(params)
 
 
