@@ -255,6 +255,8 @@ class HA3(HighAvailabilityInterface):
 
     Args:
         port (str): Interface to use for this HA interface (eg. ethernet1/5)
+        link_speed (str): Link speed
+        link_duplex (str): Link duplex
 
     """
     XPATH = "/interface/ha3"
@@ -263,6 +265,8 @@ class HA3(HighAvailabilityInterface):
     def variables(cls):
         return (
             Var("port"),
+            Var("link_duplex"),
+            Var("link_speed"),
         )
 
 
@@ -284,6 +288,10 @@ class HighAvailability(VersionedPanObject):
         ha2_keepalive (bool): Enable HA2 keepalives
         ha2_keepalive_action (str): HA2 keepalive action
         ha2_keepalive_threshold (int): HA2 keepalive threshold
+        device_id (int): HA3 device id (0 or 1)
+        session_owner_selection (str): active-active session owner mode
+        session_setup (str): active-active session setup mode
+        tentative_hold_time (int): active-active tentative hold timer
 
     """
     ROOT = Root.DEVICE
@@ -377,7 +385,35 @@ class HighAvailability(VersionedPanObject):
             '8.1.0',
             vartype='int',
             path='group/state-synchronization/ha2-keep-alive/threshold')
-
+        params.append(VersionedParamPath(
+            'device_id', condition={'mode': 'active-active'},
+            values=(0, 1), vartype='int',
+            path='group/entry group_id/mode/{mode}/device-id'))
+        params[-1].add_profile(
+            '8.1.0',
+            condition={'mode': 'active-active'},
+            values=(0, 1), vartype='int',
+            path='group/mode/{mode}/device-id')
+        params.append(VersionedParamPath(
+            'session_owner_selection',
+            condition={'mode': 'active-active', 'session_owner_selection': 'primary-device'},
+            vartype='exist', values=('primary-device'),
+            path='group/entry group_id/mode/{mode}/session-owner-selection/{session_owner_selection} '))
+        params[-1].add_profile(
+            '8.1.0',
+            condition={'mode': 'active-active', 'session_owner_selection': 'primary-device'},
+            vartype='exist', values=('primary-device'),
+            path='group/mode/{mode}/session-owner-selection/{session_owner_selection} ')
+        params.append(VersionedParamPath(
+            'session_setup',
+            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet'},
+            vartype='exist', values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
+            path='group/entry group_id/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup} '))
+        params[-1].add_profile(
+            '8.1.0',
+            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet'},
+            vartype='exist', values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
+            path='group/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup} ')
         self._params = tuple(params)
 
         # stubs
