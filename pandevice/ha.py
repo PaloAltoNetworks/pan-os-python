@@ -292,6 +292,9 @@ class HighAvailability(VersionedPanObject):
         session_owner_selection (str): active-active session owner mode
         session_setup (str): active-active session setup mode
         tentative_hold_time (int): active-active tentative hold timer
+        sync_qos (bool): active-active network sync qos
+        sync_virtual_router (bool): active-active network sync virtual router
+        ip_hash_key (str): active-active hash key used by ip-hash algorithm
 
     """
     ROOT = Root.DEVICE
@@ -395,25 +398,59 @@ class HighAvailability(VersionedPanObject):
             values=(0, 1), vartype='int',
             path='group/mode/{mode}/device-id')
         params.append(VersionedParamPath(
+            'tentative_hold_time',
+            condition={'mode': 'active-active'}, vartype='int',
+            path='group/entry group_id/mode/{mode}/tentative-hold-time'))
+        params[-1].add_profile(
+            '8.1.0',
+            condition={'mode': 'active-active'}, vartype='int',
+            path='group/mode/{mode}/tentative-hold-time')
+        params.append(VersionedParamPath(
+            'sync_qos',
+            condition={'mode': 'active-active'}, vartype='yesno',
+            path='group/entry group_id/mode/{mode}/network-configuration/sync/qos'))
+        params[-1].add_profile(
+            '8.1.0',
+            condition={'mode': 'active-active'}, vartype='yesno',
+            path='group/mode/{mode}/network-configuration/sync/qos')
+        params.append(VersionedParamPath(
+            'sync_virtual_router',
+            condition={'mode': 'active-active'}, vartype='yesno',
+            path='group/entry group_id/mode/{mode}/network-configuration/sync/virtual-router'))
+        params[-1].add_profile(
+            '8.1.0',
+            condition={'mode': 'active-active'}, vartype='yesno',
+            path='group/mode/{mode}/network-configuration/sync/virtual-router')
+        params.append(VersionedParamPath(
             'session_owner_selection',
             condition={'mode': 'active-active', 'session_owner_selection': 'primary-device'},
-            vartype='exist', values=('primary-device'),
-            path='group/entry group_id/mode/{mode}/session-owner-selection/{session_owner_selection} '))
+            values=('primary-device', 'first-packet'),
+            path='group/entry group_id/mode/{mode}/session-owner-selection/{session_owner_selection}'))
         params[-1].add_profile(
             '8.1.0',
             condition={'mode': 'active-active', 'session_owner_selection': 'primary-device'},
-            vartype='exist', values=('primary-device'),
-            path='group/mode/{mode}/session-owner-selection/{session_owner_selection} ')
+            values=('primary-device', 'first-packet'),
+            path='group/mode/{mode}/session-owner-selection/{session_owner_selection}')
         params.append(VersionedParamPath(
             'session_setup',
             condition={'mode': 'active-active', 'session_owner_selection': 'first-packet'},
-            vartype='exist', values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
-            path='group/entry group_id/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup} '))
+            values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
+            path='group/entry group_id/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}'))
         params[-1].add_profile(
             '8.1.0',
             condition={'mode': 'active-active', 'session_owner_selection': 'first-packet'},
-            vartype='exist', values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
-            path='group/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup} ')
+            values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
+            path='group/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}')
+        params.append(VersionedParamPath(
+            'ip_hash_key',
+            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet', 'session_setup': 'ip-hash'},
+            values=('source', 'source-and-destination'),
+            path='group/entry group_id/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}/hash-key'))
+        params[-1].add_profile(
+            '8.1.0',
+            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet', 'session_setup': 'ip-hash'},
+            values=('source', 'source-and-destination'),
+            path='group/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}/hash-key')
         self._params = tuple(params)
 
         # stubs
