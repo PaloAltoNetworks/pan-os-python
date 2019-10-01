@@ -1205,13 +1205,7 @@ class AggregateInterface(PhysicalInterface):
             vartype='yesno', path='{mode}/lacp/enable'))
         params.append(VersionedParamPath(
             'lacp_passive_pre_negotiation', condition={'lacp_enable': True},
-            vartype='yesno', path='{mode}/lacp/high-availability'))
-        params.append(VersionedParamPath(
-            'lacp_active', condition={'lacp_enable': True},
-            vartype='yesno', path='{mode}/lacp/mode/active'))
-        params.append(VersionedParamPath(
-            'lacp_fast', condition={'lacp_enable', True},
-            vartype='yesno', path='{mode}/lacp/transmission-rate/fast'))
+            vartype='yesno', path='{mode}/lacp/high-availability/passive-pre-negotiation'))
         self._params = tuple(params)
 
 
