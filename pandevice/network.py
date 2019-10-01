@@ -1120,6 +1120,9 @@ class AggregateInterface(PhysicalInterface):
         create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
         dhcp_default_route_metric (int): Metric for the DHCP default route
         enable_lacp (bool): Enables LACP
+        lacp_fast (bool): Enable LACP fast timers, defaults to slow
+        lacp_active (bool): Enable LACP active mode, defaults to passive
+        lacp_passive_pre_negotiation (bool): Enable LACP passive pre-negotiation, off by default
 
     """
     ALLOW_SET_VLAN = True
@@ -1200,6 +1203,15 @@ class AggregateInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'lacp_enable',
             vartype='yesno', path='{mode}/lacp/enable'))
+        params.append(VersionedParamPath(
+            'lacp_passive_pre_negotiation', condition={'lacp_enable': True},
+            vartype='yesno', path='{mode}/lacp/high-availability'))
+        params.append(VersionedParamPath(
+            'lacp_active', condition={'lacp_enable': True},
+            vartype='yesno', path='{mode}/lacp/mode/active'))
+        params.append(VersionedParamPath(
+            'lacp_fast', condition={'lacp_enable', True},
+            vartype='yesno', path='{mode}/lacp/transmission-rate/fast'))
         self._params = tuple(params)
 
 
