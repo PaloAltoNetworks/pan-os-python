@@ -1120,6 +1120,8 @@ class AggregateInterface(PhysicalInterface):
         dhcp_default_route_metric (int): Layer3: Metric for the DHCP default route
         enable_lacp (bool): Enables LACP
         lacp_passive_pre_negotiation (bool): Enable LACP passive pre-negotiation, off by default
+        lacp_rate (str): Set LACP transmission-rate to 'fast' or 'slow'
+        lacp_mode (str): Set LACP mode to 'active' or 'passive'
 
     """
     ALLOW_SET_VLAN = True
@@ -1207,7 +1209,15 @@ class AggregateInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'lacp_passive_pre_negotiation',
             condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
-            vartype='yesno', path='{mode}/lacp/high-availability/passive-pre-negotiation'))
+            vartype='yesno', path='{mode}/lacp/passive-pre-negotiation'))
+        params.append(VersionedParamPath(
+            'lacp_mode',
+            condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
+            path='{mode}/lacp/mode'))
+        params.append(VersionedParamPath(
+            'lacp_rate',
+            condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
+            path='{mode}/lacp/transmission-rate'))
         self._params = tuple(params)
 
 
