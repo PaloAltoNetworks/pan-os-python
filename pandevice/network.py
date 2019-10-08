@@ -1213,11 +1213,11 @@ class AggregateInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'lacp_mode',
             condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
-            choices=['active', 'passive'], path='{mode}/lacp/mode'))
+            values=['active', 'passive'], path='{mode}/lacp/mode'))
         params.append(VersionedParamPath(
             'lacp_rate',
             condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
-            choices=['fast', 'slow'], path='{mode}/lacp/transmission-rate'))
+            values=['fast', 'slow'], path='{mode}/lacp/transmission-rate'))
 
         self._params = tuple(params)
 
