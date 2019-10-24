@@ -3797,8 +3797,10 @@ class PanDevice(PanObject):
     def _set_version_and_version_info(self, version):
         """Sets the version and the specially formatted versioning version."""
         self.version = version
-        self._version_info = tuple(int(x) for x in
-                                   self.version.split('-')[0].split('.'))
+        # Example PAN-OS versions:  9.0.3-h1, 9.0.3.xfr
+        tokens = self.version.split('.')[:3]
+        tokens[2] = tokens[2].split('-')[0]
+        self._version_info = tuple(int(x) for x in tokens)
 
     def refresh_version(self):
         """Refresh version of PAN-OS
