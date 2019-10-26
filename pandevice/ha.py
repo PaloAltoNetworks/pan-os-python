@@ -265,8 +265,8 @@ class HA3(HighAvailabilityInterface):
     def variables(cls):
         return (
             Var("port"),
-            Var("link_duplex"),
             Var("link_speed"),
+            Var("link_duplex"),
         )
 
 
@@ -282,13 +282,13 @@ class HighAvailability(VersionedPanObject):
         description (str): Description for HA pairing
         config_sync (bool): Enabled configuration synchronization (Default: True)
         peer_ip (str): HA Peer's HA1 IP address
-        peer_ip_backup (str): HA Peer's HA1 backup IP address
         mode (str): Mode of HA: 'active-passive' or 'active-active' (Default: 'active-passive')
         passive_link_state (str): Passive link state
         state_sync (bool): Enabled state synchronization (Default: False)
         ha2_keepalive (bool): Enable HA2 keepalives
         ha2_keepalive_action (str): HA2 keepalive action
         ha2_keepalive_threshold (int): HA2 keepalive threshold
+        peer_ip_backup (str): HA Peer's HA1 backup IP address
         device_id (int): HA3 device id (0 or 1)
         session_owner_selection (str): active-active session owner mode
         session_setup (str): active-active session setup mode
@@ -343,14 +343,9 @@ class HighAvailability(VersionedPanObject):
             path='group/configuration-synchronization/enabled')
         params.append(VersionedParamPath(
             'peer_ip', path='group/entry group_id/peer-ip'))
-        params.append(VersionedParamPath(
-            'peer_ip_backup', path='group/entry group_id/peer-ip-backup'))
         params[-1].add_profile(
             '8.1.0',
             path='group/peer-ip')
-        params[-1].add_profile(
-            '8.1.0',
-            path='group/peer-ip-backup')
         params.append(VersionedParamPath(
             'mode', default='active-passive',
             values=('active-passive', 'active-active'),
@@ -395,6 +390,11 @@ class HighAvailability(VersionedPanObject):
             vartype='int',
             path='group/state-synchronization/ha2-keep-alive/threshold')
         params.append(VersionedParamPath(
+            'peer_ip_backup', path='group/entry group_id/peer-ip-backup'))
+        params[-1].add_profile(
+            '8.1.0',
+            path='group/peer-ip-backup')
+        params.append(VersionedParamPath(
             'device_id', condition={'mode': 'active-active'},
             values=(0, 1), vartype='int',
             path='group/entry group_id/mode/{mode}/device-id'))
@@ -403,6 +403,26 @@ class HighAvailability(VersionedPanObject):
             condition={'mode': 'active-active'},
             values=(0, 1), vartype='int',
             path='group/mode/{mode}/device-id')
+        params.append(VersionedParamPath(
+            'session_owner_selection',
+            condition={'mode': 'active-active', 'session_owner_selection': 'primary-device'},
+            values=('primary-device', 'first-packet'),
+            path='group/entry group_id/mode/{mode}/session-owner-selection/{session_owner_selection}'))
+        params[-1].add_profile(
+            '8.1.0',
+            condition={'mode': 'active-active', 'session_owner_selection': 'primary-device'},
+            values=('primary-device', 'first-packet'),
+            path='group/mode/{mode}/session-owner-selection/{session_owner_selection}')
+        params.append(VersionedParamPath(
+            'session_setup',
+            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet'},
+            values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
+            path='group/entry group_id/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}'))
+        params[-1].add_profile(
+            '8.1.0',
+            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet'},
+            values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
+            path='group/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}')
         params.append(VersionedParamPath(
             'tentative_hold_time',
             condition={'mode': 'active-active'}, vartype='int',
@@ -427,26 +447,6 @@ class HighAvailability(VersionedPanObject):
             '8.1.0',
             condition={'mode': 'active-active'}, vartype='yesno',
             path='group/mode/{mode}/network-configuration/sync/virtual-router')
-        params.append(VersionedParamPath(
-            'session_owner_selection',
-            condition={'mode': 'active-active', 'session_owner_selection': 'primary-device'},
-            values=('primary-device', 'first-packet'),
-            path='group/entry group_id/mode/{mode}/session-owner-selection/{session_owner_selection}'))
-        params[-1].add_profile(
-            '8.1.0',
-            condition={'mode': 'active-active', 'session_owner_selection': 'primary-device'},
-            values=('primary-device', 'first-packet'),
-            path='group/mode/{mode}/session-owner-selection/{session_owner_selection}')
-        params.append(VersionedParamPath(
-            'session_setup',
-            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet'},
-            values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
-            path='group/entry group_id/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}'))
-        params[-1].add_profile(
-            '8.1.0',
-            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet'},
-            values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
-            path='group/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}')
         params.append(VersionedParamPath(
             'ip_hash_key',
             condition={'mode': 'active-active', 'session_owner_selection': 'first-packet', 'session_setup': 'ip-hash'},
