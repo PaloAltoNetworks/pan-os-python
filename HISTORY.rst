@@ -3,6 +3,19 @@
 History
 =======
 
+0.13.0
+------
+
+Released: 2019-10-29
+
+Status: Alpha
+
+- New flag added to examples/dyn_address_group.py to specify the vsys
+- Fixes to `network.AggregateInterface`
+- Update to version parsing to handle xfr PAN-OS releases
+- Fixes to Panorama commit functions
+- Various enhancements to HA support
+
 0.12.0
 ------
 
