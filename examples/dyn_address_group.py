@@ -36,9 +36,9 @@ Remove the tag apache from the IP 3.3.3.3::
 
     $ python dyn_address_group.py -u linux 10.0.0.1 admin password 3.3.3.3
 
-Clear all tags from all IP's::
+Clear all tags from all IP's in vsys2::
 
-    $ python dyn_address_group.py -c 10.0.0.1 admin password notused notused
+    $ python dyn_address_group_vsys.py -s vsys2 -c 10.0.0.1 admin password notused notused
 
 """
 
@@ -64,6 +64,7 @@ def main():
     parser.add_argument('-q', '--quiet', action='store_true', help="No output")
     parser.add_argument('-r', '--register', help="Tags to register to an IP, for multiple tags use commas eg. linux,apache,server")
     parser.add_argument('-u', '--unregister', help="Tags to remove from an an IP, for multiple tags use commas eg. linux,apache,server")
+    parser.add_argument('-s', '--vsys', help="Specify the vsys target in the form vsysN where N is the vsys number: vsys2, vsys4, etc.")
     parser.add_argument('-l', '--list', action='store_true', help="List all tags for an IP")
     parser.add_argument('-c', '--clear', action='store_true', help="Clear all tags for all IP")
     # Palo Alto Networks related arguments
@@ -104,6 +105,9 @@ def main():
     if issubclass(type(device), Panorama):
         logging.error("Connected to a Panorama, but user-id API is not possible on Panorama.  Exiting.")
         sys.exit(1)
+
+    if args.vsys is not None:
+        device.vsys = args.vsys
 
     if args.clear:
         device.userid.clear_registered_ip()
