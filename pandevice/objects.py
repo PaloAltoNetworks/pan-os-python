@@ -702,3 +702,35 @@ class LogForwardingProfileMatchListAction(VersionedPanObject):
             condition={'action_type': 'tagging'})
 
         self._params = tuple(params)
+
+
+class DynamicUserGroup(VersionedPanObject):
+    """Dynamic user group.
+
+    Note:  PAN-OS 9.1+
+
+    Args:
+        name: Name of the dynamic user group
+        description (str): Description of this object
+        filter: Tag-based filter.
+        tag (list): Administrative tags
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/dynamic-user-group')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'description', path='description'))
+        params.append(VersionedParamPath(
+            'filter', path='filter'))
+        params.append(VersionedParamPath(
+            'tag', path='tag', vartype='member'))
+
+        self._params = tuple(params)
