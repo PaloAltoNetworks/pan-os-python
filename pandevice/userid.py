@@ -451,6 +451,41 @@ class UserId(object):
             self.register(ip, tags)
         self.batch_end()
 
+    def set_group(self, group, users):
+        """
+        Set a group's membership to the specified users.
+
+        This method can be batched with batch_start() and batch_end().
+
+        Args:
+            group: The group name.
+            users (list): The users to be in this group.
+
+        """
+        root, payload = self._create_uidmessage()
+
+        # Find the groups section.
+        groups = payload.find('./groups')
+        if groups is None:
+            groups = ET.SubElement(payload, 'groups')
+
+        # Find the group.
+        entries = groups.findall('./entry')
+        for entry in entries:
+            if entry.attrib['name'] == group:
+                ge = entry.find('./members')
+                break
+        else:
+            entry = ET.SubElement(groups, 'entry', {'name': group})
+            ge = ET.SubElement(entry, 'members')
+
+        # Now add in the users to this group.
+        for user in users:
+            ET.SubElement(ge, 'entry', {'name': user})
+
+        # Done.
+        self.send(root)
+
     def get_groups(self, style=None):
         """
         Get a list of groups.
