@@ -367,11 +367,11 @@ class Firewall(PanDevice):
                                      pan_device=self)
 
     def commit_device_and_network(self, sync=False, exception=False):
-        return self._commit(sync=sync, exclude="device-and-network",
+        return self._commit(sync=sync, exclude="policy-and-objects",
                             exception=exception)
 
     def commit_policy_and_objects(self, sync=False, exception=False):
-        return self._commit(sync=sync, exclude="policy-and-objects",
+        return self._commit(sync=sync, exclude="device-and-network",
                             exception=exception)
 
     def organize_into_vsys(self, create_vsys_objects=True, refresh_vsys=True):

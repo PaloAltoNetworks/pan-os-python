@@ -1099,30 +1099,29 @@ class AggregateInterface(PhysicalInterface):
                 * layer3
                 * layer2
                 * virtual-wire
-                * tap
                 * ha
-                * decrypt-mirror
-                * aggregate-group
 
             Not all modes apply to all interface types (Default: layer3)
 
         ip (tuple): Layer3: Interface IPv4 addresses
         ipv6_enabled (bool): Layer3: IPv6 Enabled (requires
             IPv6Address child object)
-        management_profile (ManagementProfile): Layer3: Interface Management
-            Profile
+        management_profile (ManagementProfile): Layer3: Interface Management Profile
         mtu(int): Layer3: MTU for interface
         adjust_tcp_mss (bool): Layer3: Adjust TCP MSS
         netflow_profile (NetflowProfile): Netflow profile
-        lldp_enabled (bool): Layer2: Enable LLDP
-        lldp_profile (str): Layer2: Reference to an lldp profile
-        netflow_profile_l2 (NetflowProfile): Netflow profile
+        lldp_enabled (bool): Enable LLDP
+        lldp_profile (str): Reference to an lldp profile
         comment (str): The interface's comment
-        ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
-        ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
+        ipv4_mss_adjust(int): Layer3: TCP MSS adjustment for ipv4
+        ipv6_mss_adjust(int): Layer3: TCP MSS adjustment for ipv6
         enable_dhcp (bool): Enable DHCP on this interface
-        create_dhcp_default_route (bool): Create default route pointing to default gateway provided by server
-        dhcp_default_route_metric (int): Metric for the DHCP default route
+        create_dhcp_default_route (bool): Layer3: Create default route pointing to default gateway provided by server
+        dhcp_default_route_metric (int): Layer3: Metric for the DHCP default route
+        lacp_enable (bool): Enables LACP
+        lacp_passive_pre_negotiation (bool): Enable LACP passive pre-negotiation, off by default
+        lacp_rate (str): Set LACP transmission-rate to 'fast' or 'slow'
+        lacp_mode (str): Set LACP mode to 'active' or 'passive'
 
     """
     ALLOW_SET_VLAN = True
@@ -1149,42 +1148,49 @@ class AggregateInterface(PhysicalInterface):
         params.append(VersionedParamPath(
             'mode', path='{mode}', default='layer3',
             values=[
-                'layer3', 'layer2', 'virtual-wire', 'tap',
-                'ha', 'decrypt-mirror', 'aggregate-group',
+                'layer3', 'layer2', 'virtual-wire', 'ha',
             ]))
         params.append(VersionedParamPath(
-            'ip', path='ip', vartype='entry'))
+            'ip', condition={'mode': 'layer3'},
+            path='{mode}/ip', vartype='entry'))
         params.append(VersionedParamPath(
-            'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
+            'ipv6_enabled', condition={'mode': 'layer3'},
+            path='{mode}/ipv6/enabled', vartype='yesno'))
         params.append(VersionedParamPath(
-            'management_profile', path='interface-management-profile'))
+            'management_profile', condition={'mode': ['layer3', 'layer2']},
+            path='{mode}/interface-management-profile'))
         params.append(VersionedParamPath(
-            'mtu', path='mtu', vartype='int'))
+            'mtu', condition={'mode': 'layer3'},
+            path='{mode}/mtu', vartype='int'))
         params.append(VersionedParamPath(
-            'adjust_tcp_mss', path='adjust-tcp-mss', vartype='yesno'))
+            'adjust_tcp_mss', condition={'mode': 'layer3'},
+            path='{path}/adjust-tcp-mss/enable', vartype='yesno'))
         params[-1].add_profile(
             '7.1.0',
-            vartype='yesno', path='adjust-tcp-mss/enable')
+            condition={'mode': 'layer3'},
+            vartype='yesno', path='{mode}/adjust-tcp-mss/enable')
         params.append(VersionedParamPath(
-            'netflow_profile', path='netflow-profile'))
+            'netflow_profile',
+            condition={'mode': ['layer3', 'layer2', 'vwire']},
+            path='{mode}/netflow-profile'))
         params.append(VersionedParamPath(
-            'lldp_enabled', path='lldp/enable', vartype='yesno'))
+            'lldp_enabled', condition={'mode': ['layer3', 'layer2', 'vwire']},
+            path='{mode}/lldp/enable', vartype='yesno'))
         params.append(VersionedParamPath(
-            'lldp_profile', path='lldp/profile'))
-        params.append(VersionedParamPath(
-            'netflow_profile_l2', path='netflow-profile'))
+            'lldp_profile', condition={'mode': ['layer3', 'layer2', 'vwire']},
+            path='{mode}/lldp/profile'))
         params.append(VersionedParamPath(
             'comment', path='comment'))
         params.append(VersionedParamPath(
             'ipv4_mss_adjust', exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
+            '7.1.0', condition={'mode': 'layer3'},
+            path='{mode}/adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
             'ipv6_mss_adjust', exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
+            '7.1.0', condition={'mode': 'layer3'},
+            path='{mode}/adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
         params.append(VersionedParamPath(
             'enable_dhcp', path='{mode}/dhcp-client/enable',
             vartype='yesno', condition={'mode': 'layer3'}))
@@ -1196,6 +1202,22 @@ class AggregateInterface(PhysicalInterface):
             'dhcp_default_route_metric',
             path='{mode}/dhcp-client/default-route-metric',
             vartype='int', condition={'mode': 'layer3'}))
+        params.append(VersionedParamPath(
+            'lacp_enable',
+            condition={'mode': ['layer3', 'layer2', 'ha']},
+            vartype='yesno', path='{mode}/lacp/enable'))
+        params.append(VersionedParamPath(
+            'lacp_passive_pre_negotiation',
+            condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
+            vartype='yesno', path='{mode}/lacp/passive-pre-negotiation'))
+        params.append(VersionedParamPath(
+            'lacp_mode',
+            condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
+            values=['active', 'passive'], path='{mode}/lacp/mode'))
+        params.append(VersionedParamPath(
+            'lacp_rate',
+            condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
+            values=['fast', 'slow'], path='{mode}/lacp/transmission-rate'))
 
         self._params = tuple(params)
 
