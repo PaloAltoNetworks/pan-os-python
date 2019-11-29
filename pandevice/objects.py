@@ -702,3 +702,54 @@ class LogForwardingProfileMatchListAction(VersionedPanObject):
             condition={'action_type': 'tagging'})
 
         self._params = tuple(params)
+
+
+class ScheduleObject(VersionedPanObject):
+    """Schedule Object
+
+    Args:
+        name (str): Name of the object
+        disable-override (str): IP address or other value of the object
+        type (str): Type of Schedule: recurring or non-recurring
+        recurrence (str): daily or weekly recurrence
+        date-time (list/str): date and time range string for a non-recurring schedule
+                Example: 2019/11/01@00:15-2019/11/28@00:30
+        time-of-day (list/str): time of day for a weekly recurring schedule entry
+        weekday (str): day of week for a weekly recurring time entry
+        time: (list/str): time of day for a daily recurring schedule entry
+
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value='/schedule')
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath(
+            'disable-override', vartype='yesno', path='disable-override'))
+        params.append(VersionedParamPath(
+            'type', path='schedule-type/{type}', default='recurring',
+            values=['recurring', 'non-recurring']))
+        params.append(VersionedParamPath(
+            'date-time', path='schedule-type/{type}', condition={'type': 'non-recurring'},
+            vartype='member'))
+        params.append(VersionedParamPath(
+            'recurrence', path='schedule-type/{type}/{recurrence}', values=['weekly', 'daily'],
+            condition={'type': 'recurring'}))
+        params.append(VersionedParamPath(
+            'weekday', path='schedule-type/{type}/{recurrence}/{weekday}',
+            values=['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+            condition={'type': 'recurring', 'recurrence': 'Daily'}))
+        params.append(VersionedParamPath(
+            'time-of-day', path='schedule-type/{type}/{recurrence}/{week-day}', vartype='member',
+            condition={'type': 'recurring', 'recurrence': 'Daily',
+                       'week-day': ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']}))
+        params.append(VersionedParamPath(
+            'time', path='schedule-type/{type}/{recurrence}',
+            condition={'type': 'recurring', 'recurrence': 'daily'}, vartype='member'))
+
+        self._params = tuple(params)
