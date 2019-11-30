@@ -709,14 +709,21 @@ class ScheduleObject(VersionedPanObject):
 
     Args:
         name (str): Name of the object
-        disable-override (str): IP address or other value of the object
+        disable_override (bool): True to set disable-override
         type (str): Type of Schedule: recurring or non-recurring
         recurrence (str): daily or weekly recurrence
-        date-time (list/str): date and time range string for a non-recurring schedule
+        non_recurring_date_time (list/str): date and time range string for a non-recurring schedule
                 Example: 2019/11/01@00:15-2019/11/28@00:30
-        time-of-day (list/str): time of day for a weekly recurring schedule entry
-        weekday (str): day of week for a weekly recurring time entry
-        time: (list/str): time of day for a daily recurring schedule entry
+        daily_time (list/str): time range for a daily recurring schedule
+                Example: 17:00-19:00
+        weekly_sunday_time (list/str): time range for a weekly recurring schedule (Sunday)
+                Example: 00:30-04:00
+        weekly_monday_time (list/str): time range for a weekly recurring schedule (Monday)
+        weekly_tuesday_time (list/str): time range for a weekly recurring schedule (Tuesday)
+        weekly_wednesday_time (list/str): time range for a weekly recurring schedule (Wednesday)
+        weekly_thursday_time (list/str): time range for a weekly recurring schedule (Thursday)
+        weekly_friday_time (list/str): time range for a weekly recurring schedule (Friday)
+        weekly_saturday_time (list/str): time range for a weekly recurring schedule (Saturday)
 
     """
     ROOT = Root.VSYS
@@ -730,26 +737,38 @@ class ScheduleObject(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath(
-            'disable-override', vartype='yesno', path='disable-override'))
+            'disable_override', vartype='yesno', path='disable-override'))
         params.append(VersionedParamPath(
-            'type', path='schedule-type/{type}', default='recurring',
+            'type', path='schedule-type/{type}',
             values=['recurring', 'non-recurring']))
         params.append(VersionedParamPath(
-            'date-time', path='schedule-type/{type}', condition={'type': 'non-recurring'},
-            vartype='member'))
+            'non_recurring_date_time', path='schedule-type/{type}', vartype='member',
+            condition={'type': 'non-recurring'}))
         params.append(VersionedParamPath(
             'recurrence', path='schedule-type/{type}/{recurrence}', values=['weekly', 'daily'],
             condition={'type': 'recurring'}))
         params.append(VersionedParamPath(
-            'weekday', path='schedule-type/{type}/{recurrence}/{weekday}',
-            values=['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-            condition={'type': 'recurring', 'recurrence': 'Daily'}))
+            'daily_time', path='schedule-type/{type}/{recurrence}', vartype='member',
+            condition={'type': 'recurring', 'recurrence': 'daily'}))
         params.append(VersionedParamPath(
-            'time-of-day', path='schedule-type/{type}/{recurrence}/{week-day}', vartype='member',
-            condition={'type': 'recurring', 'recurrence': 'Daily',
-                       'week-day': ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']}))
+            'weekly_sunday_time', path='schedule-type/{type}/{recurrence}/sunday', vartype='member',
+            condition={'type': 'recurring', 'recurrence': 'weekly'}))
         params.append(VersionedParamPath(
-            'time', path='schedule-type/{type}/{recurrence}',
-            condition={'type': 'recurring', 'recurrence': 'daily'}, vartype='member'))
-
+            'weekly_monday_time', path='schedule-type/{type}/{recurrence}/monday', vartype='member',
+            condition={'type': 'recurring', 'recurrence': 'weekly'}))
+        params.append(VersionedParamPath(
+            'weekly_tuesday_time', path='schedule-type/{type}/{recurrence}/tuesday', vartype='member',
+            condition={'type': 'recurring', 'recurrence': 'weekly'}))
+        params.append(VersionedParamPath(
+            'weekly_wednesday_time', path='schedule-type/{type}/{recurrence}/wednesday', vartype='member',
+            condition={'type': 'recurring', 'recurrence': 'weekly'}))
+        params.append(VersionedParamPath(
+            'weekly_thursday_time', path='schedule-type/{type}/{recurrence}/thursday', vartype='member',
+            condition={'type': 'recurring', 'recurrence': 'weekly'}))
+        params.append(VersionedParamPath(
+            'weekly_friday_time', path='schedule-type/{type}/{recurrence}/friday', vartype='member',
+            condition={'type': 'recurring', 'recurrence': 'weekly'}))
+        params.append(VersionedParamPath(
+            'weekly_saturday_time', path='schedule-type/{type}/{recurrence}/saturday', vartype='member',
+            condition={'type': 'recurring', 'recurrence': 'weekly'}))
         self._params = tuple(params)
