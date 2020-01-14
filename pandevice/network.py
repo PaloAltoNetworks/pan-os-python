@@ -736,7 +736,7 @@ class Layer3Subinterface(Subinterface):
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
         adjust_tcp_mss (bool): Adjust TCP MSS
-        netflow_profile (NetflowProfile): Netflow profile
+        netflow_profile (str): Netflow profile
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
@@ -826,7 +826,7 @@ class Layer2Subinterface(Subinterface):
         tag (int): Tag for the interface, aka vlan id
         lldp_enabled (bool): Enable LLDP
         lldp_profile (str): Reference to an lldp profile
-        netflow_profile_l2 (NetflowProfile): Reference to a netflow profile
+        netflow_profile_l2 (str): Netflow profile
         comment (str): The interface's comment
 
     """
@@ -934,10 +934,10 @@ class EthernetInterface(PhysicalInterface):
             Profile
         mtu(int): Layer3: MTU for interface
         adjust_tcp_mss (bool): Layer3: Adjust TCP MSS
-        netflow_profile (NetflowProfile): Netflow profile
+        netflow_profile (str): Netflow profile
         lldp_enabled (bool): Layer2: Enable LLDP
         lldp_profile (str): Layer2: Reference to an lldp profile
-        netflow_profile_l2 (NetflowProfile): Netflow profile
+        netflow_profile_l2 (str): Netflow profile
         link_speed (str): Link speed: eg. auto, 10, 100, 1000
         link_duplex (str): Link duplex: eg. auto, full, half
         link_state (str): Link state: eg. auto, up, down
@@ -1109,7 +1109,7 @@ class AggregateInterface(PhysicalInterface):
         management_profile (ManagementProfile): Layer3: Interface Management Profile
         mtu(int): Layer3: MTU for interface
         adjust_tcp_mss (bool): Layer3: Adjust TCP MSS
-        netflow_profile (NetflowProfile): Netflow profile
+        netflow_profile (str): Netflow profile
         lldp_enabled (bool): Enable LLDP
         lldp_profile (str): Reference to an lldp profile
         comment (str): The interface's comment
@@ -1171,13 +1171,15 @@ class AggregateInterface(PhysicalInterface):
             vartype='yesno', path='{mode}/adjust-tcp-mss/enable')
         params.append(VersionedParamPath(
             'netflow_profile',
-            condition={'mode': ['layer3', 'layer2', 'vwire']},
+            condition={'mode': ['layer3', 'layer2', 'virtual-wire']},
             path='{mode}/netflow-profile'))
         params.append(VersionedParamPath(
-            'lldp_enabled', condition={'mode': ['layer3', 'layer2', 'vwire']},
+            'lldp_enabled',
+            condition={'mode': ['layer3', 'layer2', 'virtual-wire']},
             path='{mode}/lldp/enable', vartype='yesno'))
         params.append(VersionedParamPath(
-            'lldp_profile', condition={'mode': ['layer3', 'layer2', 'vwire']},
+            'lldp_profile',
+            condition={'mode': ['layer3', 'layer2', 'virtual-wire']},
             path='{mode}/lldp/profile'))
         params.append(VersionedParamPath(
             'comment', path='comment'))
@@ -1231,7 +1233,7 @@ class VlanInterface(Interface):
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
         adjust_tcp_mss (bool): Adjust TCP MSS
-        netflow_profile (NetflowProfile): Netflow profile
+        netflow_profile (str): Netflow profile
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
@@ -1337,7 +1339,7 @@ class LoopbackInterface(Interface):
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
         adjust_tcp_mss (bool): Adjust TCP MSS
-        netflow_profile (NetflowProfile): Netflow profile
+        netflow_profile (str): Netflow profile
         comment (str): The interface's comment
         ipv4_mss_adjust(int): TCP MSS adjustment for ipv4
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
@@ -1399,7 +1401,7 @@ class TunnelInterface(Interface):
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
         mtu(int): MTU for interface
-        netflow_profile (NetflowProfile): Netflow profile
+        netflow_profile (str): Netflow profile
         comment (str): The interface's comment
 
     """
@@ -3060,7 +3062,7 @@ class IkeGateway(VersionedPanObject):
         params.append(VersionedParamPath(
             'peer_id_value', path='peer-id/id'))
         params.append(VersionedParamPath(
-            'peer_id_check', default='exact',
+            'peer_id_check',
             values=('exact', 'wildcard'), path='peer-id/matching'))
         params.append(VersionedParamPath(
             'local_cert', condition={'auth_type': 'certificate'},

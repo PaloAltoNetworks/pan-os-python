@@ -3,6 +3,25 @@
 History
 =======
 
+0.14.0
+------
+
+Released: 2020-01-14
+
+Status: Alpha
+
+New Classes:
+
+- `objects.DynamicUserGroup`
+- `policies.PolicyBasedForwarding`
+
+Other Updates:
+
+- Added dynamic user group (DUG) support to the userid namespace
+- Fixes to `network.AggregateInterface`
+- Removed default value from `network.IkeGateway.peer_id_check`
+- Docstring updates
+
 0.13.0
 ------
 
