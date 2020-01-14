@@ -3062,7 +3062,7 @@ class IkeGateway(VersionedPanObject):
         params.append(VersionedParamPath(
             'peer_id_value', path='peer-id/id'))
         params.append(VersionedParamPath(
-            'peer_id_check', default='exact',
+            'peer_id_check',
             values=('exact', 'wildcard'), path='peer-id/matching'))
         params.append(VersionedParamPath(
             'local_cert', condition={'auth_type': 'certificate'},
