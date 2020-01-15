@@ -451,6 +451,7 @@ class PolicyBasedForwarding(VersionedPanObject):
     """PBF rule.
 
     Args:
+        name (str): The name
         description (str): The descripton
         tags (str/list): List of tags
         from_type (str): Source from type.  Valid values are 'zone' (default)
