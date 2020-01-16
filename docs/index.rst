@@ -12,7 +12,8 @@ Contents:
    :maxdepth: 2
 
    readme
-   usage
+   getting-started
+   howto
    examples
    contributing
    history

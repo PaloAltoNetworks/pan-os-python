@@ -4,8 +4,8 @@ API Reference
 .. toctree::
    :maxdepth: 1
 
+   useful-methods
    configtree
-
 
 .. toctree::
    :maxdepth: 1
@@ -22,10 +22,3 @@ API Reference
    module-predefined
    module-updater
    module-userid
-
-
-
-Helper methods
---------------
-
-.. automodule:: pandevice

@@ -1,155 +1,15 @@
-.. _usage:
+.. _howto:
 
-Usage
-=====
+How-to Guides
+=============
 
-Import the package
-------------------
-
-To use Palo Alto Networks Device Framework in a project::
-
-    import pandevice
-
-You can also be more specific about which modules you want to import. These import statements
-apply for all the examples on this page::
-
-    from pandevice import base
-    from pandevice import firewall
-    from pandevice import panorama
-    from pandevice import policies
-    from pandevice import objects
-    from pandevice import network
-    from pandevice import device
-
-Create a PanDevice
-------------------
-
-A PanDevice is a Firewall or a Panorama. It's called a PanDevice because that is the class
-that Firewall and Panorama inherit from. Everything connects back to a PanDevice, so
-creating one is often the first step.
-
-Create a Firewall::
-
-    fw = firewall.Firewall('10.0.0.1', 'admin', 'mypassword')
-
-Create a Panorama::
-
-    pano = panorama.Panorama('10.0.0.5', 'admin', 'mypassword')
-
-You can also create a PanDevice object from a live device. In this example, 10.0.0.1 is
-a firewall and 10.0.0.5 is a Panorama. The device type is determined by checking the live
-device.::
-
-    >>> device1 = base.PanDevice.create_from_device('10.0.0.1', 'admin', 'mypassword')
-    >>> type(device1)
-    <class 'pandevice.firewall.Firewall'>
-
-    >>> device2 = base.PanDevice.create_from_device('10.0.0.5', 'admin', 'mypassword')
-    >>> type(device2)
-    <class 'pandevice.panorama.Panorama'>
-
-Operational commands
+Connect via Panorama
 --------------------
 
-Perform operational commands using the ``op`` method on a PanDevice. The return value is
-an xml.etree.ElementTree object::
-
-    element_response = fw.op('show system info')
-
-Use the ``xml`` argument to return a string with xml::
-
-    xml_response = fw.op('show system info', xml=True)
-
-Configuration
--------------
-
-Configuration changes are made by building a configuration tree using PanObjects.
-There are many methods available to work with the configuration tree. These methods
-are documented in the :class:`pandevice.base.PanObject` API reference.
-
-**Common configuration methods of PanObject**
-
-Build the configuration tree: ``add()``, ``remove()``, ``find()``, and ``findall()``
-
-Push changed configuration to the live device: ``apply()``, ``create()``,
-and ``delete()``
-
-Pull configuration from the live device: ``refresh()``, ``refreshall()``
-
-There are other useful methods besides these. See :class:`pandevice.base.PanObject` for
-more information.
-
-**Configuration examples**
-
-In each of these examples, assume a Firewall and Panorama object have been instantiated::
-
-    fw = firewall.Firewall("10.0.0.1", "admin", "mypassword")
-    pano = panorama.Panorama("10.0.0.5", "admin", "mypassword")
-
-Create an address object on a firewall::
-
-    webserver = objects.AddressObject("Apache-webserver", "5.5.5.5", description="Company web server")
-    fw.add(webserver)
-    webserver.create()
-
-In this example, add() makes the AddressObject a child of the Firewall. This does not make any change to
-the live device. The create() method pushes the new AddressObject to the live device represented by 'fw'.
-
-If you lose the handle to the AddressObject, you can always retreive it from a parent node with one of
-the `find` methods. For example::
-
-    webserver = fw.find("Apache-webserver", objects.AddressObject)
-
-Remove the description of that same address object::
-
-    webserver.description = None
-    webserver.apply()
-
-The apply() method is used instead of create() because it is destructive.  The create() method will never
-remove a variable or object, only add or change it.
-
-Delete the entire address object::
-
-    webserver.delete()
-
-The delete() method removes the object from the live device `and` the configuration tree. In this example,
-after delete() is called, 'webserver' is no longer a child of 'fw'.
-
-**Retrieve configuration**
-
-The previous section describes how to build a configuration tree yourself. But many cases require you to
-pull configuration from the firewall to populate a PanDevice configuration tree. This technique allows many
-advantages including tracking current state of the device, and checking if the configuration change is
-already on the firewall to prevent an unnecessary commit.
-
-In this example, the live device has 3 address objects. Pull the address objects from the live
-device and add them into the configuration tree::
-
-    >>> fw.children
-    []
-    >>> objects.AddressObject.refreshall(fw, add=True)
-    >>> fw.children
-    [<pandevice.objects.AddressObject object at 0x108080e90>,
-     <pandevice.objects.AddressObject object at 0x108080f50>,
-     <pandevice.objects.AddressObject object at 0x108080ed0>]
-
-It's also possible to refresh the variables of an existing object::
-
-    >>> adserver = objects.AddressObject("ADServer")
-    >>> fw.add(adserver)
-    >>> adserver.value
-    None
-    >>> adserver.refresh()
-    >>> adserver.value
-    "4.4.4.4"
-
-Connecting with Panorama
-------------------------
-
 Making changes to Panorama is always done the same way, with a connection to Panorama.
-But, there are a different methods to make local changes to a Firewall.
+But, there are a different options to make local changes to a Firewall.
 
-**Method 1: Connect to the Firewall and Panorama directly**
+**Option 1: Connect to the Firewall and Panorama directly**
 
 When making changes to Panorama, connect to Panorama.
 When making changes to the Firewall, connect directly to the Firewall.
@@ -194,7 +54,7 @@ In this example, the address object is added to the Firewall directly, without
 any connection to Panorama. Then a device-group is created on Panorama directly,
 without any connection to the Firewall.
 
-**Method 2: Connect to Firewall via Panorama**
+**Option 2: Connect to Firewall via Panorama**
 
 When making changes to the Firewall, connect to Panorama which
 will proxy the connection to the Firewall. Meaning all connections
@@ -212,7 +72,7 @@ are to Panorama.
 
 This method is best in the following cases:
 
-- The Firewall management IP is unknown or not rechable from the script
+- The Firewall management IP is unknown or not reachable from the script
 - You only store one set of credentials (Panorama)
 - The serial of the firewall is known or can be determined from Panorama
 
@@ -242,8 +102,13 @@ In this example, both changes are made with connections to Panorama. First, the
 address object is added to the Firewall by connecting to Panorama which proxies the
 API call to the Firewall. Then a device-group is created on Panorama directly.
 
-Working with virtual systems
-----------------------------
+Work with Virtual Systems (VSYS)
+--------------------------------
+
+There's a great blog post by the Developer Relations team on how to work with
+vsys in python. You can read it here:
+
+https://medium.com/palo-alto-networks-developer-blog/handling-pan-os-vsys-in-pandevice-212fe892d303
 
 A Firewall PanDevice can represent a firewall or a virtual system (vsys). By default, a Firewall
 instance represents a single context firewall, or 'vsys1' on a multi-vsys firewall.
@@ -286,8 +151,132 @@ The vsys itself can be created and deleted using the standard configuration tree
     vsys2.create()
     vsys3.delete()
 
-Connecting to PAN-OS 8.0
-------------------------
+High Availability Pairs
+-----------------------
+
+This library tries to handle High Availability (HA) pairs of devices as
+elegantly as possible. Having two devices can pose challenges because some
+configuration needs to be applied to both firewalls, while other configuration
+should be applied only to the active firewall. Also, two devices implies two
+pandevice configuration trees. But, pandevice offers a few features to make
+working with HA pairs easier:
+
+- Only one configuration tree to manage for an HA pair
+- Automatically knows which firewall to talk to
+- Detects when a firewall is not reachable and automatically switches to the other firewall
+- Knows which configuration should be applied to the active firewall and which
+  should be made on both firewalls, and handles this for you under the hood
+
+There's just a couple extra steps to ensure your HA experience is smooth. While
+not strictly necessary, it's a good idea to verify the state of the HA before
+making configuration changes, so you know configuration will sync properly to
+the standby device.
+
+Here's an example of configuration with an HA pair of firewalls::
+
+    from pandevice.firewall import Firewall
+    from pandevice.objects import AddressObject
+
+    # Don't assume either firewall is primary or active.
+    # Just start by telling pandevice they are an HA pair
+    # and how to connect to them.
+    fw = Firewall('10.0.0.1', 'admin', 'password')
+    fw.set_ha_peers(Firewall('10.0.0.2', 'admin', 'password'))
+
+    # Notice I didn't save the second firewall to a variable, because I don't need it.
+    # The point is to treat the HA pair as one firewall, so we only need one variable.
+    # This way, we have only one pandevice configuration tree to manage,
+    # NOT one tree for each fw in the pair.
+
+    # At this point, it's a good idea to collect the active/passive state from
+    # the live devices. This stores which firewall is active to an internal
+    # state machine in the Firewall object.
+    fw.refresh_ha_active()
+
+    # Now, verify the config is synced between the devices.
+    # If it's not synced, force config synchronization from active to standby
+    if not fw.config_synced():
+        fw.synchronize_config()  # blocks until synced or error
+
+    # Now, it's completely safe to use all the configuration methods as usual
+    # on the one fw variable.
+    obj = AddressObject('test', '10.0.1.1')
+    fw.add(obj)
+    obj.create()
+
+In the above code, we added the AddressObject to the ``fw`` variable. Even
+though we created this above with the IP of 10.0.0.1, it represents both
+firewalls in the pair. So when we create the AddressObject on the live device,
+pandevice will reach out to the active firewall in the pair. It will
+automatically detect if the active failed and switch to standby.
+
+Note: We didn't save the second firewall to a variable, because our ``fw`` variable
+represents both firewalls, but if you need to access the second firewall as a
+variable, it's available to you at ``fw.ha_peer``.
+
+Optimize with Bulk Operations
+-----------------------------
+
+Each API call takes time and consumes management plane resources on the
+firewall or Panorama. While this won't affect traffic, it does limit the number
+of changes that can take place in a time period.
+
+**Example:** if you're adding policy for all your branch offices and need to add
+200 address groups with 20 address objects each, creating them individually
+would be 200 x 20 = 4000 API calls. If your device can process an API call in 1
+second, then this operation would take *over an hour* to complete. Even if you
+applied concurrency up to 5 API calls simultaneously, it's still over 10 minutes
+of waiting.
+
+We can do this faster with **bulk operations**.
+
+The methods used to push these objects to a live device individually are ``create()``,
+``apply()``, and ``delete()``. Each of these has a bulk counterpart:
+``create_similar()``, ``apply_similar()``, and ``delete_similar()``.
+
+The bulk version of the method is called exactly the same way as the individual
+version, but the behavior is different. Instead of sending this single object to
+the device, all objects in the configuration tree with this type and location in
+the tree are pushed to the live device in a single API call.
+
+Here's code for the above example using individual API calls and using bulk operations::
+
+    from pandevice.firewall import Firewall
+    from pandevice.objects import AddressObject, AddressGroup
+
+    # Build out the configuration tree with a Firewall object at the root and an
+    # array of AddressObjects and AddressGroups as children of the Firewall
+    fw1 = Firewall('10.0.0.1', 'admin', 'password')
+    for i in range(0, 199):
+        obj = AddressObject('object'+i, '192.168.0.'+i)
+        fw.add(obj)
+    for i in range(0, 19):
+        grp = AddressGroup('group'+i, ['object'+j for j in range(i*5, i*5+5)])
+        fw.add(grp)
+
+    # Create each address object and group one at a time
+    # (takes over 1 hour)
+    for obj in fw.findall(AddressObject):
+        obj.create()
+    for grp in fw.findall(AddressGroup):
+        grp.create()
+
+    # Create all the address objects at once, then all the address groups at once
+    # (takes 2-3 seconds)
+    fw.find('object1').create_similar()
+    fw.find('group1').create_similar()
+
+Bulk operations for the win!
+
+One thing to keep in mind when using bulk operations is that the methods will
+push any objects that share the same type and **location**. This means if you
+call a bulk operation method on an AddressObject in vsys2, pandevice will NOT
+push the AddressObjects in vsys3, or Device Group 7, or the shared scope. Under
+the hood, it verifies that the objects share the same XPath and type before they
+are pushed to the live device.
+
+Connect to PAN-OS 8.0 and higher
+--------------------------------
 
 Starting in PAN-OS 8.0, the default TLS version has changed from 1.0 to 1.1 to enhance the security of
 the management connection. This can cause connection problems for systems with older OpenSSL versions

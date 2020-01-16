@@ -1,7 +1,7 @@
 .. :changelog:
 
-History
-=======
+Release Notes
+=============
 
 0.14.0
 ------
