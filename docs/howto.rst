@@ -223,7 +223,7 @@ of changes that can take place in a time period.
 
 **Example:** if you're adding policy for all your branch offices and need to add
 200 address groups with 20 address objects each, creating them individually
-would be 200 x 20 = 4000 API calls. If your device can process an API call in 1
+would be 200 x 20 + 200 = 4200 API calls. If your device can process an API call in 1
 second, then this operation would take *over an hour* to complete. Even if you
 applied concurrency up to 5 API calls simultaneously, it's still over 10 minutes
 of waiting.
@@ -247,22 +247,24 @@ Here's code for the above example using individual API calls and using bulk oper
     # Build out the configuration tree with a Firewall object at the root and an
     # array of AddressObjects and AddressGroups as children of the Firewall
     fw1 = Firewall('10.0.0.1', 'admin', 'password')
-    for i in range(0, 199):
-        obj = AddressObject('object'+i, '192.168.0.'+i)
-        fw.add(obj)
-    for i in range(0, 19):
-        grp = AddressGroup('group'+i, ['object'+j for j in range(i*5, i*5+5)])
+    # Create 200 AddressGroups with 20 AddressObjects each
+    for i in range(0, 200):
+        addr_objects = [AddressObject('object{}'.format(i*20+j), '192.168.{0}.{1}'.format(i, j)) for j in range(0, 20)]
+        fw.extend(addr_objects)
+        grp = AddressGroup('group{}'.format(i), addr_objects)
         fw.add(grp)
 
-    # Create each address object and group one at a time
-    # (takes over 1 hour)
+    # The config tree is built, now we need to push it to the live device.
+
+    # Option 1: Push each address object and group one at a time
+    #           (takes over 1 hour)
     for obj in fw.findall(AddressObject):
         obj.create()
     for grp in fw.findall(AddressGroup):
         grp.create()
 
-    # Create all the address objects at once, then all the address groups at once
-    # (takes 2-3 seconds)
+    # Option 2: Push all the address objects at once, then all the address groups at once
+    #           (takes 2-3 seconds)
     fw.find('object1').create_similar()
     fw.find('group1').create_similar()
 
