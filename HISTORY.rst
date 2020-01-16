@@ -66,7 +66,7 @@ Status: Alpha
 - Fixed some parameter paths
 
 0.11.0
------
+------
 
 Released: 2019-06-06
 
