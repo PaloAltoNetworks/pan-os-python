@@ -36,23 +36,20 @@ the API interface could change at any time without notification. Please be
 prepared to modify your scripts to work with each subsequent version of this
 package because backward compatibility is not guaranteed.
 
-Installation
-------------
+Install
+-------
 
-The easiest method to install pandevice is using pip::
+Install using pip::
 
     pip install pandevice
-
-Or, if you have virtualenvwrapper installed::
-
-    $ mkvirtualenv pandevice
-    $ pip install pandevice
-
-Pip will install the pan-python_ library as a dependency.
 
 Upgrade to the latest version::
 
     pip install --upgrade pandevice
+
+If you have poetry installed, you can also add pandevice to your project::
+
+    poetry add pandevice
 
 How to import
 -------------
@@ -79,12 +76,12 @@ The following examples assume the modules were imported as such::
     from pandevice import firewall
     from pandevice import network
 
-Create a subinterface and commit::
+Create an interface and commit::
 
     fw = firewall.Firewall("10.0.0.1", api_username="admin", api_password="admin")
-    eth = fw.add(network.EthernetInterface("ethernet1/1", mode="layer3"))
-    subeth = eth.add(network.Layer3Subinterface("ethernet1/1.30", ip="4.4.4.4/24", tag=30))
-    subeth.create()
+    eth1 = network.EthernetInterface("ethernet1/1", mode="layer3")
+    fw.add(eth1)
+    eth1.create()
     fw.commit()
 
 Operational commands leverage the 'op' method of the device::
@@ -98,28 +95,6 @@ Some operational commands have methods to refresh the variables in an object::
     fw.refresh_system_info()
 
 See more examples in the `Usage Guide`_.
-
-
-Connect to PAN-OS 8.0 and higher
---------------------------------
-
-PAN-OS 8.0 by default does not allow connections to the API with TLS 1.0. Unfortunately, the
-latest OSX and many linux distros come with OpenSSL versions that don't support
-TLS 1.1 or 1.2. OpenSSL 1.0.1 or higher is needed to connect to PAN-OS 8.0. If
-you try to connect with a lower version of OpenSSL, you'll get a connection error.
-There are two solutions:
-
-**Option 1: Upgrade OpenSSL** (more secure)
-
-*Mac OSX:* In Mac OSX you can't upgrade the built-in OpenSSL, but you can install your own python
-and OpenSSL using `Homebrew`_.  Follow this guide to get set up: `Definitive guide to python on OSX`_
-
-*Linux:* Use the instructions for your distribution's package manager to upgrade OpenSSL to 1.0.1 or higher.
-
-**Option 2: Enable TLS 1.0 on PAN-OS** (less secure)
-
-Follow the direction in the PAN-OS Administrator Guide:
-`Replace the Certificate for Inbound Management Traffic`_
 
 
 Contributors
@@ -137,9 +112,6 @@ Thank you to Kevin Steves, creator of the pan-python library:
 .. _pan-python: http://github.com/kevinsteves/pan-python
 .. _Configuration Tree: http://pandevice.readthedocs.io/en/latest/configtree.html
 .. _Usage Guide: http://pandevice.readthedocs.io/en/latest/usage.html
-.. _Homebrew: https://brew.sh/
-.. _Definitive guide to python on OSX: https://medium.com/@briantorresgil/definitive-guide-to-python-on-mac-osx-65acd8d969d0
-.. _Replace the Certificate for Inbound Management Traffic: https://www.paloaltonetworks.com/documentation/80/pan-os/pan-os/certificate-management/replace-the-certificate-for-inbound-management-traffic
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pandevice.svg
     :target: https://pypi.python.org/pypi/pandevice

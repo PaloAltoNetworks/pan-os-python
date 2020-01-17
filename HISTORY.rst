@@ -1,7 +1,7 @@
 .. :changelog:
 
-History
-=======
+Release Notes
+=============
 
 0.14.0
 ------
@@ -66,7 +66,7 @@ Status: Alpha
 - Fixed some parameter paths
 
 0.11.0
------
+------
 
 Released: 2019-06-06
 

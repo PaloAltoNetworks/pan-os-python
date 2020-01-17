@@ -210,7 +210,7 @@ if __name__ == '__main__':
     # This script doesn't take command line arguments.  If any are passed in,
     # then print out the script's docstring and exit.
     if len(sys.argv) != 1:
-        print __doc__
+        print(__doc__)
     else:
         # No CLI args, so run the main function.
         main()
