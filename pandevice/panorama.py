@@ -63,6 +63,7 @@ class DeviceGroup(VersionedPanObject):
         "objects.ApplicationObject",
         "objects.ApplicationGroup",
         "objects.ApplicationFilter",
+        "objects.ScheduleObject",
         "objects.SecurityProfileGroup",
         "objects.CustomUrlCategory",
         "objects.LogForwardingProfile",
