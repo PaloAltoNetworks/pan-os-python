@@ -1447,6 +1447,7 @@ class PanObject(object):
                 if isinstance(p, Firewall):
                     new_obj = Firewall(
                         hostname=p.hostname,
+                        port=p.port,
                         api_username=p._api_username,
                         api_password=p._api_password,
                         api_key=p._api_key,
@@ -1459,6 +1460,7 @@ class PanObject(object):
                 elif isinstance(p, Panorama):
                     new_obj = Panorama(
                         hostname=p.hostname,
+                        port=p.port,
                         api_username=p._api_username,
                         api_password=p._api_password,
                         api_key=p._api_key,
