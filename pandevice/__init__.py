@@ -32,7 +32,7 @@ from distutils.version import LooseVersion  # Used by PanOSVersion class
 try:
     import pan
 except ImportError as e:
-    message = e.message + ", please install the pan-python library (pip install pan-python)"
+    message = str(e) + ", please install the pan-python library (pip install pan-python)"
     raise ImportError(message)
 
 # python 2.6 doesn't have a null handler, so create it
@@ -147,6 +147,11 @@ class PanOSVersion(LooseVersion):
         return "PanOSVersion ('%s')" % str(self)
 
     def __lt__(self, other):
+
+        # Handle 'latest' is always higher 
+        if isstring(other) and other == 'latest':
+            return True
+            
         other = stringToVersion(other)
         for (x, y) in zip(self.mainrelease, other.mainrelease):
             if x < y:
@@ -167,6 +172,11 @@ class PanOSVersion(LooseVersion):
         return not self.__lt__(other)
 
     def __eq__(self, other):
+
+        # Handle 'latest' which is always different
+        if isstring(other) and other =='latest':
+            return False
+
         other = stringToVersion(other)
         if self.mainrelease != other.mainrelease:
             return False
