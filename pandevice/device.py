@@ -22,7 +22,6 @@ from pandevice.base import VersionedPanObject
 from pandevice.base import VersionedParamPath
 from pandevice.base import ValueEntry
 
-# import other parts of this pandevice package
 from pandevice import getlogger
 import pandevice.errors as err
 

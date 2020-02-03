@@ -17,7 +17,6 @@
 
 """Network module contains objects that exist in the 'Network' tab in the firewall GUI"""
 
-# import modules
 import re
 import logging
 import xml.etree.ElementTree as ET
@@ -30,7 +29,6 @@ from pandevice.base import VersionedPanObject
 from pandevice.base import VersionedParamPath
 from pandevice.base import VsysOperations
 
-# import other parts of this pandevice package
 import pandevice.errors as err
 
 logger = getlogger(__name__)

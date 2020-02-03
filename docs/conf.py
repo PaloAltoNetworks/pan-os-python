@@ -15,6 +15,7 @@
 
 import sys
 import os
+
 import sphinx_rtd_theme
 
 # Check if building documentation on RTD

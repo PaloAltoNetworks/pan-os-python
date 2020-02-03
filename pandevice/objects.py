@@ -17,7 +17,6 @@
 
 """Objects module contains objects that exist in the 'Objects' tab in the firewall GUI"""
 
-# import modules
 import re
 import logging
 import xml.etree.ElementTree as ET
@@ -28,7 +27,6 @@ from pandevice.base import VarPath as Var
 from pandevice.base import VersionedPanObject
 from pandevice.base import VersionedParamPath
 
-# import other parts of this pandevice package
 import pandevice.errors as err
 
 logger = getlogger(__name__)

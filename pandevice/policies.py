@@ -17,14 +17,12 @@
 
 """Policies module contains policies and rules that exist in the 'Policies' tab in the firewall GUI"""
 
-# import modules
 from pandevice import getlogger
 from pandevice.base import PanObject, Root, MEMBER, ENTRY
 from pandevice.base import VarPath as Var
 from pandevice.base import VersionedPanObject
 from pandevice.base import VersionedParamPath
 
-# import other parts of this pandevice package
 import pandevice.errors as err
 
 logger = getlogger(__name__)

@@ -17,12 +17,10 @@
 
 """Panorama and all Panorama related objects"""
 
-# import modules
 import logging
 import xml.etree.ElementTree as ET
 from copy import deepcopy
 
-# import other parts of this pandevice package
 import pandevice
 from pandevice import getlogger, yesno
 from pandevice import base, firewall, policies

@@ -17,7 +17,6 @@
 
 """Palo Alto Networks Firewall object"""
 
-# import modules
 import itertools
 import re
 import logging
@@ -28,7 +27,6 @@ from pandevice import getlogger
 from pandevice import device
 from pandevice import yesno
 
-# import other parts of this pandevice package
 import pandevice.errors as err
 from pandevice.base import PanDevice, Root, ENTRY
 from pandevice.base import VarPath as Var

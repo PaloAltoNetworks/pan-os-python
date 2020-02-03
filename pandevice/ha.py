@@ -17,7 +17,6 @@
 
 """High availability objects to configure HA for a firewall or Panorama"""
 
-# import modules
 import logging
 import inspect
 import xml.etree.ElementTree as ET
