@@ -43,7 +43,12 @@ lint:
 bandit:
 	bandit -r --ini .bandit
 
+format:
+	isort --recursive --atomic pandevice
+	black .
+
 check-format:
+	isort --recursive --atomic --check-only pandevice
 	black --check .
 
 test:
