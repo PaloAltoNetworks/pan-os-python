@@ -1,2 +1,2 @@
-wheel==0.23.0
-pan-python==0.10.0
+pan-python==0.10.0 \
+    --hash=sha256:e95670b65a3c480c4b25b9682bb23e65b7ad5ef21adf12304ee587b04af65090

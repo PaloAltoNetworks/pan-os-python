@@ -12,13 +12,18 @@ help:
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "release - package and upload a release"
 	@echo "dist - package"
+	@echo "sync-deps - save dependencies to requirements.txt"
 
-clean: clean-build clean-pyc clean-test
+clean: clean-build clean-pyc clean-test clean-docs
 
 clean-build:
 	rm -fr build/
 	rm -fr dist/
 	rm -fr *.egg-info
+
+clean-docs:
+	rm -fr docs/_build/
+	rm -fr docs/_diagrams/
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -30,27 +35,32 @@ clean-test:
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
+	rm -fr .pytest_cache
 
 lint:
 	flake8 pandevice tests
 
+bandit:
+	bandit -r --ini .bandit
+
+format:
+	isort --recursive --atomic pandevice
+	black .
+
+check-format:
+	isort --recursive --atomic --check-only pandevice
+	black --check .
+
 test:
-	python setup.py test
+	pytest
 
 test-all:
 	tox
 
 coverage:
-	coverage run --source pandevice setup.py test
-	coverage report -m
-	coverage html
-	open htmlcov/index.html
+	pytest --cov=pandevice
 
-docs:
-	rm -f docs/pandevice.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ pandevice
-	$(MAKE) -C docs clean
+docs: clean-docs
 	$(MAKE) -C docs html
 	open docs/_build/html/index.html
 
@@ -62,3 +72,8 @@ dist: clean
 	python setup.py sdist
 	python setup.py bdist_wheel
 	ls -l dist
+
+sync-deps:
+	poetry export -f requirements.txt > requirements.txt
+	dephell deps convert
+	black setup.py

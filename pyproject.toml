@@ -1,0 +1,62 @@
+[tool.poetry]
+name = "pandevice"
+version = "0.14.0"
+description = "Framework for interacting with Palo Alto Networks devices via API"
+authors = ["Palo Alto Networks <devrel@paloaltonetworks.com>"]
+license = "ISC"
+keywords = ["pandevice"]
+readme = "README.rst"
+homepage = "https://github.com/PaloAltoNetworks/pandevice"
+repository = "https://github.com/PaloAltoNetworks/pandevice"
+documentation = "https://pandevice.readthedocs.io"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: ISC License (ISCL)",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+]
+
+[tool.poetry.dependencies]
+python = "^2.7 || ^3.5"
+pan-python = "^0.10.0"
+
+[tool.poetry.dev-dependencies]
+pytest = {version = "^5.3.2", python = "^3.5"}
+black = {version = "^19.10b0", python = "^3.6"}
+flake8-eradicate = {version = "^0.2.4", python = "^3.6"}
+flake8-bugbear = {version = "^20.1.2", python = "^3.6"}
+flake8 = "^3.7.9"
+flake8-logging-format = "^0.6.0"
+flake8-pep3101 = "^1.3.0"
+flake8-builtins = "^1.4.2"
+flake8-comprehensions = {version = "^3.1.4", python = "^3.5"}
+flake8-string-format = "^0.2.3"
+flake8-mutable = "^1.2.0"
+flake8-pytest = "^1.3"
+flake8-mock = "^0.3"
+flake8-docstrings = "^1.5.0"
+flake8-variables-names = "^0.0.3"
+pep8-naming = "^0.9.1"
+dephell = {version = "^0.8.0", python = "^3.6"}
+fissix = {version = "^19.2b1", python = "^3.6"}
+sphinx = {version = "^2.3.1", python = "^3.5"}
+pytest-cov = {version = "^2.8.1", python = "^3.5"}
+sphinx_rtd_theme = {version = "^0.4.3", python = "^3.5"}
+sphinx-autobuild = {version = "^0.7.1", python = "^3.5"}
+bandit = "^1.6.2"
+isort = "^4.3.21"
+
+[tool.dephell.main]
+# read from poetry file
+from = {format = "poetry", path = "pyproject.toml"}
+# and convert into setup.py
+to = {format = "setuppy", path = "setup.py"}
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
