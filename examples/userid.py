@@ -38,7 +38,7 @@ Send a User-ID logout event to a firewall at 172.16.4.4::
 
 """
 
-__author__ = 'btorres-gil'
+__author__ = "btorres-gil"
 
 import sys
 import os
@@ -55,17 +55,23 @@ from pandevice.panorama import Panorama
 def main():
 
     # Get command line arguments
-    parser = argparse.ArgumentParser(description="Update User-ID by adding or removing a user-to-ip mapping")
-    parser.add_argument('-v', '--verbose', action='count', help="Verbose (-vv for extra verbose)")
-    parser.add_argument('-q', '--quiet', action='store_true', help="No output")
+    parser = argparse.ArgumentParser(
+        description="Update User-ID by adding or removing a user-to-ip mapping"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="count", help="Verbose (-vv for extra verbose)"
+    )
+    parser.add_argument("-q", "--quiet", action="store_true", help="No output")
     # Palo Alto Networks related arguments
-    fw_group = parser.add_argument_group('Palo Alto Networks Device')
-    fw_group.add_argument('hostname', help="Hostname of Firewall")
-    fw_group.add_argument('username', help="Username for Firewall")
-    fw_group.add_argument('password', help="Password for Firewall")
-    fw_group.add_argument('action', help="The action of the user. Must be 'login' or 'logout'.")
-    fw_group.add_argument('user', help="The username of the user")
-    fw_group.add_argument('ip', help="The IP address of the user")
+    fw_group = parser.add_argument_group("Palo Alto Networks Device")
+    fw_group.add_argument("hostname", help="Hostname of Firewall")
+    fw_group.add_argument("username", help="Username for Firewall")
+    fw_group.add_argument("password", help="Password for Firewall")
+    fw_group.add_argument(
+        "action", help="The action of the user. Must be 'login' or 'logout'."
+    )
+    fw_group.add_argument("user", help="The username of the user")
+    fw_group.add_argument("ip", help="The IP address of the user")
     args = parser.parse_args()
 
     ### Set up logger
@@ -78,16 +84,13 @@ def main():
     if not args.quiet:
         logging_level = 20 - (args.verbose * 10)
         if logging_level <= logging.DEBUG:
-            logging_format = '%(levelname)s:%(name)s:%(message)s'
+            logging_format = "%(levelname)s:%(name)s:%(message)s"
         else:
-            logging_format = '%(message)s'
+            logging_format = "%(message)s"
         logging.basicConfig(format=logging_format, level=logging_level)
 
     # Connect to the device and determine its type (Firewall or Panorama).
-    device = PanDevice.create_from_device(args.hostname,
-                                          args.username,
-                                          args.password,
-                                          )
+    device = PanDevice.create_from_device(args.hostname, args.username, args.password,)
 
     logging.debug("Detecting type of device")
 
@@ -96,7 +99,9 @@ def main():
     # parameter by creating a Panorama object first, then create a
     # Firewall object with the 'panorama' and 'serial' variables populated.
     if issubclass(type(device), Panorama):
-        logging.error("Connected to a Panorama, but user-id API is not possible on Panorama.  Exiting.")
+        logging.error(
+            "Connected to a Panorama, but user-id API is not possible on Panorama.  Exiting."
+        )
         sys.exit(1)
 
     if args.action == "login":
@@ -106,12 +111,14 @@ def main():
         logging.debug("Logout user %s at IP %s" % (args.user, args.ip))
         device.userid.logout(args.user, args.ip)
     else:
-        raise ValueError("Unknown action: %s.  Must be 'login' or 'logout'." % args.action)
+        raise ValueError(
+            "Unknown action: %s.  Must be 'login' or 'logout'." % args.action
+        )
 
     logging.debug("Done")
 
 
 # Call the main() function to begin the program if not
 # loaded as a module.
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

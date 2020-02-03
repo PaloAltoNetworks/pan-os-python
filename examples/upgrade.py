@@ -39,7 +39,7 @@ Upgrade a Panorama at 172.16.4.4 to the latest Panorama version::
 
 """
 
-__author__ = 'btorres-gil'
+__author__ = "btorres-gil"
 
 import sys
 import os
@@ -55,16 +55,27 @@ from pandevice.base import PanDevice
 def main():
 
     # Get command line arguments
-    parser = argparse.ArgumentParser(description="Upgrade a Palo Alto Networks Firewall or Panorama to the specified version")
-    parser.add_argument('-v', '--verbose', action='count', help="Verbose (-vv for extra verbose)")
-    parser.add_argument('-q', '--quiet', action='store_true', help="No output")
-    parser.add_argument('-n', '--dryrun', action='store_true', help="Print what would happen, but don't perform upgrades")
+    parser = argparse.ArgumentParser(
+        description="Upgrade a Palo Alto Networks Firewall or Panorama to the specified version"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="count", help="Verbose (-vv for extra verbose)"
+    )
+    parser.add_argument("-q", "--quiet", action="store_true", help="No output")
+    parser.add_argument(
+        "-n",
+        "--dryrun",
+        action="store_true",
+        help="Print what would happen, but don't perform upgrades",
+    )
     # Palo Alto Networks related arguments
-    fw_group = parser.add_argument_group('Palo Alto Networks Device')
-    fw_group.add_argument('hostname', help="Hostname of Firewall or Panorama")
-    fw_group.add_argument('username', help="Username for Firewall or Panorama")
-    fw_group.add_argument('password', help="Password for Firewall or Panorama")
-    fw_group.add_argument('version', help="The target PAN-OS/Panorama version (eg. 7.0.0 or latest)")
+    fw_group = parser.add_argument_group("Palo Alto Networks Device")
+    fw_group.add_argument("hostname", help="Hostname of Firewall or Panorama")
+    fw_group.add_argument("username", help="Username for Firewall or Panorama")
+    fw_group.add_argument("password", help="Password for Firewall or Panorama")
+    fw_group.add_argument(
+        "version", help="The target PAN-OS/Panorama version (eg. 7.0.0 or latest)"
+    )
     args = parser.parse_args()
 
     ### Set up logger
@@ -77,17 +88,14 @@ def main():
     if not args.quiet:
         logging_level = 20 - (args.verbose * 10)
         if logging_level <= logging.DEBUG:
-            logging_format = '%(levelname)s:%(name)s:%(message)s'
+            logging_format = "%(levelname)s:%(name)s:%(message)s"
         else:
-            logging_format = '%(message)s'
+            logging_format = "%(message)s"
         logging.basicConfig(format=logging_format, level=logging_level)
 
     # Connect to the device and determine its type (Firewall or Panorama).
     # This is important to know what version to upgrade to next.
-    device = PanDevice.create_from_device(args.hostname,
-                                          args.username,
-                                          args.password,
-                                          )
+    device = PanDevice.create_from_device(args.hostname, args.username, args.password,)
 
     # Perform the upgrades in sequence with reboots between each upgrade
     device.software.upgrade_to_version(args.version, args.dryrun)
@@ -95,5 +103,5 @@ def main():
 
 # Call the main() function to begin the program if not
 # loaded as a module.
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

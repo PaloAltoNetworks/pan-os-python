@@ -18,19 +18,15 @@
 """Palo Alto Networks Firewall object"""
 
 import itertools
-import re
 import logging
+import re
 import xml.etree.ElementTree as ET
 from decimal import Decimal
 
-from pandevice import getlogger
-from pandevice import device
-from pandevice import yesno
-
 import pandevice.errors as err
-from pandevice.base import PanDevice, Root, ENTRY
+from pandevice import device, getlogger, yesno
+from pandevice.base import ENTRY, PanDevice, Root
 from pandevice.base import VarPath as Var
-
 
 logger = getlogger(__name__)
 
@@ -54,11 +50,12 @@ class Firewall(PanDevice):
         interval: The interval to check asynchronous jobs
 
     """
+
     XPATH = "/devices"
     ROOT = Root.MGTCONFIG
     SUFFIX = ENTRY
     NAME = "serial"
-    DEFAULT_VSYS = 'vsys1'
+    DEFAULT_VSYS = "vsys1"
     CHILDTYPES = (
         "device.Vsys",
         "device.VsysResources",
@@ -100,29 +97,34 @@ class Firewall(PanDevice):
         "network.GreTunnel",
     )
 
-    def __init__(self,
-                 hostname=None,
-                 api_username=None,
-                 api_password=None,
-                 api_key=None,
-                 serial=None,
-                 port=443,
-                 vsys=None,  # 'vsys#', 'shared', or None
-                 is_virtual=None,
-                 multi_vsys=None,
-                 *args,
-                 **kwargs
-                 ):
+    def __init__(
+        self,
+        hostname=None,
+        api_username=None,
+        api_password=None,
+        api_key=None,
+        serial=None,
+        port=443,
+        vsys=None,  # 'vsys#', 'shared', or None
+        is_virtual=None,
+        multi_vsys=None,
+        *args,
+        **kwargs
+    ):
         """Initialize PanDevice"""
-        vsys_name = kwargs.pop('vsys_name', None)
-        serial_ha_peer = kwargs.pop('serial_ha_peer', None)
-        management_ip = kwargs.pop('management_ip', None)
-        super(Firewall, self).__init__(hostname, api_username, api_password, api_key,
-                                       port=port,
-                                       is_virtual=is_virtual,
-                                       *args,
-                                       **kwargs
-                                       )
+        vsys_name = kwargs.pop("vsys_name", None)
+        serial_ha_peer = kwargs.pop("serial_ha_peer", None)
+        management_ip = kwargs.pop("management_ip", None)
+        super(Firewall, self).__init__(
+            hostname,
+            api_username,
+            api_password,
+            api_key,
+            port=port,
+            is_virtual=is_virtual,
+            *args,
+            **kwargs
+        )
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
@@ -140,11 +142,16 @@ class Firewall(PanDevice):
         """Panorama state variables refreshed by Panorama"""
 
     def __repr__(self):
-        return "<%s %s %s at 0x%x>" % (type(self).__name__, repr(self.id), repr(self.vsys), id(self))
+        return "<%s %s %s at 0x%x>" % (
+            type(self).__name__,
+            repr(self.id),
+            repr(self.vsys),
+            id(self),
+        )
 
     @property
     def id(self):
-        return self.serial or self.hostname or '<no-id>'
+        return self.serial or self.hostname or "<no-id>"
 
     @property
     def vsys(self):
@@ -167,9 +174,19 @@ class Firewall(PanDevice):
         return self._root_xpath_vsys(self.vsys)
 
     def xpath_panorama(self):
-        raise err.PanDeviceError("Attempt to modify Panorama configuration on non-Panorama device")
+        raise err.PanDeviceError(
+            "Attempt to modify Panorama configuration on non-Panorama device"
+        )
 
-    def op(self, cmd=None, vsys=None, xml=False, cmd_xml=True, extra_qs=None, retry_on_peer=False):
+    def op(
+        self,
+        cmd=None,
+        vsys=None,
+        xml=False,
+        cmd_xml=True,
+        extra_qs=None,
+        retry_on_peer=False,
+    ):
         """Perform operational command on this Firewall
 
         Args:
@@ -186,7 +203,9 @@ class Firewall(PanDevice):
         """
         if vsys is None:
             vsys = self.vsys
-        return super(Firewall, self).op(cmd, vsys, xml, cmd_xml, extra_qs, retry_on_peer)
+        return super(Firewall, self).op(
+            cmd, vsys, xml, cmd_xml, extra_qs, retry_on_peer
+        )
 
     def generate_xapi(self):
         # Override super class to connect to Panorama
@@ -200,13 +219,14 @@ class Firewall(PanDevice):
             return super(Firewall, self).generate_xapi()
         if self.serial is not None and self.hostname is None:
             xapi_constructor = PanDevice.XapiWrapper
-            kwargs = {'pan_device': self,
-                      'api_key': self.panorama().api_key,
-                      'hostname': self.panorama().hostname,
-                      'port': self.panorama().port,
-                      'timeout': self.timeout,
-                      'serial': self.serial,
-                      }
+            kwargs = {
+                "pan_device": self,
+                "api_key": self.panorama().api_key,
+                "hostname": self.panorama().hostname,
+                "port": self.panorama().port,
+                "timeout": self.timeout,
+                "serial": self.serial,
+            }
             return xapi_constructor(**kwargs)
         else:
             return super(Firewall, self).generate_xapi()
@@ -218,7 +238,7 @@ class Firewall(PanDevice):
 
         """
         super(Firewall, self)._save_system_info(system_info)
-        self.multi_vsys = system_info['system']['multi-vsys'] == 'on'
+        self.multi_vsys = system_info["system"]["multi-vsys"] == "on"
 
     def element(self):
         if self.serial is None:
@@ -250,7 +270,10 @@ class Firewall(PanDevice):
             return
         # This is a firewall under a panorama or devicegroup
         panorama = self.panorama()
-        logger.debug(panorama.hostname + ": create called on %s object \"%s\"" % (type(self), self.uid))
+        logger.debug(
+            panorama.hostname
+            + ': create called on %s object "%s"' % (type(self), self.uid)
+        )
         panorama.set_config_changed()
         element = self.element_str()
         panorama.xapi.set(self.xpath_short(), element)
@@ -260,13 +283,18 @@ class Firewall(PanDevice):
             self.delete_vsys()
             return
         panorama = self.panorama()
-        logger.debug(panorama.hostname + ": delete called on %s object \"%s\"" % (type(self), self.serial))
+        logger.debug(
+            panorama.hostname
+            + ': delete called on %s object "%s"' % (type(self), self.serial)
+        )
         if self.parent == self.devicegroup() and self.multi_vsys:
             # This is a firewall under a devicegroup
             # Refresh device-group first to see if this is the only vsys
             devices_xpath = self.devicegroup().xpath() + self.XPATH
             devices_xml = panorama.xapi.get(devices_xpath)
-            dg_vsys = devices_xml.findall("result/devices/entry[@name='%s']/vsys/entry" % self.serial)
+            dg_vsys = devices_xml.findall(
+                "result/devices/entry[@name='%s']/vsys/entry" % self.serial
+            )
             if dg_vsys:
                 if len(dg_vsys) == 1:
                     # Only vsys, so delete whole entry
@@ -275,7 +303,9 @@ class Firewall(PanDevice):
                 else:
                     # It's not the only vsys, just delete the vsys
                     panorama.set_config_changed()
-                    panorama.xapi.delete(self.xpath() + "/vsys/entry[@name='%s']" % self.vsys)
+                    panorama.xapi.delete(
+                        self.xpath() + "/vsys/entry[@name='%s']" % self.vsys
+                    )
         else:
             # This is a firewall under a panorama
             panorama.set_config_changed()
@@ -290,8 +320,10 @@ class Firewall(PanDevice):
             if self.vsys_name is not None:
                 ET.SubElement(element, "display-name").text = self.vsys_name
             self.set_config_changed()
-            path = self._root_xpath_vsys(None).rsplit('/', 1)[0]
-            self.xapi.set(path, ET.tostring(element, encoding='utf-8'), retry_on_peer=True)
+            path = self._root_xpath_vsys(None).rsplit("/", 1)[0]
+            self.xapi.set(
+                path, ET.tostring(element, encoding="utf-8"), retry_on_peer=True
+            )
 
     def delete_vsys(self):
         """Delete the vsys on the live device that this Firewall object represents"""
@@ -304,7 +336,8 @@ class Firewall(PanDevice):
             return []
         if variables is not None:
             return super(Firewall, self).refreshall_from_xml(
-                xml, refresh_children, variables)
+                xml, refresh_children, variables
+            )
         op_vars = (
             Var("serial"),
             Var("ip-address", "management_ip"),
@@ -318,7 +351,8 @@ class Firewall(PanDevice):
         if len(xml[0]) > 1:
             # This is a 'show devices' op command
             firewall_instances = super(Firewall, self).refreshall_from_xml(
-                xml, refresh_children=False, variables=op_vars)
+                xml, refresh_children=False, variables=op_vars
+            )
             # Add system settings to firewall instances
             for fw in firewall_instances:
                 entry = xml.find("entry[@name='%s']" % fw.serial)
@@ -327,7 +361,9 @@ class Firewall(PanDevice):
                 system.ip_address = entry.findtext("ip-address")
                 # Add state
                 fw.state.connected = yesno(entry.findtext("connected"))
-                fw.state.unsupported_version = yesno(entry.findtext("unsupported-version"))
+                fw.state.unsupported_version = yesno(
+                    entry.findtext("unsupported-version")
+                )
         else:
             # This is a config command
             # For each vsys, instantiate a new firewall
@@ -337,42 +373,51 @@ class Firewall(PanDevice):
                 all_vsys = entry.findall("vsys/entry")
                 if all_vsys:
                     for vsys in all_vsys:
-                        firewall_instances.append(Firewall(
-                            serial=entry.get("name"), vsys=vsys.get("name")))
+                        firewall_instances.append(
+                            Firewall(serial=entry.get("name"), vsys=vsys.get("name"))
+                        )
                 else:
-                    firewall_instances.append(Firewall(
-                        serial=entry.get("name")))
+                    firewall_instances.append(Firewall(serial=entry.get("name")))
         return firewall_instances
 
     def show_system_resources(self):
         self.xapi.op(cmd="show system resources", cmd_xml=True)
         result = self.xapi.xml_root()
         if self._version_info >= (9, 0, 0):
-            regex = re.compile(r'load average: ([\d\.]+).*? ([\d\.]+) id,.*KiB Mem : (\d+) total,.*? (\d+) free', re.DOTALL)
+            regex = re.compile(
+                r"load average: ([\d\.]+).*? ([\d\.]+) id,.*KiB Mem : (\d+) total,.*? (\d+) free",
+                re.DOTALL,
+            )
         else:
-            regex = re.compile(r"load average: ([\d.]+).* ([\d.]+)%id.*Mem:.*?([\d.]+)k total.*?([\d]+)k free", re.DOTALL)
+            regex = re.compile(
+                r"load average: ([\d.]+).* ([\d.]+)%id.*Mem:.*?([\d.]+)k total.*?([\d]+)k free",
+                re.DOTALL,
+            )
         match = regex.search(result)
         if match:
             """
             return cpu, mem_free, load
             """
             return {
-                'load': Decimal(match.group(1)),
-                'cpu': 100 - Decimal(match.group(2)),
-                'mem_total': int(match.group(3)),
-                'mem_free': int(match.group(4)),
+                "load": Decimal(match.group(1)),
+                "cpu": 100 - Decimal(match.group(2)),
+                "mem_total": int(match.group(3)),
+                "mem_free": int(match.group(4)),
             }
         else:
-            raise err.PanDeviceError("Problem parsing show system resources",
-                                     pan_device=self)
+            raise err.PanDeviceError(
+                "Problem parsing show system resources", pan_device=self
+            )
 
     def commit_device_and_network(self, sync=False, exception=False):
-        return self._commit(sync=sync, exclude="policy-and-objects",
-                            exception=exception)
+        return self._commit(
+            sync=sync, exclude="policy-and-objects", exception=exception
+        )
 
     def commit_policy_and_objects(self, sync=False, exception=False):
-        return self._commit(sync=sync, exclude="device-and-network",
-                            exception=exception)
+        return self._commit(
+            sync=sync, exclude="device-and-network", exception=exception
+        )
 
     def organize_into_vsys(self, create_vsys_objects=True, refresh_vsys=True):
         """Organizes all imported objects under the appropriate Vsys object.
@@ -386,10 +431,10 @@ class Firewall(PanDevice):
 
         # Mapping of device.Vsys params to pandevice classes.
         mapping = {
-            'interface': network.Interface,
-            'vlans': network.Vlan,
-            'virtual_wires': network.VirtualWire,
-            'virtual_routers': network.VirtualRouter,
+            "interface": network.Interface,
+            "vlans": network.Vlan,
+            "virtual_wires": network.VirtualWire,
+            "virtual_routers": network.VirtualRouter,
         }
 
         # Optional: create the vsys objects.
@@ -397,8 +442,7 @@ class Firewall(PanDevice):
             device.Vsys.refreshall(self, name_only=True)
 
         # Vsys to put objects into.
-        available_vsys = [x for x in self.children
-                          if isinstance(x, device.Vsys)]
+        available_vsys = [x for x in self.children if isinstance(x, device.Vsys)]
 
         # Optional: refresh the vsys params.
         if create_vsys_objects or refresh_vsys:
@@ -422,8 +466,9 @@ class Firewall(PanDevice):
                 if isinstance(x, importable_class):
                     # Importable class found, check if it should be moved.
                     for vsys in available_vsys:
-                        if (getattr(vsys, param) is not None and
-                                x.uid in getattr(vsys, param)):
+                        if getattr(vsys, param) is not None and x.uid in getattr(
+                            vsys, param
+                        ):
                             # If its vsys isn't right, move it.
                             if x.vsys != vsys.uid:
                                 x.parent.remove(x)
@@ -440,7 +485,6 @@ class Firewall(PanDevice):
 
 
 class FirewallState(object):
-
     def __init__(self):
         self.connected = None
         self.shared_policy_synced = None
@@ -454,4 +498,6 @@ class FirewallState(object):
         elif not sync_status:
             self.shared_policy_synced = None
         else:
-            raise err.PanDeviceError("Unknown shared policy status: %s" % str(sync_status))
+            raise err.PanDeviceError(
+                "Unknown shared policy status: %s" % str(sync_status)
+            )

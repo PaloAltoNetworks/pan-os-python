@@ -6,55 +6,47 @@ from pandevice import network
 
 
 def random_name():
-    return ''.join(
-        random.choice('abcdefghijklmnopqrstuvwxyz')
-        for x in range(10)
-    )
+    return "".join(random.choice("abcdefghijklmnopqrstuvwxyz") for x in range(10))
 
 
 def random_ip(netmask=None):
-    return '{0}.{1}.{2}.{3}{4}'.format(
+    return "{0}.{1}.{2}.{3}{4}".format(
         random.randint(11, 150),
         random.randint(1, 200),
         random.randint(1, 200),
         1 if netmask is not None else random.randint(2, 200),
-        netmask or '',
+        netmask or "",
     )
 
 
 def random_netmask():
-    return '{0}.{1}.{2}.0/24'.format(
-        random.randint(11, 150),
-        random.randint(1, 200),
-        random.randint(1, 200),
+    return "{0}.{1}.{2}.0/24".format(
+        random.randint(11, 150), random.randint(1, 200), random.randint(1, 200),
     )
 
 
 def random_ipv6(ending=None):
     if ending is None:
-        return ':'.join(
-            '{0:04x}'.format(random.randint(1, 65535))
-            for x in range(8)
-        )
+        return ":".join("{0:04x}".format(random.randint(1, 65535)) for x in range(8))
     else:
-        return '{0:04x}:{1:04x}:{2:04x}:{3:04x}::{4}'.format(
-            random.randint(1, 65535), random.randint(1, 65535),
-            random.randint(1, 65535), random.randint(1, 65535), ending)
+        return "{0:04x}:{1:04x}:{2:04x}:{3:04x}::{4}".format(
+            random.randint(1, 65535),
+            random.randint(1, 65535),
+            random.randint(1, 65535),
+            random.randint(1, 65535),
+            ending,
+        )
 
 
 def random_mac():
-    return ':'.join(
-        '{0:02x}'.format(random.randint(0, 255))
-        for x in range(6)
-    )
+    return ":".join("{0:02x}".format(random.randint(0, 255)) for x in range(6))
 
 
 def get_available_interfaces(con, num=1):
     ifaces = network.EthernetInterface.refreshall(con, add=False)
     ifaces = set(x.name for x in ifaces)
 
-    all_interfaces = set('ethernet1/{0}'.format(x)
-                         for x in range(1, 10))
+    all_interfaces = set("ethernet1/{0}".format(x) for x in range(1, 10))
     available = all_interfaces.difference(ifaces)
 
     ans = []
@@ -74,9 +66,9 @@ class FwFlow(object):
         try:
             self.create_dependencies(fw, state)
         except Exception as e:
-            print('SETUP ERROR: {0}'.format(e))
+            print("SETUP ERROR: {0}".format(e))
             state.err = True
-            pytest.skip('Setup failed')
+            pytest.skip("Setup failed")
 
     def create_dependencies(self, fw, state):
         pass
@@ -84,7 +76,7 @@ class FwFlow(object):
     def sanity(self, fw, state_map):
         state = state_map.setdefault(fw)
         if state.err:
-            state.fail_func('prereq failed')
+            state.fail_func("prereq failed")
 
         return state
 
@@ -140,9 +132,9 @@ class DevFlow(object):
         try:
             self.create_dependencies(dev, state)
         except Exception as e:
-            print('SETUP ERROR: {0}'.format(e))
+            print("SETUP ERROR: {0}".format(e))
             state.err = True
-            pytest.skip('Setup failed')
+            pytest.skip("Setup failed")
 
     def create_dependencies(self, dev, state):
         pass
@@ -150,7 +142,7 @@ class DevFlow(object):
     def sanity(self, dev, state_map):
         state = state_map.setdefault(dev)
         if state.err:
-            state.fail_func('prereq failed')
+            state.fail_func("prereq failed")
 
         return state
 
@@ -207,9 +199,9 @@ class PanoFlow(object):
         try:
             self.create_dependencies(pano, state)
         except Exception as e:
-            print('SETUP ERROR: {0}'.format(e))
+            print("SETUP ERROR: {0}".format(e))
             state.err = True
-            pytest.skip('Setup failed')
+            pytest.skip("Setup failed")
 
     def create_dependencies(self, pano, state):
         pass
@@ -217,7 +209,7 @@ class PanoFlow(object):
     def sanity(self, pano, state_map):
         state = state_map.setdefault(pano)
         if state.err:
-            state.fail_func('prereq failed')
+            state.fail_func("prereq failed")
 
         return state
 

@@ -22,25 +22,23 @@ class TestDeviceConfig(object):
     def test_02_update_hostname(self, dev, state_map):
         state = state_map.setdefault(dev)
         if not state.got_device_config:
-            pytest.xfail('failed to get device config')
+            pytest.xfail("failed to get device config")
 
         # Change the hostname
-        self.toggle_object_variable(state.dco, 'hostname',
-                                    testlib.random_name())
+        self.toggle_object_variable(state.dco, "hostname", testlib.random_name())
 
     def test_03_update_secondary_dns(self, dev, state_map):
         state = state_map.setdefault(dev)
         if not state.got_device_config:
-            pytest.xfail('failed to get device config')
+            pytest.xfail("failed to get device config")
 
         # Toggle the secondary ip address
-        self.toggle_object_variable(state.dco, 'dns_secondary',
-                                    testlib.random_ip())
+        self.toggle_object_variable(state.dco, "dns_secondary", testlib.random_ip())
 
     def test_04_create_ntp(self, dev, state_map):
         state = state_map.setdefault(dev)
         if not state.got_device_config:
-            pytest.xfail('failed to get device config')
+            pytest.xfail("failed to get device config")
 
         primary = None
         secondary = None
@@ -53,16 +51,14 @@ class TestDeviceConfig(object):
 
         state.restore_ntp = False
         if primary is None:
-            state.ntp_obj = device.NTPServerPrimary(
-                address=testlib.random_ip())
+            state.ntp_obj = device.NTPServerPrimary(address=testlib.random_ip())
         elif secondary is None:
-            state.ntp_obj = device.NTPServerSecondary(
-                address=testlib.random_ip())
+            state.ntp_obj = device.NTPServerSecondary(address=testlib.random_ip())
         else:
             state.created_ntp = True
             state.restore_ntp = True
             state.ntp_obj = secondary
-            pytest.skip('Both primary and secondary exist, nothing to create')
+            pytest.skip("Both primary and secondary exist, nothing to create")
 
         state.dco.add(state.ntp_obj)
         state.ntp_obj.create()
@@ -71,28 +67,27 @@ class TestDeviceConfig(object):
     def test_05_update_ntp(self, dev, state_map):
         state = state_map.setdefault(dev)
         if not state.got_device_config:
-            pytest.xfail('failed to get device config')
+            pytest.xfail("failed to get device config")
         if not state.created_ntp:
-            pytest.xfail('failed to create ntp in previous step')
+            pytest.xfail("failed to create ntp in previous step")
 
-        self.toggle_object_variable(state.ntp_obj, 'address',
-                                    testlib.random_ip())
+        self.toggle_object_variable(state.ntp_obj, "address", testlib.random_ip())
 
     def test_06_delete_ntp(self, dev, state_map):
         state = state_map.setdefault(dev)
         if not state.got_device_config:
-            pytest.xfail('failed to get device config')
+            pytest.xfail("failed to get device config")
         if not state.created_ntp:
-            pytest.xfail('failed to create ntp in previous step')
+            pytest.xfail("failed to create ntp in previous step")
 
         state.ntp_obj.delete()
 
     def test_07_restore_ntp(self, dev, state_map):
         state = state_map.setdefault(dev)
         if not state.got_device_config:
-            pytest.xfail('failed to get device config')
+            pytest.xfail("failed to get device config")
         if not state.restore_ntp:
-            pytest.skip('restore not needed')
+            pytest.skip("restore not needed")
 
         state.dco.add(state.ntp_obj)
         state.ntp_obj.create()
@@ -103,8 +98,7 @@ class TestDeviceConfig(object):
 
 class TestPasswordProfile(testlib.DevFlow):
     def setup_state_obj(self, dev, state):
-        state.obj = device.PasswordProfile(
-            testlib.random_name(), 0, 0, 0, 0)
+        state.obj = device.PasswordProfile(testlib.random_name(), 0, 0, 0, 0)
         dev.add(state.obj)
 
     def update_state_obj(self, dev, state):
@@ -118,17 +112,17 @@ class TestFirewallAdministrator(testlib.FwFlow):
     def create_dependencies(self, fw, state):
         state.profiles = []
         for x in range(2):
-            state.profiles.append(device.PasswordProfile(
-                testlib.random_name(), x, x, x, x))
+            state.profiles.append(
+                device.PasswordProfile(testlib.random_name(), x, x, x, x)
+            )
             fw.add(state.profiles[x])
 
         state.profiles[0].create_similar()
 
     def setup_state_obj(self, fw, state):
         state.obj = device.Administrator(
-            testlib.random_name(),
-            superuser=True,
-            password_profile=state.profiles[0])
+            testlib.random_name(), superuser=True, password_profile=state.profiles[0]
+        )
         fw.add(state.obj)
 
     def update_state_obj(self, fw, state):
@@ -162,11 +156,10 @@ class TestFirewallAdministrator(testlib.FwFlow):
         state = self.sanity(fw, state_map)
 
         # Set the password
-        state.obj.change_password('secret')
+        state.obj.change_password("secret")
 
         # Now verify the change by trying to login
-        new_fw = fw.__class__(
-            fw.hostname, state.obj.uid, 'secret')
+        new_fw = fw.__class__(fw.hostname, state.obj.uid, "secret")
         new_fw.refresh_system_info()
 
     def cleanup_dependencies(self, fw, state):
@@ -180,17 +173,17 @@ class TestPanoramaAdministrator(testlib.PanoFlow):
     def create_dependencies(self, pano, state):
         state.profiles = []
         for x in range(2):
-            state.profiles.append(device.PasswordProfile(
-                testlib.random_name(), x, x, x, x))
+            state.profiles.append(
+                device.PasswordProfile(testlib.random_name(), x, x, x, x)
+            )
             pano.add(state.profiles[x])
 
         state.profiles[0].create_similar()
 
     def setup_state_obj(self, pano, state):
         state.obj = device.Administrator(
-            testlib.random_name(),
-            superuser=True,
-            password_profile=state.profiles[0])
+            testlib.random_name(), superuser=True, password_profile=state.profiles[0]
+        )
         pano.add(state.obj)
 
     def update_state_obj(self, pano, state):
@@ -216,11 +209,10 @@ class TestPanoramaAdministrator(testlib.PanoFlow):
         state = self.sanity(pano, state_map)
 
         # Set the password
-        state.obj.change_password('secret')
+        state.obj.change_password("secret")
 
         # Now verify the change by trying to login
-        new_pano = pano.__class__(
-            pano.hostname, state.obj.uid, 'secret')
+        new_pano = pano.__class__(pano.hostname, state.obj.uid, "secret")
         new_pano.refresh_system_info()
 
     def cleanup_dependencies(self, pano, state):

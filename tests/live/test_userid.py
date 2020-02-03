@@ -4,8 +4,10 @@ import time
 from tests.live import testlib
 from pandevice import base
 
+
 class TestUserID_FW(object):
     """Tests UserID on live Firewall."""
+
     def test_01_fw_login(self, fw, state_map):
         state = state_map.setdefault(fw)
         user, ip = testlib.random_name(), testlib.random_ip()
@@ -58,20 +60,14 @@ class TestUserID_FW(object):
         ips, tags = state.multi_register_01
         test1 = set(fw.userid.get_registered_ip())
         assert test1 == set(ips)
-        test2 = set(fw.userid.get_registered_ip(
-                    ips[0:3], tags
-        ))
+        test2 = set(fw.userid.get_registered_ip(ips[0:3], tags))
         assert test2 == set(ips[0:3])
-        test3 = set(fw.userid.get_registered_ip(
-                    ips[0:3], tags[0:5]
-        ))
+        test3 = set(fw.userid.get_registered_ip(ips[0:3], tags[0:5]))
         assert test3 == set(ips[0:3])
-        test4 = set(fw.userid.get_registered_ip(
-                    ips, tags[0:5]
-        ))
+        test4 = set(fw.userid.get_registered_ip(ips, tags[0:5]))
         assert test4 == set(ips)
         test5 = set(fw.userid.get_registered_ip(ips[0], tags[0]))
-        assert test5 == set([ips[0], ])
+        assert test5 == set([ips[0],])
         tests = [test1, test2, test3, test4, test5]
         assert len(test5) != 0
         assert all([test1 >= x for x in tests])
@@ -113,7 +109,7 @@ class TestUserID_FW(object):
         assert len(mod5) == 0
 
     def test_11_batch(self, fw, state_map):
-        fw.userid.clear_registered_ip() #Fresh start
+        fw.userid.clear_registered_ip()  # Fresh start
         fw.userid.batch_start()
         users = [(testlib.random_name(), testlib.random_ip()) for i in range(5)]
         fw.userid.logins(users)
@@ -137,4 +133,6 @@ class TestUserID_FW(object):
         state = state_map.setdefault(fw)
         if not state.uid:
             raise Exception("No UID")
-        fw.userid.send(state.uid[0]) #State.uid returns length-two tuple of XML elements
+        fw.userid.send(
+            state.uid[0]
+        )  # State.uid returns length-two tuple of XML elements

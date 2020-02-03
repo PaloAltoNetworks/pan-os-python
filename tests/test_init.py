@@ -24,27 +24,28 @@ class TestPanOSVersion(unittest.TestCase):
     Verify that PanOSVersion comparisons operate correctly.
 
     """
+
     def setUp(self):
 
-        self.c1 = pandevice.PanOSVersion('7.0.0-c1')
-        self.c2 = pandevice.PanOSVersion('7.0.0-c2')
-        self.b1 = pandevice.PanOSVersion('7.0.0-b1')
-        self.b2 = pandevice.PanOSVersion('7.0.0-b2')
-        self.m1 = pandevice.PanOSVersion('7.0.0')
-        self.h1 = pandevice.PanOSVersion('7.0.0-h1')
-        self.h2 = pandevice.PanOSVersion('7.0.0-h2')
-        self.m2 = pandevice.PanOSVersion('7.0.1')
-        self.h3 = pandevice.PanOSVersion('7.0.1-h1')
+        self.c1 = pandevice.PanOSVersion("7.0.0-c1")
+        self.c2 = pandevice.PanOSVersion("7.0.0-c2")
+        self.b1 = pandevice.PanOSVersion("7.0.0-b1")
+        self.b2 = pandevice.PanOSVersion("7.0.0-b2")
+        self.m1 = pandevice.PanOSVersion("7.0.0")
+        self.h1 = pandevice.PanOSVersion("7.0.0-h1")
+        self.h2 = pandevice.PanOSVersion("7.0.0-h2")
+        self.m2 = pandevice.PanOSVersion("7.0.1")
+        self.h3 = pandevice.PanOSVersion("7.0.1-h1")
 
     def test_version_parsed(self):
-        expected = [7, 0, 0, '-', 'c', 1]
+        expected = [7, 0, 0, "-", "c", 1]
 
         ret_val = self.c1.version
 
         self.assertEqual(expected, ret_val)
 
     def test_str_returns_string_version(self):
-        expected = '7.0.0-c1'
+        expected = "7.0.0-c1"
 
         ret_val = str(self.c1)
 
@@ -59,7 +60,9 @@ class TestPanOSVersion(unittest.TestCase):
     def test_release_version_is_less_than_next_release_version(self):
         self.assertTrue(self.m1 < self.m2)
 
-    def test_hotfix_version_is_less_than_next_hotfix_version_with_same_version_number(self):
+    def test_hotfix_version_is_less_than_next_hotfix_version_with_same_version_number(
+        self,
+    ):
         self.assertTrue(self.h1 < self.h2)
 
     def test_candidate_version_is_less_than_same_beta_version(self):
@@ -140,5 +143,6 @@ class TestPanOSVersion(unittest.TestCase):
     def test_hotfix_version_is_greater_than_previous_same_release_version(self):
         self.assertTrue(self.h3 > self.m2)
 
-if __name__=='__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -20,11 +20,11 @@ class VsysImport(object):
     def sanity(self, dev, state_map, fw_test=False):
         state = state_map.setdefault(dev)
         if state.err:
-            state.fail_func('prereq failed')
+            state.fail_func("prereq failed")
 
         if fw_test:
             if not isinstance(dev, Firewall):
-                pytest.skip('Skipping firewall-only test')
+                pytest.skip("Skipping firewall-only test")
             dev.removeall()
             dev.add(state.obj)
             vsys_list = Vsys.refreshall(dev, name_only=True)
@@ -60,30 +60,32 @@ class VsysImport(object):
         state.obj = None
 
         if self.CLASS is None:
-            pytest.skip('{0}.CLASS must be defined'.format(
-                        self.__class__.__name__))
+            pytest.skip("{0}.CLASS must be defined".format(self.__class__.__name__))
         elif self.VSYS_PARAM is None:
-            pytest.skip('{0}.VSYS_PARAM must be defined'.format(
-                        self.__class__.__name__))
+            pytest.skip(
+                "{0}.VSYS_PARAM must be defined".format(self.__class__.__name__)
+            )
 
         if isinstance(state.parent, Panorama):
             tmpl = Template(testlib.random_name())
             state.parent.add(tmpl)
             state.parent = tmpl
-            state.parent.add(Vsys('vsys1'))
-            state.parent.add(Vsys('vsys2'))
-            state.parent.add(Vsys('vsys3'))
+            state.parent.add(Vsys("vsys1"))
+            state.parent.add(Vsys("vsys2"))
+            state.parent.add(Vsys("vsys3"))
             state.parent.create()
             state.delete_parent = True
         else:
-            vsys_list = [x.name for x in Vsys.refreshall(dev, add=False, name_only=True)]
-            if not all('vsys{0}'.format(x) in vsys_list for x in range(1, 4)):
-                pytest.skip('Firewall needs vsys1 - vsys3 to exist')
+            vsys_list = [
+                x.name for x in Vsys.refreshall(dev, add=False, name_only=True)
+            ]
+            if not all("vsys{0}".format(x) in vsys_list for x in range(1, 4)):
+                pytest.skip("Firewall needs vsys1 - vsys3 to exist")
 
         args = {}
         if self.CLASS == EthernetInterface:
             state.name = testlib.get_available_interfaces(state.parent)[0]
-            args = {'mode': 'layer3'}
+            args = {"mode": "layer3"}
         else:
             state.name = testlib.random_name()
         state.obj = self.CLASS(state.name, **args)
@@ -99,7 +101,7 @@ class VsysImport(object):
         state.err = False
 
     def test_03_vsys2_object_rt(self, dev, state_map):
-        v = 'vsys2'
+        v = "vsys2"
         state = self.sanity(dev, state_map)
 
         ans = state.obj.set_vsys(v, refresh=True, update=True)
@@ -109,8 +111,8 @@ class VsysImport(object):
         self.assert_imported_into(v, state)
 
     def test_04_update_false_does_not_update_object_rt(self, dev, state_map):
-        v = 'vsys2'
-        other_v = 'vsys3'
+        v = "vsys2"
+        other_v = "vsys3"
         state = self.sanity(dev, state_map)
 
         ans = state.obj.set_vsys(other_v, refresh=True, update=False)
@@ -120,7 +122,7 @@ class VsysImport(object):
         self.assert_imported_into(v, state)
 
     def test_05_import_into_lower_vsys_object_rt(self, dev, state_map):
-        v = 'vsys1'
+        v = "vsys1"
         state = self.sanity(dev, state_map)
 
         ans = state.obj.set_vsys(v, refresh=True, update=True)
@@ -130,7 +132,7 @@ class VsysImport(object):
         self.assert_imported_into(v, state)
 
     def test_06_import_into_higher_vsys_object_rt(self, dev, state_map):
-        v = 'vsys3'
+        v = "vsys3"
         state = self.sanity(dev, state_map)
 
         ans = state.obj.set_vsys(v, refresh=True, update=True)
@@ -140,7 +142,7 @@ class VsysImport(object):
         self.assert_imported_into(v, state)
 
     def test_07_import_into_current_vsys_object_rt(self, dev, state_map):
-        v = 'vsys3'
+        v = "vsys3"
         state = self.sanity(dev, state_map)
 
         ans = state.obj.set_vsys(v, refresh=True, update=True)
@@ -166,40 +168,42 @@ class VsysImport(object):
         self.assert_imported_into(None, state)
 
     def test_10_vsys2_bool_rt(self, dev, state_map):
-        v = 'vsys2'
+        v = "vsys2"
         state = self.sanity(dev, state_map)
 
-        ans = state.obj.set_vsys(v, refresh=True, update=True, return_type='bool')
+        ans = state.obj.set_vsys(v, refresh=True, update=True, return_type="bool")
 
         assert isinstance(ans, bool)
         assert ans
         self.assert_imported_into(v, state)
 
     def test_11_already_in_correct_vsys_bool_rt(self, dev, state_map):
-        v = 'vsys2'
+        v = "vsys2"
         state = self.sanity(dev, state_map)
 
-        ans = state.obj.set_vsys(v, refresh=True, update=True, return_type='bool')
+        ans = state.obj.set_vsys(v, refresh=True, update=True, return_type="bool")
 
         assert isinstance(ans, bool)
         assert not ans
         self.assert_imported_into(v, state)
 
     def test_12_same_vsys_no_update_bool_rt(self, dev, state_map):
-        v = 'vsys2'
+        v = "vsys2"
         state = self.sanity(dev, state_map)
 
-        ans = state.obj.set_vsys(v, refresh=True, update=False, return_type='bool')
+        ans = state.obj.set_vsys(v, refresh=True, update=False, return_type="bool")
 
         assert isinstance(ans, bool)
         assert not ans
         self.assert_imported_into(v, state)
 
     def test_13_different_vsys_no_update_bool_rt(self, dev, state_map):
-        v = 'vsys2'
+        v = "vsys2"
         state = self.sanity(dev, state_map)
 
-        ans = state.obj.set_vsys('vsys1', refresh=True, update=False, return_type='bool')
+        ans = state.obj.set_vsys(
+            "vsys1", refresh=True, update=False, return_type="bool"
+        )
 
         assert isinstance(ans, bool)
         assert ans
@@ -214,7 +218,7 @@ class VsysImport(object):
         self.assert_imported_into(None, state)
 
     def test_21_classic_import_object_rt(self, dev, state_map):
-        v = 'vsys1'
+        v = "vsys1"
         state = self.sanity(dev, state_map, True)
 
         ans = state.obj.set_vsys(v, refresh=False, update=True)
@@ -225,7 +229,7 @@ class VsysImport(object):
         self.assert_imported_into(v, state)
 
     def test_22_classic_import_noop_object_rt(self, dev, state_map):
-        v = 'vsys1'
+        v = "vsys1"
         state = self.sanity(dev, state_map, True)
 
         ans = state.obj.set_vsys(v, refresh=False, update=True)
@@ -236,8 +240,8 @@ class VsysImport(object):
         self.assert_imported_into(v, state)
 
     def test_23_classic_import_no_update_object_rt(self, dev, state_map):
-        v = 'vsys1'
-        other_v = 'vsys2'
+        v = "vsys1"
+        other_v = "vsys2"
         state = self.sanity(dev, state_map, True)
 
         ans = state.obj.set_vsys(other_v, refresh=False, update=False)
@@ -248,31 +252,35 @@ class VsysImport(object):
         self.assert_imported_into(v, state)
 
     def test_24_classic_import_higher_vsys_object_rt(self, dev, state_map):
-        v = 'vsys3'
+        v = "vsys3"
         state = self.sanity(dev, state_map, True)
 
         ans = state.obj.set_vsys(v, refresh=False, update=True)
 
-        previous_vsys = dev.find('vsys1')
+        previous_vsys = dev.find("vsys1")
         assert isinstance(ans, Vsys)
         assert ans.name == v
         assert state.name in [str(x) for x in getattr(ans, self.VSYS_PARAM)]
         assert previous_vsys is not None
-        assert state.name not in [str(x) for x in (getattr(previous_vsys, self.VSYS_PARAM) or [])]
+        assert state.name not in [
+            str(x) for x in (getattr(previous_vsys, self.VSYS_PARAM) or [])
+        ]
         self.assert_imported_into(v, state)
 
     def test_25_classic_import_lower_vsys_object_rt(self, dev, state_map):
-        v = 'vsys2'
+        v = "vsys2"
         state = self.sanity(dev, state_map, True)
 
         ans = state.obj.set_vsys(v, refresh=False, update=True)
 
-        previous_vsys = dev.find('vsys3')
+        previous_vsys = dev.find("vsys3")
         assert isinstance(ans, Vsys)
         assert ans.name == v
         assert state.name in [str(x) for x in getattr(ans, self.VSYS_PARAM)]
         assert previous_vsys is not None
-        assert state.name not in [str(x) for x in (getattr(previous_vsys, self.VSYS_PARAM) or [])]
+        assert state.name not in [
+            str(x) for x in (getattr(previous_vsys, self.VSYS_PARAM) or [])
+        ]
         self.assert_imported_into(v, state)
 
     def test_26_classic_import_unimport_object_rt(self, dev, state_map):
@@ -280,7 +288,7 @@ class VsysImport(object):
 
         ans = state.obj.set_vsys(None, refresh=False, update=True)
 
-        previous_vsys = dev.find('vsys2')
+        previous_vsys = dev.find("vsys2")
         assert ans is None
         assert previous_vsys is not None
         assert state.name not in (getattr(previous_vsys, self.VSYS_PARAM) or [])
@@ -314,22 +322,22 @@ class VsysImport(object):
 
 class TestInterfaceImport(VsysImport):
     CLASS = EthernetInterface
-    VSYS_PARAM = 'interface'
+    VSYS_PARAM = "interface"
 
 
 class TestVirtualRouterImport(VsysImport):
     CLASS = VirtualRouter
-    VSYS_PARAM = 'virtual_routers'
+    VSYS_PARAM = "virtual_routers"
 
 
 class TestVlanImport(VsysImport):
     CLASS = Vlan
-    VSYS_PARAM = 'vlans'
+    VSYS_PARAM = "vlans"
 
 
 class TestVirtualWireImport(VsysImport):
     CLASS = VirtualWire
-    VSYS_PARAM = 'virtual_wires'
+    VSYS_PARAM = "virtual_wires"
 
 
 class PlaceInterface(object):
@@ -340,17 +348,17 @@ class PlaceInterface(object):
     def sanity(self, dev, state_map, fw_test=False):
         state = state_map.setdefault(dev)
         if state.err:
-            state.fail_func('prereq failed')
+            state.fail_func("prereq failed")
 
         if fw_test:
             if not isinstance(dev, Firewall):
-                pytest.skip('skipping firewall-only test')
+                pytest.skip("skipping firewall-only test")
             if self.CLASS != Zone:
                 dev.vsys = None
             self.CLASS.refreshall(dev)
 
         if state.tmpl is None:
-            dev.vsys = 'vsys2'
+            dev.vsys = "vsys2"
 
         return state
 
@@ -384,41 +392,40 @@ class PlaceInterface(object):
         state.targets = [testlib.random_name() for x in range(2)]
 
         if self.FUNC is None:
-            pytest.skip('{0}.FUNC must be defined'.format(
-                        self.__class__.__name__))
+            pytest.skip("{0}.FUNC must be defined".format(self.__class__.__name__))
         elif self.CLASS is None:
-            pytest.skip('{0}.CLASS must be defined'.format(
-                        self.__class__.__name__))
+            pytest.skip("{0}.CLASS must be defined".format(self.__class__.__name__))
         elif self.PARAM is None:
-            pytest.skip('{0}.PARAM must be defined'.format(
-                        self.__class__.__name__))
+            pytest.skip("{0}.PARAM must be defined".format(self.__class__.__name__))
 
         if isinstance(state.parent, Panorama):
             tmpl = Template(testlib.random_name())
             state.parent.add(tmpl)
-            v = Vsys('vsys2')
+            v = Vsys("vsys2")
             tmpl.add(v)
             state.parent = v
             tmpl.create()
             state.tmpl = tmpl
         else:
-            vsys_list = [x.name for x in Vsys.refreshall(dev, add=False, name_only=True)]
-            if 'vsys2' not in vsys_list:
-                pytest.skip('Firewall needs vsys2 to exist')
+            vsys_list = [
+                x.name for x in Vsys.refreshall(dev, add=False, name_only=True)
+            ]
+            if "vsys2" not in vsys_list:
+                pytest.skip("Firewall needs vsys2 to exist")
 
         cls_args = {}
-        eth_args = {'mode': 'layer3'}
+        eth_args = {"mode": "layer3"}
         if self.CLASS == Vlan:
-            eth_args['mode'] = 'layer2'
+            eth_args["mode"] = "layer2"
         elif self.CLASS == Zone:
-            cls_args['mode'] = 'layer3'
+            cls_args["mode"] = "layer3"
 
         state.name = testlib.get_available_interfaces(state.parent)[0]
         state.obj = EthernetInterface(state.name, **eth_args)
         state.parent.add(state.obj)
 
         if state.tmpl is None:
-            dev.vsys = 'vsys2'
+            dev.vsys = "vsys2"
 
         instances = [self.CLASS(state.targets[x], **cls_args) for x in range(2)]
         for x in instances:
@@ -433,7 +440,7 @@ class PlaceInterface(object):
         state.err = True
         state.fail_func = pytest.xfail
         state.obj.create()
-        state.obj.set_vsys('vsys2', refresh=True, update=True)
+        state.obj.set_vsys("vsys2", refresh=True, update=True)
         state.err = False
 
     def test_03_set_no_priors_object_rt(self, dev, state_map):
@@ -449,7 +456,9 @@ class PlaceInterface(object):
     def test_04_update_false_does_not_update_object_rt(self, dev, state_map):
         state = self.sanity(dev, state_map)
 
-        ans = getattr(state.obj, self.FUNC)(state.targets[1], refresh=True, update=False)
+        ans = getattr(state.obj, self.FUNC)(
+            state.targets[1], refresh=True, update=False
+        )
 
         assert isinstance(ans, self.CLASS)
         assert ans.name == state.targets[1]
@@ -505,7 +514,9 @@ class PlaceInterface(object):
         i = 0
         state = self.sanity(dev, state_map)
 
-        ans = getattr(state.obj, self.FUNC)(state.targets[i], refresh=True, update=True, return_type='bool')
+        ans = getattr(state.obj, self.FUNC)(
+            state.targets[i], refresh=True, update=True, return_type="bool"
+        )
 
         assert isinstance(ans, bool)
         assert ans
@@ -515,7 +526,9 @@ class PlaceInterface(object):
         i = 0
         state = self.sanity(dev, state_map)
 
-        ans = getattr(state.obj, self.FUNC)(state.targets[i], refresh=True, update=True, return_type='bool')
+        ans = getattr(state.obj, self.FUNC)(
+            state.targets[i], refresh=True, update=True, return_type="bool"
+        )
 
         assert isinstance(ans, bool)
         assert not ans
@@ -525,7 +538,9 @@ class PlaceInterface(object):
         i = 0
         state = self.sanity(dev, state_map)
 
-        ans = getattr(state.obj, self.FUNC)(state.targets[i], refresh=True, update=False, return_type='bool')
+        ans = getattr(state.obj, self.FUNC)(
+            state.targets[i], refresh=True, update=False, return_type="bool"
+        )
 
         assert isinstance(ans, bool)
         assert not ans
@@ -534,7 +549,9 @@ class PlaceInterface(object):
     def test_13_different_spot_no_update_bool_rt(self, dev, state_map):
         state = self.sanity(dev, state_map)
 
-        ans = getattr(state.obj, self.FUNC)(state.targets[1], refresh=True, update=False, return_type='bool')
+        ans = getattr(state.obj, self.FUNC)(
+            state.targets[1], refresh=True, update=False, return_type="bool"
+        )
 
         assert isinstance(ans, bool)
         assert ans
@@ -552,7 +569,9 @@ class PlaceInterface(object):
         i = 0
         state = self.sanity(dev, state_map, True)
 
-        ans = getattr(state.obj, self.FUNC)(state.targets[i], refresh=False, update=True)
+        ans = getattr(state.obj, self.FUNC)(
+            state.targets[i], refresh=False, update=True
+        )
 
         assert isinstance(ans, self.CLASS)
         assert ans.name == state.targets[i]
@@ -563,7 +582,9 @@ class PlaceInterface(object):
         i = 0
         state = self.sanity(dev, state_map, True)
 
-        ans = getattr(state.obj, self.FUNC)(state.targets[i], refresh=False, update=True)
+        ans = getattr(state.obj, self.FUNC)(
+            state.targets[i], refresh=False, update=True
+        )
 
         assert isinstance(ans, self.CLASS)
         assert ans.name == state.targets[i]
@@ -573,7 +594,9 @@ class PlaceInterface(object):
     def test_23_classic_no_update_object_rt(self, dev, state_map):
         state = self.sanity(dev, state_map, True)
 
-        ans = getattr(state.obj, self.FUNC)(state.targets[1], refresh=False, update=False)
+        ans = getattr(state.obj, self.FUNC)(
+            state.targets[1], refresh=False, update=False
+        )
 
         assert isinstance(ans, self.CLASS)
         assert ans.name == state.targets[1]
@@ -584,7 +607,9 @@ class PlaceInterface(object):
         i = 1
         state = self.sanity(dev, state_map, True)
 
-        ans = getattr(state.obj, self.FUNC)(state.targets[i], refresh=False, update=True)
+        ans = getattr(state.obj, self.FUNC)(
+            state.targets[i], refresh=False, update=True
+        )
 
         prev_obj = state.parent.find(state.targets[0])
         assert isinstance(ans, self.CLASS)
@@ -598,7 +623,9 @@ class PlaceInterface(object):
         i = 0
         state = self.sanity(dev, state_map, True)
 
-        ans = getattr(state.obj, self.FUNC)(state.targets[i], refresh=False, update=True)
+        ans = getattr(state.obj, self.FUNC)(
+            state.targets[i], refresh=False, update=True
+        )
 
         prev_obj = state.parent.find(state.targets[1])
         assert isinstance(ans, self.CLASS)
@@ -639,7 +666,7 @@ class PlaceInterface(object):
             if self.CLASS != Zone:
                 dev.vsys = None
             instances = self.CLASS.refreshall(dev, name_only=True)
-            dev.vsys = 'vsys2'
+            dev.vsys = "vsys2"
             for o in instances:
                 if o.name in state.targets:
                     try:
@@ -658,18 +685,18 @@ class PlaceInterface(object):
 
 
 class TestVirtualRouterPlacement(PlaceInterface):
-    FUNC = 'set_virtual_router'
+    FUNC = "set_virtual_router"
     CLASS = VirtualRouter
-    PARAM = 'interface'
+    PARAM = "interface"
 
 
 class TestVlanPlacement(PlaceInterface):
-    FUNC = 'set_vlan'
+    FUNC = "set_vlan"
     CLASS = Vlan
-    PARAM = 'interface'
+    PARAM = "interface"
 
 
 class TestZonePlacement(PlaceInterface):
-    FUNC = 'set_zone'
+    FUNC = "set_zone"
     CLASS = Zone
-    PARAM = 'interface'
+    PARAM = "interface"
