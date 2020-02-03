@@ -304,8 +304,14 @@ class SystemSettings(VersionedPanObject):
             'timezone', path='timezone'))
         params.append(VersionedParamPath(
             'panorama', path='panorama-server'))
+        params[-1].add_profile(
+            '9.1.0',
+            path='panorama/local-panorama/panorama-server')
         params.append(VersionedParamPath(
             'panorama2', path='panorama-server-2'))
+        params[-1].add_profile(
+            '9.1.0',
+            path='panorama/local-panorama/panorama-server-2')
         params.append(VersionedParamPath(
             'login_banner', path='login-banner'))
         params.append(VersionedParamPath(
