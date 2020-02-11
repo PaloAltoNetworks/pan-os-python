@@ -25,20 +25,20 @@ import errno
 
 
 tree_exists = [
-    'device',
-    'firewall',
-    'ha',
-    'network',
-    'panorama',
-    'policies',
+    "device",
+    "firewall",
+    "ha",
+    "network",
+    "panorama",
+    "policies",
 ]
 
 tree_not_exists = [
-    'base',
-    'errors',
-    'objects',
-    'updater',
-    'userid',
+    "base",
+    "errors",
+    "objects",
+    "updater",
+    "userid",
 ]
 
 
@@ -81,24 +81,24 @@ def create_module_references(directory=None):
     # Set paths to package and modules
     curdir = os.path.dirname(os.path.abspath(__file__))
     rootpath = [os.path.join(curdir, os.pardir)]
-    libpath = [os.path.join(curdir, os.pardir, 'pandevice')]
+    libpath = [os.path.join(curdir, os.pardir, "pandevice")]
     sys.path[:0] = rootpath
     sys.path[:0] = libpath
-    #print "Looking for pandevice in path: %s" % libpath
+    # print "Looking for pandevice in path: %s" % libpath
 
     # Import all modules in package
     modules = []
-    for importer, modname, ispkg in pkgutil.iter_modules(path=libpath,
-                                                         prefix="pandevice."):
+    for importer, modname, ispkg in pkgutil.iter_modules(
+        path=libpath, prefix="pandevice."
+    ):
         modules.append(__import__(modname, fromlist="dummy"))
-
 
     output = {}
 
     # Create output for each module
     for module in modules:
         module_name = module.__name__.split(".")[-1]
-        header_pad = "="*len(module_name)
+        header_pad = "=" * len(module_name)
         if module_name in tree_exists:
             config_tree = template_tree.format(module_name)
         else:
@@ -116,7 +116,7 @@ def create_module_references(directory=None):
             continue
         if not lines:
             continue
-        with open("{0}module-{1}.rst".format(path, module), 'w') as file:
+        with open("{0}module-{1}.rst".format(path, module), "w") as file:
             file.write(lines)
 
 

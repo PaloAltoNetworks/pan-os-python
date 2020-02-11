@@ -20,11 +20,10 @@
 import xml.etree.ElementTree as ET
 from copy import deepcopy
 
-from pandevice import getlogger
-import pandevice.errors as err
-from pandevice import string_or_list
-from pandevice import string_or_list_or_none
 from pan.xapi import PanXapiError
+
+import pandevice.errors as err
+from pandevice import getlogger, string_or_list, string_or_list_or_none
 from pandevice.updater import PanOSVersion
 
 logger = getlogger(__name__)
@@ -61,11 +60,13 @@ class UserId(object):
         self.ignore_dup_errors = ignore_dup_errors
 
         # Build the initial uid-message
-        self._uidmessage = ET.fromstring("<uid-message>" +
-                                         "<version>1.0</version>" +
-                                         "<type>update</type>" +
-                                         "<payload/>" +
-                                         "</uid-message>")
+        self._uidmessage = ET.fromstring(
+            "<uid-message>"
+            + "<version>1.0</version>"
+            + "<type>update</type>"
+            + "<payload/>"
+            + "</uid-message>"
+        )
         # Batch state
         self._batch = False
         self._batch_uidmessage = deepcopy(self._uidmessage)
@@ -128,7 +129,10 @@ class UserId(object):
                 # Check if this is just an error about duplicates or nonexistant tags
                 # If so, ignore the error. Most operations don't care about this.
                 message = str(e)
-                if self.ignore_dup_errors and (message.endswith("already exists, ignore") or message.endswith("does not exist, ignore unreg")):
+                if self.ignore_dup_errors and (
+                    message.endswith("already exists, ignore")
+                    or message.endswith("does not exist, ignore unreg")
+                ):
                     return
                 else:
                     raise e
@@ -152,7 +156,7 @@ class UserId(object):
             login = ET.SubElement(payload, "login")
         entry = ET.SubElement(login, "entry", {"name": user, "ip": ip})
         if timeout:
-            entry.set('timeout', str(timeout))
+            entry.set("timeout", str(timeout))
         self.send(root)
 
     def logins(self, users):
@@ -174,7 +178,7 @@ class UserId(object):
         for user in users:
             entry = ET.SubElement(login, "entry", {"name": user[0], "ip": user[1]})
             try:
-                entry.set('timeout', str(user[2]))
+                entry.set("timeout", str(user[2]))
             except IndexError:
                 # No timeout specified
                 pass
@@ -237,7 +241,7 @@ class UserId(object):
         tags = list(set(string_or_list(tags)))
         if not tags:
             return
-        tags = [self.prefix+t for t in tags]
+        tags = [self.prefix + t for t in tags]
         for c_ip in ip:
             tagelement = register.find("./entry[@ip='%s']/tag" % c_ip)
             if tagelement is None:
@@ -266,7 +270,7 @@ class UserId(object):
         tags = list(set(string_or_list(tags)))
         if not tags:
             return
-        tags = [self.prefix+t for t in tags]
+        tags = [self.prefix + t for t in tags]
         for c_ip in ip:
             tagelement = unregister.find("./entry[@ip='%s']/tag" % c_ip)
             if tagelement is None:
@@ -304,7 +308,7 @@ class UserId(object):
 
         """
         if self.device is None:
-            raise err.PanDeviceNotSet('No device set for this userid instance')
+            raise err.PanDeviceNotSet("No device set for this userid instance")
         version = self.device.retrieve_panos_version()
 
         if prefix is None:
@@ -321,16 +325,16 @@ class UserId(object):
             if version >= (8, 0, 0):
                 # PAN-OS 8.0+ supports paging.
                 limit = 500
-                ET.SubElement(cmd, "limit").text = '{0}'.format(limit)
-                start_elm = ET.SubElement(cmd, 'start-point')
-                start_elm.text = '{0}'.format(start_offset)
+                ET.SubElement(cmd, "limit").text = "{0}".format(limit)
+                start_elm = ET.SubElement(cmd, "start-point")
+                start_elm.text = "{0}".format(start_offset)
         else:
             cmd = ET.SubElement(cmd, "registered-address")
 
         # Add ip/tag filter arguments to command.
         ip = list(set(string_or_list_or_none(ip)))
         tags = list(set(string_or_list_or_none(tags)))
-        tags = [prefix+t for t in tags]
+        tags = [prefix + t for t in tags]
         if len(tags) == 1:
             tag_element = ET.SubElement(cmd, "tag")
             ET.SubElement(tag_element, "entry", {"name": tags[0]})
@@ -340,18 +344,22 @@ class UserId(object):
 
         addresses = {}
         while True:
-            resp = self.device.op(cmd=ET.tostring(root, encoding='utf-8'),
-                                  vsys=self.device.vsys, cmd_xml=False)
+            resp = self.device.op(
+                cmd=ET.tostring(root, encoding="utf-8"),
+                vsys=self.device.vsys,
+                cmd_xml=False,
+            )
 
             # PAN-OS 7.1 and lower can return "outfile" instead of actual results.
-            outfile = resp.find('./result/msg/line/outfile')
+            outfile = resp.find("./result/msg/line/outfile")
             if outfile is not None:
                 msg = [
                     'PAN-OS returned "{0}" instead of IP/tag mappings'.format(
-                        outfile.text),
-                    'please upgrade to PAN-OS 8.0+',
+                        outfile.text
+                    ),
+                    "please upgrade to PAN-OS 8.0+",
                 ]
-                raise err.PanDeviceError(', '.join(msg))
+                raise err.PanDeviceError(", ".join(msg))
 
             entries = resp.findall("./result/entry")
             for entry in entries:
@@ -372,7 +380,7 @@ class UserId(object):
                 break
 
             start_offset += len(entries)
-            start_elm.text = '{0}'.format(start_offset)
+            start_elm.text = "{0}".format(start_offset)
 
         # Done.
         return addresses
@@ -465,23 +473,23 @@ class UserId(object):
         root, payload = self._create_uidmessage()
 
         # Find the groups section.
-        groups = payload.find('./groups')
+        groups = payload.find("./groups")
         if groups is None:
-            groups = ET.SubElement(payload, 'groups')
+            groups = ET.SubElement(payload, "groups")
 
         # Find the group.
-        entries = groups.findall('./entry')
+        entries = groups.findall("./entry")
         for entry in entries:
-            if entry.attrib['name'] == group:
-                ge = entry.find('./members')
+            if entry.attrib["name"] == group:
+                ge = entry.find("./members")
                 break
         else:
-            entry = ET.SubElement(groups, 'entry', {'name': group})
-            ge = ET.SubElement(entry, 'members')
+            entry = ET.SubElement(groups, "entry", {"name": group})
+            ge = ET.SubElement(entry, "members")
 
         # Now add in the users to this group.
         for user in users:
-            ET.SubElement(ge, 'entry', {'name': user})
+            ET.SubElement(ge, "entry", {"name": user})
 
         # Done.
         self.send(root)
@@ -498,34 +506,36 @@ class UserId(object):
             list
 
         """
-        msg = ['<show><user><group><list>', ]
+        msg = [
+            "<show><user><group><list>",
+        ]
         if style is not None:
             msg.append("<entry name='{0}'/>".format(style))
-        msg.append('</list></group></user></show>')
-        cmd = ''.join(msg)
-        vsys = self.device.vsys or 'vsys1'
+        msg.append("</list></group></user></show>")
+        cmd = "".join(msg)
+        vsys = self.device.vsys or "vsys1"
 
         resp = self.device.op(cmd, vsys=self.device.vsys, cmd_xml=False)
         if resp is None:
             return
 
-        '''
+        """
         Example returned XML:
 
         9.1:
         <response status="success"><result><![CDATA[\nmalicious_users \ncn=contractors,cn=users,dc=nam,dc=local \ntemp_contractors_dynamic_group \nspecial_project \nrisky_users \ncn=employees,cn=users,dc=nam,dc=local \nhigh_risk_users \n\nTotal: 7\n* : Custom Group\n\n]]></result></response>
         <response status="success"><result><![CDATA[\n\nTotal: 0\n* : Custom Group\n\n]]></result></response>
         <response status="success"><result><![CDATA[\nmalicious_users \ntemp_contractors_dynamic_group \nspecial_project \nrisky_users \nhigh_risk_users \n\nTotal: 5\n* : Custom Group\n\n]]></result></response>
-        '''
+        """
 
-        data = resp.find('./result')
+        data = resp.find("./result")
         if data is None:
             return
 
-        lines = data.text.split('\n')
+        lines = data.text.split("\n")
         ans = []
         for line in lines:
-            if line.startswith('Total: '):
+            if line.startswith("Total: "):
                 break
             val = line.strip()
             if val:
@@ -544,31 +554,27 @@ class UserId(object):
             list
 
         """
-        cmd = (
-            '<show><user><group><name>' +
-            group +
-            '</name></group></user></show>'
-        )
-        vsys = self.device.vsys or 'vsys1'
+        cmd = "<show><user><group><name>" + group + "</name></group></user></show>"
+        vsys = self.device.vsys or "vsys1"
 
         resp = self.device.op(cmd, vsys=vsys, cmd_xml=False)
         if resp is None:
             return
 
-        '''
+        """
         Example returned XML:
 
         9.1:
         <response status="success"><result><![CDATA[\nUser group \'blah\' does not exist or does not have members\n]]></result></response>
         <response status="success"><result><![CDATA[\n\nsource type: xmlapi\nGroup type: Dynamic\n\n[1     ] nam\\jsmith\n[2     ] panw\\garfield\n\n]]></result></response>
-        '''
+        """
 
-        data = resp.find('./result')
+        data = resp.find("./result")
         if data is None:
             return
 
-        lines = data.text.split('\n')
-        ans = [x.split(']')[1].strip() for x in lines if len(x.split(']')) == 2]
+        lines = data.text.split("\n")
+        ans = [x.split("]")[1].strip() for x in lines if len(x.split("]")) == 2]
 
         return ans
 
@@ -592,29 +598,36 @@ class UserId(object):
         limit = 500
         start = 1
         start_elm = None
-        msg = ['<show><object><registered-user>', ]
+        msg = [
+            "<show><object><registered-user>",
+        ]
         if user is None:
-            msg.append('<all>' +
-                       '<limit>{0}</limit>'.format(limit) +
-                       '<start-point>{0}</start-point>'.format(start) +
-                       '</all>')
+            msg.append(
+                "<all>"
+                + "<limit>{0}</limit>".format(limit)
+                + "<start-point>{0}</start-point>".format(start)
+                + "</all>"
+            )
         else:
-            msg.append('<user>{0}</user>'.format(user))
-        msg.append('</registered-user></object></show>')
+            msg.append("<user>{0}</user>".format(user))
+        msg.append("</registered-user></object></show>")
 
-        cmd = ET.fromstring(''.join(msg))
+        cmd = ET.fromstring("".join(msg))
         if user is None:
-            start_elm = cmd.find('./object/registered-user/all/start-point')
+            start_elm = cmd.find("./object/registered-user/all/start-point")
 
         ans = {}
         while True:
-            resp = self.device.op(cmd=ET.tostring(cmd, encoding='utf-8'),
-                                  vsys=self.device.vsys, cmd_xml=False)
-            entries = resp.findall('./result/entry')
+            resp = self.device.op(
+                cmd=ET.tostring(cmd, encoding="utf-8"),
+                vsys=self.device.vsys,
+                cmd_xml=False,
+            )
+            entries = resp.findall("./result/entry")
             for entry in entries:
-                key = entry.attrib['user']
+                key = entry.attrib["user"]
                 val = []
-                members = entry.findall('./tag/member')
+                members = entry.findall("./tag/member")
                 for member in members:
                     tag = member.text
                     if not prefix or tag.startswith(prefix):
@@ -625,7 +638,7 @@ class UserId(object):
                 break
 
             start += len(entries)
-            start_elm.text = '{0}'.format(start)
+            start_elm.text = "{0}".format(start)
 
         # Done.
         return ans
@@ -649,31 +662,31 @@ class UserId(object):
             timeout = int(timeout)
 
         if prefix is None:
-            prefix = self.prefix or ''
+            prefix = self.prefix or ""
 
         root, payload = self._create_uidmessage()
 
         # Find the register user tags section.
-        ru = payload.find('./register-user')
+        ru = payload.find("./register-user")
         if ru is None:
-            ru = ET.SubElement(payload, 'register-user')
+            ru = ET.SubElement(payload, "register-user")
 
         # Find the tags section for this specific user.
-        entries = ru.findall('./entry')
+        entries = ru.findall("./entry")
         for entry in entries:
-            if entry.attrib['name'] == user:
-                te = entry.find('./tag')
+            if entry.attrib["name"] == user:
+                te = entry.find("./tag")
                 break
         else:
-            entry = ET.SubElement(ru, 'entry', {'user': user, })
-            te = ET.SubElement(entry, 'tag')
+            entry = ET.SubElement(ru, "entry", {"user": user,})
+            te = ET.SubElement(entry, "tag")
 
         # Now add in the tags with the specified timeout.
         props = {}
         if timeout is not None:
-            props['timeout'] = '{0}'.format(timeout)
+            props["timeout"] = "{0}".format(timeout)
         for tag in tags:
-            ET.SubElement(te, 'member', props).text = prefix + tag
+            ET.SubElement(te, "member", props).text = prefix + tag
 
         # Done.
         self.send(root)
@@ -695,28 +708,28 @@ class UserId(object):
         root, payload = self._create_uidmessage()
 
         if prefix is None:
-            prefix = self.prefix or ''
+            prefix = self.prefix or ""
 
         # Find the unregister user tags section.
-        uu = payload.find('./unregister-user')
+        uu = payload.find("./unregister-user")
         if uu is None:
-            uu = ET.SubElement(payload, 'unregister-user')
+            uu = ET.SubElement(payload, "unregister-user")
 
         # Find the tags section for this specific user.
-        entries = uu.findall('./entry')
+        entries = uu.findall("./entry")
         for entry in entries:
-            if entry.attrib['name'] == user:
+            if entry.attrib["name"] == user:
                 break
         else:
-            entry = ET.SubElement(uu, 'entry', {'user': user, })
+            entry = ET.SubElement(uu, "entry", {"user": user,})
 
         # Do tag removal.
-        te = entry.find('./tag')
+        te = entry.find("./tag")
         if tags is not None:
             if te is None:
-                te = ET.SubElement(entry, 'tag')
+                te = ET.SubElement(entry, "tag")
             for tag in tags:
-                ET.SubElement(te, 'member').text = prefix + tag
+                ET.SubElement(te, "member").text = prefix + tag
         elif te is not None:
             entry.remove(te)
 

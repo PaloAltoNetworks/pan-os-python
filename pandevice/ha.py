@@ -17,20 +17,17 @@
 
 """High availability objects to configure HA for a firewall or Panorama"""
 
-# import modules
-import logging
 import inspect
+import logging
 import xml.etree.ElementTree as ET
 
 import pan.xapi
-from pandevice import getlogger, isstring
-from pandevice.base import PanObject, PanDevice, Root, MEMBER, ENTRY
-from pandevice.base import VarPath as Var
-from pandevice.base import VersionedPanObject
-from pandevice.base import VersionedParamPath
-from pandevice import  network, firewall
-import pandevice.errors as err
 
+import pandevice.errors as err
+from pandevice import firewall, getlogger, isstring, network
+from pandevice.base import ENTRY, MEMBER, PanDevice, PanObject, Root
+from pandevice.base import VarPath as Var
+from pandevice.base import VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
@@ -41,6 +38,7 @@ class HighAvailabilityInterface(PanObject):
     Do not instantiate this class.  Use its subclasses.
 
     """
+
     HA_SYNC = False
 
     # TODO: Support encryption
@@ -55,7 +53,9 @@ class HighAvailabilityInterface(PanObject):
         except IndexError:
             port = kwargs.pop("port", None)
         if type(self) == HighAvailabilityInterface:
-            raise AssertionError("Do not instantiate a HighAvailabilityInterface. Please use a subclass.")
+            raise AssertionError(
+                "Do not instantiate a HighAvailabilityInterface. Please use a subclass."
+            )
         super(HighAvailabilityInterface, self).__init__(*args, **kwargs)
         self._port = port
 
@@ -114,7 +114,9 @@ class HighAvailabilityInterface(PanObject):
             self.link_duplex = None
         if intconfig_needed:
             apply_needed = False
-            interface = pandevice.find(intname, (network.EthernetInterface, network.AggregateInterface))
+            interface = pandevice.find(
+                intname, (network.EthernetInterface, network.AggregateInterface)
+            )
             if interface is None:
                 interface = pandevice.add(inttype(name=intname, mode="ha"))
                 apply_needed = True
@@ -195,14 +197,13 @@ class HA1(HighAvailabilityInterface):
         link_duplex (str): Link duplex
 
     """
+
     # TODO: Encryption
     XPATH = "/interface/ha1"
 
     @classmethod
     def variables(cls):
-        return super(HA1, HA1).variables() + (
-            Var("monitor-hold-time", vartype="int"),
-        )
+        return super(HA1, HA1).variables() + (Var("monitor-hold-time", vartype="int"),)
 
 
 class HA1Backup(HighAvailabilityInterface):
@@ -217,6 +218,7 @@ class HA1Backup(HighAvailabilityInterface):
         link_duplex (str): Link duplex
 
     """
+
     XPATH = "/interface/ha1-backup"
 
 
@@ -232,6 +234,7 @@ class HA2(HighAvailabilityInterface):
         link_duplex (str): Link duplex
 
     """
+
     XPATH = "/interface/ha2"
 
 
@@ -247,6 +250,7 @@ class HA2Backup(HighAvailabilityInterface):
         link_duplex (str): Link duplex
 
     """
+
     XPATH = "/interface/ha2-backup"
 
 
@@ -259,6 +263,7 @@ class HA3(HighAvailabilityInterface):
         link_duplex (str): Link duplex
 
     """
+
     XPATH = "/interface/ha3"
 
     @classmethod
@@ -298,170 +303,265 @@ class HighAvailability(VersionedPanObject):
         ip_hash_key (str): active-active hash key used by ip-hash algorithm
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = None
     HA_SYNC = False
     CHILDTYPES = (
-        'ha.HA1',
-        'ha.HA1Backup',
-        'ha.HA2',
-        'ha.HA2Backup',
-        'ha.HA3',
+        "ha.HA1",
+        "ha.HA1Backup",
+        "ha.HA2",
+        "ha.HA2Backup",
+        "ha.HA3",
     )
 
-    ACTIVE_PASSIVE = 'active-passive'
-    ACTIVE_ACTIVE = 'active-active'
+    ACTIVE_PASSIVE = "active-passive"
+    ACTIVE_ACTIVE = "active-active"
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/deviceconfig/high-availability')
+        self._xpaths.add_profile(value="/deviceconfig/high-availability")
         self._xpaths.add_profile(
-            value='{0}/deviceconfig/high-availability'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/deviceconfig/high-availability".format(
+                self._TEMPLATE_DEVICE_XPATH
+            ),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'enabled', default=True, vartype='yesno', path='enabled'))
-        params.append(VersionedParamPath(
-            'group_id', default=1, vartype='entry', path='group'))
+        params.append(
+            VersionedParamPath("enabled", default=True, vartype="yesno", path="enabled")
+        )
+        params.append(
+            VersionedParamPath("group_id", default=1, vartype="entry", path="group")
+        )
+        params[-1].add_profile("8.1.0", vartype="int", path="group/group-id")
+        params.append(
+            VersionedParamPath("description", path="group/entry group_id/description")
+        )
+        params[-1].add_profile("8.1.0", path="group/description")
+        params.append(
+            VersionedParamPath(
+                "config_sync",
+                vartype="yesno",
+                path="group/entry group_id/configuration-synchronization/enabled",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            vartype='int', path='group/group-id')
-        params.append(VersionedParamPath(
-            'description', path='group/entry group_id/description'))
+            "8.1.0", vartype="yesno", path="group/configuration-synchronization/enabled"
+        )
+        params.append(
+            VersionedParamPath("peer_ip", path="group/entry group_id/peer-ip")
+        )
+        params[-1].add_profile("8.1.0", path="group/peer-ip")
+        params.append(
+            VersionedParamPath(
+                "mode",
+                default="active-passive",
+                values=("active-passive", "active-active"),
+                path="group/entry group_id/mode/{mode}",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            path='group/description')
-        params.append(VersionedParamPath(
-            'config_sync', vartype='yesno',
-            path='group/entry group_id/configuration-synchronization/enabled'))
+            "8.1.0",
+            values=("active-passive", "active-active"),
+            path="group/mode/{mode}",
+        )
+        params.append(
+            VersionedParamPath(
+                "passive_link_state",
+                condition={"mode": "active-passive"},
+                path="group/entry group_id/mode/{mode}/passive-link-state",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            vartype='yesno',
-            path='group/configuration-synchronization/enabled')
-        params.append(VersionedParamPath(
-            'peer_ip', path='group/entry group_id/peer-ip'))
+            "8.1.0",
+            condition={"mode": "active-passive"},
+            path="group/mode/{mode}/passive-link-state",
+        )
+        params.append(
+            VersionedParamPath(
+                "state_sync",
+                vartype="yesno",
+                default=False,
+                path="group/entry group_id/state-synchronization/enabled",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            path='group/peer-ip')
-        params.append(VersionedParamPath(
-            'mode', default='active-passive',
-            values=('active-passive', 'active-active'),
-            path='group/entry group_id/mode/{mode}'))
+            "8.1.0", vartype="yesno", path="group/state-synchronization/enabled"
+        )
+        params.append(
+            VersionedParamPath(
+                "ha2_keepalive",
+                vartype="yesno",
+                path="group/entry group_id/state-synchronization/ha2-keep-alive/enabled",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            values=('active-passive', 'active-active'),
-            path='group/mode/{mode}')
-        params.append(VersionedParamPath(
-            'passive_link_state', condition={'mode': 'active-passive'},
-            path='group/entry group_id/mode/{mode}/passive-link-state'))
+            "8.1.0",
+            vartype="yesno",
+            path="group/state-synchronization/ha2-keep-alive/enabled",
+        )
+        params.append(
+            VersionedParamPath(
+                "ha2_keepalive_action",
+                values=("log-only", "split-datapath"),
+                path="group/entry group_id/state-synchronization/ha2-keep-alive/action",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            condition={'mode': 'active-passive'},
-            path='group/mode/{mode}/passive-link-state')
-        params.append(VersionedParamPath(
-            'state_sync', vartype='yesno', default=False,
-            path='group/entry group_id/state-synchronization/enabled'))
+            "8.1.0",
+            values=("log-only", "split-datapath"),
+            path="group/state-synchronization/ha2-keep-alive/action",
+        )
+        params.append(
+            VersionedParamPath(
+                "ha2_keepalive_threshold",
+                vartype="int",
+                path="group/entry group_id/state-synchronization/ha2-keep-alive/threshold",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            vartype='yesno',
-            path='group/state-synchronization/enabled')
-        params.append(VersionedParamPath(
-            'ha2_keepalive', vartype='yesno',
-            path='group/entry group_id/state-synchronization/ha2-keep-alive/enabled'))
+            "8.1.0",
+            vartype="int",
+            path="group/state-synchronization/ha2-keep-alive/threshold",
+        )
+        params.append(
+            VersionedParamPath(
+                "peer_ip_backup", path="group/entry group_id/peer-ip-backup"
+            )
+        )
+        params[-1].add_profile("8.1.0", path="group/peer-ip-backup")
+        params.append(
+            VersionedParamPath(
+                "device_id",
+                condition={"mode": "active-active"},
+                values=(0, 1),
+                vartype="int",
+                path="group/entry group_id/mode/{mode}/device-id",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            vartype='yesno',
-            path='group/state-synchronization/ha2-keep-alive/enabled')
-        params.append(VersionedParamPath(
-            'ha2_keepalive_action', values=('log-only', 'split-datapath'),
-            path='group/entry group_id/state-synchronization/ha2-keep-alive/action'))
+            "8.1.0",
+            condition={"mode": "active-active"},
+            values=(0, 1),
+            vartype="int",
+            path="group/mode/{mode}/device-id",
+        )
+        params.append(
+            VersionedParamPath(
+                "session_owner_selection",
+                condition={
+                    "mode": "active-active",
+                    "session_owner_selection": "primary-device",
+                },
+                values=("primary-device", "first-packet"),
+                path="group/entry group_id/mode/{mode}/session-owner-selection/{session_owner_selection}",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            values=('log-only', 'split-datapath'),
-            path='group/state-synchronization/ha2-keep-alive/action')
-        params.append(VersionedParamPath(
-            'ha2_keepalive_threshold', vartype='int',
-            path='group/entry group_id/state-synchronization/ha2-keep-alive/threshold'))
+            "8.1.0",
+            condition={
+                "mode": "active-active",
+                "session_owner_selection": "primary-device",
+            },
+            values=("primary-device", "first-packet"),
+            path="group/mode/{mode}/session-owner-selection/{session_owner_selection}",
+        )
+        params.append(
+            VersionedParamPath(
+                "session_setup",
+                condition={
+                    "mode": "active-active",
+                    "session_owner_selection": "first-packet",
+                },
+                values=("first-packet", "ip-modulo", "ip-hash", "primary-device"),
+                path="group/entry group_id/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            vartype='int',
-            path='group/state-synchronization/ha2-keep-alive/threshold')
-        params.append(VersionedParamPath(
-            'peer_ip_backup', path='group/entry group_id/peer-ip-backup'))
+            "8.1.0",
+            condition={
+                "mode": "active-active",
+                "session_owner_selection": "first-packet",
+            },
+            values=("first-packet", "ip-modulo", "ip-hash", "primary-device"),
+            path="group/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}",
+        )
+        params.append(
+            VersionedParamPath(
+                "tentative_hold_time",
+                condition={"mode": "active-active"},
+                vartype="int",
+                path="group/entry group_id/mode/{mode}/tentative-hold-time",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            path='group/peer-ip-backup')
-        params.append(VersionedParamPath(
-            'device_id', condition={'mode': 'active-active'},
-            values=(0, 1), vartype='int',
-            path='group/entry group_id/mode/{mode}/device-id'))
+            "8.1.0",
+            condition={"mode": "active-active"},
+            vartype="int",
+            path="group/mode/{mode}/tentative-hold-time",
+        )
+        params.append(
+            VersionedParamPath(
+                "sync_qos",
+                condition={"mode": "active-active"},
+                vartype="yesno",
+                path="group/entry group_id/mode/{mode}/network-configuration/sync/qos",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            condition={'mode': 'active-active'},
-            values=(0, 1), vartype='int',
-            path='group/mode/{mode}/device-id')
-        params.append(VersionedParamPath(
-            'session_owner_selection',
-            condition={'mode': 'active-active', 'session_owner_selection': 'primary-device'},
-            values=('primary-device', 'first-packet'),
-            path='group/entry group_id/mode/{mode}/session-owner-selection/{session_owner_selection}'))
+            "8.1.0",
+            condition={"mode": "active-active"},
+            vartype="yesno",
+            path="group/mode/{mode}/network-configuration/sync/qos",
+        )
+        params.append(
+            VersionedParamPath(
+                "sync_virtual_router",
+                condition={"mode": "active-active"},
+                vartype="yesno",
+                path="group/entry group_id/mode/{mode}/network-configuration/sync/virtual-router",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            condition={'mode': 'active-active', 'session_owner_selection': 'primary-device'},
-            values=('primary-device', 'first-packet'),
-            path='group/mode/{mode}/session-owner-selection/{session_owner_selection}')
-        params.append(VersionedParamPath(
-            'session_setup',
-            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet'},
-            values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
-            path='group/entry group_id/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}'))
+            "8.1.0",
+            condition={"mode": "active-active"},
+            vartype="yesno",
+            path="group/mode/{mode}/network-configuration/sync/virtual-router",
+        )
+        params.append(
+            VersionedParamPath(
+                "ip_hash_key",
+                condition={
+                    "mode": "active-active",
+                    "session_owner_selection": "first-packet",
+                    "session_setup": "ip-hash",
+                },
+                values=("source", "source-and-destination"),
+                path="group/entry group_id/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}/hash-key",
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet'},
-            values=('first-packet', 'ip-modulo', 'ip-hash', 'primary-device'),
-            path='group/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}')
-        params.append(VersionedParamPath(
-            'tentative_hold_time',
-            condition={'mode': 'active-active'}, vartype='int',
-            path='group/entry group_id/mode/{mode}/tentative-hold-time'))
-        params[-1].add_profile(
-            '8.1.0',
-            condition={'mode': 'active-active'}, vartype='int',
-            path='group/mode/{mode}/tentative-hold-time')
-        params.append(VersionedParamPath(
-            'sync_qos',
-            condition={'mode': 'active-active'}, vartype='yesno',
-            path='group/entry group_id/mode/{mode}/network-configuration/sync/qos'))
-        params[-1].add_profile(
-            '8.1.0',
-            condition={'mode': 'active-active'}, vartype='yesno',
-            path='group/mode/{mode}/network-configuration/sync/qos')
-        params.append(VersionedParamPath(
-            'sync_virtual_router',
-            condition={'mode': 'active-active'}, vartype='yesno',
-            path='group/entry group_id/mode/{mode}/network-configuration/sync/virtual-router'))
-        params[-1].add_profile(
-            '8.1.0',
-            condition={'mode': 'active-active'}, vartype='yesno',
-            path='group/mode/{mode}/network-configuration/sync/virtual-router')
-        params.append(VersionedParamPath(
-            'ip_hash_key',
-            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet', 'session_setup': 'ip-hash'},
-            values=('source', 'source-and-destination'),
-            path='group/entry group_id/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}/hash-key'))
-        params[-1].add_profile(
-            '8.1.0',
-            condition={'mode': 'active-active', 'session_owner_selection': 'first-packet', 'session_setup': 'ip-hash'},
-            values=('source', 'source-and-destination'),
-            path='group/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}/hash-key')
+            "8.1.0",
+            condition={
+                "mode": "active-active",
+                "session_owner_selection": "first-packet",
+                "session_setup": "ip-hash",
+            },
+            values=("source", "source-and-destination"),
+            path="group/mode/{mode}/session-owner-selection/first-packet/session-setup/{session_setup}/hash-key",
+        )
         self._params = tuple(params)
 
         # stubs
         self._stubs.add_profile(
-            '0.0.0',
-            'interface/ha1', 'interface/ha1-backup',
-            'interface/ha2', 'interface/ha2-backup',
-            'interface/ha3')
+            "0.0.0",
+            "interface/ha1",
+            "interface/ha1-backup",
+            "interface/ha2",
+            "interface/ha2-backup",
+            "interface/ha3",
+        )

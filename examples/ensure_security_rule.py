@@ -34,9 +34,9 @@ import pandevice.firewall
 import pandevice.policies
 
 
-HOSTNAME = '127.0.0.1'
-USERNAME = 'admin'
-PASSWORD = 'admin'
+HOSTNAME = "127.0.0.1"
+USERNAME = "admin"
+PASSWORD = "admin"
 
 
 def main():
@@ -50,13 +50,13 @@ def main():
     # check policies.SecurityRule to see all of the parameters you could
     # possibly give, but we'll just set a few for our example.
     desired_rule_params = {
-        'name': 'Block ssh',
-        'description': 'Prevent ssh usage',
-        'fromzone': 'any',
-        'tozone': 'any',
-        'application': 'ssh',
-        'action': 'deny',
-        'log_end': True,
+        "name": "Block ssh",
+        "description": "Prevent ssh usage",
+        "fromzone": "any",
+        "tozone": "any",
+        "application": "ssh",
+        "action": "deny",
+        "log_end": True,
     }
 
     # First, let's create the firewall object that we want to modify.
@@ -90,8 +90,7 @@ def main():
     # what's on the firewall.  In our case, the parent is our rulebase
     # object, so we'll use that as the first parameter, and we'll save the
     # current security policies to a new variable: current_security_rules.
-    current_security_rules = pandevice.policies.SecurityRule.refreshall(
-        rulebase)
+    current_security_rules = pandevice.policies.SecurityRule.refreshall(rulebase)
 
     # You'll notice that we never called any "login()" or similar function
     # before we refreshed.  This is because pandevice does the API key
@@ -105,18 +104,17 @@ def main():
 
     # We're about to loop over all of the rules, but let's print a quick
     # one liner letting us know how many security rules we found.
-    print('Current security rule(s) ({0} found):'.format(
-        len(current_security_rules)))
+    print("Current security rule(s) ({0} found):".format(len(current_security_rules)))
 
     # Now we're ready to check all the security policies that we got back from
     # the firewall.  We'll loop over each one, one by one, and print out the
     # name of the policy.
     for rule in current_security_rules:
-        print('- {0}'.format(rule.name))
+        print("- {0}".format(rule.name))
         # Next, we need to check and see if this name matches the name of
         # the security policy we want to ensure the existance of.  If the names
         # match, then we'll set our flag to True.
-        if rule.name == desired_rule_params['name']:
+        if rule.name == desired_rule_params["name"]:
             is_present = True
 
     # To format the output a bit better, we'll just print an empty line here
@@ -128,13 +126,12 @@ def main():
     # check our flag to see if it was set.  If it was set, then print out a
     # message saying that we found the rule, then exit out of this function.
     if is_present:
-        print('Rule "{0}" already exists'.format(desired_rule_params['name']))
+        print('Rule "{0}" already exists'.format(desired_rule_params["name"]))
         return
 
     # If the function got to this point, then the rule is not present, so we
     # print out a little message saying as much, then continue on!
-    print('Rule "{0}" not present, adding it'.format(
-        desired_rule_params['name']))
+    print('Rule "{0}" not present, adding it'.format(desired_rule_params["name"]))
 
     # At this point, we know the rule doesn't exist, so let's create it!  Doing
     # that is a three step process.
@@ -156,14 +153,14 @@ def main():
     # connected will be created.  In our example, there are no children
     # attached to the security rule, so it's just the rule itself that gets
     # created.
-    print('Creating rule...')
+    print("Creating rule...")
     new_rule.create()
-    print('Done!')
+    print("Done!")
 
     # Now we just have to commit.  I will ask commit() to wait for the commit
     # to finish completely before executing the next line of my script by
     # using "sync=True".
-    print('Performing commit...')
+    print("Performing commit...")
     fw.commit(sync=True)
 
     # As a further exercise, you could try modifying this script:  we are
@@ -173,10 +170,10 @@ def main():
     # is desired, update the rule, and apply & commit it to the firewall.
     #
     # At this point, we've finished our script!
-    print('Done!')
+    print("Done!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # This script doesn't take command line arguments.  If any are passed in,
     # then print out the script's docstring and exit.
     if len(sys.argv) != 1:

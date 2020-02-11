@@ -17,21 +17,18 @@
 
 """Panorama and all Panorama related objects"""
 
-# import modules
 import logging
 import xml.etree.ElementTree as ET
 from copy import deepcopy
 
-# import other parts of this pandevice package
-import pandevice
-from pandevice import getlogger, yesno
-from pandevice import base, firewall, policies
-import pandevice.errors as err
-from pandevice.base import VarPath as Var
-from pandevice.base import PanObject, Root, MEMBER, ENTRY
-from pandevice.base import VersionedPanObject, VersionedParamPath
-
 import pan.commit
+
+import pandevice
+import pandevice.errors as err
+from pandevice import base, firewall, getlogger, policies, yesno
+from pandevice.base import ENTRY, MEMBER, PanObject, Root
+from pandevice.base import VarPath as Var
+from pandevice.base import VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
@@ -51,9 +48,10 @@ class DeviceGroup(VersionedPanObject):
         tag (list): Tags as strings
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
-    VSYS_LABEL = 'device-group'
+    VSYS_LABEL = "device-group"
     CHILDTYPES = (
         "firewall.Firewall",
         "objects.AddressObject",
@@ -73,13 +71,12 @@ class DeviceGroup(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/device-group')
+        self._xpaths.add_profile(value="/device-group")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'tag', vartype='entry'))
+        params.append(VersionedParamPath("tag", vartype="entry"))
 
         self._params = tuple(params)
 
@@ -107,6 +104,7 @@ class Template(VersionedPanObject):
         vpn_disable_mode (bool): (6.1 and lower) VPN disable mode
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
     CHILDTYPES = (
@@ -134,47 +132,44 @@ class Template(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/template')
+        self._xpaths.add_profile(value="/template")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'description', path='description'))
-        params.append(VersionedParamPath(
-            'devices', vartype='entry', path='devices'))
-        params.append(VersionedParamPath(
-            'default_vsys', exclude=True))
-        params[-1].add_profile(
-            '7.0.0',
-            path='settings/default-vsys')
-        params.append(VersionedParamPath(
-            'multi_vsys', vartype='yesno', path='settings/multi-vsys'))
-        params[-1].add_profile(
-            '7.0.0',
-            exclude=True)
-        params.append(VersionedParamPath(
-            'mode', default='normal', path='settings/operational-mode'))
-        params[-1].add_profile(
-            '7.0.0',
-            exclude=True)
-        params.append(VersionedParamPath(
-            'vpn_disable_mode', vartype='yesno',
-            path='settings/vpn-disable-mode'))
-        params[-1].add_profile(
-            '7.0.0',
-            exclude=True)
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(VersionedParamPath("devices", vartype="entry", path="devices"))
+        params.append(VersionedParamPath("default_vsys", exclude=True))
+        params[-1].add_profile("7.0.0", path="settings/default-vsys")
+        params.append(
+            VersionedParamPath(
+                "multi_vsys", vartype="yesno", path="settings/multi-vsys"
+            )
+        )
+        params[-1].add_profile("7.0.0", exclude=True)
+        params.append(
+            VersionedParamPath(
+                "mode", default="normal", path="settings/operational-mode"
+            )
+        )
+        params[-1].add_profile("7.0.0", exclude=True)
+        params.append(
+            VersionedParamPath(
+                "vpn_disable_mode", vartype="yesno", path="settings/vpn-disable-mode"
+            )
+        )
+        params[-1].add_profile("7.0.0", exclude=True)
 
         self._params = tuple(params)
 
     def create_similar(self):
-        raise NotImplementedError('This is not supported for templates')
+        raise NotImplementedError("This is not supported for templates")
 
     def apply_similar(self):
-        raise NotImplementedError('This is not supported for templates')
+        raise NotImplementedError("This is not supported for templates")
 
     def delete_similar(self):
-        raise NotImplementedError('This is not supported for templates')
+        raise NotImplementedError("This is not supported for templates")
 
 
 class TemplateStack(VersionedPanObject):
@@ -190,6 +185,7 @@ class TemplateStack(VersionedPanObject):
         devices (str/list): The list of serial numbers in this template
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
     CHILDTYPES = (
@@ -217,28 +213,27 @@ class TemplateStack(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/template-stack')
+        self._xpaths.add_profile(value="/template-stack")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'description', path='description'))
-        params.append(VersionedParamPath(
-            'templates', path='templates', vartype='member'))
-        params.append(VersionedParamPath(
-            'devices', vartype='entry', path='devices'))
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(
+            VersionedParamPath("templates", path="templates", vartype="member")
+        )
+        params.append(VersionedParamPath("devices", vartype="entry", path="devices"))
 
         self._params = tuple(params)
 
     def create_similar(self):
-        raise NotImplementedError('This is not supported for template stacks')
+        raise NotImplementedError("This is not supported for template stacks")
 
     def apply_similar(self):
-        raise NotImplementedError('This is not supported for template stacks')
+        raise NotImplementedError("This is not supported for template stacks")
 
     def delete_similar(self):
-        raise NotImplementedError('This is not supported for template stacks')
+        raise NotImplementedError("This is not supported for template stacks")
 
 
 class TemplateVariable(VersionedPanObject):
@@ -257,29 +252,40 @@ class TemplateVariable(VersionedPanObject):
                 * device-id (PAN-OS 9.0+)
 
     """
+
     TEMPLATE_NATIVE = True
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/variable')
+        self._xpaths.add_profile(value="/variable")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'value', path='type/{variable_type}'))
-        params.append(VersionedParamPath(
-            'variable_type', default='ip-netmask', path='type/{variable_type}',
-            values=['ip-netmask', 'ip-range', 'fqdn', 'group-id', 'interface']))
+        params.append(VersionedParamPath("value", path="type/{variable_type}"))
+        params.append(
+            VersionedParamPath(
+                "variable_type",
+                default="ip-netmask",
+                path="type/{variable_type}",
+                values=["ip-netmask", "ip-range", "fqdn", "group-id", "interface"],
+            )
+        )
         params[-1].add_profile(
-            '9.0.0',
-            path='type/{variable_type}',
+            "9.0.0",
+            path="type/{variable_type}",
             values=[
-                'ip-netmask', 'ip-range', 'fqdn', 'group-id',
-                'interface', 'device-priority', 'device-id',
-            ])
+                "ip-netmask",
+                "ip-range",
+                "fqdn",
+                "group-id",
+                "interface",
+                "device-priority",
+                "device-id",
+            ],
+        )
 
         self._params = tuple(params)
 
@@ -300,9 +306,10 @@ class Panorama(base.PanDevice):
         interval: The interval to check asynchronous jobs
 
     """
+
     FIREWALL_CLASS = firewall.Firewall
     NAME = "hostname"
-    DEFAULT_VSYS = 'shared'
+    DEFAULT_VSYS = "shared"
     CHILDTYPES = (
         "device.Administrator",
         "device.PasswordProfile",
@@ -316,20 +323,31 @@ class Panorama(base.PanDevice):
         "panorama.TemplateStack",
     )
 
-    def __init__(self,
-                 hostname,
-                 api_username=None,
-                 api_password=None,
-                 api_key=None,
-                 port=443,
-                 *args,
-                 **kwargs
-                 ):
-        super(Panorama, self).__init__(hostname, api_username, api_password, api_key, port, *args, **kwargs)
+    def __init__(
+        self,
+        hostname,
+        api_username=None,
+        api_password=None,
+        api_key=None,
+        port=443,
+        *args,
+        **kwargs
+    ):
+        super(Panorama, self).__init__(
+            hostname, api_username, api_password, api_key, port, *args, **kwargs
+        )
         # create a class logger
         self._logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
 
-    def op(self, cmd=None, vsys=None, xml=False, cmd_xml=True, extra_qs=None, retry_on_peer=False):
+    def op(
+        self,
+        cmd=None,
+        vsys=None,
+        xml=False,
+        cmd_xml=True,
+        extra_qs=None,
+        retry_on_peer=False,
+    ):
         """Perform operational command on this Panorama
 
         Args:
@@ -345,10 +363,17 @@ class Panorama(base.PanDevice):
 
         """
         # TODO: Support device-group and template scope
-        return super(Panorama, self).op(cmd, vsys=None, xml=xml, cmd_xml=cmd_xml, extra_qs=extra_qs, retry_on_peer=retry_on_peer)
+        return super(Panorama, self).op(
+            cmd,
+            vsys=None,
+            xml=xml,
+            cmd_xml=cmd_xml,
+            extra_qs=extra_qs,
+            retry_on_peer=retry_on_peer,
+        )
 
     def xpath_vsys(self):
-        return '/config/shared'
+        return "/config/shared"
 
     def xpath_panorama(self):
         return "/config/panorama"
@@ -356,9 +381,17 @@ class Panorama(base.PanDevice):
     def panorama(self):
         return self
 
-    def commit_all(self, sync=False, sync_all=True, exception=False,
-                   devicegroup=None, serials=(), cmd=None,
-                   description=None, include_template=None):
+    def commit_all(
+        self,
+        sync=False,
+        sync_all=True,
+        exception=False,
+        devicegroup=None,
+        serials=(),
+        cmd=None,
+        description=None,
+        include_template=None,
+    ):
         """Trigger a commit-all (commit to devices) on Panorama
 
         Args:
@@ -391,7 +424,7 @@ class Panorama(base.PanDevice):
                 if description is not None:
                     ET.SubElement(sp, "description").text = description
                 if include_template is not None:
-                    val = 'yes' if include_template else 'no'
+                    val = "yes" if include_template else "no"
                     ET.SubElement(sp, "include-template").text = val
             cmd = ET.tostring(e)
         elif isinstance(cmd, pan.commit.PanCommit):
@@ -399,14 +432,20 @@ class Panorama(base.PanDevice):
         elif isinstance(cmd, ET.Element):
             cmd = ET.tostring(cmd)
 
-        result = self._commit(sync=sync,
-                              sync_all=sync_all,
-                              commit_all=True,
-                              exception=exception,
-                              cmd=cmd)
+        result = self._commit(
+            sync=sync, sync_all=sync_all, commit_all=True, exception=exception, cmd=cmd
+        )
         return result
 
-    def refresh_devices(self, devices=(), only_connected=False, expand_vsys=True, include_device_groups=True, add=False, running_config=False):
+    def refresh_devices(
+        self,
+        devices=(),
+        only_connected=False,
+        expand_vsys=True,
+        include_device_groups=True,
+        add=False,
+        running_config=False,
+    ):
         """Refresh device groups and devices using config and operational commands
 
         Uses operational command in addition to configuration to gather as much information
@@ -468,11 +507,15 @@ class Panorama(base.PanDevice):
                 entry = devices_xml.find("entry[@name='%s']" % serial)
                 if entry is None:
                     if only_connected:
-                        raise err.PanNotConnectedOnPanorama("Can't find device with serial %s attached and connected"
-                                                 " to Panorama at %s" % (serial, self.id))
+                        raise err.PanNotConnectedOnPanorama(
+                            "Can't find device with serial %s attached and connected"
+                            " to Panorama at %s" % (serial, self.id)
+                        )
                     else:
-                        raise err.PanNotAttachedOnPanorama("Can't find device with serial %s attached to Panorama at %s" %
-                                                 (serial, self.id))
+                        raise err.PanNotAttachedOnPanorama(
+                            "Can't find device with serial %s attached to Panorama at %s"
+                            % (serial, self.id)
+                        )
                 multi_vsys = yesno(entry.findtext("multi-vsys"))
                 try:
                     vsys = device.vsys
@@ -490,10 +533,14 @@ class Panorama(base.PanDevice):
                 if vsys != "shared" and vsys is not None:
                     vsys_entry = entry.find("vsys/entry[@name='%s']" % vsys)
                     if vsys_entry is None:
-                        raise err.PanNotAttachedOnPanorama("Can't find device with serial %s and"
-                                                           " vsys %s attached to Panorama at %s" %
-                                                           (serial, vsys, self.id))
-                    vsys_section = filtered_devices_xml.find("entry[@name='%s']/vsys" % serial)
+                        raise err.PanNotAttachedOnPanorama(
+                            "Can't find device with serial %s and"
+                            " vsys %s attached to Panorama at %s"
+                            % (serial, vsys, self.id)
+                        )
+                    vsys_section = filtered_devices_xml.find(
+                        "entry[@name='%s']/vsys" % serial
+                    )
                     vsys_section.append(vsys_entry)
             devices_xml = filtered_devices_xml
 
@@ -506,14 +553,19 @@ class Panorama(base.PanDevice):
                 for vsys_entry in entry.findall("vsys/entry"):
                     new_vsys_device = deepcopy(entry)
                     new_vsys_device.set("name", serial)
-                    ET.SubElement(new_vsys_device, "vsys_id").text = vsys_entry.get("name")
-                    ET.SubElement(new_vsys_device, "vsys_name").text = vsys_entry.findtext("display-name")
+                    ET.SubElement(new_vsys_device, "vsys_id").text = vsys_entry.get(
+                        "name"
+                    )
+                    ET.SubElement(
+                        new_vsys_device, "vsys_name"
+                    ).text = vsys_entry.findtext("display-name")
                     devices_xml.append(new_vsys_device)
 
         # Create firewall instances
         tmp_fw = self.FIREWALL_CLASS()
         firewall_instances = tmp_fw.refreshall_from_xml(
-            devices_xml, refresh_children=not expand_vsys)
+            devices_xml, refresh_children=not expand_vsys
+        )
 
         if not include_device_groups:
             if add:
@@ -525,7 +577,9 @@ class Panorama(base.PanDevice):
 
         # Get the list of device groups from configuration XML
         api_action = self.xapi.show if running_config else self.xapi.get
-        devicegroup_configxml = api_action("/config/devices/entry[@name='localhost.localdomain']/device-group")
+        devicegroup_configxml = api_action(
+            "/config/devices/entry[@name='localhost.localdomain']/device-group"
+        )
         devicegroup_configxml = devicegroup_configxml.find("result/device-group")
 
         # Get the list of device groups from operational commands
@@ -536,29 +590,44 @@ class Panorama(base.PanDevice):
         # of the device groups
         if devicegroup_configxml is not None:
             for dg_entry in devicegroup_configxml:
-                if dg_entry.find('devices') is None:
+                if dg_entry.find("devices") is None:
                     continue
-                for fw_entry in dg_entry.find('devices'):
-                    fw_entry_op = devicegroup_opxml.find("entry/devices/entry[@name='%s']" % fw_entry.get("name"))
+                for fw_entry in dg_entry.find("devices"):
+                    fw_entry_op = devicegroup_opxml.find(
+                        "entry/devices/entry[@name='%s']" % fw_entry.get("name")
+                    )
                     if fw_entry_op is not None:
                         pandevice.xml_combine(fw_entry, fw_entry_op)
 
         dg = DeviceGroup()
         dg.parent = self
         devicegroup_instances = dg.refreshall_from_xml(
-            devicegroup_configxml, refresh_children=False)
+            devicegroup_configxml, refresh_children=False
+        )
 
         for dg in devicegroup_instances:
-            dg_serials = [entry.get("name") for entry in devicegroup_configxml.findall("entry[@name='%s']/devices/entry" % dg.name)]
+            dg_serials = [
+                entry.get("name")
+                for entry in devicegroup_configxml.findall(
+                    "entry[@name='%s']/devices/entry" % dg.name
+                )
+            ]
             # Find firewall with each serial
             for dg_serial in dg_serials:
                 # Skip devices not requested
                 if devices and dg_serial not in [str(f) for f in devices]:
                     continue
-                all_dg_vsys = [entry.get("name") for entry in devicegroup_configxml.findall(
-                    "entry[@name='%s']/devices/entry[@name='%s']/vsys/entry" % (dg.name, dg_serial))]
+                all_dg_vsys = [
+                    entry.get("name")
+                    for entry in devicegroup_configxml.findall(
+                        "entry[@name='%s']/devices/entry[@name='%s']/vsys/entry"
+                        % (dg.name, dg_serial)
+                    )
+                ]
                 # Collect the firewall serial entry to get current status information
-                fw_entry = devicegroup_configxml.find("entry[@name='%s']/devices/entry[@name='%s']" % (dg.name, dg_serial))
+                fw_entry = devicegroup_configxml.find(
+                    "entry[@name='%s']/devices/entry[@name='%s']" % (dg.name, dg_serial)
+                )
                 if not all_dg_vsys:
                     # This is a single-context firewall, assume vsys1
                     all_dg_vsys = ["vsys1"]
@@ -571,10 +640,21 @@ class Panorama(base.PanDevice):
                             # Passed in string serials, no vsys, so get all vsys
                             pass
                         else:
-                            if "shared" not in requested_vsys and None not in requested_vsys and dg_vsys not in requested_vsys:
+                            if (
+                                "shared" not in requested_vsys
+                                and None not in requested_vsys
+                                and dg_vsys not in requested_vsys
+                            ):
                                 # A specific vsys was requested, and this isn't it, skip
                                 continue
-                    fw = next((x for x in firewall_instances if x.serial == dg_serial and x.vsys == dg_vsys), None)
+                    fw = next(
+                        (
+                            x
+                            for x in firewall_instances
+                            if x.serial == dg_serial and x.vsys == dg_vsys
+                        ),
+                        None,
+                    )
                     if fw is None:
                         # It's possible for device-groups to reference a serial/vsys that doesn't exist
                         # In this case, create the FW instance
@@ -587,7 +667,9 @@ class Panorama(base.PanDevice):
                         firewall_instances.remove(fw)
                         shared_policy_status = fw_entry.findtext("shared-policy-status")
                         if shared_policy_status is None:
-                            shared_policy_status = fw_entry.findtext("vsys/entry[@name='%s']/shared-policy-status" % dg_vsys)
+                            shared_policy_status = fw_entry.findtext(
+                                "vsys/entry[@name='%s']/shared-policy-status" % dg_vsys
+                            )
                         fw.state.set_shared_policy_synced(shared_policy_status)
 
         if add:
@@ -624,14 +706,14 @@ class Panorama(base.PanDevice):
         # Raises PanDeviceError.
         resp = self.op(cmd.format(lifetime))
 
-        data = resp.find('./result')
+        data = resp.find("./result")
         if data is None:
-            raise err.PanDeviceError('No result in returned XML')
+            raise err.PanDeviceError("No result in returned XML")
 
         tokens = data.text.split()
         ans = {
-            'authkey': tokens[3],
-            'expires': ' '.join(tokens[-2:]).rstrip(),
+            "authkey": tokens[3],
+            "expires": " ".join(tokens[-2:]).rstrip(),
         }
 
         return ans
@@ -646,20 +728,22 @@ class Panorama(base.PanDevice):
             list: list of dicts.  Each dict has "authkey" and "expires" keys.
 
         """
-        cmd = 'request bootstrap vm-auth-key show'
+        cmd = "request bootstrap vm-auth-key show"
 
         # Raises PanDeviceError.
         resp = self.op(cmd)
 
-        data = resp.find('./result')
+        data = resp.find("./result")
         if data is None:
-            raise err.PanDeviceError('No result in returned XML')
+            raise err.PanDeviceError("No result in returned XML")
 
         ans = []
-        for x in data.findall('./bootstrap-vm-auth-keys/entry'):
-            ans.append({
-                'authkey': x.find('./vm-auth-key').text,
-                'expires': x.find('./expiry-time').text,
-            })
+        for x in data.findall("./bootstrap-vm-auth-keys/entry"):
+            ans.append(
+                {
+                    "authkey": x.find("./vm-auth-key").text,
+                    "expires": x.find("./expiry-time").text,
+                }
+            )
 
         return ans

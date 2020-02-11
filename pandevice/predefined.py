@@ -17,11 +17,11 @@
 
 """Retrieving and parsing predefined objects from the firewall"""
 
-from pandevice import getlogger
-import pandevice.errors as err
 from pan.xapi import PanXapiError
+
+import pandevice.errors as err
+from pandevice import getlogger, objects
 from pandevice.updater import PanOSVersion
-from pandevice import objects
 
 logger = getlogger(__name__)
 
@@ -231,7 +231,9 @@ class Predefined(object):
         if obj is None and refresh_if_none:
             self.refresh_application(name)
             # recursive call but with no refresh
-            obj = self.application(name, refresh_if_none=False, include_containers=include_containers)
+            obj = self.application(
+                name, refresh_if_none=False, include_containers=include_containers
+            )
 
         return obj
 
@@ -296,7 +298,11 @@ class Predefined(object):
         objs = []
 
         for name in set(names):
-            obj = self.application(name, refresh_if_none=refresh_if_none, include_containers=include_containers)
+            obj = self.application(
+                name,
+                refresh_if_none=refresh_if_none,
+                include_containers=include_containers,
+            )
             if obj:
                 objs.append(obj)
 

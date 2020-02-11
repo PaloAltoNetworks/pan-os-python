@@ -30,21 +30,24 @@ class TestUserId(unittest.TestCase):
     """
 
     def test_login(self):
-        expected = b'<uid-message><version>1.0</version>' \
-                   b'<type>update</type><payload><login>' \
-                   b'<entry ip="10.1.1.1" name="example.com\username" timeout="10" />' \
-                   b'</login></payload></uid-message>'
-        vsys = 'vsys3'
+        expected = (
+            b"<uid-message><version>1.0</version>"
+            b"<type>update</type><payload><login>"
+            b'<entry ip="10.1.1.1" name="example.com\username" timeout="10" />'
+            b"</login></payload></uid-message>"
+        )
+        vsys = "vsys3"
 
         fw = pandevice.firewall.Firewall(
-            'fw1', 'user', 'passwd', 'authkey', serial='Serial', vsys=vsys)
+            "fw1", "user", "passwd", "authkey", serial="Serial", vsys=vsys
+        )
         fw.xapi
         fw._xapi_private.user_id = mock.Mock()
 
-        fw.userid.login(r'example.com\username', '10.1.1.1', timeout=10)
+        fw.userid.login(r"example.com\username", "10.1.1.1", timeout=10)
 
         fw._xapi_private.user_id.assert_called_once_with(cmd=expected, vsys=vsys)
 
 
-if __name__=='__main__':
+if __name__ == "__main__":
     unittest.main()

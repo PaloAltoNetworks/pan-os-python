@@ -17,15 +17,11 @@
 
 """Policies module contains policies and rules that exist in the 'Policies' tab in the firewall GUI"""
 
-# import modules
-from pandevice import getlogger
-from pandevice.base import PanObject, Root, MEMBER, ENTRY
-from pandevice.base import VarPath as Var
-from pandevice.base import VersionedPanObject
-from pandevice.base import VersionedParamPath
-
-# import other parts of this pandevice package
 import pandevice.errors as err
+from pandevice import getlogger
+from pandevice.base import ENTRY, MEMBER, PanObject, Root
+from pandevice.base import VarPath as Var
+from pandevice.base import VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
@@ -37,6 +33,7 @@ class Rulebase(VersionedPanObject):
     :class:`pandevice.policies.PostRulebase`.
 
     """
+
     ROOT = Root.VSYS
     CHILDTYPES = (
         "policies.NatRule",
@@ -45,7 +42,7 @@ class Rulebase(VersionedPanObject):
     )
 
     def _setup(self):
-        self._xpaths.add_profile(value='/rulebase')
+        self._xpaths.add_profile(value="/rulebase")
 
 
 class PreRulebase(Rulebase):
@@ -54,8 +51,9 @@ class PreRulebase(Rulebase):
     Panorama only.  For Firewall, use :class:`pandevice.policies.Rulebase`.
 
     """
+
     def _setup(self):
-        self._xpaths.add_profile(value='/pre-rulebase')
+        self._xpaths.add_profile(value="/pre-rulebase")
 
 
 class PostRulebase(Rulebase):
@@ -64,8 +62,9 @@ class PostRulebase(Rulebase):
     Panorama only.  For Firewall, use :class:`pandevice.policies.Rulebase`.
 
     """
+
     def _setup(self):
-        self._xpaths.add_profile(value='/post-rulebase')
+        self._xpaths.add_profile(value="/post-rulebase")
 
 
 class SecurityRule(VersionedPanObject):
@@ -116,79 +115,106 @@ class SecurityRule(VersionedPanObject):
         uuid (str): (PAN-OS 9.0+) The UUID for this rule.
 
     """
+
     # TODO: Add QoS variables
     SUFFIX = ENTRY
     ROOT = Root.VSYS
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/security/rules')
+        self._xpaths.add_profile(value="/security/rules")
 
         # params
         params = []
 
         any_defaults = (
-            ('fromzone', 'from'), ('tozone', 'to'), ('source', 'source'),
-            ('source_user', 'source-user'), ('hip_profiles', 'hip-profiles'),
-            ('destination', 'destination'), ('application', 'application'),
+            ("fromzone", "from"),
+            ("tozone", "to"),
+            ("source", "source"),
+            ("source_user", "source-user"),
+            ("hip_profiles", "hip-profiles"),
+            ("destination", "destination"),
+            ("application", "application"),
         )
         for var_name, path in any_defaults:
-            params.append(VersionedParamPath(
-                var_name, default=['any', ], vartype='member', path=path))
+            params.append(
+                VersionedParamPath(
+                    var_name, default=["any",], vartype="member", path=path
+                )
+            )
 
-        params.append(VersionedParamPath(
-            'service', default='application-default',
-            vartype='member', path='service'))
-        params.append(VersionedParamPath(
-            'category', default=['any', ], vartype='member', path='category'))
-        params.append(VersionedParamPath(
-            'action', path='action'))
-        params.append(VersionedParamPath(
-            'log_setting', path='log-setting'))
-        params.append(VersionedParamPath(
-            'log_start', path='log-start', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'log_end', path='log-end', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'description', path='description'))
-        params.append(VersionedParamPath(
-            'type', default='universal', path='rule-type'))
-        params.append(VersionedParamPath(
-            'tag', path='tag', vartype='member'))
-        params.append(VersionedParamPath(
-            'negate_source', path='negate-source', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'negate_destination', path='negate-destination', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'disabled', path='disabled', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'schedule', path='schedule'))
-        params.append(VersionedParamPath(
-            'icmp_unreachable', path='icmp-unreachable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'disable_server_response_inspection', vartype='yesno',
-            path='option/disable-server-response-inspection'))
-        params.append(VersionedParamPath(
-            'group', path='profile-setting/group', vartype='member'))
-        params.append(VersionedParamPath(
-            'negate_target', path='target/negate', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'target', path='target/devices', vartype='entry'))
+        params.append(
+            VersionedParamPath(
+                "service",
+                default="application-default",
+                vartype="member",
+                path="service",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "category", default=["any",], vartype="member", path="category"
+            )
+        )
+        params.append(VersionedParamPath("action", path="action"))
+        params.append(VersionedParamPath("log_setting", path="log-setting"))
+        params.append(
+            VersionedParamPath("log_start", path="log-start", vartype="yesno")
+        )
+        params.append(VersionedParamPath("log_end", path="log-end", vartype="yesno"))
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(VersionedParamPath("type", default="universal", path="rule-type"))
+        params.append(VersionedParamPath("tag", path="tag", vartype="member"))
+        params.append(
+            VersionedParamPath("negate_source", path="negate-source", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "negate_destination", path="negate-destination", vartype="yesno"
+            )
+        )
+        params.append(VersionedParamPath("disabled", path="disabled", vartype="yesno"))
+        params.append(VersionedParamPath("schedule", path="schedule"))
+        params.append(
+            VersionedParamPath(
+                "icmp_unreachable", path="icmp-unreachable", vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "disable_server_response_inspection",
+                vartype="yesno",
+                path="option/disable-server-response-inspection",
+            )
+        )
+        params.append(
+            VersionedParamPath("group", path="profile-setting/group", vartype="member")
+        )
+        params.append(
+            VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath("target", path="target/devices", vartype="entry")
+        )
 
         member_profiles = (
-            'virus', 'spyware', 'vulnerability', 'url-filtering',
-            'file-blocking', 'wildfire-analysis', 'data-filtering',
+            "virus",
+            "spyware",
+            "vulnerability",
+            "url-filtering",
+            "file-blocking",
+            "wildfire-analysis",
+            "data-filtering",
         )
         for p in member_profiles:
-            params.append(VersionedParamPath(
-                p, vartype='member',
-                path='profile-setting/profiles/{0}'.format(p)))
+            params.append(
+                VersionedParamPath(
+                    p, vartype="member", path="profile-setting/profiles/{0}".format(p)
+                )
+            )
 
-        params.append(VersionedParamPath(
-            'uuid', exclude=True))
-        params[-1].add_profile(
-            '9.0.0',
-            vartype='attrib', path='uuid')
+        params.append(VersionedParamPath("uuid", exclude=True))
+        params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
 
         self._params = tuple(params)
 
@@ -254,195 +280,289 @@ class NatRule(VersionedPanObject):
         uuid (str): (PAN-OS 9.0+) The UUID for this rule.
 
     """
+
     SUFFIX = ENTRY
     ROOT = Root.VSYS
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/nat/rules')
+        self._xpaths.add_profile(value="/nat/rules")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'description', path='description'))
-        params.append(VersionedParamPath(
-            'nat_type', path='nat-type', default='ipv4',
-            values=('ipv4', 'nat64', 'nptv6')))
-        params.append(VersionedParamPath(
-            'fromzone', default=['any', ], vartype='member', path='from'))
-        params.append(VersionedParamPath(
-            'tozone', vartype='member', path='to'))
-        params.append(VersionedParamPath(
-            'to_interface', path='to-interface'))
-        params.append(VersionedParamPath(
-            'service', default='any', path='service'))
-        params.append(VersionedParamPath(
-            'source', default=['any', ], vartype='member', path='source'))
-        params.append(VersionedParamPath(
-            'destination', default=['any', ],
-            vartype='member', path='destination'))
-        params.append(VersionedParamPath(
-            'source_translation_type',
-            path='source-translation/{source_translation_type}',
-            values=(
-                'dynamic-ip-and-port',
-                'dynamic-ip',
-                'static-ip')))
-        params.append(VersionedParamPath(
-            'source_translation_address_type',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                '{source_translation_address_type}')),
-            values=('interface-address', 'translated-address'),
-            default='translated-address',
-            condition={
-                'source_translation_type': [
-                    'dynamic-ip-and-port', 'dynamic-ip']}))
-        params.append(VersionedParamPath(
-            'source_translation_interface',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                '{source_translation_address_type}',
-                'interface')),
-            condition={
-                'source_translation_type': 'dynamic-ip-and-port',
-                'source_translation_address_type': 'interface-address'}))
-        params.append(VersionedParamPath(
-            'source_translation_ip_address',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                '{source_translation_address_type}',
-                'ip')),
-            condition={
-                'source_translation_type': 'dynamic-ip-and-port',
-                'source_translation_address_type': 'interface-address'}))
-        params.append(VersionedParamPath(
-            'source_translation_translated_addresses',
-            vartype='member',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                '{source_translation_address_type}')),
-            condition={
-                'source_translation_type': [
-                    'dynamic-ip-and-port', 'dynamic-ip'],
-                'source_translation_address_type': 'translated-address'}))
-        params.append(VersionedParamPath(
-            'source_translation_fallback_type',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                'fallback',
-                '{source_translation_fallback_type}')),
-            values=('translated-address', 'interface-address'),
-            condition={
-                'source_translation_type': 'dynamic-ip'}))
-        params.append(VersionedParamPath(
-            'source_translation_fallback_translated_addresses',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                'fallback',
-                '{source_translation_fallback_type}')),
-            vartype='member',
-            condition={
-                'source_translation_type': 'dynamic-ip',
-                'source_translation_fallback_type': 'translated-address'}))
-        params.append(VersionedParamPath(
-            'source_translation_fallback_interface',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                'fallback',
-                '{source_translation_fallback_type}',
-                'interface')),
-            condition={
-                'source_translation_type': 'dynamic-ip',
-                'source_translation_fallback_type': 'interface-address'}))
-        params.append(VersionedParamPath(
-            'source_translation_fallback_ip_type',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                'fallback',
-                '{source_translation_fallback_type}',
-                '{source_translation_fallback_ip_type}')),
-            values=('ip', 'floating-ip'),
-            default='ip',
-            condition={
-                'source_translation_type': 'dynamic-ip',
-                'source_translation_fallback_type': 'interface-address'}))
-        params.append(VersionedParamPath(
-            'source_translation_fallback_ip_address',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                'fallback',
-                '{source_translation_fallback_type}',
-                '{source_translation_fallback_ip_type}')),
-            condition={
-                'source_translation_type': 'dynamic-ip',
-                'source_translation_fallback_type': 'interface-address'}))
-        params.append(VersionedParamPath(
-            'source_translation_static_translated_address',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                'translated-address')),
-            condition={
-                'source_translation_type': 'static-ip'}))
-        params.append(VersionedParamPath(
-            'source_translation_static_bi_directional',
-            vartype='yesno',
-            path='/'.join((
-                'source-translation',
-                '{source_translation_type}',
-                'bi-directional')),
-            condition={
-                'source_translation_type': 'static-ip'}))
-        params.append(VersionedParamPath(
-            'destination_translated_address',
-            path='destination-translation/translated-address'))
-        params.append(VersionedParamPath(
-            'destination_translated_port', vartype='int',
-            path='destination-translation/translated-port'))
-        params.append(VersionedParamPath(
-            'ha_binding', path='active-active-device-binding',
-            values=('primary', 'both', '0', '1')))
-        params.append(VersionedParamPath(
-            'disabled', vartype='yesno', path='disabled'))
-        params.append(VersionedParamPath(
-            'negate_target', path='target/negate', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'target', path='target/devices', vartype='entry'))
-        params.append(VersionedParamPath(
-            'tag', path='tag', vartype='member'))
-        params.append(VersionedParamPath(
-            'destination_dynamic_translated_address', exclude=True))
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(
+            VersionedParamPath(
+                "nat_type",
+                path="nat-type",
+                default="ipv4",
+                values=("ipv4", "nat64", "nptv6"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "fromzone", default=["any",], vartype="member", path="from"
+            )
+        )
+        params.append(VersionedParamPath("tozone", vartype="member", path="to"))
+        params.append(VersionedParamPath("to_interface", path="to-interface"))
+        params.append(VersionedParamPath("service", default="any", path="service"))
+        params.append(
+            VersionedParamPath(
+                "source", default=["any",], vartype="member", path="source"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination", default=["any",], vartype="member", path="destination"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_type",
+                path="source-translation/{source_translation_type}",
+                values=("dynamic-ip-and-port", "dynamic-ip", "static-ip"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_address_type",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "{source_translation_address_type}",
+                    )
+                ),
+                values=("interface-address", "translated-address"),
+                default="translated-address",
+                condition={
+                    "source_translation_type": ["dynamic-ip-and-port", "dynamic-ip"]
+                },
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_interface",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "{source_translation_address_type}",
+                        "interface",
+                    )
+                ),
+                condition={
+                    "source_translation_type": "dynamic-ip-and-port",
+                    "source_translation_address_type": "interface-address",
+                },
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_ip_address",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "{source_translation_address_type}",
+                        "ip",
+                    )
+                ),
+                condition={
+                    "source_translation_type": "dynamic-ip-and-port",
+                    "source_translation_address_type": "interface-address",
+                },
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_translated_addresses",
+                vartype="member",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "{source_translation_address_type}",
+                    )
+                ),
+                condition={
+                    "source_translation_type": ["dynamic-ip-and-port", "dynamic-ip"],
+                    "source_translation_address_type": "translated-address",
+                },
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_fallback_type",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "fallback",
+                        "{source_translation_fallback_type}",
+                    )
+                ),
+                values=("translated-address", "interface-address"),
+                condition={"source_translation_type": "dynamic-ip"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_fallback_translated_addresses",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "fallback",
+                        "{source_translation_fallback_type}",
+                    )
+                ),
+                vartype="member",
+                condition={
+                    "source_translation_type": "dynamic-ip",
+                    "source_translation_fallback_type": "translated-address",
+                },
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_fallback_interface",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "fallback",
+                        "{source_translation_fallback_type}",
+                        "interface",
+                    )
+                ),
+                condition={
+                    "source_translation_type": "dynamic-ip",
+                    "source_translation_fallback_type": "interface-address",
+                },
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_fallback_ip_type",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "fallback",
+                        "{source_translation_fallback_type}",
+                        "{source_translation_fallback_ip_type}",
+                    )
+                ),
+                values=("ip", "floating-ip"),
+                default="ip",
+                condition={
+                    "source_translation_type": "dynamic-ip",
+                    "source_translation_fallback_type": "interface-address",
+                },
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_fallback_ip_address",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "fallback",
+                        "{source_translation_fallback_type}",
+                        "{source_translation_fallback_ip_type}",
+                    )
+                ),
+                condition={
+                    "source_translation_type": "dynamic-ip",
+                    "source_translation_fallback_type": "interface-address",
+                },
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_static_translated_address",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "translated-address",
+                    )
+                ),
+                condition={"source_translation_type": "static-ip"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_translation_static_bi_directional",
+                vartype="yesno",
+                path="/".join(
+                    (
+                        "source-translation",
+                        "{source_translation_type}",
+                        "bi-directional",
+                    )
+                ),
+                condition={"source_translation_type": "static-ip"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_translated_address",
+                path="destination-translation/translated-address",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_translated_port",
+                vartype="int",
+                path="destination-translation/translated-port",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ha_binding",
+                path="active-active-device-binding",
+                values=("primary", "both", "0", "1"),
+            )
+        )
+        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled"))
+        params.append(
+            VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath("target", path="target/devices", vartype="entry")
+        )
+        params.append(VersionedParamPath("tag", path="tag", vartype="member"))
+        params.append(
+            VersionedParamPath("destination_dynamic_translated_address", exclude=True)
+        )
         params[-1].add_profile(
-            '8.1.0',
-            path='dynamic-destination-translation/translated-address')
-        params.append(VersionedParamPath(
-            'destination_dynamic_translated_port', exclude=True))
+            "8.1.0", path="dynamic-destination-translation/translated-address"
+        )
+        params.append(
+            VersionedParamPath("destination_dynamic_translated_port", exclude=True)
+        )
         params[-1].add_profile(
-            '8.1.0',
-            path='dynamic-destination-translation/translated-port',
-            vartype='int')
-        params.append(VersionedParamPath(
-            'destination_dynamic_translated_distribution', exclude=True))
+            "8.1.0",
+            path="dynamic-destination-translation/translated-port",
+            vartype="int",
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_dynamic_translated_distribution", exclude=True
+            )
+        )
         params[-1].add_profile(
-            '8.1.0',
-            path='dynamic-destination-translation/distribution',
-            values=('round-robin', ))
-        params.append(VersionedParamPath(
-            'uuid', exclude=True))
-        params[-1].add_profile(
-            '9.0.0',
-            vartype='attrib', path='uuid')
+            "8.1.0",
+            path="dynamic-destination-translation/distribution",
+            values=("round-robin",),
+        )
+        params.append(VersionedParamPath("uuid", exclude=True))
+        params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
 
         self._params = tuple(params)
 
@@ -490,97 +610,143 @@ class PolicyBasedForwarding(VersionedPanObject):
         uuid (str): (PAN-OS 9.0+) The UUID for this rule.
 
     """
+
     SUFFIX = ENTRY
     ROOT = Root.VSYS
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/pbf/rules')
+        self._xpaths.add_profile(value="/pbf/rules")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'description', path='description'))
-        params.append(VersionedParamPath(
-            'tags', vartype='member', path='tag'))
-        params.append(VersionedParamPath(
-            'from_type', default='zone',
-            values=['zone', 'interface'], path='from/{from_type}'))
-        params.append(VersionedParamPath(
-            'from_value',  vartype='member',
-            path='from/{from_type}'))
-        params.append(VersionedParamPath(
-            'source_addresses', vartype='member', path='source'))
-        params.append(VersionedParamPath(
-            'source_users', vartype='member', path='source-user'))
-        params.append(VersionedParamPath(
-            'negate_source', vartype='yesno', path='negate-source'))
-        params.append(VersionedParamPath(
-            'destination_addresses', vartype='member', path='destination'))
-        params.append(VersionedParamPath(
-            'negate_destination', vartype='yesno', path='negate-destination'))
-        params.append(VersionedParamPath(
-            'applications', vartype='member', path='application'))
-        params.append(VersionedParamPath(
-            'services', vartype='member', path='service'))
-        params.append(VersionedParamPath(
-            'schedule', path='schedule'))
-        params.append(VersionedParamPath(
-            'disabled', vartype='yesno', path='disabled'))
-        params.append(VersionedParamPath(
-            'action', default='forward',
-            values=['forward', 'forward-to-vsys', 'discard', 'no-pbf'],
-            path='action/{action}'))
-        params.append(VersionedParamPath(
-            'forward_vsys',
-            condition={'action': 'forward-to-vsys'},
-            path='action/{action}/forward-to-vsys'))
-        params.append(VersionedParamPath(
-            'forward_egress_interface',
-            condition={'action': 'forward'},
-            path='action/{action}/egress-interface'))
-        params.append(VersionedParamPath(
-            'forward_next_hop_type',
-            condition={'action': 'forward'},
-            values=['ip-address', 'fqdn', None],
-            path='action/{action}/nexthop/{forward_next_hop_type}'))
-        params.append(VersionedParamPath(
-            'forward_next_hop_value',
-            condition={
-                'action': 'forward',
-                'forward_next_hop_type': ['ip-address', 'fqdn'],
-            },
-            path='action/{action}/nexthop/{forward_next_hop_type}'))
-        params.append(VersionedParamPath(
-            'forward_monitor_profile',
-            condition={'action': 'forward'},
-            path='action/{action}/monitor/profile'))
-        params.append(VersionedParamPath(
-            'forward_monitor_ip_address',
-            condition={'action': 'forward'},
-            path='action/{action}/monitor/ip-address'))
-        params.append(VersionedParamPath(
-            'forward_monitor_disable_if_unreachable', vartype='yesno',
-            condition={'action': 'forward'},
-            path='action/{action}/monitor/disable-if-unreachable'))
-        params.append(VersionedParamPath(
-            'enable_enforce_symmetric_return', vartype='yesno',
-            path='enforce-symmetric-return/enabled'))
-        params.append(VersionedParamPath(
-            'symmetric_return_addresses', vartype='entry',
-            path='enforce-symmetric-return/nexthop-address-list'))
-        params.append(VersionedParamPath(
-            'active_active_device_binding',
-            path='active-active-device-binding'))
-        params.append(VersionedParamPath(
-            'target', vartype='entry', path='target/devices'))
-        params.append(VersionedParamPath(
-            'negate_target', vartype='yesno', path='target/negate'))
-        params.append(VersionedParamPath(
-            'uuid', exclude=True))
-        params[-1].add_profile(
-            '9.0.0',
-            vartype='attrib', path='uuid')
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(VersionedParamPath("tags", vartype="member", path="tag"))
+        params.append(
+            VersionedParamPath(
+                "from_type",
+                default="zone",
+                values=["zone", "interface"],
+                path="from/{from_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath("from_value", vartype="member", path="from/{from_type}")
+        )
+        params.append(
+            VersionedParamPath("source_addresses", vartype="member", path="source")
+        )
+        params.append(
+            VersionedParamPath("source_users", vartype="member", path="source-user")
+        )
+        params.append(
+            VersionedParamPath("negate_source", vartype="yesno", path="negate-source")
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_addresses", vartype="member", path="destination"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "negate_destination", vartype="yesno", path="negate-destination"
+            )
+        )
+        params.append(
+            VersionedParamPath("applications", vartype="member", path="application")
+        )
+        params.append(VersionedParamPath("services", vartype="member", path="service"))
+        params.append(VersionedParamPath("schedule", path="schedule"))
+        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled"))
+        params.append(
+            VersionedParamPath(
+                "action",
+                default="forward",
+                values=["forward", "forward-to-vsys", "discard", "no-pbf"],
+                path="action/{action}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "forward_vsys",
+                condition={"action": "forward-to-vsys"},
+                path="action/{action}/forward-to-vsys",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "forward_egress_interface",
+                condition={"action": "forward"},
+                path="action/{action}/egress-interface",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "forward_next_hop_type",
+                condition={"action": "forward"},
+                values=["ip-address", "fqdn", None],
+                path="action/{action}/nexthop/{forward_next_hop_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "forward_next_hop_value",
+                condition={
+                    "action": "forward",
+                    "forward_next_hop_type": ["ip-address", "fqdn"],
+                },
+                path="action/{action}/nexthop/{forward_next_hop_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "forward_monitor_profile",
+                condition={"action": "forward"},
+                path="action/{action}/monitor/profile",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "forward_monitor_ip_address",
+                condition={"action": "forward"},
+                path="action/{action}/monitor/ip-address",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "forward_monitor_disable_if_unreachable",
+                vartype="yesno",
+                condition={"action": "forward"},
+                path="action/{action}/monitor/disable-if-unreachable",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_enforce_symmetric_return",
+                vartype="yesno",
+                path="enforce-symmetric-return/enabled",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "symmetric_return_addresses",
+                vartype="entry",
+                path="enforce-symmetric-return/nexthop-address-list",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "active_active_device_binding", path="active-active-device-binding"
+            )
+        )
+        params.append(
+            VersionedParamPath("target", vartype="entry", path="target/devices")
+        )
+        params.append(
+            VersionedParamPath("negate_target", vartype="yesno", path="target/negate")
+        )
+        params.append(VersionedParamPath("uuid", exclude=True))
+        params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
 
         self._params = tuple(params)

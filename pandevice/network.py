@@ -17,21 +17,16 @@
 
 """Network module contains objects that exist in the 'Network' tab in the firewall GUI"""
 
-# import modules
-import re
 import logging
+import re
 import xml.etree.ElementTree as ET
-import pandevice
-from pandevice.base import PanObject, Root, MEMBER, ENTRY
-from pandevice.base import VarPath as Var
-from pandevice import getlogger, string_or_list
-from pandevice import device
-from pandevice.base import VersionedPanObject
-from pandevice.base import VersionedParamPath
-from pandevice.base import VsysOperations
 
-# import other parts of this pandevice package
+import pandevice
 import pandevice.errors as err
+from pandevice import device, getlogger, string_or_list
+from pandevice.base import ENTRY, MEMBER, PanObject, Root
+from pandevice.base import VarPath as Var
+from pandevice.base import VersionedPanObject, VersionedParamPath, VsysOperations
 
 logger = getlogger(__name__)
 
@@ -55,9 +50,9 @@ def interface(name, *args, **kwargs):
 
     """
     name = str(name)
-    if name.startswith("ethernet") and '.' not in name:
+    if name.startswith("ethernet") and "." not in name:
         return EthernetInterface(name, *args, **kwargs)
-    elif name.startswith("ae") and '.' not in name:
+    elif name.startswith("ae") and "." not in name:
         return AggregateInterface(name, *args, **kwargs)
     elif name.startswith("ethernet") or name.startswith("ae"):
         # Subinterface
@@ -106,37 +101,53 @@ class Zone(VersionedPanObject):
         exclude_acl (list/str): User identification ACL exclude list
 
     """
+
     ROOT = Root.VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/zone')
+        self._xpaths.add_profile(value="/zone")
         self._xpaths.add_profile(
-            value='{0}/zone'.format(self._TEMPLATE_VSYS_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/zone".format(self._TEMPLATE_VSYS_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'mode', default='layer3', path='network/{mode}',
-            values=['tap', 'virtual-wire', 'layer2', 'layer3', 'external']))
-        params.append(VersionedParamPath(
-            'interface', path='network/{mode}', vartype='member'))
-        params.append(VersionedParamPath(
-            'zone_profile', path='network/zone-protection-profile'))
-        params.append(VersionedParamPath(
-            'log_setting', path='network/log-setting'))
-        params.append(VersionedParamPath(
-            'enable_user_identification', vartype='yesno',
-            path='enable-user-identification'))
-        params.append(VersionedParamPath(
-            'include_acl', vartype='member',
-            path='user-acl/include-list'))
-        params.append(VersionedParamPath(
-            'exclude_acl', vartype='member',
-            path='user-acl/exclude-list'))
+        params.append(
+            VersionedParamPath(
+                "mode",
+                default="layer3",
+                path="network/{mode}",
+                values=["tap", "virtual-wire", "layer2", "layer3", "external"],
+            )
+        )
+        params.append(
+            VersionedParamPath("interface", path="network/{mode}", vartype="member")
+        )
+        params.append(
+            VersionedParamPath("zone_profile", path="network/zone-protection-profile")
+        )
+        params.append(VersionedParamPath("log_setting", path="network/log-setting"))
+        params.append(
+            VersionedParamPath(
+                "enable_user_identification",
+                vartype="yesno",
+                path="enable-user-identification",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "include_acl", vartype="member", path="user-acl/include-list"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "exclude_acl", vartype="member", path="user-acl/exclude-list"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -150,18 +161,18 @@ class StaticMac(VersionedPanObject):
         interface (str): Name of an interface
 
     """
+
     SUFFIX = ENTRY
-    NAME = 'mac'
+    NAME = "mac"
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/mac')
+        self._xpaths.add_profile(value="/mac")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'interface', path='interface'))
+        params.append(VersionedParamPath("interface", path="interface"))
 
         self._params = tuple(params)
 
@@ -174,29 +185,31 @@ class Vlan(VsysOperations):
         virtual-interface (VlanInterface): The layer3 vlan interface for this vlan
 
     """
+
     SUFFIX = ENTRY
     ROOT = Root.DEVICE
-    CHILDTYPES = (
-        'network.StaticMac',
-    )
+    CHILDTYPES = ("network.StaticMac",)
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/network/vlan')
+        self._xpaths.add_profile(value="/network/vlan")
         self._xpaths.add_profile(
-            value='{0}/network/vlan'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/vlan".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # xpath_imports
-        self._xpath_imports.add_profile(value='/network/vlan')
+        self._xpath_imports.add_profile(value="/network/vlan")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'interface', vartype='member', path='interface'))
-        params.append(VersionedParamPath(
-            'virtual_interface', path='/virtual-interface/interface'))
+        params.append(
+            VersionedParamPath("interface", vartype="member", path="interface")
+        )
+        params.append(
+            VersionedParamPath("virtual_interface", path="/virtual-interface/interface")
+        )
 
         self._params = tuple(params)
 
@@ -218,43 +231,55 @@ class IPv6Address(VersionedPanObject):
         auto_config_flag (bool):
 
     """
+
     SUFFIX = ENTRY
     NAME = "address"
 
     def _setup(self):
         # xpaths
         # Non-mode interface xpaths
-        self._xpaths.add_profile(value='/ipv6/address')
+        self._xpaths.add_profile(value="/ipv6/address")
         # Mode interface xpaths (mode: layer3)
         self._xpaths.add_profile(
-            value='/layer3/ipv6/address',
-            parents=('EthernetInterface', 'AggregateInterface'))
+            value="/layer3/ipv6/address",
+            parents=("EthernetInterface", "AggregateInterface"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'enable_on_interface', vartype='yesno',
-            path='enable-on-interface'))
-        params.append(VersionedParamPath(
-            'prefix', vartype='exist', path='prefix'))
-        params.append(VersionedParamPath(
-            'anycast', vartype='exist', path='anycast'))
-        params.append(VersionedParamPath(
-            'advertise_enabled', vartype='yesno',
-            path='advertise/enable'))
-        params.append(VersionedParamPath(
-            'valid_lifetime', vartype='int',
-            path='advertise/valid-lifetime'))
-        params.append(VersionedParamPath(
-            'preferred_lifetime', vartype='int',
-            path='advertise/preferred-lifetime'))
-        params.append(VersionedParamPath(
-            'onlink_flag', vartype='yesno',
-            path='advertise/onlink-flag'))
-        params.append(VersionedParamPath(
-            'auto_config_flag', vartype='yesno',
-            path='advertise/auto-config-flag'))
+        params.append(
+            VersionedParamPath(
+                "enable_on_interface", vartype="yesno", path="enable-on-interface"
+            )
+        )
+        params.append(VersionedParamPath("prefix", vartype="exist", path="prefix"))
+        params.append(VersionedParamPath("anycast", vartype="exist", path="anycast"))
+        params.append(
+            VersionedParamPath(
+                "advertise_enabled", vartype="yesno", path="advertise/enable"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "valid_lifetime", vartype="int", path="advertise/valid-lifetime"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "preferred_lifetime", vartype="int", path="advertise/preferred-lifetime"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "onlink_flag", vartype="yesno", path="advertise/onlink-flag"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "auto_config_flag", vartype="yesno", path="advertise/auto-config-flag"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -270,6 +295,7 @@ class Interface(VsysOperations):
         state (str): Link state, 'up' or 'down'
 
     """
+
     SUFFIX = ENTRY
     ROOT = Root.DEVICE
     DEFAULT_MODE = None
@@ -284,10 +310,17 @@ class Interface(VsysOperations):
                 'unconfigured' or other
 
         """
-        return self.state == 'up'
+        return self.state == "up"
 
-    def set_zone(self, zone_name, mode=None, refresh=False, update=False,
-                 running_config=False, return_type='object'):
+    def set_zone(
+        self,
+        zone_name,
+        mode=None,
+        refresh=False,
+        update=False,
+        running_config=False,
+        return_type="object",
+    ):
         """Set the zone for this interface
 
         Creates a reference to this interface in the specified zone and removes
@@ -317,16 +350,31 @@ class Interface(VsysOperations):
         """
         if mode is None:
             mode = self.DEFAULT_MODE
-        elif self.vsys == 'shared':
+        elif self.vsys == "shared":
             return False
 
         return self._set_reference(
-            zone_name, Zone, "interface", 'list', True, refresh,
-            update, running_config, return_type, False, mode=mode)
+            zone_name,
+            Zone,
+            "interface",
+            "list",
+            True,
+            refresh,
+            update,
+            running_config,
+            return_type,
+            False,
+            mode=mode,
+        )
 
-    def set_virtual_router(self, virtual_router_name, refresh=False,
-                           update=False, running_config=False,
-                           return_type='object'):
+    def set_virtual_router(
+        self,
+        virtual_router_name,
+        refresh=False,
+        update=False,
+        running_config=False,
+        return_type="object",
+    ):
         """Set the virtual router for this interface
 
         Creates a reference to this interface in the specified virtual router
@@ -353,15 +401,30 @@ class Interface(VsysOperations):
 
         """
         # Don't add HA or aggregate-group interfaces to virtual router.
-        if getattr(self, 'mode', '') in ('ha', 'aggregate-group'):
+        if getattr(self, "mode", "") in ("ha", "aggregate-group"):
             return False
 
         return self._set_reference(
-            virtual_router_name, VirtualRouter, "interface", 'list',
-            True, refresh, update, running_config, return_type, False)
+            virtual_router_name,
+            VirtualRouter,
+            "interface",
+            "list",
+            True,
+            refresh,
+            update,
+            running_config,
+            return_type,
+            False,
+        )
 
-    def set_vlan(self, vlan_name, refresh=False,
-                 update=False, running_config=False, return_type='object'):
+    def set_vlan(
+        self,
+        vlan_name,
+        refresh=False,
+        update=False,
+        running_config=False,
+        return_type="object",
+    ):
         """Set the vlan for this interface
 
         Creates a reference to this interface in the specified vlan and removes
@@ -395,8 +458,17 @@ class Interface(VsysOperations):
             raise AttributeError(msg.format(self.__class__))
 
         return self._set_reference(
-            vlan_name, Vlan, "interface", 'list', True,
-            refresh, update, running_config, return_type, False)
+            vlan_name,
+            Vlan,
+            "interface",
+            "list",
+            True,
+            refresh,
+            update,
+            running_config,
+            return_type,
+            False,
+        )
 
     def get_counters(self):
         """Pull the counters for an interface
@@ -414,19 +486,18 @@ class Interface(VsysOperations):
         pconf = PanConfig(pconf)
         response = pconf.python()
         logger.debug("response: " + str(response))
-        counters = response['response']['result']
+        counters = response["response"]["result"]
         if counters is not None:
             entry = {}
             # Check for entry in ifnet
-            if 'entry' in counters.get('ifnet', {}):
-                entry = counters['ifnet']['entry'][0]
-            elif 'ifnet' in counters.get('ifnet', {}):
-                if 'entry' in counters['ifnet'].get('ifnet', {}):
-                    entry = counters['ifnet']['ifnet']['entry'][0]
+            if "entry" in counters.get("ifnet", {}):
+                entry = counters["ifnet"]["entry"][0]
+            elif "ifnet" in counters.get("ifnet", {}):
+                if "entry" in counters["ifnet"].get("ifnet", {}):
+                    entry = counters["ifnet"]["ifnet"]["entry"][0]
 
             # Convert strings to integers, if they are integers
-            entry.update((k, pandevice.convert_if_int(v))
-                         for k, v in entry.items())
+            entry.update((k, pandevice.convert_if_int(v)) for k, v in entry.items())
 
             # If empty dictionary (no results) it usually means the interface is not
             # configured, so return None
@@ -452,8 +523,9 @@ class Interface(VsysOperations):
 
         return self.state
 
-    def full_delete(self, refresh=False, delete_referencing_objects=False,
-                    include_vsys=False):
+    def full_delete(
+        self, refresh=False, delete_referencing_objects=False, include_vsys=False
+    ):
         """Delete the interface and all references to the interface
 
         Often when deleting an interface there is an API error because
@@ -515,25 +587,22 @@ class Arp(VersionedPanObject):
         interface (str): The interface (when attached to VlanInterface only)
 
     """
+
     SUFFIX = ENTRY
-    NAME = 'ip'
+    NAME = "ip"
 
     def _setup(self):
         # xpaths
         # Interface xpaths
-        self._xpaths.add_profile(value='/layer3/arp')
+        self._xpaths.add_profile(value="/layer3/arp")
         # Subinterface xpaths
-        self._xpaths.add_profile(
-            value='/arp',
-            parents=('Layer3Subinterface', ))
+        self._xpaths.add_profile(value="/arp", parents=("Layer3Subinterface",))
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'hw_address', path='hw-address'))
-        params.append(VersionedParamPath(
-            'interface', path='interface'))
+        params.append(VersionedParamPath("hw_address", path="hw-address"))
+        params.append(VersionedParamPath("interface", path="interface"))
 
         self._params = tuple(params)
 
@@ -550,34 +619,43 @@ class VirtualWire(VsysOperations):
         pass_through (bool): Enable link state pass through or not
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/network/virtual-wire')
+        self._xpaths.add_profile(value="/network/virtual-wire")
         self._xpaths.add_profile(
-            value='{0}/network/virtual-wire'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/virtual-wire".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # xpath imports
-        self._xpath_imports.add_profile(value='/network/virtual-wire')
+        self._xpath_imports.add_profile(value="/network/virtual-wire")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'tag', path='tag-allowed', vartype='int'))
-        params.append(VersionedParamPath(
-            'interface1', path='interface1'))
-        params.append(VersionedParamPath(
-            'interface2', path='interface2'))
-        params.append(VersionedParamPath(
-            'multicast', path='multicast-firewalling/enable',
-            default=False, vartype='yesno'))
-        params.append(VersionedParamPath(
-            'pass_through', path='link-state-pass-through/enable',
-            default=True, vartype='yesno'))
+        params.append(VersionedParamPath("tag", path="tag-allowed", vartype="int"))
+        params.append(VersionedParamPath("interface1", path="interface1"))
+        params.append(VersionedParamPath("interface2", path="interface2"))
+        params.append(
+            VersionedParamPath(
+                "multicast",
+                path="multicast-firewalling/enable",
+                default=False,
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "pass_through",
+                path="link-state-pass-through/enable",
+                default=True,
+                vartype="yesno",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -588,29 +666,31 @@ class Subinterface(Interface):
     Do not instantiate this object. Use a subclass.
 
     """
-    _BASE_INTERFACE_NAME = 'entry BASE_INTERFACE_NAME'
-    _BASE_INTERFACE_TYPE = 'var BASE_INTERFACE_TYPE'
+
+    _BASE_INTERFACE_NAME = "entry BASE_INTERFACE_NAME"
+    _BASE_INTERFACE_TYPE = "var BASE_INTERFACE_TYPE"
 
     def set_name(self):
         """Create a name appropriate for a subinterface if it isn't already"""
-        if '.' not in self.name:
-            self.name = '{0}.{1}'.format(self.name, self.tag)
+        if "." not in self.name:
+            self.name = "{0}.{1}".format(self.name, self.tag)
 
     @property
     def XPATH(self):
         path = super(Subinterface, self).XPATH
 
         if self._BASE_INTERFACE_TYPE in path:
-            if self.uid.startswith('ae'):
-                rep = 'aggregate-ethernet'
+            if self.uid.startswith("ae"):
+                rep = "aggregate-ethernet"
             else:
-                rep = 'ethernet'
+                rep = "ethernet"
             path = path.replace(self._BASE_INTERFACE_TYPE, rep)
 
         if self._BASE_INTERFACE_NAME in path:
-            base = self.uid.split('.')[0]
-            path = path.replace(self._BASE_INTERFACE_NAME,
-                                "entry[@name='{0}']".format(base))
+            base = self.uid.split(".")[0]
+            path = path.replace(
+                self._BASE_INTERFACE_NAME, "entry[@name='{0}']".format(base)
+            )
 
         return path
 
@@ -628,6 +708,7 @@ class AbstractSubinterface(object):
         parent (Interface): The base interface for this subinterface
 
     """
+
     def __init__(self, name, tag, parent=None):
         self.name = name
         self.tag = tag
@@ -653,10 +734,16 @@ class AbstractSubinterface(object):
         """
         return self.parent._nearest_pandevice()
 
-    def set_zone(self, zone_name, mode=None, refresh=False, update=False, running_config=False):
-        raise err.PanDeviceError("Unable to set zone on abstract subinterface because layer must be known to set zone")
+    def set_zone(
+        self, zone_name, mode=None, refresh=False, update=False, running_config=False
+    ):
+        raise err.PanDeviceError(
+            "Unable to set zone on abstract subinterface because layer must be known to set zone"
+        )
 
-    def set_virtual_router(self, virtual_router_name, refresh=False, update=False, running_config=False):
+    def set_virtual_router(
+        self, virtual_router_name, refresh=False, update=False, running_config=False
+    ):
         """Set the virtual router for this interface
 
         Creates a reference to this interface in the specified virtual router and removes references
@@ -678,9 +765,17 @@ class AbstractSubinterface(object):
         interface = Layer3Subinterface(self.name, self.tag)
         interface.parent = self.parent
         return interface._set_reference(
-            virtual_router_name, VirtualRouter, "interface", 'list', True,
-            refresh=False, update=update, running_config=running_config,
-            return_type='object', name_only=False)
+            virtual_router_name,
+            VirtualRouter,
+            "interface",
+            "list",
+            True,
+            refresh=False,
+            update=update,
+            running_config=running_config,
+            return_type="object",
+            name_only=False,
+        )
 
     def get_layered_subinterface(self, mode, add=True):
         """Instantiate a regular subinterface type from this AbstractSubinterface
@@ -702,7 +797,9 @@ class AbstractSubinterface(object):
             elif mode == "layer2":
                 subintclass = Layer2Subinterface
             else:
-                raise err.PanDeviceError("Unknown layer passed to subinterface factory: %s" % mode)
+                raise err.PanDeviceError(
+                    "Unknown layer passed to subinterface factory: %s" % mode
+                )
             layered_subinterface = self.parent.find(self.name, subintclass)
             # Verify tag is correct
             if layered_subinterface is not None:
@@ -710,7 +807,9 @@ class AbstractSubinterface(object):
                     layered_subinterface.tag = self.tag
             else:
                 if add:
-                    layered_subinterface = self.parent.add(subintclass(self.name, tag=self.tag))
+                    layered_subinterface = self.parent.add(
+                        subintclass(self.name, tag=self.tag)
+                    )
                 else:
                     return
             return layered_subinterface
@@ -746,7 +845,8 @@ class Layer3Subinterface(Subinterface):
         decrypt_forward (bool): (PAN-OS 8.1+) Decrypt forward.
 
     """
-    DEFAULT_MODE = 'layer3'
+
+    DEFAULT_MODE = "layer3"
     CHILDTYPES = (
         "network.IPv6Address",
         "network.Arp",
@@ -754,67 +854,79 @@ class Layer3Subinterface(Subinterface):
 
     def _setup(self):
         # xpaths for parents: EthernetInterface, AggregateInterface)
-        self._xpaths.add_profile(value='/layer3/units')
+        self._xpaths.add_profile(value="/layer3/units")
         # xpaths for parents: firewall.Firewall, device.Vsys
         self._xpaths.add_profile(
-            parents=('Firewall', 'Vsys'),
-            value=('/network/interface/{0}/{1}/layer3/units'.format(
-                self._BASE_INTERFACE_TYPE, self._BASE_INTERFACE_NAME)))
+            parents=("Firewall", "Vsys"),
+            value=(
+                "/network/interface/{0}/{1}/layer3/units".format(
+                    self._BASE_INTERFACE_TYPE, self._BASE_INTERFACE_NAME
+                )
+            ),
+        )
         self._xpaths.add_profile(
-            value='{0}/network/interface/{1}/{2}/layer3/units'.format(
+            value="{0}/network/interface/{1}/{2}/layer3/units".format(
                 self._TEMPLATE_DEVICE_XPATH,
                 self._BASE_INTERFACE_TYPE,
-                self._BASE_INTERFACE_NAME),
-            parents=('Template', 'TemplateStack'))
+                self._BASE_INTERFACE_NAME,
+            ),
+            parents=("Template", "TemplateStack"),
+        )
 
         # xpath imports
-        self._xpath_imports.add_profile(value='/network/interface')
+        self._xpath_imports.add_profile(value="/network/interface")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'tag', path='tag', vartype='int'))
-        params.append(VersionedParamPath(
-            'ip', path='ip', vartype='entry'))
-        params.append(VersionedParamPath(
-            'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'management_profile', path='interface-management-profile'))
-        params.append(VersionedParamPath(
-            'mtu', path='mtu', vartype='int'))
-        params.append(VersionedParamPath(
-            'adjust_tcp_mss', path='adjust-tcp-mss', vartype='yesno'))
+        params.append(VersionedParamPath("tag", path="tag", vartype="int"))
+        params.append(VersionedParamPath("ip", path="ip", vartype="entry"))
+        params.append(
+            VersionedParamPath("ipv6_enabled", path="ipv6/enabled", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "management_profile", path="interface-management-profile"
+            )
+        )
+        params.append(VersionedParamPath("mtu", path="mtu", vartype="int"))
+        params.append(
+            VersionedParamPath("adjust_tcp_mss", path="adjust-tcp-mss", vartype="yesno")
+        )
+        params[-1].add_profile("7.1.0", vartype="yesno", path="adjust-tcp-mss/enable")
+        params.append(VersionedParamPath("netflow_profile", path="netflow-profile"))
+        params.append(VersionedParamPath("comment", path="comment"))
+        params.append(VersionedParamPath("ipv4_mss_adjust", exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno', path='adjust-tcp-mss/enable')
-        params.append(VersionedParamPath(
-            'netflow_profile', path='netflow-profile'))
-        params.append(VersionedParamPath(
-            'comment', path='comment'))
-        params.append(VersionedParamPath(
-            'ipv4_mss_adjust', exclude=True))
+            "7.1.0", path="adjust-tcp-mss/ipv4-mss-adjustment", vartype="int"
+        )
+        params.append(VersionedParamPath("ipv6_mss_adjust", exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
-        params.append(VersionedParamPath(
-            'ipv6_mss_adjust', exclude=True))
-        params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
-        params.append(VersionedParamPath(
-            'enable_dhcp', path='dhcp-client/enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'create_dhcp_default_route',
-            path='dhcp-client/create-default-route', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'dhcp_default_route_metric',
-            path='dhcp-client/default-route-metric', vartype='int'))
-        params.append(VersionedParamPath(
-            'decrypt_forward', vartype='yesno', exclude=True))
-        params[-1].add_profile(
-            '8.1.0',
-            vartype='yesno', path='decrypt-forward')
+            "7.1.0", path="adjust-tcp-mss/ipv6-mss-adjustment", vartype="int"
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_dhcp", path="dhcp-client/enable", vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "create_dhcp_default_route",
+                path="dhcp-client/create-default-route",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "dhcp_default_route_metric",
+                path="dhcp-client/default-route-metric",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath("decrypt_forward", vartype="yesno", exclude=True)
+        )
+        params[-1].add_profile("8.1.0", vartype="yesno", path="decrypt-forward")
 
         self._params = tuple(params)
 
@@ -830,41 +942,45 @@ class Layer2Subinterface(Subinterface):
         comment (str): The interface's comment
 
     """
+
     SUFFIX = ENTRY
-    DEFAULT_MODE = 'layer2'
+    DEFAULT_MODE = "layer2"
     ALLOW_SET_VLAN = True
 
     def _setup(self):
         # xpaths for parents: EthernetInterface, AggregateInterface
-        self._xpaths.add_profile(value='/layer2/units')
+        self._xpaths.add_profile(value="/layer2/units")
         # xpaths for parents: firewall.Firewall, device.Vsys
         self._xpaths.add_profile(
-            parents=('Firewall', 'Vsys'),
-            value=('/network/interface/{0}/{1}/layer2/units'.format(
-                self._BASE_INTERFACE_TYPE, self._BASE_INTERFACE_NAME)))
+            parents=("Firewall", "Vsys"),
+            value=(
+                "/network/interface/{0}/{1}/layer2/units".format(
+                    self._BASE_INTERFACE_TYPE, self._BASE_INTERFACE_NAME
+                )
+            ),
+        )
         self._xpaths.add_profile(
-            value='{0}/network/interface/{1}/{2}/layer2/units'.format(
+            value="{0}/network/interface/{1}/{2}/layer2/units".format(
                 self._TEMPLATE_DEVICE_XPATH,
                 self._BASE_INTERFACE_TYPE,
-                self._BASE_INTERFACE_NAME),
-            parents=('Template', 'TemplateStack'))
+                self._BASE_INTERFACE_NAME,
+            ),
+            parents=("Template", "TemplateStack"),
+        )
 
         # xpath imports
-        self._xpath_imports.add_profile(value='/network/interface')
+        self._xpath_imports.add_profile(value="/network/interface")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'tag', path='tag', vartype='int'))
-        params.append(VersionedParamPath(
-            'lldp_enabled', path='lldp/enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'lldp_profile', path='lldp/profile'))
-        params.append(VersionedParamPath(
-            'netflow_profile_l2', path='netflow-profile'))
-        params.append(VersionedParamPath(
-            'comment', path='comment'))
+        params.append(VersionedParamPath("tag", path="tag", vartype="int"))
+        params.append(
+            VersionedParamPath("lldp_enabled", path="lldp/enable", vartype="yesno")
+        )
+        params.append(VersionedParamPath("lldp_profile", path="lldp/profile"))
+        params.append(VersionedParamPath("netflow_profile_l2", path="netflow-profile"))
+        params.append(VersionedParamPath("comment", path="comment"))
 
         self._params = tuple(params)
 
@@ -875,8 +991,16 @@ class PhysicalInterface(Interface):
     Do not instantiate this object. Use a subclass.
 
     """
-    def set_zone(self, zone_name, mode=None, refresh=False,
-                 update=False, running_config=False, return_type='object'):
+
+    def set_zone(
+        self,
+        zone_name,
+        mode=None,
+        refresh=False,
+        update=False,
+        running_config=False,
+        return_type="object",
+    ):
         """Set the zone for this interface
 
         Creates a reference to this interface in the specified zone and removes
@@ -908,7 +1032,8 @@ class PhysicalInterface(Interface):
             mode = self.mode
 
         return super(PhysicalInterface, self).set_zone(
-            zone_name, mode, refresh, update, running_config, return_type)
+            zone_name, mode, refresh, update, running_config, return_type
+        )
 
 
 class EthernetInterface(PhysicalInterface):
@@ -958,6 +1083,7 @@ class EthernetInterface(PhysicalInterface):
         dhcp_send_hostname_value (string): Set interface hostname
 
     """
+
     ALLOW_SET_VLAN = True
     CHILDTYPES = (
         "network.Layer3Subinterface",
@@ -968,124 +1094,192 @@ class EthernetInterface(PhysicalInterface):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/network/interface/ethernet')
+        self._xpaths.add_profile(value="/network/interface/ethernet")
         self._xpaths.add_profile(
-            value='{0}/network/interface/ethernet'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/interface/ethernet".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # xpath imports
-        self._xpath_imports.add_profile(value='/network/interface')
+        self._xpath_imports.add_profile(value="/network/interface")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'mode', path='{mode}', default='layer3',
-            values=[
-                'layer3', 'layer2', 'virtual-wire', 'tap',
-                'ha', 'decrypt-mirror', 'aggregate-group',
-            ]))
-        params.append(VersionedParamPath(
-            'ip', path='{mode}/ip', vartype='entry',
-            condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'ipv6_enabled', path='{mode}/ipv6/enabled', vartype='yesno',
-            condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'management_profile', path='{mode}/interface-management-profile',
-            condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'mtu', path='{mode}/mtu', vartype='int',
-            condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'adjust_tcp_mss', path='{mode}/adjust-tcp-mss', vartype='yesno',
-            condition={'mode': 'layer3'}))
+        params.append(
+            VersionedParamPath(
+                "mode",
+                path="{mode}",
+                default="layer3",
+                values=[
+                    "layer3",
+                    "layer2",
+                    "virtual-wire",
+                    "tap",
+                    "ha",
+                    "decrypt-mirror",
+                    "aggregate-group",
+                ],
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ip", path="{mode}/ip", vartype="entry", condition={"mode": "layer3"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv6_enabled",
+                path="{mode}/ipv6/enabled",
+                vartype="yesno",
+                condition={"mode": "layer3"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "management_profile",
+                path="{mode}/interface-management-profile",
+                condition={"mode": "layer3"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mtu", path="{mode}/mtu", vartype="int", condition={"mode": "layer3"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "adjust_tcp_mss",
+                path="{mode}/adjust-tcp-mss",
+                vartype="yesno",
+                condition={"mode": "layer3"},
+            )
+        )
         params[-1].add_profile(
-            '7.1.0',
-            path='{mode}/adjust-tcp-mss/enable',
-            vartype='yesno', condition={'mode': 'layer3'})
-        params.append(VersionedParamPath(
-            'netflow_profile', path='{mode}/netflow-profile',
-            condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'lldp_enabled', path='{mode}/lldp/enable', vartype='yesno',
-            condition={'mode': ['layer2', 'layer3', 'virtual-wire']}))
-        params.append(VersionedParamPath(
-            'lldp_profile', path='{mode}/lldp/profile',
-            condition={'mode': ['layer2', 'layer3', 'virtual-wire']}))
-        params.append(VersionedParamPath(
-            'netflow_profile_l2', path='{mode}/netflow-profile',
-            condition={'mode': 'layer2'}))
-        params.append(VersionedParamPath(
-            'link_speed', path='link-speed'))
-        params.append(VersionedParamPath(
-            'link_duplex', path='link-duplex'))
-        params.append(VersionedParamPath(
-            'link_state', path='link-state'))
-        params.append(VersionedParamPath(
-            'aggregate_group', path='aggregate-group',
-            condition={'mode': 'aggregate-group'}))
-        params.append(VersionedParamPath(
-            'comment', path='comment'))
-        params.append(VersionedParamPath(
-            'ipv4_mss_adjust', exclude=True))
+            "7.1.0",
+            path="{mode}/adjust-tcp-mss/enable",
+            vartype="yesno",
+            condition={"mode": "layer3"},
+        )
+        params.append(
+            VersionedParamPath(
+                "netflow_profile",
+                path="{mode}/netflow-profile",
+                condition={"mode": "layer3"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lldp_enabled",
+                path="{mode}/lldp/enable",
+                vartype="yesno",
+                condition={"mode": ["layer2", "layer3", "virtual-wire"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lldp_profile",
+                path="{mode}/lldp/profile",
+                condition={"mode": ["layer2", "layer3", "virtual-wire"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "netflow_profile_l2",
+                path="{mode}/netflow-profile",
+                condition={"mode": "layer2"},
+            )
+        )
+        params.append(VersionedParamPath("link_speed", path="link-speed"))
+        params.append(VersionedParamPath("link_duplex", path="link-duplex"))
+        params.append(VersionedParamPath("link_state", path="link-state"))
+        params.append(
+            VersionedParamPath(
+                "aggregate_group",
+                path="aggregate-group",
+                condition={"mode": "aggregate-group"},
+            )
+        )
+        params.append(VersionedParamPath("comment", path="comment"))
+        params.append(VersionedParamPath("ipv4_mss_adjust", exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            path='{mode}/adjust-tcp-mss/ipv4-mss-adjustment',
-            vartype='int', condition={'mode': 'layer3'})
-        params.append(VersionedParamPath(
-            'ipv6_mss_adjust', exclude=True))
+            "7.1.0",
+            path="{mode}/adjust-tcp-mss/ipv4-mss-adjustment",
+            vartype="int",
+            condition={"mode": "layer3"},
+        )
+        params.append(VersionedParamPath("ipv6_mss_adjust", exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            path='{mode}/adjust-tcp-mss/ipv6-mss-adjustment',
-            vartype='int', condition={'mode': 'layer3'})
-        params.append(VersionedParamPath(
-            'enable_dhcp', path='{mode}/dhcp-client/enable',
-            vartype='yesno', condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'create_dhcp_default_route',
-            path='{mode}/dhcp-client/create-default-route',
-            vartype='yesno', condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'dhcp_default_route_metric',
-            path='{mode}/dhcp-client/default-route-metric',
-            vartype='int', condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'enable_untagged_subinterface', exclude=True))
+            "7.1.0",
+            path="{mode}/adjust-tcp-mss/ipv6-mss-adjustment",
+            vartype="int",
+            condition={"mode": "layer3"},
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_dhcp",
+                path="{mode}/dhcp-client/enable",
+                vartype="yesno",
+                condition={"mode": "layer3"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "create_dhcp_default_route",
+                path="{mode}/dhcp-client/create-default-route",
+                vartype="yesno",
+                condition={"mode": "layer3"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "dhcp_default_route_metric",
+                path="{mode}/dhcp-client/default-route-metric",
+                vartype="int",
+                condition={"mode": "layer3"},
+            )
+        )
+        params.append(VersionedParamPath("enable_untagged_subinterface", exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno', condition={'mode': 'layer3'},
-            path='{mode}/untagged-sub-interface')
-        params.append(VersionedParamPath(
-            'decrypt_forward', exclude=True))
+            "7.1.0",
+            vartype="yesno",
+            condition={"mode": "layer3"},
+            path="{mode}/untagged-sub-interface",
+        )
+        params.append(VersionedParamPath("decrypt_forward", exclude=True))
         params[-1].add_profile(
-            '8.1.0',
-            vartype='yesno', condition={'mode': 'layer3'},
-            path='{mode}/decrypt-forward')
-        params.append(VersionedParamPath(
-            'rx_policing_rate', exclude=True))
+            "8.1.0",
+            vartype="yesno",
+            condition={"mode": "layer3"},
+            path="{mode}/decrypt-forward",
+        )
+        params.append(VersionedParamPath("rx_policing_rate", exclude=True))
         params[-1].add_profile(
-            '8.1.0',
-            vartype='int', condition={'mode': 'layer3'},
-            path='{mode}/policing/rx-rate')
-        params.append(VersionedParamPath(
-            'tx_policing_rate', exclude=True))
+            "8.1.0",
+            vartype="int",
+            condition={"mode": "layer3"},
+            path="{mode}/policing/rx-rate",
+        )
+        params.append(VersionedParamPath("tx_policing_rate", exclude=True))
         params[-1].add_profile(
-            '8.1.0',
-            vartype='int', condition={'mode': 'layer3'},
-            path='{mode}/policing/tx-rate')
-        params.append(VersionedParamPath(
-            'dhcp_send_hostname_enable', exclude=True))
+            "8.1.0",
+            vartype="int",
+            condition={"mode": "layer3"},
+            path="{mode}/policing/tx-rate",
+        )
+        params.append(VersionedParamPath("dhcp_send_hostname_enable", exclude=True))
         params[-1].add_profile(
-            '9.0.0',
-            vartype='yesno', condition={'mode': 'layer3'},
-            path='{mode}/dhcp-client/send-hostname/enable')
-        params.append(VersionedParamPath(
-            'dhcp_send_hostname_value', exclude=True))
+            "9.0.0",
+            vartype="yesno",
+            condition={"mode": "layer3"},
+            path="{mode}/dhcp-client/send-hostname/enable",
+        )
+        params.append(VersionedParamPath("dhcp_send_hostname_value", exclude=True))
         params[-1].add_profile(
-            '9.0.0',
-            condition={'mode': 'layer3'},
-            path='{mode}/dhcp-client/send-hostname/hostname')
+            "9.0.0",
+            condition={"mode": "layer3"},
+            path="{mode}/dhcp-client/send-hostname/hostname",
+        )
 
         self._params = tuple(params)
 
@@ -1124,6 +1318,7 @@ class AggregateInterface(PhysicalInterface):
         lacp_mode (str): Set LACP mode to 'active' or 'passive'
 
     """
+
     ALLOW_SET_VLAN = True
     CHILDTYPES = (
         "network.Layer3Subinterface",
@@ -1134,92 +1329,160 @@ class AggregateInterface(PhysicalInterface):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/network/interface/aggregate-ethernet')
+        self._xpaths.add_profile(value="/network/interface/aggregate-ethernet")
         self._xpaths.add_profile(
-            value='{0}/network/interface/aggregate-ethernet'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/interface/aggregate-ethernet".format(
+                self._TEMPLATE_DEVICE_XPATH
+            ),
+            parents=("Template", "TemplateStack"),
+        )
 
         # xpath imports
-        self._xpath_imports.add_profile(value='/network/interface')
+        self._xpath_imports.add_profile(value="/network/interface")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'mode', path='{mode}', default='layer3',
-            values=[
-                'layer3', 'layer2', 'virtual-wire', 'ha',
-            ]))
-        params.append(VersionedParamPath(
-            'ip', condition={'mode': 'layer3'},
-            path='{mode}/ip', vartype='entry'))
-        params.append(VersionedParamPath(
-            'ipv6_enabled', condition={'mode': 'layer3'},
-            path='{mode}/ipv6/enabled', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'management_profile', condition={'mode': ['layer3', 'layer2']},
-            path='{mode}/interface-management-profile'))
-        params.append(VersionedParamPath(
-            'mtu', condition={'mode': 'layer3'},
-            path='{mode}/mtu', vartype='int'))
-        params.append(VersionedParamPath(
-            'adjust_tcp_mss', condition={'mode': 'layer3'},
-            path='{path}/adjust-tcp-mss/enable', vartype='yesno'))
+        params.append(
+            VersionedParamPath(
+                "mode",
+                path="{mode}",
+                default="layer3",
+                values=["layer3", "layer2", "virtual-wire", "ha",],
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ip", condition={"mode": "layer3"}, path="{mode}/ip", vartype="entry"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv6_enabled",
+                condition={"mode": "layer3"},
+                path="{mode}/ipv6/enabled",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "management_profile",
+                condition={"mode": ["layer3", "layer2"]},
+                path="{mode}/interface-management-profile",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mtu", condition={"mode": "layer3"}, path="{mode}/mtu", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "adjust_tcp_mss",
+                condition={"mode": "layer3"},
+                path="{path}/adjust-tcp-mss/enable",
+                vartype="yesno",
+            )
+        )
         params[-1].add_profile(
-            '7.1.0',
-            condition={'mode': 'layer3'},
-            vartype='yesno', path='{mode}/adjust-tcp-mss/enable')
-        params.append(VersionedParamPath(
-            'netflow_profile',
-            condition={'mode': ['layer3', 'layer2', 'virtual-wire']},
-            path='{mode}/netflow-profile'))
-        params.append(VersionedParamPath(
-            'lldp_enabled',
-            condition={'mode': ['layer3', 'layer2', 'virtual-wire']},
-            path='{mode}/lldp/enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'lldp_profile',
-            condition={'mode': ['layer3', 'layer2', 'virtual-wire']},
-            path='{mode}/lldp/profile'))
-        params.append(VersionedParamPath(
-            'comment', path='comment'))
-        params.append(VersionedParamPath(
-            'ipv4_mss_adjust', exclude=True))
+            "7.1.0",
+            condition={"mode": "layer3"},
+            vartype="yesno",
+            path="{mode}/adjust-tcp-mss/enable",
+        )
+        params.append(
+            VersionedParamPath(
+                "netflow_profile",
+                condition={"mode": ["layer3", "layer2", "virtual-wire"]},
+                path="{mode}/netflow-profile",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lldp_enabled",
+                condition={"mode": ["layer3", "layer2", "virtual-wire"]},
+                path="{mode}/lldp/enable",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lldp_profile",
+                condition={"mode": ["layer3", "layer2", "virtual-wire"]},
+                path="{mode}/lldp/profile",
+            )
+        )
+        params.append(VersionedParamPath("comment", path="comment"))
+        params.append(VersionedParamPath("ipv4_mss_adjust", exclude=True))
         params[-1].add_profile(
-            '7.1.0', condition={'mode': 'layer3'},
-            path='{mode}/adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
-        params.append(VersionedParamPath(
-            'ipv6_mss_adjust', exclude=True))
+            "7.1.0",
+            condition={"mode": "layer3"},
+            path="{mode}/adjust-tcp-mss/ipv4-mss-adjustment",
+            vartype="int",
+        )
+        params.append(VersionedParamPath("ipv6_mss_adjust", exclude=True))
         params[-1].add_profile(
-            '7.1.0', condition={'mode': 'layer3'},
-            path='{mode}/adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
-        params.append(VersionedParamPath(
-            'enable_dhcp', path='{mode}/dhcp-client/enable',
-            vartype='yesno', condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'create_dhcp_default_route',
-            path='{mode}/dhcp-client/create-default-route',
-            vartype='yesno', condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'dhcp_default_route_metric',
-            path='{mode}/dhcp-client/default-route-metric',
-            vartype='int', condition={'mode': 'layer3'}))
-        params.append(VersionedParamPath(
-            'lacp_enable',
-            condition={'mode': ['layer3', 'layer2', 'ha']},
-            vartype='yesno', path='{mode}/lacp/enable'))
-        params.append(VersionedParamPath(
-            'lacp_passive_pre_negotiation',
-            condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
-            vartype='yesno', path='{mode}/lacp/passive-pre-negotiation'))
-        params.append(VersionedParamPath(
-            'lacp_mode',
-            condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
-            values=['active', 'passive'], path='{mode}/lacp/mode'))
-        params.append(VersionedParamPath(
-            'lacp_rate',
-            condition={'mode': ['layer3', 'layer2', 'ha'], 'lacp_enable': True},
-            values=['fast', 'slow'], path='{mode}/lacp/transmission-rate'))
+            "7.1.0",
+            condition={"mode": "layer3"},
+            path="{mode}/adjust-tcp-mss/ipv6-mss-adjustment",
+            vartype="int",
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_dhcp",
+                path="{mode}/dhcp-client/enable",
+                vartype="yesno",
+                condition={"mode": "layer3"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "create_dhcp_default_route",
+                path="{mode}/dhcp-client/create-default-route",
+                vartype="yesno",
+                condition={"mode": "layer3"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "dhcp_default_route_metric",
+                path="{mode}/dhcp-client/default-route-metric",
+                vartype="int",
+                condition={"mode": "layer3"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lacp_enable",
+                condition={"mode": ["layer3", "layer2", "ha"]},
+                vartype="yesno",
+                path="{mode}/lacp/enable",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lacp_passive_pre_negotiation",
+                condition={"mode": ["layer3", "layer2", "ha"], "lacp_enable": True},
+                vartype="yesno",
+                path="{mode}/lacp/passive-pre-negotiation",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lacp_mode",
+                condition={"mode": ["layer3", "layer2", "ha"], "lacp_enable": True},
+                values=["active", "passive"],
+                path="{mode}/lacp/mode",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lacp_rate",
+                condition={"mode": ["layer3", "layer2", "ha"], "lacp_enable": True},
+                values=["fast", "slow"],
+                path="{mode}/lacp/transmission-rate",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -1242,6 +1505,7 @@ class VlanInterface(Interface):
         dhcp_default_route_metric (int): Metric for the DHCP default route
 
     """
+
     CHILDTYPES = (
         "network.IPv6Address",
         "network.Arp",
@@ -1249,57 +1513,74 @@ class VlanInterface(Interface):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/network/interface/vlan/units')
+        self._xpaths.add_profile(value="/network/interface/vlan/units")
         self._xpaths.add_profile(
-            value='{0}/network/interface/vlan/units'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/interface/vlan/units".format(
+                self._TEMPLATE_DEVICE_XPATH
+            ),
+            parents=("Template", "TemplateStack"),
+        )
 
         # xpath imports
-        self._xpath_imports.add_profile(value='/network/interface')
+        self._xpath_imports.add_profile(value="/network/interface")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'ip', path='ip', vartype='entry'))
-        params.append(VersionedParamPath(
-            'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'management_profile', path='interface-management-profile'))
-        params.append(VersionedParamPath(
-            'mtu', path='mtu', vartype='int'))
-        params.append(VersionedParamPath(
-            'adjust_tcp_mss', path='adjust-tcp-mss', vartype='yesno'))
+        params.append(VersionedParamPath("ip", path="ip", vartype="entry"))
+        params.append(
+            VersionedParamPath("ipv6_enabled", path="ipv6/enabled", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "management_profile", path="interface-management-profile"
+            )
+        )
+        params.append(VersionedParamPath("mtu", path="mtu", vartype="int"))
+        params.append(
+            VersionedParamPath("adjust_tcp_mss", path="adjust-tcp-mss", vartype="yesno")
+        )
+        params[-1].add_profile("7.1.0", vartype="yesno", path="adjust-tcp-mss/enable")
+        params.append(VersionedParamPath("netflow_profile", path="netflow-profile"))
+        params.append(VersionedParamPath("comment", path="comment"))
+        params.append(VersionedParamPath("ipv4_mss_adjust", exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno', path='adjust-tcp-mss/enable')
-        params.append(VersionedParamPath(
-            'netflow_profile', path='netflow-profile'))
-        params.append(VersionedParamPath(
-            'comment', path='comment'))
-        params.append(VersionedParamPath(
-            'ipv4_mss_adjust', exclude=True))
+            "7.1.0", path="adjust-tcp-mss/ipv4-mss-adjustment", vartype="int"
+        )
+        params.append(VersionedParamPath("ipv6_mss_adjust", exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
-        params.append(VersionedParamPath(
-            'ipv6_mss_adjust', exclude=True))
-        params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
-        params.append(VersionedParamPath(
-            'enable_dhcp', path='dhcp-client/enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'create_dhcp_default_route',
-            path='dhcp-client/create-default-route', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'dhcp_default_route_metric',
-            path='dhcp-client/default-route-metric', vartype='int'))
+            "7.1.0", path="adjust-tcp-mss/ipv6-mss-adjustment", vartype="int"
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_dhcp", path="dhcp-client/enable", vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "create_dhcp_default_route",
+                path="dhcp-client/create-default-route",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "dhcp_default_route_metric",
+                path="dhcp-client/default-route-metric",
+                vartype="int",
+            )
+        )
 
         self._params = tuple(params)
 
-    def set_vlan_interface(self, vlan_name, refresh=False,
-                update=False, running_config=False, return_type='object'):
+    def set_vlan_interface(
+        self,
+        vlan_name,
+        refresh=False,
+        update=False,
+        running_config=False,
+        return_type="object",
+    ):
         """Sets the VLAN's VLAN interface to this VLAN interface
 
         Creates a reference to this interface in the specified vlan and removes
@@ -1326,8 +1607,17 @@ class VlanInterface(Interface):
 
         """
         return self._set_reference(
-            vlan_name, Vlan, 'virtual_interface', 'string', True,
-            refresh, update, running_config, return_type, False)
+            vlan_name,
+            Vlan,
+            "virtual_interface",
+            "string",
+            True,
+            refresh,
+            update,
+            running_config,
+            return_type,
+            False,
+        )
 
 
 class LoopbackInterface(Interface):
@@ -1345,50 +1635,49 @@ class LoopbackInterface(Interface):
         ipv6_mss_adjust(int): TCP MSS adjustment for ipv6
 
     """
-    CHILDTYPES = (
-        "network.IPv6Address",
-    )
+
+    CHILDTYPES = ("network.IPv6Address",)
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/network/interface/loopback/units')
+        self._xpaths.add_profile(value="/network/interface/loopback/units")
         self._xpaths.add_profile(
-            value='{0}/network/interface/loopback/units'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/interface/loopback/units".format(
+                self._TEMPLATE_DEVICE_XPATH
+            ),
+            parents=("Template", "TemplateStack"),
+        )
 
         # xpath imports
-        self._xpath_imports.add_profile(value='/network/interface')
+        self._xpath_imports.add_profile(value="/network/interface")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'ip', path='ip', vartype='entry'))
-        params.append(VersionedParamPath(
-            'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'management_profile', path='interface-management-profile'))
-        params.append(VersionedParamPath(
-            'mtu', path='mtu', vartype='int'))
-        params.append(VersionedParamPath(
-            'adjust_tcp_mss', path='adjust-tcp-mss', vartype='yesno'))
+        params.append(VersionedParamPath("ip", path="ip", vartype="entry"))
+        params.append(
+            VersionedParamPath("ipv6_enabled", path="ipv6/enabled", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "management_profile", path="interface-management-profile"
+            )
+        )
+        params.append(VersionedParamPath("mtu", path="mtu", vartype="int"))
+        params.append(
+            VersionedParamPath("adjust_tcp_mss", path="adjust-tcp-mss", vartype="yesno")
+        )
+        params[-1].add_profile("7.1.0", vartype="yesno", path="adjust-tcp-mss/enable")
+        params.append(VersionedParamPath("netflow_profile", path="netflow-profile"))
+        params.append(VersionedParamPath("comment", path="comment"))
+        params.append(VersionedParamPath("ipv4_mss_adjust", exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            vartype='yesno', path='adjust-tcp-mss/enable')
-        params.append(VersionedParamPath(
-            'netflow_profile', path='netflow-profile'))
-        params.append(VersionedParamPath(
-            'comment', path='comment'))
-        params.append(VersionedParamPath(
-            'ipv4_mss_adjust', exclude=True))
+            "7.1.0", path="adjust-tcp-mss/ipv4-mss-adjustment", vartype="int"
+        )
+        params.append(VersionedParamPath("ipv6_mss_adjust", exclude=True))
         params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv4-mss-adjustment', vartype='int')
-        params.append(VersionedParamPath(
-            'ipv6_mss_adjust', exclude=True))
-        params[-1].add_profile(
-            '7.1.0',
-            path='adjust-tcp-mss/ipv6-mss-adjustment', vartype='int')
+            "7.1.0", path="adjust-tcp-mss/ipv6-mss-adjustment", vartype="int"
+        )
 
         self._params = tuple(params)
 
@@ -1405,35 +1694,37 @@ class TunnelInterface(Interface):
         comment (str): The interface's comment
 
     """
-    CHILDTYPES = (
-        "network.IPv6Address",
-    )
+
+    CHILDTYPES = ("network.IPv6Address",)
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/network/interface/tunnel/units')
+        self._xpaths.add_profile(value="/network/interface/tunnel/units")
         self._xpaths.add_profile(
-            value='{0}/network/interface/tunnel/units'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/interface/tunnel/units".format(
+                self._TEMPLATE_DEVICE_XPATH
+            ),
+            parents=("Template", "TemplateStack"),
+        )
 
         # xpath imports
-        self._xpath_imports.add_profile(value='/network/interface')
+        self._xpath_imports.add_profile(value="/network/interface")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'ip', path='ip', vartype='entry'))
-        params.append(VersionedParamPath(
-            'ipv6_enabled', path='ipv6/enabled', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'management_profile', path='interface-management-profile'))
-        params.append(VersionedParamPath(
-            'mtu', path='mtu', vartype='int'))
-        params.append(VersionedParamPath(
-            'netflow_profile', path='netflow-profile'))
-        params.append(VersionedParamPath(
-            'comment', path='comment'))
+        params.append(VersionedParamPath("ip", path="ip", vartype="entry"))
+        params.append(
+            VersionedParamPath("ipv6_enabled", path="ipv6/enabled", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "management_profile", path="interface-management-profile"
+            )
+        )
+        params.append(VersionedParamPath("mtu", path="mtu", vartype="int"))
+        params.append(VersionedParamPath("netflow_profile", path="netflow-profile"))
+        params.append(VersionedParamPath("comment", path="comment"))
 
         self._params = tuple(params)
 
@@ -1453,29 +1744,33 @@ class StaticRoute(VersionedPanObject):
         metric (int): Metric (Default: 10)
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/routing-table/ip/static-route')
+        self._xpaths.add_profile(value="/routing-table/ip/static-route")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'destination', path='destination'))
-        params.append(VersionedParamPath(
-            'nexthop_type', default='ip-address',
-            values=['discard', 'ip-address', 'next-vr'],
-            path='nexthop/{nexthop_type}'))
-        params.append(VersionedParamPath(
-            'nexthop', path='nexthop/{nexthop_type}'))
-        params.append(VersionedParamPath(
-            'interface', path='interface'))
-        params.append(VersionedParamPath(
-            'admin_dist', vartype='int', path='admin-dist'))
-        params.append(VersionedParamPath(
-            'metric', default=10, vartype='int', path='metric'))
+        params.append(VersionedParamPath("destination", path="destination"))
+        params.append(
+            VersionedParamPath(
+                "nexthop_type",
+                default="ip-address",
+                values=["discard", "ip-address", "next-vr"],
+                path="nexthop/{nexthop_type}",
+            )
+        )
+        params.append(VersionedParamPath("nexthop", path="nexthop/{nexthop_type}"))
+        params.append(VersionedParamPath("interface", path="interface"))
+        params.append(
+            VersionedParamPath("admin_dist", vartype="int", path="admin-dist")
+        )
+        params.append(
+            VersionedParamPath("metric", default=10, vartype="int", path="metric")
+        )
 
         self._params = tuple(params)
 
@@ -1495,29 +1790,33 @@ class StaticRouteV6(VersionedPanObject):
         metric (int): Metric (Default: 10)
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/routing-table/ipv6/static-route')
+        self._xpaths.add_profile(value="/routing-table/ipv6/static-route")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'destination', path='destination'))
-        params.append(VersionedParamPath(
-            'nexthop_type', default='ipv6-address',
-            values=['discard', 'ipv6-address'],
-            path='nexthop/{nexthop_type}'))
-        params.append(VersionedParamPath(
-            'nexthop', path='nexthop/{nexthop_type}'))
-        params.append(VersionedParamPath(
-            'interface', path='interface'))
-        params.append(VersionedParamPath(
-            'admin_dist', vartype='int', path='admin-dist'))
-        params.append(VersionedParamPath(
-            'metric', default=10, vartype='int', path='metric'))
+        params.append(VersionedParamPath("destination", path="destination"))
+        params.append(
+            VersionedParamPath(
+                "nexthop_type",
+                default="ipv6-address",
+                values=["discard", "ipv6-address"],
+                path="nexthop/{nexthop_type}",
+            )
+        )
+        params.append(VersionedParamPath("nexthop", path="nexthop/{nexthop_type}"))
+        params.append(VersionedParamPath("interface", path="interface"))
+        params.append(
+            VersionedParamPath("admin_dist", vartype="int", path="admin-dist")
+        )
+        params.append(
+            VersionedParamPath("metric", default=10, vartype="int", path="metric")
+        )
 
         self._params = tuple(params)
 
@@ -1539,7 +1838,8 @@ class VirtualRouter(VsysOperations):
         ad_rip (int): Administrative distance for this protocol
 
     """
-    _DEFAULT_NAME = 'default'
+
+    _DEFAULT_NAME = "default"
     SUFFIX = ENTRY
     CHILDTYPES = (
         "network.StaticRoute",
@@ -1552,30 +1852,38 @@ class VirtualRouter(VsysOperations):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/network/virtual-router')
+        self._xpaths.add_profile(value="/network/virtual-router")
         self._xpaths.add_profile(
-            value='{0}/network/virtual-router'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/virtual-router".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # xpath imports
-        self._xpath_imports.add_profile(value='/network/virtual-router')
+        self._xpath_imports.add_profile(value="/network/virtual-router")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'interface', path='interface', vartype='member'))
+        params.append(
+            VersionedParamPath("interface", path="interface", vartype="member")
+        )
 
         admin_dists = (
-            ('ad_static', 'static'), ('ad_static_ipv6', 'static-ipv6'),
-            ('ad_ospf_int', 'ospf-int'), ('ad_ospf_ext', 'ospf-ext'),
-            ('ad_ospfv3_int', 'ospfv3-int'), ('ad_ospfv3_ext', 'ospfv3-ext'),
-            ('ad_ibgp', 'ibgp'), ('ad_ebgp', 'ebgp'), ('ad_rip', 'rip')
+            ("ad_static", "static"),
+            ("ad_static_ipv6", "static-ipv6"),
+            ("ad_ospf_int", "ospf-int"),
+            ("ad_ospf_ext", "ospf-ext"),
+            ("ad_ospfv3_int", "ospfv3-int"),
+            ("ad_ospfv3_ext", "ospfv3-ext"),
+            ("ad_ibgp", "ibgp"),
+            ("ad_ebgp", "ebgp"),
+            ("ad_rip", "rip"),
         )
 
         for var_name, path in admin_dists:
-            params.append(VersionedParamPath(
-                var_name, vartype='int', path='admin-dists/' + path))
+            params.append(
+                VersionedParamPath(var_name, vartype="int", path="admin-dists/" + path)
+            )
 
         self._params = tuple(params)
 
@@ -1598,6 +1906,7 @@ class RedistributionProfileBase(VersionedPanObject):
         bgp_filter_extended_community (tuple): BGP filter on extended community
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -1605,31 +1914,60 @@ class RedistributionProfileBase(VersionedPanObject):
 
         params = []
 
-        params.append(VersionedParamPath(
-            'priority', vartype='int'))
-        params.append(VersionedParamPath(
-            'action', values=['no-redist', 'redist'], path='action/{action}'))
-        params.append(VersionedParamPath(
-            'filter_type', path='filter/type', vartype='member'))
-        params.append(VersionedParamPath(
-            'filter_interface', path='filter/interface', vartype='member'))
-        params.append(VersionedParamPath(
-            'filter_destination', path='filter/destination', vartype='member'))
-        params.append(VersionedParamPath(
-            'filter_nexthop', path='filter/nexthop', vartype='member'))
-        params.append(VersionedParamPath(
-            'ospf_filter_pathtype', path='filter/ospf/path-type',
-            vartype='member', values=['intra-area', 'inter-area', 'ext-1', 'ext-2']))
-        params.append(VersionedParamPath(
-            'ospf_filter_area', path='filter/ospf/area', vartype='member'))
-        params.append(VersionedParamPath(
-            'ospf_filter_tag', path='filter/ospf/tag', vartype='member'))
-        params.append(VersionedParamPath(
-            'bgp_filter_community', path='filter/bgp/community',
-            vartype='member'))
-        params.append(VersionedParamPath(
-            'bgp_filter_extended_community',
-            path='filter/bgp/extended-community', vartype='member'))
+        params.append(VersionedParamPath("priority", vartype="int"))
+        params.append(
+            VersionedParamPath(
+                "action", values=["no-redist", "redist"], path="action/{action}"
+            )
+        )
+        params.append(
+            VersionedParamPath("filter_type", path="filter/type", vartype="member")
+        )
+        params.append(
+            VersionedParamPath(
+                "filter_interface", path="filter/interface", vartype="member"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "filter_destination", path="filter/destination", vartype="member"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "filter_nexthop", path="filter/nexthop", vartype="member"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_filter_pathtype",
+                path="filter/ospf/path-type",
+                vartype="member",
+                values=["intra-area", "inter-area", "ext-1", "ext-2"],
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_filter_area", path="filter/ospf/area", vartype="member"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_filter_tag", path="filter/ospf/tag", vartype="member"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_filter_community", path="filter/bgp/community", vartype="member"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_filter_extended_community",
+                path="filter/bgp/extended-community",
+                vartype="member",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -1652,10 +1990,11 @@ class RedistributionProfile(RedistributionProfileBase):
         bgp_filter_extended_community (tuple): BGP filter on extended community
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/protocol/redist-profile')
+        self._xpaths.add_profile(value="/protocol/redist-profile")
 
         RedistributionProfileBase._setup(self)
 
@@ -1678,10 +2017,11 @@ class RedistributionProfileIPv6(RedistributionProfileBase):
         bgp_filter_extended_community (tuple): BGP filter on extended community
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/protocol/redist-profile-ipv6')
+        self._xpaths.add_profile(value="/protocol/redist-profile-ipv6")
 
         RedistributionProfileBase._setup(self)
 
@@ -1704,6 +2044,7 @@ class Ospf(VersionedPanObject):
         gr_max_neighbor_restart_time (int): Graceful restart neighbor restart time
 
     """
+
     NAME = None
     CHILDTYPES = (
         "network.OspfArea",
@@ -1712,41 +2053,63 @@ class Ospf(VersionedPanObject):
     )
 
     def _setup(self):
-        self._xpaths.add_profile(value='/protocol/ospf')
+        self._xpaths.add_profile(value="/protocol/ospf")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', default=True, path='enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'router_id'))
-        params.append(VersionedParamPath(
-            'reject_default_route', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'allow_redist_default_route', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'rfc1583', vartype='yesno'))
+        params.append(
+            VersionedParamPath("enable", default=True, path="enable", vartype="yesno")
+        )
+        params.append(VersionedParamPath("router_id"))
+        params.append(VersionedParamPath("reject_default_route", vartype="yesno"))
+        params.append(VersionedParamPath("allow_redist_default_route", vartype="yesno"))
+        params.append(VersionedParamPath("rfc1583", vartype="yesno"))
         # TODO: Add flood prevention
-        params.append(VersionedParamPath(
-            'spf_calculation_delay', path='timers/spf-calculation-delay',
-            vartype='int'))
-        params.append(VersionedParamPath(
-            'lsa_interval', path='timers/lsa-interval', vartype='int'))
-        params.append(VersionedParamPath(
-            'graceful_restart_enable', path='graceful-restart/enable',
-            vartype='yesno'))
-        params.append(VersionedParamPath(
-            'gr_grace_period', path='graceful-restart/grace-period',
-            vartype='int'))
-        params.append(VersionedParamPath(
-            'gr_helper_enable', path='graceful-restart/helper-enable',
-            vartype='yesno'))
-        params.append(VersionedParamPath(
-            'gr_strict_lsa_checking',
-            path='graceful-restart/strict-LSA-checking', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'gr_max_neighbor_restart_time',
-            path='graceful-restart/max-neighbor-restart-time', vartype='int'))
+        params.append(
+            VersionedParamPath(
+                "spf_calculation_delay",
+                path="timers/spf-calculation-delay",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lsa_interval", path="timers/lsa-interval", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "graceful_restart_enable",
+                path="graceful-restart/enable",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gr_grace_period", path="graceful-restart/grace-period", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gr_helper_enable",
+                path="graceful-restart/helper-enable",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gr_strict_lsa_checking",
+                path="graceful-restart/strict-LSA-checking",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gr_max_neighbor_restart_time",
+                path="graceful-restart/max-neighbor-restart-time",
+                vartype="int",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -1763,6 +2126,7 @@ class OspfArea(VersionedPanObject):
         default_route_advertise_type (str): 'ext-1' or 'ext2' (Default: ext-2 - nssa only
 
     """
+
     SUFFIX = ENTRY
     CHILDTYPES = (
         "network.OspfRange",
@@ -1771,37 +2135,55 @@ class OspfArea(VersionedPanObject):
     )
 
     def _setup(self):
-        self._xpaths.add_profile(value='/area')
+        self._xpaths.add_profile(value="/area")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'type', default='normal', values=['normal', 'stub', 'nssa'],
-            path='type/{type}'))
-        params.append(VersionedParamPath(
-            'accept_summary',
-            condition={'type': ['stub', 'nssa']},
-            path='type/{type}/accept-summary',
-            vartype='yesno'))
-        params.append(VersionedParamPath(
-            'default_route_advertise',
-            default='disable',
-            condition={'type': ['stub', 'nssa']},
-            values=['disable', 'advertise'],
-            path='type/{type}/default-route/{default_route_advertise}'))
-        params.append(VersionedParamPath(
-            'default_route_advertise_metric',
-            condition={
-                'type': ['stub', 'nssa'],
-                'default_route_advertise': 'advertise'},
-            path='type/{type}/default-route/advertise/metric',
-            vartype='int'))
-        params.append(VersionedParamPath(
-            'default_route_advertise_type',
-            default='ext-2',
-            condition={'type': 'nssa', 'default_route_advertise': 'advertise'},
-            values=['ext-1', 'ext-2'],
-            path='type/nssa/default-route/advertise/type'))
+        params.append(
+            VersionedParamPath(
+                "type",
+                default="normal",
+                values=["normal", "stub", "nssa"],
+                path="type/{type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "accept_summary",
+                condition={"type": ["stub", "nssa"]},
+                path="type/{type}/accept-summary",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "default_route_advertise",
+                default="disable",
+                condition={"type": ["stub", "nssa"]},
+                values=["disable", "advertise"],
+                path="type/{type}/default-route/{default_route_advertise}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "default_route_advertise_metric",
+                condition={
+                    "type": ["stub", "nssa"],
+                    "default_route_advertise": "advertise",
+                },
+                path="type/{type}/default-route/advertise/metric",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "default_route_advertise_type",
+                default="ext-2",
+                condition={"type": "nssa", "default_route_advertise": "advertise"},
+                values=["ext-1", "ext-2"],
+                path="type/nssa/default-route/advertise/type",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -1814,16 +2196,22 @@ class OspfRange(VersionedPanObject):
         mode (str): 'advertise' or 'suppress' (Default: advertise)
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/range')
+        self._xpaths.add_profile(value="/range")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'mode', default='advertise', values=['advertise', 'suppress'],
-            path='{mode}'))
+        params.append(
+            VersionedParamPath(
+                "mode",
+                default="advertise",
+                values=["advertise", "suppress"],
+                path="{mode}",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -1836,16 +2224,22 @@ class OspfNssaExternalRange(VersionedPanObject):
         mode (str): 'advertise' or 'suppress' (Default: advertise)
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/type/nssa/nssa-ext-range')
+        self._xpaths.add_profile(value="/type/nssa/nssa-ext-range")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'mode', default='advertise', values=['advertise', 'suppress'],
-            path='{mode}'))
+        params.append(
+            VersionedParamPath(
+                "mode",
+                default="advertise",
+                values=["advertise", "suppress"],
+                path="{mode}",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -1868,39 +2262,33 @@ class OspfAreaInterface(VersionedPanObject):
         authentication (str): Reference to a :class:`pandevice.network.OspfAuthProfile`
 
     """
+
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.OspfNeighbor",
-    )
+    CHILDTYPES = ("network.OspfNeighbor",)
 
     def _setup(self):
-        self._xpaths.add_profile(value='/interface')
+        self._xpaths.add_profile(value="/interface")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'passive', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'link_type', default='broadcast',
-            values=['broadcast', 'p2p', 'p2mp'], path='link-type/{link_type}'))
-        params.append(VersionedParamPath(
-            'metric', vartype='int'))
-        params.append(VersionedParamPath(
-            'priority', vartype='int'))
-        params.append(VersionedParamPath(
-            'hello_interval', vartype='int'))
-        params.append(VersionedParamPath(
-            'dead_counts', vartype='int'))
-        params.append(VersionedParamPath(
-            'retransmit_interval', vartype='int'))
-        params.append(VersionedParamPath(
-            'transit_delay', vartype='int'))
-        params.append(VersionedParamPath(
-            'gr_delay', vartype='int'))
-        params.append(VersionedParamPath(
-            'authentication'))
+        params.append(VersionedParamPath("enable", vartype="yesno"))
+        params.append(VersionedParamPath("passive", vartype="yesno"))
+        params.append(
+            VersionedParamPath(
+                "link_type",
+                default="broadcast",
+                values=["broadcast", "p2p", "p2mp"],
+                path="link-type/{link_type}",
+            )
+        )
+        params.append(VersionedParamPath("metric", vartype="int"))
+        params.append(VersionedParamPath("priority", vartype="int"))
+        params.append(VersionedParamPath("hello_interval", vartype="int"))
+        params.append(VersionedParamPath("dead_counts", vartype="int"))
+        params.append(VersionedParamPath("retransmit_interval", vartype="int"))
+        params.append(VersionedParamPath("transit_delay", vartype="int"))
+        params.append(VersionedParamPath("gr_delay", vartype="int"))
+        params.append(VersionedParamPath("authentication"))
 
         self._params = tuple(params)
 
@@ -1913,15 +2301,15 @@ class OspfNeighbor(VersionedPanObject):
         metric (int): Metric
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/neighbor')
+        self._xpaths.add_profile(value="/neighbor")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'metric', vartype='int', exclude=True))
+        params.append(VersionedParamPath("metric", vartype="int", exclude=True))
 
         self._params = tuple(params)
 
@@ -1936,20 +2324,23 @@ class OspfAuthProfile(VersionedPanObject):
             If type is set to 'md5', add a :class:`pandevice.network.OspfAuthProfileMd5`
 
     """
+
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.OspfAuthProfileMd5",
-    )
+    CHILDTYPES = ("network.OspfAuthProfileMd5",)
 
     def _setup(self):
-        self._xpaths.add_profile(value='/auth-profile')
+        self._xpaths.add_profile(value="/auth-profile")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'type', values=['password', 'md5'], path='{type}'))
-        params.append(VersionedParamPath(
-            'password', condition={'type': 'password'}, path='{type}'))
+        params.append(
+            VersionedParamPath("type", values=["password", "md5"], path="{type}")
+        )
+        params.append(
+            VersionedParamPath(
+                "password", condition={"type": "password"}, path="{type}"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -1963,18 +2354,17 @@ class OspfAuthProfileMd5(VersionedPanObject):
         preferred (bool): This key is preferred
 
     """
+
     SUFFIX = ENTRY
-    NAME = 'keyid'
+    NAME = "keyid"
 
     def _setup(self):
-        self._xpaths.add_profile(value='/md5')
+        self._xpaths.add_profile(value="/md5")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'key', vartype='encrypted'))
-        params.append(VersionedParamPath(
-            'preferred', vartype='yesno'))
+        params.append(VersionedParamPath("key", vartype="encrypted"))
+        params.append(VersionedParamPath("preferred", vartype="yesno"))
 
         self._params = tuple(params)
 
@@ -1989,19 +2379,21 @@ class OspfExportRules(VersionedPanObject):
         metric (int): Metric
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/export-rules')
+        self._xpaths.add_profile(value="/export-rules")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'new_path_type', default='ext-2', values=['ext-1', 'ext-2']))
-        params.append(VersionedParamPath(
-            'new_tag'))
-        params.append(VersionedParamPath(
-            'metric', vartype='int'))
+        params.append(
+            VersionedParamPath(
+                "new_path_type", default="ext-2", values=["ext-1", "ext-2"]
+            )
+        )
+        params.append(VersionedParamPath("new_tag"))
+        params.append(VersionedParamPath("metric", vartype="int"))
 
         self._params = tuple(params)
 
@@ -2021,6 +2413,7 @@ class Bgp(VersionedPanObject):
         global_bfd_profile (str): BFD Profile
 
     """
+
     NAME = None
     CHILDTYPES = (
         "network.BgpRoutingOptions",
@@ -2035,28 +2428,35 @@ class Bgp(VersionedPanObject):
     )
 
     def _setup(self):
-        self._xpaths.add_profile(value='/protocol/bgp')
+        self._xpaths.add_profile(value="/protocol/bgp")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', default=True, path='enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'router_id'))
-        params.append(VersionedParamPath(
-            'reject_default_route', default=True, vartype='yesno'))
-        params.append(VersionedParamPath(
-            'allow_redist_default_route', default=False, vartype='yesno'))
-        params.append(VersionedParamPath(
-            'install_route', default=False, vartype='yesno'))
-        params.append(VersionedParamPath(
-            'ecmp_multi_as', default=False, vartype='yesno'))
-        params.append(VersionedParamPath(
-            'enforce_first_as', default=True, vartype='yesno'))
-        params.append(VersionedParamPath(
-            'local_as', vartype='str'))
-        params.append(VersionedParamPath(
-            'global_bfd_profile', path='global-bfd/profile'))
+        params.append(
+            VersionedParamPath("enable", default=True, path="enable", vartype="yesno")
+        )
+        params.append(VersionedParamPath("router_id"))
+        params.append(
+            VersionedParamPath("reject_default_route", default=True, vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "allow_redist_default_route", default=False, vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath("install_route", default=False, vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath("ecmp_multi_as", default=False, vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath("enforce_first_as", default=True, vartype="yesno")
+        )
+        params.append(VersionedParamPath("local_as", vartype="str"))
+        params.append(
+            VersionedParamPath("global_bfd_profile", path="global-bfd/profile")
+        )
 
         self._params = tuple(params)
 
@@ -2078,45 +2478,69 @@ class BgpRoutingOptions(VersionedPanObject):
         aggregate_med (bool): aggregate route only if they have same MED attributes
 
     """
+
     NAME = None
     SUFFIX = None
-    CHILDTYPES = (
-        "network.BgpOutboundRouteFilter",
-    )
+    CHILDTYPES = ("network.BgpOutboundRouteFilter",)
 
     def _setup(self):
-        self._xpaths.add_profile(value='/routing-options')
+        self._xpaths.add_profile(value="/routing-options")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'as_format', default='2-byte', values=['2-byte', '4-byte']))
-        params.append(VersionedParamPath(
-            'always_compare_med', path='med/always-compare-med',
-            vartype='yesno'))
-        params.append(VersionedParamPath(
-            'deterministic_med_comparison', path='med/deterministic-med-comparison',
-            vartype='yesno'))
-        params.append(VersionedParamPath(
-            'default_local_preference', vartype='int'))
-        params.append(VersionedParamPath(
-            'graceful_restart_enable', path='graceful-restart/enable',
-            vartype='yesno'))
-        params.append(VersionedParamPath(
-            'gr_stale_route_time', path='graceful-restart/stale-route-time',
-            vartype='int'))
-        params.append(VersionedParamPath(
-            'gr_local_restart_time', path='graceful-restart/local-restart-time',
-            vartype='int'))
-        params.append(VersionedParamPath(
-            'gr_max_peer_restart_time', path='graceful-restart/max-peer-restart-time',
-            vartype='int'))
-        params.append(VersionedParamPath(
-            'reflector_cluster_id'))
-        params.append(VersionedParamPath(
-            'confederation_member_as', default=None))
-        params.append(VersionedParamPath(
-            'aggregate_med', path='aggregate/aggregate-med', vartype='yesno'))
+        params.append(
+            VersionedParamPath(
+                "as_format", default="2-byte", values=["2-byte", "4-byte"]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "always_compare_med", path="med/always-compare-med", vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "deterministic_med_comparison",
+                path="med/deterministic-med-comparison",
+                vartype="yesno",
+            )
+        )
+        params.append(VersionedParamPath("default_local_preference", vartype="int"))
+        params.append(
+            VersionedParamPath(
+                "graceful_restart_enable",
+                path="graceful-restart/enable",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gr_stale_route_time",
+                path="graceful-restart/stale-route-time",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gr_local_restart_time",
+                path="graceful-restart/local-restart-time",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gr_max_peer_restart_time",
+                path="graceful-restart/max-peer-restart-time",
+                vartype="int",
+            )
+        )
+        params.append(VersionedParamPath("reflector_cluster_id"))
+        params.append(VersionedParamPath("confederation_member_as", default=None))
+        params.append(
+            VersionedParamPath(
+                "aggregate_med", path="aggregate/aggregate-med", vartype="yesno"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -2132,20 +2556,26 @@ class BgpOutboundRouteFilter(VersionedPanObject):
         cisco_prefix_mode (bool): ORF vendor-compatible mode
 
     """
+
     NAME = None
     SUFFIX = None
 
     def _setup(self):
-        self._xpaths.add_profile(value='/outbound-route-filter')
+        self._xpaths.add_profile(value="/outbound-route-filter")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', path='enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'max_received_entries', path='max-received-entries', vartype='int'))
-        params.append(VersionedParamPath(
-            'cisco_prefix_mode', path='cisco-prefix-mode', vartype='yesno'))
+        params.append(VersionedParamPath("enable", path="enable", vartype="yesno"))
+        params.append(
+            VersionedParamPath(
+                "max_received_entries", path="max-received-entries", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "cisco_prefix_mode", path="cisco-prefix-mode", vartype="yesno"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -2163,26 +2593,21 @@ class BgpDampeningProfile(VersionedPanObject):
         decay_half_life_unreachable (int): Decay half-life while unreachable (in seconds)
 
     """
-    _DEFAULT_NAME = 'default'
+
+    _DEFAULT_NAME = "default"
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/dampening-profile')
+        self._xpaths.add_profile(value="/dampening-profile")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'cutoff', vartype='float'))
-        params.append(VersionedParamPath(
-            'reuse', vartype='float'))
-        params.append(VersionedParamPath(
-            'max_hold_time', vartype='int'))
-        params.append(VersionedParamPath(
-            'decay_half_life_reachable', vartype='int'))
-        params.append(VersionedParamPath(
-            'decay_half_life_unreachable', vartype='int'))
+        params.append(VersionedParamPath("enable", vartype="yesno"))
+        params.append(VersionedParamPath("cutoff", vartype="float"))
+        params.append(VersionedParamPath("reuse", vartype="float"))
+        params.append(VersionedParamPath("max_hold_time", vartype="int"))
+        params.append(VersionedParamPath("decay_half_life_reachable", vartype="int"))
+        params.append(VersionedParamPath("decay_half_life_unreachable", vartype="int"))
 
         self._params = tuple(params)
 
@@ -2195,15 +2620,15 @@ class BgpAuthProfile(VersionedPanObject):
         secret (str): shared secret for the TCP MD5 authentication.
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/auth-profile')
+        self._xpaths.add_profile(value="/auth-profile")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'secret', vartype='encrypted'))
+        params.append(VersionedParamPath("secret", vartype="encrypted"))
 
         self._params = tuple(params)
 
@@ -2222,33 +2647,51 @@ class BgpPeerGroup(VersionedPanObject):
         remove_private_as (bool): remove private AS when exporting route, only with 'ebgp'
 
     """
+
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.BgpPeer",
-    )
+    CHILDTYPES = ("network.BgpPeer",)
 
     def _setup(self):
-        self._xpaths.add_profile(value='/peer-group')
+        self._xpaths.add_profile(value="/peer-group")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'aggregated_confed_as_path', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'soft_reset_with_stored_info', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'type', path='type/{type}', default='ebgp',
-            values=('ebgp', 'ibgp', 'ebgp-confed', 'ibgp-confed')))
-        params.append(VersionedParamPath(
-            'export_nexthop', path='type/{type}/export-nexthop', values=('resolve', 'use-self')))
-        params.append(VersionedParamPath(
-            'import_nexthop', condition={'type': 'ebgp'},
-            path='type/{type}/import-nexthop', values=('original', 'use-peer')))
-        params.append(VersionedParamPath(
-            'remove_private_as', condition={'type': 'ebgp'},
-            path='type/{type}/remove-private-as', vartype='yesno'))
+        params.append(VersionedParamPath("enable", vartype="yesno"))
+        params.append(VersionedParamPath("aggregated_confed_as_path", vartype="yesno"))
+        params.append(
+            VersionedParamPath("soft_reset_with_stored_info", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "type",
+                path="type/{type}",
+                default="ebgp",
+                values=("ebgp", "ibgp", "ebgp-confed", "ibgp-confed"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "export_nexthop",
+                path="type/{type}/export-nexthop",
+                values=("resolve", "use-self"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "import_nexthop",
+                condition={"type": "ebgp"},
+                path="type/{type}/import-nexthop",
+                values=("original", "use-peer"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "remove_private_as",
+                condition={"type": "ebgp"},
+                path="type/{type}/remove-private-as",
+                vartype="yesno",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -2299,82 +2742,137 @@ class BgpPeer(VersionedPanObject):
             * None
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/peer')
+        self._xpaths.add_profile(value="/peer")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', path='enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'peer_as', path='peer-as'))
-        params.append(VersionedParamPath(
-            'enable_mp_bgp', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'address_family_identifier', condition={'enable_mp_bgp': True},
-            values=('ipv4', 'ipv6')))
-        params.append(VersionedParamPath(
-            'subsequent_address_unicast', condition={'enable_mp_bgp': True},
-            path='subsequent-address-family-identifier/unicast', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'subsequent_address_multicast', condition={'enable_mp_bgp': True},
-            path='subsequent-address-family-identifier/multicast', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'local_interface', path='local-address/interface'))
-        params.append(VersionedParamPath(
-            'local_interface_ip', path='local-address/ip'))
-        params.append(VersionedParamPath(
-            'peer_address_ip', path='peer-address/ip'))
-        params.append(VersionedParamPath(
-            'connection_authentication', path='connection-options/authentication'))
-        params.append(VersionedParamPath(
-            'connection_keep_alive_interval',
-            path='connection-options/keep-alive-interval', vartype='int'))
-        params.append(VersionedParamPath(
-            'connection_min_route_adv_interval',
-            path='connection-options/min-route-adv-interval', vartype='int'))
-        params.append(VersionedParamPath(
-            'connection_multihop',
-            path='connection-options/multihop', vartype='int'))
-        params.append(VersionedParamPath(
-            'connection_open_delay_time',
-            path='connection-options/open-delay-time', vartype='int'))
-        params.append(VersionedParamPath(
-            'connection_hold_time',
-            path='connection-options/hold-time', vartype='int'))
-        params.append(VersionedParamPath(
-            'connection_idle_hold_time',
-            path='connection-options/idle-hold-time', vartype='int'))
-        params.append(VersionedParamPath(
-            'connection_incoming_allow',
-            path='connection-options/incoming-bgp-connection/allow', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'connection_outgoing_allow',
-            path='connection-options/outgoing-bgp-connection/allow', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'connection_incoming_remote_port',
-            path='connection-options/incoming-bgp-connection/remote-port', vartype='int'))
-        params.append(VersionedParamPath(
-            'connection_outgoing_local_port',
-            path='connection-options/outgoing-bgp-connection/local-port', vartype='int'))
-        params.append(VersionedParamPath(
-            'enable_sender_side_loop_detection', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'reflector_client', values=('non-client', 'client', 'meshed-client')))
-        params.append(VersionedParamPath(
-            'peering_type', values=('unspecified', 'bilateral')))
+        params.append(VersionedParamPath("enable", path="enable", vartype="yesno"))
+        params.append(VersionedParamPath("peer_as", path="peer-as"))
+        params.append(VersionedParamPath("enable_mp_bgp", vartype="yesno"))
+        params.append(
+            VersionedParamPath(
+                "address_family_identifier",
+                condition={"enable_mp_bgp": True},
+                values=("ipv4", "ipv6"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "subsequent_address_unicast",
+                condition={"enable_mp_bgp": True},
+                path="subsequent-address-family-identifier/unicast",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "subsequent_address_multicast",
+                condition={"enable_mp_bgp": True},
+                path="subsequent-address-family-identifier/multicast",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath("local_interface", path="local-address/interface")
+        )
+        params.append(VersionedParamPath("local_interface_ip", path="local-address/ip"))
+        params.append(VersionedParamPath("peer_address_ip", path="peer-address/ip"))
+        params.append(
+            VersionedParamPath(
+                "connection_authentication", path="connection-options/authentication"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_keep_alive_interval",
+                path="connection-options/keep-alive-interval",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_min_route_adv_interval",
+                path="connection-options/min-route-adv-interval",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_multihop", path="connection-options/multihop", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_open_delay_time",
+                path="connection-options/open-delay-time",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_hold_time",
+                path="connection-options/hold-time",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_idle_hold_time",
+                path="connection-options/idle-hold-time",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_incoming_allow",
+                path="connection-options/incoming-bgp-connection/allow",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_outgoing_allow",
+                path="connection-options/outgoing-bgp-connection/allow",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_incoming_remote_port",
+                path="connection-options/incoming-bgp-connection/remote-port",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_outgoing_local_port",
+                path="connection-options/outgoing-bgp-connection/local-port",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath("enable_sender_side_loop_detection", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "reflector_client", values=("non-client", "client", "meshed-client")
+            )
+        )
+        params.append(
+            VersionedParamPath("peering_type", values=("unspecified", "bilateral"))
+        )
         # params.append(VersionedParamPath(
         #     'aggregated_confed_as_path', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'max_prefixes'))
+        params.append(VersionedParamPath("max_prefixes"))
         # params.append(VersionedParamPath(
         #     'max_orf_entries', vartype='int'))
         # params.append(VersionedParamPath(
         #     'soft_reset_with_stored_info', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'bfd_profile', path='bfd/profile'))
+        params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
 
         self._params = tuple(params)
 
@@ -2407,6 +2905,7 @@ class BgpPolicyFilter(VersionedPanObject):
         match_extended_community_regex (str): Extended Community AS-path regular expression
 
     """
+
     # SUFFIX = None
 
     def _setup(self):
@@ -2415,27 +2914,45 @@ class BgpPolicyFilter(VersionedPanObject):
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'match_afi', path='match/afi', default=None, values=('ip', 'ipv6')))
-        params.append(VersionedParamPath(
-            'match_safi', path='match/safi', default=None, values=('ip', 'ipv6')))
-        params.append(VersionedParamPath(
-            'match_route_table', path='match/route-table', default='unicast',
-            values=('unicast', 'multicast', 'both')))
-        params.append(VersionedParamPath(
-            'match_nexthop', path='match/nexthop', vartype='member'))
-        params.append(VersionedParamPath(
-            'match_from_peer', path='match/from-peer', vartype='member'))
-        params.append(VersionedParamPath(
-            'match_med', path='match/med', vartype='int'))
-        params.append(VersionedParamPath(
-            'match_as_path_regex', path='match/as-path/regex'))
-        params.append(VersionedParamPath(
-            'match_community_regex', path='match/community/regex'))
-        params.append(VersionedParamPath(
-            'match_extended_community_regex', path='match/extended-community/regex'))
+        params.append(VersionedParamPath("enable", vartype="yesno"))
+        params.append(
+            VersionedParamPath(
+                "match_afi", path="match/afi", default=None, values=("ip", "ipv6")
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_safi", path="match/safi", default=None, values=("ip", "ipv6")
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_route_table",
+                path="match/route-table",
+                default="unicast",
+                values=("unicast", "multicast", "both"),
+            )
+        )
+        params.append(
+            VersionedParamPath("match_nexthop", path="match/nexthop", vartype="member")
+        )
+        params.append(
+            VersionedParamPath(
+                "match_from_peer", path="match/from-peer", vartype="member"
+            )
+        )
+        params.append(VersionedParamPath("match_med", path="match/med", vartype="int"))
+        params.append(
+            VersionedParamPath("match_as_path_regex", path="match/as-path/regex")
+        )
+        params.append(
+            VersionedParamPath("match_community_regex", path="match/community/regex")
+        )
+        params.append(
+            VersionedParamPath(
+                "match_extended_community_regex", path="match/extended-community/regex"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -2448,13 +2965,12 @@ class BgpPolicyNonExistFilter(BgpPolicyFilter):
     Args:
 
     """
+
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.BgpPolicyAddressPrefix",
-    )
+    CHILDTYPES = ("network.BgpPolicyAddressPrefix",)
 
     def _setup(self):
-        self._xpaths.add_profile(value='/non-exist-filters')
+        self._xpaths.add_profile(value="/non-exist-filters")
 
         BgpPolicyFilter._setup(self)
 
@@ -2467,13 +2983,12 @@ class BgpPolicyAdvertiseFilter(BgpPolicyFilter):
     Args:
 
     """
+
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.BgpPolicyAddressPrefix",
-    )
+    CHILDTYPES = ("network.BgpPolicyAddressPrefix",)
 
     def _setup(self):
-        self._xpaths.add_profile(value='/advertise-filters')
+        self._xpaths.add_profile(value="/advertise-filters")
 
         BgpPolicyFilter._setup(self)
 
@@ -2486,13 +3001,12 @@ class BgpPolicySuppressFilter(BgpPolicyFilter):
     Args:
 
     """
+
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.BgpPolicyAddressPrefix",
-    )
+    CHILDTYPES = ("network.BgpPolicyAddressPrefix",)
 
     def _setup(self):
-        self._xpaths.add_profile(value='/suppress-filters')
+        self._xpaths.add_profile(value="/suppress-filters")
 
         BgpPolicyFilter._setup(self)
 
@@ -2506,6 +3020,7 @@ class BgpPolicyConditionalAdvertisement(VersionedPanObject):
         used_by (list): peer-groups that use this rule.
 
     """
+
     SUFFIX = ENTRY
     CHILDTYPES = (
         "network.BgpPolicyNonExistFilter",
@@ -2513,14 +3028,12 @@ class BgpPolicyConditionalAdvertisement(VersionedPanObject):
     )
 
     def _setup(self):
-        self._xpaths.add_profile(value='/policy/conditional-advertisement/policy')
+        self._xpaths.add_profile(value="/policy/conditional-advertisement/policy")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'used_by', vartype='member'))
+        params.append(VersionedParamPath("enable", vartype="yesno"))
+        params.append(VersionedParamPath("used_by", vartype="member"))
 
         self._params = tuple(params)
 
@@ -2590,6 +3103,7 @@ class BgpPolicyRule(BgpPolicyFilter):
         action_extended_community_argument (str): Argument to the action extended community value if needed
 
     """
+
     # SUFFIX = None
 
     def _setup(self):
@@ -2599,50 +3113,119 @@ class BgpPolicyRule(BgpPolicyFilter):
 
         params = list(self._params)
 
-        params.append(VersionedParamPath(
-            'used_by', vartype='member'))
-        params.append(VersionedParamPath(
-            'action', path='action/{action}',
-            default='allow', values=('allow', 'deny')))
-        params.append(VersionedParamPath(
-            'action_local_preference', condition={'action': 'allow'},
-            path='action/{action}/update/local-preference', vartype='int'))
-        params.append(VersionedParamPath(
-            'action_med', condition={'action': 'allow'},
-            path='action/{action}/update/med', vartype='int'))
-        params.append(VersionedParamPath(
-            'action_nexthop', condition={'action': 'allow'},
-            path='action/{action}/update/nexthop'))
-        params.append(VersionedParamPath(
-            'action_origin', default='incomplete', condition={'action': 'allow'},
-            path='action/{action}/update/origin', values=('igp', 'egp', 'incomplete')))
-        params.append(VersionedParamPath(
-            'action_as_path_limit', condition={'action': 'allow'},
-            path='action/{action}/update/as-path-limit', vartype='int'))
-        params.append(VersionedParamPath(
-            'action_as_path_type', condition={'action': 'allow'}, default='none',
-            path='action/{action}/update/as-path/{action_as_path_type}',
-            values=('none', 'remove', 'prepend', 'remove-and-prepend')))
-        params.append(VersionedParamPath(
-            'action_as_path_prepend_times',
-            condition={'action': 'allow', 'action_as_path_type': ['prepend', 'remove-and-prepend']},
-            path='action/{action}/update/as-path/{action_as_path_type}', vartype='int'))
-        params.append(VersionedParamPath(
-            'action_community_type', condition={'action': 'allow'}, default='none',
-            path='action/{action}/update/community/{action_community_type}',
-            values=('none', 'remove-all', 'remove-regex', 'append', 'overwrite')))
-        params.append(VersionedParamPath(
-            'action_community_argument', default=None,
-            condition={'action': 'allow', 'action_community_type': ['remove-regex', 'append', 'overwrite']},
-            path='action/{action}/update/community/{action_community_type}'))
-        params.append(VersionedParamPath(
-            'action_extended_community_type', condition={'action': 'allow'}, default='none',
-            path='action/{action}/update/extended-community/{action_extended_community_type}',
-            values=('none', 'remove-all', 'remove-regex', 'append', 'overwrite')))
-        params.append(VersionedParamPath(
-            'action_extended_community_argument', default=None,
-            condition={'action': 'allow', 'action_extended_community_type': ['remove-regex', 'append', 'overwrite']},
-            path='action/{action}/update/extended-community/{action_extended_community_type}'))
+        params.append(VersionedParamPath("used_by", vartype="member"))
+        params.append(
+            VersionedParamPath(
+                "action",
+                path="action/{action}",
+                default="allow",
+                values=("allow", "deny"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_local_preference",
+                condition={"action": "allow"},
+                path="action/{action}/update/local-preference",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_med",
+                condition={"action": "allow"},
+                path="action/{action}/update/med",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_nexthop",
+                condition={"action": "allow"},
+                path="action/{action}/update/nexthop",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_origin",
+                default="incomplete",
+                condition={"action": "allow"},
+                path="action/{action}/update/origin",
+                values=("igp", "egp", "incomplete"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_as_path_limit",
+                condition={"action": "allow"},
+                path="action/{action}/update/as-path-limit",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_as_path_type",
+                condition={"action": "allow"},
+                default="none",
+                path="action/{action}/update/as-path/{action_as_path_type}",
+                values=("none", "remove", "prepend", "remove-and-prepend"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_as_path_prepend_times",
+                condition={
+                    "action": "allow",
+                    "action_as_path_type": ["prepend", "remove-and-prepend"],
+                },
+                path="action/{action}/update/as-path/{action_as_path_type}",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_community_type",
+                condition={"action": "allow"},
+                default="none",
+                path="action/{action}/update/community/{action_community_type}",
+                values=("none", "remove-all", "remove-regex", "append", "overwrite"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_community_argument",
+                default=None,
+                condition={
+                    "action": "allow",
+                    "action_community_type": ["remove-regex", "append", "overwrite"],
+                },
+                path="action/{action}/update/community/{action_community_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_extended_community_type",
+                condition={"action": "allow"},
+                default="none",
+                path="action/{action}/update/extended-community/{action_extended_community_type}",
+                values=("none", "remove-all", "remove-regex", "append", "overwrite"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_extended_community_argument",
+                default=None,
+                condition={
+                    "action": "allow",
+                    "action_extended_community_type": [
+                        "remove-regex",
+                        "append",
+                        "overwrite",
+                    ],
+                },
+                path="action/{action}/update/extended-community/{action_extended_community_type}",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -2659,24 +3242,32 @@ class BgpPolicyImportRule(BgpPolicyRule):
         action_weight (int): New weight value
 
     """
+
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.BgpPolicyAddressPrefix",
-    )
+    CHILDTYPES = ("network.BgpPolicyAddressPrefix",)
 
     def _setup(self):
-        self._xpaths.add_profile(value='/policy/import/rules')
+        self._xpaths.add_profile(value="/policy/import/rules")
 
         BgpPolicyRule._setup(self)
 
         params = list(self._params)
 
-        params.append(VersionedParamPath(
-            'action_dampening', path='action/{action}/dampening',
-            condition={'action': 'allow'}))
-        params.append(VersionedParamPath(
-            'action_weight', path='action/{action}/update/weight',
-            condition={'action': 'allow'}, vartype='int'))
+        params.append(
+            VersionedParamPath(
+                "action_dampening",
+                path="action/{action}/dampening",
+                condition={"action": "allow"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_weight",
+                path="action/{action}/update/weight",
+                condition={"action": "allow"},
+                vartype="int",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -2691,13 +3282,12 @@ class BgpPolicyExportRule(BgpPolicyRule):
     Args:
 
     """
+
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.BgpPolicyAddressPrefix",
-    )
+    CHILDTYPES = ("network.BgpPolicyAddressPrefix",)
 
     def _setup(self):
-        self._xpaths.add_profile(value='/policy/export/rules')
+        self._xpaths.add_profile(value="/policy/export/rules")
 
         BgpPolicyRule._setup(self)
 
@@ -2710,15 +3300,15 @@ class BgpPolicyAddressPrefix(VersionedPanObject):
         exact (str): match exact prefix length
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/match/address-prefix')
+        self._xpaths.add_profile(value="/match/address-prefix")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'exact', default=None, vartype='yesno'))
+        params.append(VersionedParamPath("exact", default=None, vartype="yesno"))
 
         self._params = tuple(params)
 
@@ -2772,6 +3362,7 @@ class BgpPolicyAggregationAddress(VersionedPanObject):
         attr_extended_community_argument (str): Argument to the attr extended community value if needed
 
     """
+
     SUFFIX = ENTRY
     CHILDTYPES = (
         "network.BgpPolicySuppressFilter",
@@ -2779,60 +3370,126 @@ class BgpPolicyAggregationAddress(VersionedPanObject):
     )
 
     def _setup(self):
-        self._xpaths.add_profile(value='/policy/aggregation/address')
+        self._xpaths.add_profile(value="/policy/aggregation/address")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', default=True, vartype='yesno'))
-        params.append(VersionedParamPath(
-            'prefix'))
-        params.append(VersionedParamPath(
-            'summary', default=False, vartype='yesno'))
-        params.append(VersionedParamPath(
-            'as_set', default=False, vartype='yesno'))
-        params.append(VersionedParamPath(
-            'attr_local_preference', condition={'attr': 'allow'},
-            path='aggregate-route-attributes/local-preference', vartype='int'))
-        params.append(VersionedParamPath(
-            'attr_med', condition={'attr': 'allow'},
-            path='aggregate-route-attributes/med', vartype='int'))
-        params.append(VersionedParamPath(
-            'attr_weight', condition={'attr': 'allow'},
-            path='aggregate-route-attributes/weight', vartype='int'))
-        params.append(VersionedParamPath(
-            'attr_nexthop', condition={'attr': 'allow'},
-            path='aggregate-route-attributes/nexthop'))
-        params.append(VersionedParamPath(
-            'attr_origin', default='incomplete', condition={'attr': 'allow'},
-            path='aggregate-route-attributes/origin', values=('igp', 'egp', 'incomplete')))
-        params.append(VersionedParamPath(
-            'attr_as_path_limit', condition={'attr': 'allow'},
-            path='aggregate-route-attributes/as-path-limit', vartype='int'))
-        params.append(VersionedParamPath(
-            'attr_as_path_type', condition={'attr': 'allow'}, default='none',
-            path='aggregate-route-attributes/as-path/{attr_as_path_type}',
-            values=('none', 'remove', 'prepend', 'remove-and-prepend')))
-        params.append(VersionedParamPath(
-            'attr_as_path_prepend_times',
-            condition={'attr': 'allow', 'attr_as_path_type': ['prepend', 'remove-and-prepend']},
-            path='aggregate-route-attributes/as-path/{attr_as_path_type}', vartype='int'))
-        params.append(VersionedParamPath(
-            'attr_community_type', condition={'attr': 'allow'}, default='none',
-            path='aggregate-route-attributes/community/{attr_community_type}',
-            values=('none', 'remove-all', 'remove-regex', 'append', 'overwrite')))
-        params.append(VersionedParamPath(
-            'attr_community_argument', default=None,
-            condition={'attr': 'allow', 'attr_community_type': ['remove-regex', 'append', 'overwrite']},
-            path='aggregate-route-attributes/community/{attr_community_type}'))
-        params.append(VersionedParamPath(
-            'attr_extended_community_type', condition={'attr': 'allow'}, default='none',
-            path='aggregate-route-attributes/extended-community/{attr_extended_community_type}',
-            values=('none', 'remove-all', 'remove-regex', 'append', 'overwrite')))
-        params.append(VersionedParamPath(
-            'attr_extended_community_argument', default=None,
-            condition={'attr': 'allow', 'attr_extended_community_type': ['remove-regex', 'append', 'overwrite']},
-            path='aggregate-route-attributes/extended-community/{attr_extended_community_type}'))
+        params.append(VersionedParamPath("enable", default=True, vartype="yesno"))
+        params.append(VersionedParamPath("prefix"))
+        params.append(VersionedParamPath("summary", default=False, vartype="yesno"))
+        params.append(VersionedParamPath("as_set", default=False, vartype="yesno"))
+        params.append(
+            VersionedParamPath(
+                "attr_local_preference",
+                condition={"attr": "allow"},
+                path="aggregate-route-attributes/local-preference",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_med",
+                condition={"attr": "allow"},
+                path="aggregate-route-attributes/med",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_weight",
+                condition={"attr": "allow"},
+                path="aggregate-route-attributes/weight",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_nexthop",
+                condition={"attr": "allow"},
+                path="aggregate-route-attributes/nexthop",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_origin",
+                default="incomplete",
+                condition={"attr": "allow"},
+                path="aggregate-route-attributes/origin",
+                values=("igp", "egp", "incomplete"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_as_path_limit",
+                condition={"attr": "allow"},
+                path="aggregate-route-attributes/as-path-limit",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_as_path_type",
+                condition={"attr": "allow"},
+                default="none",
+                path="aggregate-route-attributes/as-path/{attr_as_path_type}",
+                values=("none", "remove", "prepend", "remove-and-prepend"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_as_path_prepend_times",
+                condition={
+                    "attr": "allow",
+                    "attr_as_path_type": ["prepend", "remove-and-prepend"],
+                },
+                path="aggregate-route-attributes/as-path/{attr_as_path_type}",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_community_type",
+                condition={"attr": "allow"},
+                default="none",
+                path="aggregate-route-attributes/community/{attr_community_type}",
+                values=("none", "remove-all", "remove-regex", "append", "overwrite"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_community_argument",
+                default=None,
+                condition={
+                    "attr": "allow",
+                    "attr_community_type": ["remove-regex", "append", "overwrite"],
+                },
+                path="aggregate-route-attributes/community/{attr_community_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_extended_community_type",
+                condition={"attr": "allow"},
+                default="none",
+                path="aggregate-route-attributes/extended-community/{attr_extended_community_type}",
+                values=("none", "remove-all", "remove-regex", "append", "overwrite"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "attr_extended_community_argument",
+                default=None,
+                condition={
+                    "attr": "allow",
+                    "attr_extended_community_type": [
+                        "remove-regex",
+                        "append",
+                        "overwrite",
+                    ],
+                },
+                path="aggregate-route-attributes/extended-community/{attr_extended_community_type}",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -2862,34 +3519,38 @@ class BgpRedistributionRule(VersionedPanObject):
         metric (int): Metric value
 
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value='/redist-rules')
+        self._xpaths.add_profile(value="/redist-rules")
 
         params = []
 
-        params.append(VersionedParamPath(
-            'enable', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'address_family_identifier', default='ipv4', values=('ipv4', 'ipv6')))
-        params.append(VersionedParamPath(
-            'route_table', default='unicast',
-            values=('unicast', 'multicast', 'both')))
-        params.append(VersionedParamPath(
-            'set_origin', default='incomplete', values=('igp', 'egp', 'incomplete')))
-        params.append(VersionedParamPath(
-            'set_med', vartype='int'))
-        params.append(VersionedParamPath(
-            'set_local_preference', vartype='int'))
-        params.append(VersionedParamPath(
-            'set_as_path_limit', vartype='int'))
-        params.append(VersionedParamPath(
-            'set_community', vartype='member'))
-        params.append(VersionedParamPath(
-            'set_extended_community', vartype='member'))
-        params.append(VersionedParamPath(
-            'metric', vartype='int'))
+        params.append(VersionedParamPath("enable", vartype="yesno"))
+        params.append(
+            VersionedParamPath(
+                "address_family_identifier", default="ipv4", values=("ipv4", "ipv6")
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "route_table",
+                default="unicast",
+                values=("unicast", "multicast", "both"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "set_origin", default="incomplete", values=("igp", "egp", "incomplete")
+            )
+        )
+        params.append(VersionedParamPath("set_med", vartype="int"))
+        params.append(VersionedParamPath("set_local_preference", vartype="int"))
+        params.append(VersionedParamPath("set_as_path_limit", vartype="int"))
+        params.append(VersionedParamPath("set_community", vartype="member"))
+        params.append(VersionedParamPath("set_extended_community", vartype="member"))
+        params.append(VersionedParamPath("metric", vartype="int"))
 
         self._params = tuple(params)
 
@@ -2921,28 +3582,41 @@ class ManagementProfile(VersionedPanObject):
         permitted_ip (list): The list of permitted IP addresses
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
+        self._xpaths.add_profile(value="/network/profiles/interface-management-profile")
         self._xpaths.add_profile(
-            value='/network/profiles/interface-management-profile')
-        self._xpaths.add_profile(
-            value='{0}/network/profiles/interface-management-profile'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/profiles/interface-management-profile".format(
+                self._TEMPLATE_DEVICE_XPATH
+            ),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        yesnos = ('ping', 'telnet', 'ssh', 'http', 'http-ocsp', 'https',
-                  'snmp', 'response-pages', 'userid-service',
-                  'userid-syslog-listener-ssl', 'userid-syslog-listener-udp')
+        yesnos = (
+            "ping",
+            "telnet",
+            "ssh",
+            "http",
+            "http-ocsp",
+            "https",
+            "snmp",
+            "response-pages",
+            "userid-service",
+            "userid-syslog-listener-ssl",
+            "userid-syslog-listener-udp",
+        )
         for yn in yesnos:
-            params.append(VersionedParamPath(
-                yn, path=yn, vartype='yesno'))
-        params.append(VersionedParamPath(
-            'permitted-ip', path='permitted-ip', vartype='entry'))
+            params.append(VersionedParamPath(yn, path=yn, vartype="yesno"))
+        params.append(
+            VersionedParamPath("permitted-ip", path="permitted-ip", vartype="entry")
+        )
 
         self._params = tuple(params)
 
@@ -3002,166 +3676,253 @@ class IkeGateway(VersionedPanObject):
             probing packets (in seconds)
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/network/ike/gateway')
+        self._xpaths.add_profile(value="/network/ike/gateway")
         self._xpaths.add_profile(
-            value='{0}/network/ike/gateway'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/ike/gateway".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'version', default='ikev1', exclude=True))
+        params.append(VersionedParamPath("version", default="ikev1", exclude=True))
         params[-1].add_profile(
-            '7.0.0',
-            values=('ikev1', 'ikev2', 'ikev2-preferred'),
-            path='protocol/version')
-        params.append(VersionedParamPath(
-            'enable_ipv6', exclude=True))
+            "7.0.0",
+            values=("ikev1", "ikev2", "ikev2-preferred"),
+            path="protocol/version",
+        )
+        params.append(VersionedParamPath("enable_ipv6", exclude=True))
+        params[-1].add_profile("7.0.0", path="ipv6", vartype="yesno")
+        params.append(VersionedParamPath("disabled", exclude=True))
+        params[-1].add_profile("7.0.0", path="disabled", vartype="yesno")
+        params.append(
+            VersionedParamPath(
+                "peer_ip_type",
+                values=("ip", "dynamic"),
+                default="ip",
+                path="peer-address/{peer_ip_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "peer_ip_value",
+                condition={"peer_ip_type": "ip"},
+                path="peer-address/{peer_ip_type}",
+            )
+        )
+        params.append(VersionedParamPath("interface", path="local-address/interface"))
+        params.append(
+            VersionedParamPath(
+                "local_ip_address_type",
+                values=("ip", "floating-ip"),
+                path="local-address/{local_ip_address_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "local_ip_address", path="local-address/{local_ip_address_type}"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "auth_type",
+                values=("pre-shared-key", "certificate"),
+                default="pre-shared-key",
+                path="authentication/{auth_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "pre_shared_key",
+                condition={"auth_type": "pre-shared-key"},
+                vartype="encrypted",
+                path="authentication/{auth_type}/key",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "local_id_type",
+                values=("ipaddr", "fqdn", "ufqdn", "keyid", "dn"),
+                path="local-id/type",
+            )
+        )
+        params.append(VersionedParamPath("local_id_value", path="local-id/id"))
+        params.append(
+            VersionedParamPath(
+                "peer_id_type",
+                values=("ipaddr", "fqdn", "ufqdn", "keyid", "dn"),
+                path="peer-id/type",
+            )
+        )
+        params.append(VersionedParamPath("peer_id_value", path="peer-id/id"))
+        params.append(
+            VersionedParamPath(
+                "peer_id_check", values=("exact", "wildcard"), path="peer-id/matching"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "local_cert",
+                condition={"auth_type": "certificate"},
+                path="authentication/{auth_type}/local-certificate",
+            )
+        )
         params[-1].add_profile(
-            '7.0.0',
-            path='ipv6', vartype='yesno')
-        params.append(VersionedParamPath(
-            'disabled', exclude=True))
+            "7.0.0",
+            condition={"auth_type": "certificate"},
+            path="authentication/{auth_type}/local-certificate/name",
+        )
+        params.append(VersionedParamPath("cert_enable_hash_and_url", exclude=True))
         params[-1].add_profile(
-            '7.0.0',
-            path='disabled', vartype='yesno')
-        params.append(VersionedParamPath(
-            'peer_ip_type', values=('ip', 'dynamic'), default='ip',
-            path='peer-address/{peer_ip_type}'))
-        params.append(VersionedParamPath(
-            'peer_ip_value', condition={'peer_ip_type': 'ip'},
-            path='peer-address/{peer_ip_type}'))
-        params.append(VersionedParamPath(
-            'interface', path='local-address/interface'))
-        params.append(VersionedParamPath(
-            'local_ip_address_type', values=('ip', 'floating-ip'),
-            path='local-address/{local_ip_address_type}'))
-        params.append(VersionedParamPath(
-            'local_ip_address',
-            path='local-address/{local_ip_address_type}'))
-        params.append(VersionedParamPath(
-            'auth_type', values=('pre-shared-key', 'certificate'),
-            default='pre-shared-key', path='authentication/{auth_type}'))
-        params.append(VersionedParamPath(
-            'pre_shared_key', condition={'auth_type': 'pre-shared-key'},
-            vartype='encrypted', path='authentication/{auth_type}/key'))
-        params.append(VersionedParamPath(
-            'local_id_type', values=('ipaddr', 'fqdn', 'ufqdn', 'keyid', 'dn'),
-            path='local-id/type'))
-        params.append(VersionedParamPath(
-            'local_id_value', path='local-id/id'))
-        params.append(VersionedParamPath(
-            'peer_id_type', values=('ipaddr', 'fqdn', 'ufqdn', 'keyid', 'dn'),
-            path='peer-id/type'))
-        params.append(VersionedParamPath(
-            'peer_id_value', path='peer-id/id'))
-        params.append(VersionedParamPath(
-            'peer_id_check',
-            values=('exact', 'wildcard'), path='peer-id/matching'))
-        params.append(VersionedParamPath(
-            'local_cert', condition={'auth_type': 'certificate'},
-            path='authentication/{auth_type}/local-certificate'))
+            "7.0.0",
+            vartype="yesno",
+            condition={"auth_type": "certificate"},
+            path="authentication/{auth_type}/local-certificate/hash-and-url/enable",
+        )
+        params.append(VersionedParamPath("cert_base_url", exclude=True))
         params[-1].add_profile(
-            '7.0.0',
-            condition={'auth_type': 'certificate'},
-            path='authentication/{auth_type}/local-certificate/name')
-        params.append(VersionedParamPath(
-            'cert_enable_hash_and_url', exclude=True))
+            "7.0.0",
+            condition={"auth_type": "certificate"},
+            path="authentication/{auth_type}/local-certificate/hash-and-url/base-url",
+        )
+        params.append(VersionedParamPath("cert_use_management_as_source", exclude=True))
         params[-1].add_profile(
-            '7.0.0',
-            vartype='yesno', condition={'auth_type': 'certificate'},
-            path='authentication/{auth_type}/local-certificate/hash-and-url/enable')
-        params.append(VersionedParamPath(
-            'cert_base_url', exclude=True))
+            "7.0.0",
+            vartype="yesno",
+            condition={"auth_type": "certificate"},
+            path="authentication/{auth_type}/use-management-as-source",
+        )
+        params.append(
+            VersionedParamPath(
+                "cert_permit_payload_mismatch",
+                vartype="yesno",
+                condition={"auth_type": "certificate"},
+                path="authentication/{auth_type}/allow-id-payload-mismatch",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "cert_profile",
+                condition={"auth_type": "certificate"},
+                path="authentication/{auth_type}/certificate-profile",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "cert_enable_strict_validation",
+                vartype="yesno",
+                condition={"auth_type": "certificate"},
+                path="authentication/{auth_type}/strict-validation-revocation",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_passive_mode",
+                vartype="yesno",
+                path="protocol-common/passive-mode",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_nat_traversal",
+                vartype="yesno",
+                path="protocol-common/nat-traversal/enable",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "nat_traversal_keep_alive",
+                vartype="int",
+                path="protocol-common/nat-traversal/keep-alive-interval",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "nat_traversal_enable_udp_checksum",
+                vartype="yesno",
+                path="protocol-common/nat-traversal/udp-checksum-enable",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_fragmentation",
+                vartype="yesno",
+                path="protocol-common/fragmentation/enable",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ikev1_exchange_mode",
+                values=("auto", "main", "aggressive"),
+                path="protocol/ikev1/exchange-mode",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ikev1_crypto_profile", path="protocol/ikev1/ike-crypto-profile"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_dead_peer_detection",
+                vartype="yesno",
+                path="protocol/ikev1/dpd/enable",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "dead_peer_detection_interval",
+                vartype="int",
+                path="protocol/ikev1/dpd/interval",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "dead_peer_detection_retry",
+                vartype="int",
+                path="protocol/ikev1/dpd/retry",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ikev1_send_commit_bit",
+                exclude=True,
+                vartype="yesno",
+                path="protocol/ikev1/commit-bit",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ikev1_initial_contact",
+                exclude=True,
+                vartype="yesno",
+                path="protocol/ikev1/initial-contact",
+            )
+        )
+        params.append(VersionedParamPath("ikev2_crypto_profile", exclude=True))
+        params[-1].add_profile("7.0.0", path="protocol/ikev2/ike-crypto-profile")
+        params.append(VersionedParamPath("ikev2_cookie_validation", exclude=True))
         params[-1].add_profile(
-            '7.0.0',
-            condition={'auth_type': 'certificate'},
-            path='authentication/{auth_type}/local-certificate/hash-and-url/base-url')
-        params.append(VersionedParamPath(
-            'cert_use_management_as_source', exclude=True))
+            "7.0.0", vartype="yesno", path="protocol/ikev2/require-cookie"
+        )
+        params.append(VersionedParamPath("ikev2_send_peer_id", exclude=True))
         params[-1].add_profile(
-            '7.0.0',
-            vartype='yesno', condition={'auth_type': 'certificate'},
-            path='authentication/{auth_type}/use-management-as-source')
-        params.append(VersionedParamPath(
-            'cert_permit_payload_mismatch',
-            vartype='yesno', condition={'auth_type': 'certificate'},
-            path='authentication/{auth_type}/allow-id-payload-mismatch'))
-        params.append(VersionedParamPath(
-            'cert_profile', condition={'auth_type': 'certificate'},
-            path='authentication/{auth_type}/certificate-profile'))
-        params.append(VersionedParamPath(
-            'cert_enable_strict_validation',
-            vartype='yesno', condition={'auth_type': 'certificate'},
-            path='authentication/{auth_type}/strict-validation-revocation'))
-        params.append(VersionedParamPath(
-            'enable_passive_mode', vartype='yesno',
-            path='protocol-common/passive-mode'))
-        params.append(VersionedParamPath(
-            'enable_nat_traversal', vartype='yesno',
-            path='protocol-common/nat-traversal/enable'))
-        params.append(VersionedParamPath(
-            'nat_traversal_keep_alive', vartype='int',
-            path='protocol-common/nat-traversal/keep-alive-interval'))
-        params.append(VersionedParamPath(
-            'nat_traversal_enable_udp_checksum', vartype='yesno',
-            path='protocol-common/nat-traversal/udp-checksum-enable'))
-        params.append(VersionedParamPath(
-            'enable_fragmentation', vartype='yesno',
-            path='protocol-common/fragmentation/enable'))
-        params.append(VersionedParamPath(
-            'ikev1_exchange_mode', values=('auto', 'main', 'aggressive'),
-            path='protocol/ikev1/exchange-mode'))
-        params.append(VersionedParamPath(
-            'ikev1_crypto_profile', path='protocol/ikev1/ike-crypto-profile'))
-        params.append(VersionedParamPath(
-            'enable_dead_peer_detection', vartype='yesno',
-            path='protocol/ikev1/dpd/enable'))
-        params.append(VersionedParamPath(
-            'dead_peer_detection_interval', vartype='int',
-            path='protocol/ikev1/dpd/interval'))
-        params.append(VersionedParamPath(
-            'dead_peer_detection_retry', vartype='int',
-            path='protocol/ikev1/dpd/retry'))
-        params.append(VersionedParamPath(
-            'ikev1_send_commit_bit', exclude=True, vartype='yesno',
-            path='protocol/ikev1/commit-bit'))
-        params.append(VersionedParamPath(
-            'ikev1_initial_contact', exclude=True, vartype='yesno',
-            path='protocol/ikev1/initial-contact'))
-        params.append(VersionedParamPath(
-            'ikev2_crypto_profile', exclude=True))
+            "7.0.0", vartype="yesno", exclude=True, path="protocol/ikev2/send-peer-id"
+        )
+        params.append(VersionedParamPath("enable_liveness_check", exclude=True))
         params[-1].add_profile(
-            '7.0.0',
-            path='protocol/ikev2/ike-crypto-profile')
-        params.append(VersionedParamPath(
-            'ikev2_cookie_validation', exclude=True))
+            "7.0.0", vartype="yesno", path="protocol/ikev2/dpd/enable"
+        )
+        params.append(VersionedParamPath("liveness_check_interval", exclude=True))
         params[-1].add_profile(
-            '7.0.0',
-            vartype='yesno',
-            path='protocol/ikev2/require-cookie')
-        params.append(VersionedParamPath(
-            'ikev2_send_peer_id', exclude=True))
-        params[-1].add_profile(
-            '7.0.0',
-            vartype='yesno', exclude=True,
-            path='protocol/ikev2/send-peer-id')
-        params.append(VersionedParamPath(
-            'enable_liveness_check', exclude=True))
-        params[-1].add_profile(
-            '7.0.0',
-            vartype='yesno', path='protocol/ikev2/dpd/enable')
-        params.append(VersionedParamPath(
-            'liveness_check_interval', exclude=True))
-        params[-1].add_profile(
-            '7.0.0',
-            vartype='int', path='protocol/ikev2/dpd/interval')
+            "7.0.0", vartype="int", path="protocol/ikev2/dpd/interval"
+        )
 
         self._params = tuple(params)
 
@@ -3234,188 +3995,264 @@ class IpsecTunnel(VersionedPanObject):
         disabled (bool): (7.0+) disable the IPSec tunnel
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
     CHILDTYPES = (
-        'network.IpsecTunnelIpv4ProxyId',
-        'network.IpsecTunnelIpv6ProxyId',
+        "network.IpsecTunnelIpv4ProxyId",
+        "network.IpsecTunnelIpv6ProxyId",
     )
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/network/tunnel/ipsec')
+        self._xpaths.add_profile(value="/network/tunnel/ipsec")
         self._xpaths.add_profile(
-            value='{0}/network/tunnel/ipsec'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/tunnel/ipsec".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'tunnel_interface', path='tunnel-interface'))
-        params.append(VersionedParamPath(
-            'anti_replay', path='anti-replay', vartype='yesno'))
-        params.append(VersionedParamPath(
-            'ipv6', exclude=True))
+        params.append(VersionedParamPath("tunnel_interface", path="tunnel-interface"))
+        params.append(
+            VersionedParamPath("anti_replay", path="anti-replay", vartype="yesno")
+        )
+        params.append(VersionedParamPath("ipv6", exclude=True))
+        params[-1].add_profile("7.0.0", vartype="yesno", path="ipv6")
+        params.append(
+            VersionedParamPath(
+                "type",
+                default="auto-key",
+                path="{type}",
+                values=("auto-key", "manual-key", "global-protect-satellite"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ak_ike_gateway",
+                condition={"type": "auto-key"},
+                vartype="entry",
+                path="{type}/ike-gateway",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ak_ipsec_crypto_profile",
+                condition={"type": "auto-key"},
+                path="{type}/ipsec-crypto-profile",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mk_local_spi",
+                condition={"type": "manual-key"},
+                path="{type}/local-spi",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mk_interface",
+                condition={"type": "manual-key"},
+                path="{type}/local-address/interface",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mk_remote_spi",
+                condition={"type": "manual-key"},
+                path="{type}/remote-spi",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mk_remote_address",
+                condition={"type": "manual-key"},
+                path="{type}/peer-address/ip",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mk_local_address_ip",
+                condition={"type": "manual-key"},
+                path="{type}/local-address/ip",
+            )
+        )
+        params.append(VersionedParamPath("mk_local_address_floating_ip", exclude=True))
         params[-1].add_profile(
-            '7.0.0',
-            vartype='yesno', path='ipv6')
-        params.append(VersionedParamPath(
-            'type', default='auto-key', path='{type}',
-            values=('auto-key', 'manual-key', 'global-protect-satellite')))
-        params.append(VersionedParamPath(
-            'ak_ike_gateway',
-            condition={'type': 'auto-key'}, vartype='entry',
-            path='{type}/ike-gateway'))
-        params.append(VersionedParamPath(
-            'ak_ipsec_crypto_profile', condition={'type': 'auto-key'},
-            path='{type}/ipsec-crypto-profile'))
-        params.append(VersionedParamPath(
-            'mk_local_spi', condition={'type': 'manual-key'},
-            path='{type}/local-spi'))
-        params.append(VersionedParamPath(
-            'mk_interface', condition={'type': 'manual-key'},
-            path='{type}/local-address/interface'))
-        params.append(VersionedParamPath(
-            'mk_remote_spi', condition={'type': 'manual-key'},
-            path='{type}/remote-spi'))
-        params.append(VersionedParamPath(
-            'mk_remote_address', condition={'type': 'manual-key'},
-            path='{type}/peer-address/ip'))
-        params.append(VersionedParamPath(
-            'mk_local_address_ip', condition={'type': 'manual-key'},
-            path='{type}/local-address/ip'))
-        params.append(VersionedParamPath(
-            'mk_local_address_floating_ip', exclude=True))
+            "7.0.0",
+            condition={"type": "manual-key"},
+            path="{type}/local-address/floating-ip",
+        )
+        params.append(
+            VersionedParamPath(
+                "mk_protocol",
+                condition={"type": "manual-key"},
+                values=("esp", "ah"),
+                path="{type}/{mk_protocol}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mk_auth_type",
+                condition={"type": "manual-key"},
+                values=("md5", "sha1", "sha256", "sha384", "sha512"),
+                path="{type}/{mk_protocol}/authentication/{mk_auth_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mk_auth_key",
+                vartype="encrypted",
+                condition={"type": "manual-key"},
+                path="{type}/{mk_protocol}/authentication/{mk_auth_type}/key",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mk_esp_encryption",
+                values=("des", "3des", "aes128", "aes192", "aes256", "null",),
+                path="{type}/{mk_protocol}/encryption/algorithm",
+            )
+        )
         params[-1].add_profile(
-            '7.0.0',
-            condition={'type': 'manual-key'},
-            path='{type}/local-address/floating-ip')
-        params.append(VersionedParamPath(
-            'mk_protocol', condition={'type': 'manual-key'},
-            values=('esp', 'ah'), path='{type}/{mk_protocol}'))
-        params.append(VersionedParamPath(
-            'mk_auth_type', condition={'type': 'manual-key'},
-            values=('md5', 'sha1', 'sha256', 'sha384', 'sha512'),
-            path='{type}/{mk_protocol}/authentication/{mk_auth_type}'))
-        params.append(VersionedParamPath(
-            'mk_auth_key',
-            vartype='encrypted', condition={'type': 'manual-key'},
-            path='{type}/{mk_protocol}/authentication/{mk_auth_type}/key'))
-        params.append(VersionedParamPath(
-            'mk_esp_encryption',
+            "7.0.0",
+            condition={"type": "manual-key", "mk_protocol": "esp"},
             values=(
-                'des',
-                '3des',
-                'aes128',
-                'aes192',
-                'aes256',
-                'null',
+                "des",
+                "3des",
+                "aes-128-cbc",
+                "aes-192-cbc",
+                "aes-256-cbc",
+                "null",
             ),
-            path='{type}/{mk_protocol}/encryption/algorithm'))
+            path="{type}/{mk_protocol}/encryption/algorithm",
+        )
+        params.append(
+            VersionedParamPath(
+                "mk_esp_encryption_key",
+                vartype="encrypted",
+                condition={"type": "manual-key", "mk_protocol": "esp"},
+                path="{type}/{mk_protocol}/encryption/key",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gps_portal_address",
+                condition={"type": "global-protect-satellite"},
+                path="{type}/portal-address",
+            )
+        )
+        params.append(VersionedParamPath("gps_prefer_ipv6", exclude=True))
         params[-1].add_profile(
-            '7.0.0',
-            condition={'type': 'manual-key', 'mk_protocol': 'esp'},
-            values=(
-                'des',
-                '3des',
-                'aes-128-cbc',
-                'aes-192-cbc',
-                'aes-256-cbc',
-                'null',
-            ),
-            path='{type}/{mk_protocol}/encryption/algorithm')
-        params.append(VersionedParamPath(
-            'mk_esp_encryption_key', vartype='encrypted',
-            condition={'type': 'manual-key', 'mk_protocol': 'esp'},
-            path='{type}/{mk_protocol}/encryption/key'))
-        params.append(VersionedParamPath(
-            'gps_portal_address',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/portal-address'))
-        params.append(VersionedParamPath(
-            'gps_prefer_ipv6', exclude=True))
+            "8.0.0",
+            vartype="yesno",
+            condition={"type": "global-protect-satellite"},
+            path="{type}/ipv6-preferred",
+        )
+        params.append(
+            VersionedParamPath(
+                "gps_interface",
+                condition={"type": "global-protect-satellite"},
+                path="{type}/local-address/interface",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gps_interface_ipv4_ip",
+                condition={"type": "global-protect-satellite"},
+                path="{type}/local-address/ip",
+            )
+        )
         params[-1].add_profile(
-            '8.0.0',
-            vartype='yesno', condition={'type': 'global-protect-satellite'},
-            path='{type}/ipv6-preferred')
-        params.append(VersionedParamPath(
-            'gps_interface',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/local-address/interface'))
-        params.append(VersionedParamPath(
-            'gps_interface_ipv4_ip',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/local-address/ip'))
+            "8.0.0",
+            condition={"type": "global-protect-satellite"},
+            path="{type}/local-address/ip/ipv4",
+        )
+        params.append(VersionedParamPath("gps_interface_ipv6_ip", exclude=True))
         params[-1].add_profile(
-            '8.0.0',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/local-address/ip/ipv4')
-        params.append(VersionedParamPath(
-            'gps_interface_ipv6_ip', exclude=True))
+            "8.0.0",
+            condition={"type": "global-protect-satellite"},
+            path="{type}/local-address/ip/ipv6",
+        )
+        params.append(
+            VersionedParamPath("gps_interface_ipv4_floating_ip", exclude=True)
+        )
         params[-1].add_profile(
-            '8.0.0',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/local-address/ip/ipv6')
-        params.append(VersionedParamPath(
-            'gps_interface_ipv4_floating_ip', exclude=True))
+            "7.0.0",
+            condition={"type": "global-protect-satellite"},
+            path="{type}/local-address/floating-ip",
+        )
         params[-1].add_profile(
-            '7.0.0',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/local-address/floating-ip')
+            "8.0.0",
+            condition={"type": "global-protect-satellite"},
+            path="{type}/local-address/floating-ip/ipv4",
+        )
+        params.append(
+            VersionedParamPath("gps_interface_ipv6_floating_ip", exclude=True)
+        )
         params[-1].add_profile(
-            '8.0.0',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/local-address/floating-ip/ipv4')
-        params.append(VersionedParamPath(
-            'gps_interface_ipv6_floating_ip', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/local-address/floating-ip/ipv6')
-        params.append(VersionedParamPath(
-            'gps_publish_connected_routes', vartype='yesno',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/publish-connected-routes/enable'))
-        params.append(VersionedParamPath(
-            'gps_publish_routes', vartype='member',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/publish-routes'))
-        params.append(VersionedParamPath(
-            'gps_local_certificate',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/external-ca/local-certificate'))
-        params.append(VersionedParamPath(
-            'gps_certificate_profile',
-            condition={'type': 'global-protect-satellite'},
-            path='{type}/external-ca/certificate-profile'))
-        params.append(VersionedParamPath(
-            'anti_replay', default=True, vartype='yesno', path='anti-replay'))
-        params.append(VersionedParamPath(
-            'copy_tos', vartype='yesno', path='copy-tos'))
-        params.append(VersionedParamPath(
-            'copy_flow_label', exclude=True))
-        params[-1].add_profile(
-            '7.0.0',
-            vartype='yesno', path='copy-flow-label')
-        params.append(VersionedParamPath(
-            'enable_tunnel_monitor',
-            vartype='yesno', path='tunnel-monitor/enable'))
-        params.append(VersionedParamPath(
-            'tunnel_monitor_dest_ip', path='tunnel-monitor/destination-ip'))
-        params.append(VersionedParamPath(
-            'tunnel_monitor_proxy_id', exclude=True))
-        params[-1].add_profile(
-            '7.0.0',
-            path='tunnel-monitor/proxy-id')
-        params.append(VersionedParamPath(
-            'tunnel_monitor_profile',
-            path='tunnel-monitor/tunnel-monitor-profile'))
-        params.append(VersionedParamPath(
-            'disabled', exclude=True))
-        params[-1].add_profile(
-            '7.0.0',
-            vartype='yesno', path='disabled')
+            "8.0.0",
+            condition={"type": "global-protect-satellite"},
+            path="{type}/local-address/floating-ip/ipv6",
+        )
+        params.append(
+            VersionedParamPath(
+                "gps_publish_connected_routes",
+                vartype="yesno",
+                condition={"type": "global-protect-satellite"},
+                path="{type}/publish-connected-routes/enable",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gps_publish_routes",
+                vartype="member",
+                condition={"type": "global-protect-satellite"},
+                path="{type}/publish-routes",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gps_local_certificate",
+                condition={"type": "global-protect-satellite"},
+                path="{type}/external-ca/local-certificate",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gps_certificate_profile",
+                condition={"type": "global-protect-satellite"},
+                path="{type}/external-ca/certificate-profile",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "anti_replay", default=True, vartype="yesno", path="anti-replay"
+            )
+        )
+        params.append(VersionedParamPath("copy_tos", vartype="yesno", path="copy-tos"))
+        params.append(VersionedParamPath("copy_flow_label", exclude=True))
+        params[-1].add_profile("7.0.0", vartype="yesno", path="copy-flow-label")
+        params.append(
+            VersionedParamPath(
+                "enable_tunnel_monitor", vartype="yesno", path="tunnel-monitor/enable"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "tunnel_monitor_dest_ip", path="tunnel-monitor/destination-ip"
+            )
+        )
+        params.append(VersionedParamPath("tunnel_monitor_proxy_id", exclude=True))
+        params[-1].add_profile("7.0.0", path="tunnel-monitor/proxy-id")
+        params.append(
+            VersionedParamPath(
+                "tunnel_monitor_profile", path="tunnel-monitor/tunnel-monitor-profile"
+            )
+        )
+        params.append(VersionedParamPath("disabled", exclude=True))
+        params[-1].add_profile("7.0.0", vartype="yesno", path="disabled")
 
         self._params = tuple(params)
 
@@ -3442,24 +4279,24 @@ class IpsecTunnel(VersionedPanObject):
 
         """
         # Some values are constant across versioning, so set them outright.
-        if value in ('des', '3des', 'null'):
+        if value in ("des", "3des", "null"):
             self.mk_esp_encryption = value
             return
 
         # Get the version specific values for mk_esp_encryption.
         self.nearest_pandevice()
-        vals = self.about('mk_esp_encryption')['About']['Values']
+        vals = self.about("mk_esp_encryption")["About"]["Values"]
 
         # Normalize the value.
         for masks in (
-            ('aes128', 'aes-128-cbc'),
-            ('aes192', 'aes-192-cbc'),
-            ('aes256', 'aes-256-cbc'),
+            ("aes128", "aes-128-cbc"),
+            ("aes192", "aes-192-cbc"),
+            ("aes256", "aes-256-cbc"),
         ):
             if value in masks:
                 break
         else:
-            raise ValueError('Unknown encryption type: {0}'.format(value))
+            raise ValueError("Unknown encryption type: {0}".format(value))
 
         # Set the version specific encryption type.
         for x in vals:
@@ -3483,35 +4320,49 @@ class IpsecTunnelIpv4ProxyId(VersionedPanObject):
         udp_remote_port (int): Protocol UDP: remote port
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/auto-key/proxy-id')
+        self._xpaths.add_profile(value="/auto-key/proxy-id")
         self._xpaths.add_profile(
-            value='{0}/auto-key/proxy-id'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/auto-key/proxy-id".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'local', path='local'))
-        params.append(VersionedParamPath(
-            'remote', path='remote'))
-        params.append(VersionedParamPath(
-            'any_protocol', vartype='exist', path='protocol/any'))
-        params.append(VersionedParamPath(
-            'number_protocol', vartype='int', path='protocol/number'))
-        params.append(VersionedParamPath(
-            'tcp_local_port', vartype='int', path='protocol/tcp/local-port'))
-        params.append(VersionedParamPath(
-            'tcp_remote_port', vartype='int', path='protocol/tcp/remote-port'))
-        params.append(VersionedParamPath(
-            'udp_local_port', vartype='int', path='protocol/udp/local-port'))
-        params.append(VersionedParamPath(
-            'udp_remote_port', vartype='int', path='protocol/udp/remote-port'))
+        params.append(VersionedParamPath("local", path="local"))
+        params.append(VersionedParamPath("remote", path="remote"))
+        params.append(
+            VersionedParamPath("any_protocol", vartype="exist", path="protocol/any")
+        )
+        params.append(
+            VersionedParamPath("number_protocol", vartype="int", path="protocol/number")
+        )
+        params.append(
+            VersionedParamPath(
+                "tcp_local_port", vartype="int", path="protocol/tcp/local-port"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "tcp_remote_port", vartype="int", path="protocol/tcp/remote-port"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "udp_local_port", vartype="int", path="protocol/udp/local-port"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "udp_remote_port", vartype="int", path="protocol/udp/remote-port"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -3533,35 +4384,49 @@ class IpsecTunnelIpv6ProxyId(VersionedPanObject):
         udp_remote_port (int): Protocol UDP: remote port
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/auto-key/proxy-id-v6')
+        self._xpaths.add_profile(value="/auto-key/proxy-id-v6")
         self._xpaths.add_profile(
-            value='{0}/auto-key/proxy-id-v6'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/auto-key/proxy-id-v6".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'local', path='local'))
-        params.append(VersionedParamPath(
-            'remote', path='remote'))
-        params.append(VersionedParamPath(
-            'any_protocol', vartype='exist', path='protocol/any'))
-        params.append(VersionedParamPath(
-            'number_protocol', vartype='int', path='protocol/number'))
-        params.append(VersionedParamPath(
-            'tcp_local_port', vartype='int', path='protocol/tcp/local-port'))
-        params.append(VersionedParamPath(
-            'tcp_remote_port', vartype='int', path='protocol/tcp/remote-port'))
-        params.append(VersionedParamPath(
-            'udp_local_port', vartype='int', path='protocol/udp/local-port'))
-        params.append(VersionedParamPath(
-            'udp_remote_port', vartype='int', path='protocol/udp/remote-port'))
+        params.append(VersionedParamPath("local", path="local"))
+        params.append(VersionedParamPath("remote", path="remote"))
+        params.append(
+            VersionedParamPath("any_protocol", vartype="exist", path="protocol/any")
+        )
+        params.append(
+            VersionedParamPath("number_protocol", vartype="int", path="protocol/number")
+        )
+        params.append(
+            VersionedParamPath(
+                "tcp_local_port", vartype="int", path="protocol/tcp/local-port"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "tcp_remote_port", vartype="int", path="protocol/tcp/remote-port"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "udp_local_port", vartype="int", path="protocol/udp/local-port"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "udp_remote_port", vartype="int", path="protocol/udp/remote-port"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -3589,73 +4454,107 @@ class IpsecCryptoProfile(VersionedPanObject):
         lifesize_tb (int): IPSec SA lifesize in terabytes (TB)
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(
-            value='/network/ike/crypto-profiles/ipsec-crypto-profiles')
+            value="/network/ike/crypto-profiles/ipsec-crypto-profiles"
+        )
         self._xpaths.add_profile(
-            value='{0}/network/ike/crypto-profiles/ipsec-crypto-profiles'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/ike/crypto-profiles/ipsec-crypto-profiles".format(
+                self._TEMPLATE_DEVICE_XPATH
+            ),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'esp_encryption', vartype='member', path='esp/encryption',
-            values=(
-                'des',
-                '3des',
-                'aes128',
-                'aes192',
-                'aes256',
-                'null')))
+        params.append(
+            VersionedParamPath(
+                "esp_encryption",
+                vartype="member",
+                path="esp/encryption",
+                values=("des", "3des", "aes128", "aes192", "aes256", "null"),
+            )
+        )
         params[-1].add_profile(
-            '7.0.0',
-            vartype='member', path='esp/encryption',
+            "7.0.0",
+            vartype="member",
+            path="esp/encryption",
             values=(
-                'des',
-                '3des',
-                'aes-128-cbc',
-                'aes-192-cbc',
-                'aes-256-cbc',
-                'aes-128-gcm',
-                'aes-256-gcm',
-                'null'))
-        params.append(VersionedParamPath(
-            'esp_authentication', vartype='member', path='esp/authentication',
-            values=('none', 'md5', 'sha1', 'sha256', 'sha384', 'sha512')))
-        params.append(VersionedParamPath(
-            'ah_authentication', vartype='member', path='ah/authentication',
-            values=('md5', 'sha1', 'sha256', 'sha384', 'sha512')))
-        params.append(VersionedParamPath(
-            'dh_group', path='dh-group',
-            values=(
-                'no-pfs',
-                'group1',
-                'group2',
-                'group5',
-                'group14',
-                'group19',
-                'group20')))
-        params.append(VersionedParamPath(
-            'lifetime_seconds', vartype='int', path='lifetime/seconds'))
-        params.append(VersionedParamPath(
-            'lifetime_minutes', vartype='int', path='lifetime/minutes'))
-        params.append(VersionedParamPath(
-            'lifetime_hours', vartype='int', path='lifetime/hours'))
-        params.append(VersionedParamPath(
-            'lifetime_days', vartype='int', path='lifetime/days'))
-        params.append(VersionedParamPath(
-            'lifesize_kb', vartype='int', path='lifesize/kb'))
-        params.append(VersionedParamPath(
-            'lifesize_mb', vartype='int', path='lifesize/mb'))
-        params.append(VersionedParamPath(
-            'lifesize_gb', vartype='int', path='lifesize/gb'))
-        params.append(VersionedParamPath(
-            'lifesize_tb', vartype='int', path='lifesize/tb'))
+                "des",
+                "3des",
+                "aes-128-cbc",
+                "aes-192-cbc",
+                "aes-256-cbc",
+                "aes-128-gcm",
+                "aes-256-gcm",
+                "null",
+            ),
+        )
+        params.append(
+            VersionedParamPath(
+                "esp_authentication",
+                vartype="member",
+                path="esp/authentication",
+                values=("none", "md5", "sha1", "sha256", "sha384", "sha512"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ah_authentication",
+                vartype="member",
+                path="ah/authentication",
+                values=("md5", "sha1", "sha256", "sha384", "sha512"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "dh_group",
+                path="dh-group",
+                values=(
+                    "no-pfs",
+                    "group1",
+                    "group2",
+                    "group5",
+                    "group14",
+                    "group19",
+                    "group20",
+                ),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lifetime_seconds", vartype="int", path="lifetime/seconds"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lifetime_minutes", vartype="int", path="lifetime/minutes"
+            )
+        )
+        params.append(
+            VersionedParamPath("lifetime_hours", vartype="int", path="lifetime/hours")
+        )
+        params.append(
+            VersionedParamPath("lifetime_days", vartype="int", path="lifetime/days")
+        )
+        params.append(
+            VersionedParamPath("lifesize_kb", vartype="int", path="lifesize/kb")
+        )
+        params.append(
+            VersionedParamPath("lifesize_mb", vartype="int", path="lifesize/mb")
+        )
+        params.append(
+            VersionedParamPath("lifesize_gb", vartype="int", path="lifesize/gb")
+        )
+        params.append(
+            VersionedParamPath("lifesize_tb", vartype="int", path="lifesize/tb")
+        )
 
         self._params = tuple(params)
 
@@ -3695,25 +4594,25 @@ class IpsecCryptoProfile(VersionedPanObject):
 
         for token in string_or_list(value):
             # Some values are constant across versioning.
-            if token in ('des', '3des', 'null'):
+            if token in ("des", "3des", "null"):
                 normalized.append(token)
                 continue
 
             # Get the version specific values for mk_esp_encryption.
-            vals = self.about('esp_encryption')['About']['Values']
+            vals = self.about("esp_encryption")["About"]["Values"]
 
             # Normalize the value.
             for masks in (
-                ('aes128', 'aes-128-cbc'),
-                ('aes192', 'aes-192-cbc'),
-                ('aes256', 'aes-256-cbc'),
-                ('aes-128-gcm', ),
-                ('aes-256-gcm', ),
+                ("aes128", "aes-128-cbc"),
+                ("aes192", "aes-192-cbc"),
+                ("aes256", "aes-256-cbc"),
+                ("aes-128-gcm",),
+                ("aes-256-gcm",),
             ):
                 if token in masks:
                     break
             else:
-                raise ValueError('Unknown encryption type: {0}'.format(token))
+                raise ValueError("Unknown encryption type: {0}".format(token))
 
             # Set the version specific encryption type.
             for x in vals:
@@ -3722,8 +4621,8 @@ class IpsecCryptoProfile(VersionedPanObject):
                     break
             else:
                 raise ValueError(
-                    'ESP encryption {0} not supported in this version'.format(
-                        token))
+                    "ESP encryption {0} not supported in this version".format(token)
+                )
 
         self.esp_encryption = normalized
 
@@ -3750,54 +4649,85 @@ class IkeCryptoProfile(VersionedPanObject):
             reauthentication is disabled.
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(
-            value='/network/ike/crypto-profiles/ike-crypto-profiles')
+            value="/network/ike/crypto-profiles/ike-crypto-profiles"
+        )
         self._xpaths.add_profile(
-            value='{0}/network/ike/crypto-profiles/ike-crypto-profiles'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/ike/crypto-profiles/ike-crypto-profiles".format(
+                self._TEMPLATE_DEVICE_XPATH
+            ),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'dh_group', vartype='member', path='dh-group',
-            values=('group1', 'group2', 'group5', 'group14')))
+        params.append(
+            VersionedParamPath(
+                "dh_group",
+                vartype="member",
+                path="dh-group",
+                values=("group1", "group2", "group5", "group14"),
+            )
+        )
         params[-1].add_profile(
-            '7.0.0',
-            vartype='member', path='dh-group',
-            values=('group1', 'group2', 'group5', 'group14', 'group19', 'group20'))
-        params.append(VersionedParamPath(
-            'authentication', vartype='member', path='hash',
-            values=('md5', 'sha1', 'sha256', 'sha384', 'sha512')))
-        params.append(VersionedParamPath(
-            'encryption', vartype='member', path='encryption',
-            values=('3des', 'aes128', 'aes192', 'aes256')))
+            "7.0.0",
+            vartype="member",
+            path="dh-group",
+            values=("group1", "group2", "group5", "group14", "group19", "group20"),
+        )
+        params.append(
+            VersionedParamPath(
+                "authentication",
+                vartype="member",
+                path="hash",
+                values=("md5", "sha1", "sha256", "sha384", "sha512"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "encryption",
+                vartype="member",
+                path="encryption",
+                values=("3des", "aes128", "aes192", "aes256"),
+            )
+        )
         params[-1].add_profile(
-            '7.0.0',
-            vartype='member', path='encryption',
-            values=('3des', 'aes-128-cbc', 'aes-192-cbc', 'aes-256-cbc'))
+            "7.0.0",
+            vartype="member",
+            path="encryption",
+            values=("3des", "aes-128-cbc", "aes-192-cbc", "aes-256-cbc"),
+        )
         params[-1].add_profile(
-            '7.1.0',
-            vartype='member', path='encryption',
-            values=('des', '3des', 'aes-128-cbc', 'aes-192-cbc', 'aes-256-cbc'))
-        params.append(VersionedParamPath(
-            'lifetime_seconds', vartype='int', path='lifetime/seconds'))
-        params.append(VersionedParamPath(
-            'lifetime_minutes', vartype='int', path='lifetime/minutes'))
-        params.append(VersionedParamPath(
-            'lifetime_hours', vartype='int', path='lifetime/hours'))
-        params.append(VersionedParamPath(
-            'lifetime_days', vartype='int', path='lifetime/days'))
-        params.append(VersionedParamPath(
-            'authentication_multiple', exclude=True))
-        params[-1].add_profile(
-            '7.0.0',
-            vartype='int', path='authentication-multiple')
+            "7.1.0",
+            vartype="member",
+            path="encryption",
+            values=("des", "3des", "aes-128-cbc", "aes-192-cbc", "aes-256-cbc"),
+        )
+        params.append(
+            VersionedParamPath(
+                "lifetime_seconds", vartype="int", path="lifetime/seconds"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lifetime_minutes", vartype="int", path="lifetime/minutes"
+            )
+        )
+        params.append(
+            VersionedParamPath("lifetime_hours", vartype="int", path="lifetime/hours")
+        )
+        params.append(
+            VersionedParamPath("lifetime_days", vartype="int", path="lifetime/days")
+        )
+        params.append(VersionedParamPath("authentication_multiple", exclude=True))
+        params[-1].add_profile("7.0.0", vartype="int", path="authentication-multiple")
 
         self._params = tuple(params)
 
@@ -3831,24 +4761,24 @@ class IkeCryptoProfile(VersionedPanObject):
 
         for token in string_or_list(value):
             # Some values are constant across versioning.
-            if token in ('3des'):
+            if token in ("3des"):
                 normalized.append(token)
                 continue
 
             # Get the version specific values for mk_esp_encryption.
-            vals = self.about('encryption')['About']['Values']
+            vals = self.about("encryption")["About"]["Values"]
 
             # Normalize the value.
             for masks in (
-                ('3des', ),
-                ('aes128', 'aes-128-cbc'),
-                ('aes192', 'aes-192-cbc'),
-                ('aes256', 'aes-256-cbc'),
+                ("3des",),
+                ("aes128", "aes-128-cbc"),
+                ("aes192", "aes-192-cbc"),
+                ("aes256", "aes-256-cbc"),
             ):
                 if token in masks:
                     break
             else:
-                raise ValueError('Unknown encryption type: {0}'.format(token))
+                raise ValueError("Unknown encryption type: {0}".format(token))
 
             # Set the version specific encryption type.
             for x in vals:
@@ -3857,8 +4787,8 @@ class IkeCryptoProfile(VersionedPanObject):
                     break
             else:
                 raise ValueError(
-                    'Encryption {0} not supported in this version'.format(
-                        token))
+                    "Encryption {0} not supported in this version".format(token)
+                )
 
         self.encryption = normalized
 
@@ -3885,44 +4815,63 @@ class GreTunnel(VersionedPanObject):
         disabled (bool): Disable the GRE tunnel.
 
     """
+
     SUFFIX = ENTRY
     ROOT = Root.DEVICE
 
     def _setup(self):
-        self._xpaths.add_profile(value='/network/tunnel/gre')
+        self._xpaths.add_profile(value="/network/tunnel/gre")
         self._xpaths.add_profile(
-            value='{0}/network/tunnel/gre'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/network/tunnel/gre".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # Hidden when default: all keep alive, ttl
         params = []
-        params.append(VersionedParamPath(
-            'interface', path='local-address/interface'))
-        params.append(VersionedParamPath(
-            'local_address_type', default='ip', values=['ip', 'floating-ip'],
-            path='local-address/{local_address_type}',))
-        params.append(VersionedParamPath(
-            'local_address_value', path='local-address/{local_address_type}'))
-        params.append(VersionedParamPath(
-            'peer_address', path='peer-address/ip'))
-        params.append(VersionedParamPath(
-            'tunnel_interface', path='tunnel-interface'))
-        params.append(VersionedParamPath(
-            'ttl', default=64, vartype='int', path='ttl'))
-        params.append(VersionedParamPath(
-            'copy_tos', vartype='yesno', path='copy-tos'))
-        params.append(VersionedParamPath(
-            'enable_keep_alive', vartype='yesno', path='keep-alive/enable'))
-        params.append(VersionedParamPath(
-            'keep_alive_interval', default=10, vartype='int',
-            path='keep-alive/interval'))
-        params.append(VersionedParamPath(
-            'keep_alive_retry', default=3, vartype='int',
-            path='keep-alive/retry'))
-        params.append(VersionedParamPath(
-            'keep_alive_hold_timer', default=5, vartype='int',
-            path='keep-alive/hold-timer'))
-        params.append(VersionedParamPath(
-            'disabled', vartype='yesno', path='disabled'))
+        params.append(VersionedParamPath("interface", path="local-address/interface"))
+        params.append(
+            VersionedParamPath(
+                "local_address_type",
+                default="ip",
+                values=["ip", "floating-ip"],
+                path="local-address/{local_address_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "local_address_value", path="local-address/{local_address_type}"
+            )
+        )
+        params.append(VersionedParamPath("peer_address", path="peer-address/ip"))
+        params.append(VersionedParamPath("tunnel_interface", path="tunnel-interface"))
+        params.append(VersionedParamPath("ttl", default=64, vartype="int", path="ttl"))
+        params.append(VersionedParamPath("copy_tos", vartype="yesno", path="copy-tos"))
+        params.append(
+            VersionedParamPath(
+                "enable_keep_alive", vartype="yesno", path="keep-alive/enable"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "keep_alive_interval",
+                default=10,
+                vartype="int",
+                path="keep-alive/interval",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "keep_alive_retry", default=3, vartype="int", path="keep-alive/retry"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "keep_alive_hold_timer",
+                default=5,
+                vartype="int",
+                path="keep-alive/hold-timer",
+            )
+        )
+        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled"))
 
         self._params = tuple(params)

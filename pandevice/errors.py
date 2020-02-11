@@ -34,79 +34,104 @@ class PanDeviceError(PanXapiError):
         pan_device: A reference to the PanDevice that generated the exception
 
     """
+
     def __init__(self, *args, **kwargs):
-        self.pan_device = kwargs.pop('pan_device', None)
+        self.pan_device = kwargs.pop("pan_device", None)
         super(PanDeviceError, self).__init__(*args, **kwargs)
-        self.message = '{0}'.format(self)
+        self.message = "{0}".format(self)
+
 
 class PanDeviceXapiError(PanDeviceError):
     """General error returned by an API call"""
+
     pass
+
 
 class PanInvalidCredentials(PanDeviceXapiError):
     pass
 
+
 class PanURLError(PanDeviceXapiError):
     pass
+
 
 class PanConnectionTimeout(PanDeviceXapiError):
     pass
 
+
 class PanJobTimeout(PanDeviceError):
     pass
+
 
 class PanLockError(PanDeviceError):
     pass
 
+
 class PanPendingChanges(PanDeviceError):
     pass
+
 
 class PanCommitInProgress(PanDeviceXapiError):
     pass
 
+
 class PanInstallInProgress(PanDeviceXapiError):
     pass
 
+
 class PanCommitFailed(PanDeviceXapiError):
     def __init__(self, *args, **kwargs):
-        self.result = kwargs.pop('result', None)
+        self.result = kwargs.pop("result", None)
         super(PanCommitFailed, self).__init__("Commit failed", *args, **kwargs)
+
 
 class PanCommitNotNeeded(PanDeviceXapiError):
     pass
 
+
 class PanSessionTimedOut(PanDeviceXapiError):
     pass
+
 
 class PanDeviceNotSet(PanDeviceError):
     pass
 
+
 class PanNotConnectedOnPanorama(PanDeviceError):
     pass
+
 
 class PanNotAttachedOnPanorama(PanDeviceError):
     pass
 
+
 class PanNoSuchNode(PanDeviceXapiError):
     pass
+
 
 class PanObjectMissing(PanDeviceXapiError):
     pass
 
+
 class PanHAConfigSyncFailed(PanDeviceXapiError):
     pass
+
 
 class PanHASyncInProgress(PanDeviceXapiError):
     pass
 
+
 class PanObjectError(PanDeviceError):
     pass
+
 
 class PanApiKeyNotSet(PanDeviceError):
     pass
 
+
 class PanActivateFeatureAuthCodeError(PanDeviceError):
     pass
+
 
 class PanOutdatedSslError(PanDeviceError):
     pass

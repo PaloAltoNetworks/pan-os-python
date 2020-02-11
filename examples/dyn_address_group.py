@@ -42,7 +42,7 @@ Clear all tags from all IP's in vsys2::
 
 """
 
-__author__ = 'btorres-gil'
+__author__ = "btorres-gil"
 
 import sys
 import os
@@ -59,20 +59,40 @@ from pandevice.panorama import Panorama
 def main():
 
     # Get command line arguments
-    parser = argparse.ArgumentParser(description="Tag an IP address on a Palo Alto Networks Next generation Firewall")
-    parser.add_argument('-v', '--verbose', action='count', help="Verbose (-vv for extra verbose)")
-    parser.add_argument('-q', '--quiet', action='store_true', help="No output")
-    parser.add_argument('-r', '--register', help="Tags to register to an IP, for multiple tags use commas eg. linux,apache,server")
-    parser.add_argument('-u', '--unregister', help="Tags to remove from an an IP, for multiple tags use commas eg. linux,apache,server")
-    parser.add_argument('-s', '--vsys', help="Specify the vsys target in the form vsysN where N is the vsys number: vsys2, vsys4, etc.")
-    parser.add_argument('-l', '--list', action='store_true', help="List all tags for an IP")
-    parser.add_argument('-c', '--clear', action='store_true', help="Clear all tags for all IP")
+    parser = argparse.ArgumentParser(
+        description="Tag an IP address on a Palo Alto Networks Next generation Firewall"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="count", help="Verbose (-vv for extra verbose)"
+    )
+    parser.add_argument("-q", "--quiet", action="store_true", help="No output")
+    parser.add_argument(
+        "-r",
+        "--register",
+        help="Tags to register to an IP, for multiple tags use commas eg. linux,apache,server",
+    )
+    parser.add_argument(
+        "-u",
+        "--unregister",
+        help="Tags to remove from an an IP, for multiple tags use commas eg. linux,apache,server",
+    )
+    parser.add_argument(
+        "-s",
+        "--vsys",
+        help="Specify the vsys target in the form vsysN where N is the vsys number: vsys2, vsys4, etc.",
+    )
+    parser.add_argument(
+        "-l", "--list", action="store_true", help="List all tags for an IP"
+    )
+    parser.add_argument(
+        "-c", "--clear", action="store_true", help="Clear all tags for all IP"
+    )
     # Palo Alto Networks related arguments
-    fw_group = parser.add_argument_group('Palo Alto Networks Device')
-    fw_group.add_argument('hostname', help="Hostname of Firewall")
-    fw_group.add_argument('username', help="Username for Firewall")
-    fw_group.add_argument('password', help="Password for Firewall")
-    fw_group.add_argument('ip', help="The IP address to tag/untag/list")
+    fw_group = parser.add_argument_group("Palo Alto Networks Device")
+    fw_group.add_argument("hostname", help="Hostname of Firewall")
+    fw_group.add_argument("username", help="Username for Firewall")
+    fw_group.add_argument("password", help="Password for Firewall")
+    fw_group.add_argument("ip", help="The IP address to tag/untag/list")
     args = parser.parse_args()
 
     ### Set up logger
@@ -85,25 +105,22 @@ def main():
     if not args.quiet:
         logging_level = 20 - (args.verbose * 10)
         if logging_level <= logging.DEBUG:
-            logging_format = '%(levelname)s:%(name)s:%(message)s'
+            logging_format = "%(levelname)s:%(name)s:%(message)s"
         else:
-            logging_format = '%(message)s'
+            logging_format = "%(message)s"
         logging.basicConfig(format=logging_format, level=logging_level)
 
-
-
     # Connect to the device and determine its type (Firewall or Panorama).
-    device = PanDevice.create_from_device(args.hostname,
-                                          args.username,
-                                          args.password,
-                                          )
+    device = PanDevice.create_from_device(args.hostname, args.username, args.password,)
 
     # Panorama does not have a userid API, so exit.
     # You can use the userid API on a firewall with the Panorama 'target'
     # parameter by creating a Panorama object first, then create a
     # Firewall object with the 'panorama' and 'serial' variables populated.
     if issubclass(type(device), Panorama):
-        logging.error("Connected to a Panorama, but user-id API is not possible on Panorama.  Exiting.")
+        logging.error(
+            "Connected to a Panorama, but user-id API is not possible on Panorama.  Exiting."
+        )
         sys.exit(1)
 
     if args.vsys is not None:
@@ -122,13 +139,13 @@ def main():
             logging.info("No tags for IP: %s" % args.ip)
 
     if args.unregister:
-        device.userid.unregister(args.ip, args.unregister.split(','))
+        device.userid.unregister(args.ip, args.unregister.split(","))
 
     if args.register:
-        device.userid.register(args.ip, args.register.split(','))
+        device.userid.register(args.ip, args.register.split(","))
 
 
 # Call the main() function to begin the program if not
 # loaded as a module.
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
