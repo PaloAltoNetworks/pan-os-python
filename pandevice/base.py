@@ -2681,7 +2681,7 @@ class VarPath(object):
             if comparable:
                 values = sorted(values)
             for member in values:
-                ET.SubElement(elm, 'member').text = str(member)
+                ET.SubElement(elm, 'member').text = unicode(member)
         elif self.vartype == "entry":
             values = pandevice.string_or_list(value)
             if comparable:
@@ -2702,7 +2702,7 @@ class VarPath(object):
             # There is no variable, so don't try to populate it
             pass
         else:
-            elm.text = str(value)
+            elm.text = unicode(value)
 
 
 class ParamPath(object):
