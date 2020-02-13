@@ -143,7 +143,10 @@ class SoftwareUpdater(Updater):
             version = PanOSVersion(version)
         self.download_install(version, load_config, sync=True)
         # Reboot the device
-        self._logger.info("Device %s is rebooting after upgrading to version  %s. This will take a while." % (self.pandevice.id, version))
+        self._logger.info(
+            "Device %s is rebooting after upgrading to version  %s. This will take a while."
+            % (self.pandevice.id, version)
+        )
         self.pandevice.restart()
         if sync:
             new_version = self.pandevice.syncreboot()
