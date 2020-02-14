@@ -397,6 +397,31 @@ class TestElementStr_7_0(unittest.TestCase):
         o_str = o.element_str()
         self.assertEqual(expected, o_str)
 
+    # 6) pretty_print
+    def test_element_str_pretty(self):
+        expected = b"".join(
+            [
+                b'<?xml version="1.0" encoding="utf-8"?>\n',
+                b'<entry name="webserver">\n',
+                b'	<ip-netmask>192.168.1.100</ip-netmask>\n',
+                b'	<description>Intranet web server</description>\n',
+                b'	<tag>\n',
+                b'		<member>https</member>\n',
+                b'		<member>http</member>\n',
+                b'	</tag>\n',
+                b'</entry>\n',
+            ]
+        )
+        o = pandevice.objects.AddressObject(
+            "webserver",
+            "192.168.1.100",
+            description="Intranet web server",
+            tag=["https", "http"],
+        )
+
+        o_str = o.element_str(pretty_print=True)
+        self.assertEqual(expected, o_str)
+
 
 class TestXpaths_7_0(unittest.TestCase):
     """

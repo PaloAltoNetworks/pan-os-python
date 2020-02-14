@@ -489,7 +489,7 @@ class PanObject(object):
 
         """
         if pretty_print:
-            raw = ET.tostring(self.element, encoding="utf-8")
+            raw = ET.tostring(self.element(), encoding="utf-8")
             parsed = minidom.parseString(raw)
             return parsed.toprettyxml(indent="\t", encoding="utf-8")
         return ET.tostring(self.element(), encoding="utf-8")
