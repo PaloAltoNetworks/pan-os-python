@@ -5191,3 +5191,19 @@ class PanDevice(PanObject):
 
         # Done.
         return ans
+
+    def clock(self):
+        """Gets the current time on PAN-OS.
+
+        Returns:
+            datetime.datetime
+        """
+        ans = self.op("<show><clock/></show>", cmd_xml=False)
+
+        res = ans.find("./result")
+        if res is None:
+            return None
+
+        fmt = "%a %b %d %H:%M:%S %Z %Y"
+        text = res.text.strip()
+        return datetime.strptime(text, fmt)
