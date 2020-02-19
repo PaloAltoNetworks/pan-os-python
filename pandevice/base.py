@@ -28,6 +28,7 @@ import re
 import sys
 import time
 import xml.etree.ElementTree as ET
+import xml.dom.minidom as minidom
 
 import pan.commit
 import pan.xapi
@@ -477,13 +478,20 @@ class PanObject(object):
 
         return root
 
-    def element_str(self):
+    def element_str(self, pretty_print=False):
         """The XML representation of this PanObject and all its children.
+
+        Args:
+            pretty_print (bool): Return the resulting string pretty_printed with indentation.
 
         Returns:
             str: XML form of this object and its children
 
         """
+        if pretty_print:
+            raw = ET.tostring(self.element(), encoding="utf-8")
+            parsed = minidom.parseString(raw)
+            return parsed.toprettyxml(indent="\t", encoding="utf-8")
         return ET.tostring(self.element(), encoding="utf-8")
 
     def _root_element(self):
@@ -2605,10 +2613,6 @@ class VersionedPanObject(PanObject):
         # Save results from the settings dict
         for param in params:
             param.value = settings.get(param.name)
-
-    def element_str(self):
-        """The XML form of this object (and its children) as a string."""
-        return ET.tostring(self.element(), encoding="utf-8")
 
     def __getattr__(self, name):
         params = super(VersionedPanObject, self).__getattribute__("_params")
