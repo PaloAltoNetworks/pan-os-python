@@ -403,13 +403,13 @@ class TestElementStr_7_0(unittest.TestCase):
             [
                 b'<?xml version="1.0" encoding="utf-8"?>\n',
                 b'<entry name="webserver">\n',
-                b'	<ip-netmask>192.168.1.100</ip-netmask>\n',
-                b'	<description>Intranet web server</description>\n',
-                b'	<tag>\n',
-                b'		<member>https</member>\n',
-                b'		<member>http</member>\n',
-                b'	</tag>\n',
-                b'</entry>\n',
+                b"	<ip-netmask>192.168.1.100</ip-netmask>\n",
+                b"	<description>Intranet web server</description>\n",
+                b"	<tag>\n",
+                b"		<member>https</member>\n",
+                b"		<member>http</member>\n",
+                b"	</tag>\n",
+                b"</entry>\n",
             ]
         )
         o = pandevice.objects.AddressObject(
