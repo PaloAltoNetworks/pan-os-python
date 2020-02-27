@@ -27,8 +27,8 @@ import itertools
 import re
 import sys
 import time
-import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
+import xml.etree.ElementTree as ET
 
 import pan.commit
 import pan.xapi
@@ -5181,17 +5181,28 @@ class PanDevice(PanObject):
         # name, index, and action.
         ans = []
         for elm in res.findall("./result/rules/entry"):
-            val = {
-                "name": elm.attrib["name"],
-            }
+            if "name" in elm.attrib:
+                val = {
+                    "name": elm.attrib["name"],
+                }
 
-            e = elm.find("./index")
-            val["index"] = 0 if e is None else int(e.text)
+                e = elm.find("./index")
+                val["index"] = 0 if e is None else int(e.text)
 
-            e = elm.find("./action")
-            val["action"] = "" if e is None else e.text
+                e = elm.find("./action")
+                val["action"] = "" if e is None else e.text
 
-            ans.append(val)
+                ans.append(val)
+            else:
+                tokens = elm.text.split(";")
+                if len(tokens) == 2 and tokens[1].startswith(" index: "):
+                    ans.append(
+                        {"name": tokens[0], "index": int(tokens[1].split(":")[1])}
+                    )
+                else:
+                    raise err.PanDeviceError(
+                        "Not sure how to parse response: {0}".format(elm.text)
+                    )
 
         # Done.
         return ans
