@@ -69,6 +69,7 @@ target/
 .venv/
 venv/
 ENV/
+.envrc
 
 # PyCharm / IntelliJ
 .idea

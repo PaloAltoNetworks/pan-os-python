@@ -75,3 +75,62 @@ jobs:
 
       - name: Check formatting with black and isort
         run: poetry run make check-format
+
+  release:
+    name: Release
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/alpha')
+    needs: [test, format]
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache npm modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-global-install
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+
+      - name: Install semantic-release
+        run: |
+          npm install -g \
+          semantic-release@^17.0.4 \
+          @semantic-release/exec@^5.0.0 \
+          @semantic-release/git@^9.0.0 \
+          conventional-changelog-conventionalcommits@^4.2.3
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install Poetry
+        uses: dschep/install-poetry-action@v1.3
+        with:
+          create_virtualenvs: true
+
+      - name: Get poetry cache
+        id: poetry-cache
+        run: echo "::set-output name=dir::$(poetry config cache-dir)"
+
+      - name: Cache poetry
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.poetry-cache.outputs.dir }}
+          key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-3.7-
+
+      - name: Create release and publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYPI_USER: __token__
+          PYPI_PASS: ${{ secrets.PYPI_TOKEN }}
+        run: npx semantic-release
