@@ -1011,3 +1011,35 @@ class ScheduleObject(VersionedPanObject):
         )
 
         self._params = tuple(params)
+
+
+class Region(VersionedPanObject):
+    """Region.
+
+    Args:
+        name (str): Name of the region
+        address (list): List of IP networks
+        latitude (float): Latitude of the region
+        longitude (float): Longitude of the region
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/region")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath("address", path="address", vartype="member")
+        )
+        params.append(VersionedParamPath("latitude", path="geo-location/latitude", vartype="float"))
+        params.append(VersionedParamPath("longitude", path="geo-location/longitude", vartype="float"))
+
+        self._params = tuple(params)
+
+
