@@ -540,7 +540,7 @@ class FirewallCommit(object):
 
         return any(x for x in pp_list)
 
-    def es(self):
+    def element_str(self):
         return ET.tostring(self.element(), encoding="utf-8")
 
     def element(self):
