@@ -1,6 +1,13 @@
 name: CI/CD
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - beta
+      - alpha
+  pull_request:
 
 jobs:
 
