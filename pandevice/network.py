@@ -637,7 +637,7 @@ class VirtualWire(VsysOperations):
         # params
         params = []
 
-        params.append(VersionedParamPath("tag", path="tag-allowed", vartype="int"))
+        params.append(VersionedParamPath("tag", path="tag-allowed"))
         params.append(VersionedParamPath("interface1", path="interface1"))
         params.append(VersionedParamPath("interface2", path="interface2"))
         params.append(
