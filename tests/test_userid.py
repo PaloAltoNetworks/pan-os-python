@@ -15,6 +15,7 @@ try:
     from unittest import mock
 except ImportError:
     import mock
+import sys
 import unittest
 
 import pandevice.firewall
@@ -30,12 +31,24 @@ class TestUserId(unittest.TestCase):
     """
 
     def test_login(self):
-        expected = (
-            b"<uid-message><version>1.0</version>"
-            b"<type>update</type><payload><login>"
-            b'<entry ip="10.1.1.1" name="example.com\username" timeout="10" />'
-            b"</login></payload></uid-message>"
-        )
+        # Must set up different expectations for python 3.8 and higher
+        # Per documentation: "Changed in version 3.8: The tostring()
+        #   function now preserves the attribute order specified..."
+        # https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.tostring
+        if sys.version_info <= (3, 8):
+            expected = (
+                b"<uid-message><version>1.0</version>"
+                b"<type>update</type><payload><login>"
+                b'<entry ip="10.1.1.1" name="example.com\username" timeout="10" />'
+                b"</login></payload></uid-message>"
+            )
+        else:
+            expected = (
+                b"<uid-message><version>1.0</version>"
+                b"<type>update</type><payload><login>"
+                b'<entry name="example.com\username" ip="10.1.1.1" timeout="10" />'
+                b"</login></payload></uid-message>"
+            )
         vsys = "vsys3"
 
         fw = pandevice.firewall.Firewall(
