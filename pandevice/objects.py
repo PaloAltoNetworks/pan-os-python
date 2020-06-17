@@ -1034,12 +1034,16 @@ class Region(VersionedPanObject):
         # params
         params = []
 
+        params.append(VersionedParamPath("address", path="address", vartype="member"))
         params.append(
-            VersionedParamPath("address", path="address", vartype="member")
+            VersionedParamPath(
+                "latitude", path="geo-location/latitude", vartype="float"
+            )
         )
-        params.append(VersionedParamPath("latitude", path="geo-location/latitude", vartype="float"))
-        params.append(VersionedParamPath("longitude", path="geo-location/longitude", vartype="float"))
+        params.append(
+            VersionedParamPath(
+                "longitude", path="geo-location/longitude", vartype="float"
+            )
+        )
 
         self._params = tuple(params)
-
-
