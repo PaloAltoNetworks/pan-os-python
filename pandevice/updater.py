@@ -307,7 +307,7 @@ class SoftwareUpdater(Updater):
         # eg. 6.0.2 -> 6.0.3
         if (
             current_version.major == target_version.major
-            and current_version.minor == current_version.minor
+            and current_version.minor == target_version.minor
         ):
             return True
 
