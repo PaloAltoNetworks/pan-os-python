@@ -17,11 +17,11 @@
 
 """Policies module contains policies and rules that exist in the 'Policies' tab in the firewall GUI"""
 
-import pandevice.errors as err
-from pandevice import getlogger
-from pandevice.base import ENTRY, MEMBER, PanObject, Root
-from pandevice.base import VarPath as Var
-from pandevice.base import VersionedPanObject, VersionedParamPath
+import panos.errors as err
+from panos import getlogger
+from panos.base import ENTRY, MEMBER, PanObject, Root
+from panos.base import VarPath as Var
+from panos.base import VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
@@ -29,8 +29,8 @@ logger = getlogger(__name__)
 class Rulebase(VersionedPanObject):
     """Rulebase for a Firewall
 
-    Firewall only.  For Panorama, use :class:`pandevice.policies.PreRulebase` or
-    :class:`pandevice.policies.PostRulebase`.
+    Firewall only.  For Panorama, use :class:`panos.policies.PreRulebase` or
+    :class:`panos.policies.PostRulebase`.
 
     """
 
@@ -48,7 +48,7 @@ class Rulebase(VersionedPanObject):
 class PreRulebase(Rulebase):
     """Pre-rulebase for a Panorama
 
-    Panorama only.  For Firewall, use :class:`pandevice.policies.Rulebase`.
+    Panorama only.  For Firewall, use :class:`panos.policies.Rulebase`.
 
     """
 
@@ -59,7 +59,7 @@ class PreRulebase(Rulebase):
 class PostRulebase(Rulebase):
     """Post-rulebase for a Panorama
 
-    Panorama only.  For Firewall, use :class:`pandevice.policies.Rulebase`.
+    Panorama only.  For Firewall, use :class:`panos.policies.Rulebase`.
 
     """
 

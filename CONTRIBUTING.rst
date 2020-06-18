@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/PaloAltoNetworks/pandevice/issues.
+Report bugs at https://github.com/PaloAltoNetworks/pan-os-python/issues.
 
 Fix Bugs
 ~~~~~~~~
@@ -30,8 +30,8 @@ is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-Palo Alto Networks Device Framework could always use more documentation, whether as part of the
-official Palo Alto Networks Device Framework docs, in docstrings, or even on the web in blog posts,
+The PAN-OS SDK for Python could always use more documentation, whether as part of the
+official pan-os-python docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 The main documentation is in the `docs` directory and the API reference is
@@ -43,7 +43,7 @@ generate the documentation locally.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/PaloAltoNetworks/pandevice/issues.
+The best way to send feedback is to file an issue at https://github.com/PaloAltoNetworks/pan-os-python/issues.
 
 If you are proposing a feature:
 
@@ -55,18 +55,18 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute some code? Here's how to set up `pandevice` for local development.
+Ready to contribute some code? Here's how to set up `pan-os-python` for local development.
 
 1. Install python 3.6 or higher
 
 Development must be done using python 3.6 or higher. Development on python 2.7 is
 no longer supported.
 
-2. Fork the `pandevice` repo on GitHub.
+2. Fork the `pan-os-python` repo on GitHub.
 
 3. Clone your fork locally::
 
-    $ git clone https://github.com/your-username/pandevice.git
+    $ git clone https://github.com/your-username/pan-os-python.git
 
 4. Install Poetry
 

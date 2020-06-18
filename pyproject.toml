@@ -1,24 +1,24 @@
 [tool.poetry]
-name = "pandevice"
+name = "pan-os-python"
 version = "0.14.0"
 description = "Framework for interacting with Palo Alto Networks devices via API"
 authors = ["Palo Alto Networks <devrel@paloaltonetworks.com>"]
 license = "ISC"
-keywords = ["pandevice"]
+keywords = ["panos", "pan-os-python"]
 readme = "README.rst"
-homepage = "https://github.com/PaloAltoNetworks/pandevice"
-repository = "https://github.com/PaloAltoNetworks/pandevice"
-documentation = "https://pandevice.readthedocs.io"
+homepage = "https://github.com/PaloAltoNetworks/pan-os-python"
+repository = "https://github.com/PaloAltoNetworks/pan-os-python"
+documentation = "https://pan-os-python.readthedocs.io"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: ISC License (ISCL)",
     "Natural Language :: English",
-    "Programming Language :: Python :: 2",
-    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
 ]
 
 [tool.poetry.dependencies]

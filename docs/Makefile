@@ -20,7 +20,7 @@ ALLSPHINXOPTS   = -a -v -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPT
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 # options for sphinx-autobuild
-AUTOSPHINXOPTS  = --ignore *.dot --watch ../pandevice
+AUTOSPHINXOPTS  = --ignore *.dot --watch ../panos
 
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext

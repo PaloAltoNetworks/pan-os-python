@@ -34,10 +34,7 @@ import datetime
 import random
 import sys
 
-from pandevice import device
-from pandevice import firewall
-from pandevice import network
-
+from panos import device, firewall, network
 
 HOSTNAME = "127.0.0.1"
 USERNAME = "admin"
@@ -46,11 +43,11 @@ INTERFACE = "ethernet1/5"
 
 
 def main():
-    # Before we begin, you'll need to use the pandevice documentation both
+    # Before we begin, you'll need to use the pan-os-python documentation both
     # for this example and for any scripts you may write for yourself.  The
     # docs can be found here:
     #
-    # http://pandevice.readthedocs.io/en/latest/reference.html
+    # http://pan-os-python.readthedocs.io/en/latest/reference.html
     #
     # First, let's create the firewall object that we want to modify.
     fw = firewall.Firewall(HOSTNAME, USERNAME, PASSWORD)
@@ -109,9 +106,9 @@ def main():
     # performance gains from doing "create()" on each subinterface one-by-one.
     #
     # The function we'll use is "create_similar()".  Create similar is saying,
-    # "I want to create all objects similar to this one in my entire pandevice
+    # "I want to create all objects similar to this one in my entire pan-os-python
     # object tree."  In this case, since we'd be invoking it on a subinterface
-    # of INTERFACE (our variable above), we are asking pandevice to create all
+    # of INTERFACE (our variable above), we are asking pan-os-python to create all
     # subinterfaces of INTERFACE, no matter which vsys it exists in.
     #
     # We just need any subinterface to do this.  Since our last subinterface
@@ -134,7 +131,7 @@ def main():
 
     print("Desired interface: {0}".format(INTERFACE))
 
-    # Make the base interface object and connect it to our pandevice tree.
+    # Make the base interface object and connect it to our pan-os-python tree.
     base = network.EthernetInterface(INTERFACE, "layer2")
     fw.add(base)
 
@@ -156,12 +153,12 @@ def main():
     # apply these changes to the firewall.
     #
     # This is where you can use the function "organize_into_vsys()".  This
-    # takes all objects currently attached to your pandevice object tree
+    # takes all objects currently attached to your pan-os-python object tree
     # and organizes them into the vsys they belong to.
     #
     # We haven't gotten the current vsys yet (this is a new script, remember),
     # but the function can take care of that for us.  So let's just invoke it
-    # to organize our pandevice object tree into vsys.
+    # to organize our pan-os-python object tree into vsys.
     print("Organizing subinterfaces into vsys...")
     fw.organize_into_vsys()
 
@@ -176,7 +173,7 @@ def main():
     #
     # NOTE:  As an "apply()" function, apply does a replace of config, not
     # a simple update.  So you must be careful that all other objects are
-    # currently attached to your pandevice object tree when using apply
+    # currently attached to your pan-os-python object tree when using apply
     # functions.  In our case, we have already refreshed all layer2
     # subinterfaces, and we are the only ones working with INTERFACE, so we
     # are safe to use this function.

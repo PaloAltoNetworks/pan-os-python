@@ -21,12 +21,12 @@ import logging
 import re
 import xml.etree.ElementTree as ET
 
-import pandevice
-import pandevice.errors as err
-from pandevice import getlogger
-from pandevice.base import ENTRY, MEMBER, PanObject, Root
-from pandevice.base import VarPath as Var
-from pandevice.base import VersionedPanObject, VersionedParamPath
+import panos
+import panos.errors as err
+from panos import getlogger
+from panos.base import ENTRY, MEMBER, PanObject, Root
+from panos.base import VarPath as Var
+from panos.base import VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
@@ -110,7 +110,7 @@ class Tag(VersionedPanObject):
     Args:
         name (str): Name of the tag
         color (str): Color ID (eg. 'color1', 'color4', etc). You can
-            use :func:`~pandevice.objects.Tag.color_code` to generate the ID.
+            use :func:`~panos.objects.Tag.color_code` to generate the ID.
         comments (str): Comments
 
     """

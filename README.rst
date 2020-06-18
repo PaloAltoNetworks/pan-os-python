@@ -1,19 +1,19 @@
-===================================
-Palo Alto Networks Device Framework
-===================================
+========================================
+Palo Alto Networks PAN-OS SDK for Python
+========================================
 
-The Device Framework is a mechanism for interacting with Palo Alto Networks
-devices (including physical and virtualized Next-generation Firewalls and
-Panorama).  The Device Framework is object oriented and mimics the traditional
-interaction with the device via the GUI or CLI/API.
+The PAN-OS SDK for Python (pan-os-python) is a package to help interact with
+Palo Alto Networks devices (including physical and virtualized Next-generation
+Firewalls and Panorama).  The pan-os-python SDK is object oriented and mimics
+the traditional interaction with the device via the GUI or CLI/API.
 
-* Documentation: http://pandevice.readthedocs.io
-* Overview: http://paloaltonetworks.github.io/pandevice
+* Documentation: http://pan-os-python.readthedocs.io
+* Overview: http://paloaltonetworks.github.io/pan-os-python
 * Free software: ISC License
 
 -----
 
-|pypi| |travis| |rtd| |gitter|
+|pypi| |rtd| |gitter|
 
 -----
 
@@ -30,38 +30,36 @@ Features
 Status
 ------
 
-Palo Alto Networks Device Framework is considered **alpha**. It is fully tested
-and used in many production environments, but it maintains alpha status because
-the API interface could change at any time without notification. Please be
-prepared to modify your scripts to work with each subsequent version of this
-package because backward compatibility is not guaranteed.
+Palo Alto Networks PAN-OS SDK for Python is considered stable. It is fully tested
+and used in many production environments. Semantic versioning is applied to indicate
+bug fixes, new features, and breaking changes in each version.
 
 Install
 -------
 
 Install using pip::
 
-    pip install pandevice
+    pip install pan-os-python
 
 Upgrade to the latest version::
 
-    pip install --upgrade pandevice
+    pip install --upgrade pan-os-python
 
-If you have poetry installed, you can also add pandevice to your project::
+If you have poetry installed, you can also add pan-os-python to your project::
 
-    poetry add pandevice
+    poetry add pan-os-python
 
 How to import
 -------------
 
-To use Palo Alto Networks Device Framework in a project::
+To use pan-os-python in a project::
 
-    import pandevice
+    import panos
 
 You can also be more specific about which modules you want to import::
 
-    from pandevice import firewall
-    from pandevice import network
+    from panos import firewall
+    from panos import network
 
 
 A few examples
@@ -73,8 +71,8 @@ each module. Nodes hierarchy must follow the model in the
 
 The following examples assume the modules were imported as such::
 
-    from pandevice import firewall
-    from pandevice import network
+    from panos import firewall
+    from panos import network
 
 Create an interface and commit::
 
@@ -110,25 +108,21 @@ Thank you to Kevin Steves, creator of the pan-python library:
 
 
 .. _pan-python: http://github.com/kevinsteves/pan-python
-.. _Configuration Tree: http://pandevice.readthedocs.io/en/latest/configtree.html
-.. _Usage Guide: http://pandevice.readthedocs.io/en/latest/usage.html
+.. _Configuration Tree: http://pan-os-python.readthedocs.io/en/latest/configtree.html
+.. _Usage Guide: http://pan-os-python.readthedocs.io/en/latest/usage.html
 
-.. |pypi| image:: https://img.shields.io/pypi/v/pandevice.svg
-    :target: https://pypi.python.org/pypi/pandevice
+.. |pypi| image:: https://img.shields.io/pypi/v/pan-os-python.svg
+    :target: https://pypi.python.org/pypi/pan-os-python
     :alt: Latest version released on PyPi
 
 .. |rtd| image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
-    :target: http://pandevice.readthedocs.io/en/latest/?badge=latest
+    :target: http://pan-os-python.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. |coverage| image:: https://img.shields.io/coveralls/PaloAltoNetworks/pandevice/master.svg?label=coverage
-    :target: https://coveralls.io/r/PaloAltoNetworks/pandevice?branch=master
+.. |coverage| image:: https://img.shields.io/coveralls/PaloAltoNetworks/pan-os-python/master.svg?label=coverage
+    :target: https://coveralls.io/r/PaloAltoNetworks/pan-os-python?branch=master
     :alt: Test coverage
 
-.. |travis| image:: https://img.shields.io/travis/PaloAltoNetworks/pandevice/master.svg
-    :target: http://travis-ci.org/PaloAltoNetworks/pandevice
-    :alt: Build status from Travis
-
-.. |gitter| image:: https://badges.gitter.im/PaloAltoNetworks/pandevice.svg
-    :target: https://gitter.im/PaloAltoNetworks/pandevice
+.. |gitter| image:: https://badges.gitter.im/PaloAltoNetworks/pan-os-python.svg
+    :target: https://gitter.im/PaloAltoNetworks/pan-os-python
     :alt: Chat on Gitter

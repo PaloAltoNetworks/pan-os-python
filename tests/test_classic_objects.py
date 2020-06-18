@@ -7,7 +7,7 @@ work properly.
 """
 
 
-from pandevice import device
+from panos import device
 
 
 def test_system_settings_with_positional_arg_sets_hostname():

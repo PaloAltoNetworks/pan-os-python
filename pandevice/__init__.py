@@ -15,14 +15,17 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-"""pandevice library is a framework for interacting with Palo Alto Networks devices
+"""Palo Alto Networks PAN-OS SDK for Python
 
-Documentation available at http://pandevice.readthedocs.io
+The pan-os-python library is a SDK framework for interacting with Palo Alto
+Networks Next-generation Firewalls and Panorama.
+
+Documentation available at https://pan-os-python.readthedocs.io
 
 """
 
 __author__ = "Palo Alto Networks"
-__email__ = "techpartners@paloaltonetworks.com"
+__email__ = "devrel@paloaltonetworks.com"
 __version__ = "0.14.0"
 
 
@@ -47,7 +50,7 @@ if not hasattr(logging, "NullHandler"):
     logging.NullHandler = NullHandler
 
 
-DOCUMENTATION_URL = "http://pandevice.readthedocs.io/en/latest"
+DOCUMENTATION_URL = "http://pan-os-python.readthedocs.io/en/latest"
 
 
 def getlogger(name=__name__):
@@ -105,7 +108,7 @@ logging.addLevelName(DEBUG2, "DEBUG2")
 logging.addLevelName(DEBUG3, "DEBUG3")
 logging.addLevelName(DEBUG4, "DEBUG4")
 
-# Adjust pan-python logging levels so they don't interfere with pandevice logging
+# Adjust pan-python logging levels so they don't interfere with pan-os-python logging
 pan.DEBUG1 = logging.DEBUG - 2  # equavalent to DEBUG2
 pan.DEBUG2 = pan.DEBUG1 - 1
 pan.DEBUG3 = pan.DEBUG2 - 1

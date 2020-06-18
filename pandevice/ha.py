@@ -23,11 +23,11 @@ import xml.etree.ElementTree as ET
 
 import pan.xapi
 
-import pandevice.errors as err
-from pandevice import firewall, getlogger, isstring, network
-from pandevice.base import ENTRY, MEMBER, PanDevice, PanObject, Root
-from pandevice.base import VarPath as Var
-from pandevice.base import VersionedPanObject, VersionedParamPath
+import panos.errors as err
+from panos import firewall, getlogger, isstring, network
+from panos.base import ENTRY, MEMBER, PanDevice, PanObject, Root
+from panos.base import VarPath as Var
+from panos.base import VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
@@ -114,11 +114,11 @@ class HighAvailabilityInterface(PanObject):
             self.link_duplex = None
         if intconfig_needed:
             apply_needed = False
-            interface = pandevice.find(
+            interface = panos.find(
                 intname, (network.EthernetInterface, network.AggregateInterface)
             )
             if interface is None:
-                interface = pandevice.add(inttype(name=intname, mode="ha"))
+                interface = panos.add(inttype(name=intname, mode="ha"))
                 apply_needed = True
             elif interface.mode != "ha":
                 interface.mode = "ha"

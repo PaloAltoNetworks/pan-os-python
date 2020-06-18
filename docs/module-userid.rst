@@ -4,10 +4,10 @@ Module: userid
 Inheritance diagram
 -------------------
 
-.. inheritance-diagram:: pandevice.userid
+.. inheritance-diagram:: panos.userid
    :parts: 1
 
 Class Reference
 ---------------
 
-.. automodule:: pandevice.userid
+.. automodule:: panos.userid

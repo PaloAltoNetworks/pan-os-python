@@ -14,7 +14,7 @@
 
 import unittest
 
-import pandevice
+import panos
 
 
 class TestPanOSVersion(unittest.TestCase):
@@ -27,15 +27,15 @@ class TestPanOSVersion(unittest.TestCase):
 
     def setUp(self):
 
-        self.c1 = pandevice.PanOSVersion("7.0.0-c1")
-        self.c2 = pandevice.PanOSVersion("7.0.0-c2")
-        self.b1 = pandevice.PanOSVersion("7.0.0-b1")
-        self.b2 = pandevice.PanOSVersion("7.0.0-b2")
-        self.m1 = pandevice.PanOSVersion("7.0.0")
-        self.h1 = pandevice.PanOSVersion("7.0.0-h1")
-        self.h2 = pandevice.PanOSVersion("7.0.0-h2")
-        self.m2 = pandevice.PanOSVersion("7.0.1")
-        self.h3 = pandevice.PanOSVersion("7.0.1-h1")
+        self.c1 = panos.PanOSVersion("7.0.0-c1")
+        self.c2 = panos.PanOSVersion("7.0.0-c2")
+        self.b1 = panos.PanOSVersion("7.0.0-b1")
+        self.b2 = panos.PanOSVersion("7.0.0-b2")
+        self.m1 = panos.PanOSVersion("7.0.0")
+        self.h1 = panos.PanOSVersion("7.0.0-h1")
+        self.h2 = panos.PanOSVersion("7.0.0-h2")
+        self.m2 = panos.PanOSVersion("7.0.1")
+        self.h3 = panos.PanOSVersion("7.0.1-h1")
 
     def test_version_parsed(self):
         expected = [7, 0, 0, "-", "c", 1]

@@ -4,15 +4,15 @@ Module: device
 Inheritance diagram
 -------------------
 
-.. inheritance-diagram:: pandevice.device
+.. inheritance-diagram:: panos.device
    :parts: 1
 
 Configuration tree diagram
 --------------------------
 
-.. graphviz:: _diagrams/pandevice.device.dot 
+.. graphviz:: _diagrams/panos.device.dot 
 
 Class Reference
 ---------------
 
-.. automodule:: pandevice.device
+.. automodule:: panos.device

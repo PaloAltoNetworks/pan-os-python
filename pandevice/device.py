@@ -16,11 +16,11 @@
 
 """Device module contains objects that exist in the 'Device' tab in the firewall GUI"""
 
-import pandevice.errors as err
-from pandevice import getlogger
-from pandevice.base import ENTRY, MEMBER, PanObject, Root, ValueEntry
-from pandevice.base import VarPath as Var
-from pandevice.base import VersionedPanObject, VersionedParamPath
+import panos.errors as err
+from panos import getlogger
+from panos.base import ENTRY, MEMBER, PanObject, Root, ValueEntry
+from panos.base import VarPath as Var
+from panos.base import VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
@@ -81,21 +81,21 @@ class Vsys(VersionedPanObject):
 
     You can interact with virtual systems in two different ways:
 
-    **Method 1**. Use a :class:`pandevice.firewall.Firewall` object with the 'vsys'
+    **Method 1**. Use a :class:`panos.firewall.Firewall` object with the 'vsys'
     variable set to a vsys identifier (eg. 'vsys2'). In this case,
     you don't need to use this Vsys class. Add other PanObject instances
-    (like :class:`pandevice.objects.AddressObject`) to the Firewall instance
+    (like :class:`panos.objects.AddressObject`) to the Firewall instance
 
-    **Method 2**. Add an instance of this Vsys class to a :class:`pandevice.firewall.Firewall`
+    **Method 2**. Add an instance of this Vsys class to a :class:`panos.firewall.Firewall`
     object. It is best practice to set the Firewall instance's 'shared'
     variable to True when using this method. Add other PanObject instances
-    (like :class:`pandevice.objects.AddressObject`) to the Vsys instance.
+    (like :class:`panos.objects.AddressObject`) to the Vsys instance.
 
     Args:
         name (str): Vsys identifier (eg. 'vsys1', 'vsys5', etc)
         display_name (str): Friendly name of the vsys
         interface (list): A list of strings with names of interfaces
-            or a list of :class:`pandevice.network.Interface` objects
+            or a list of :class:`panos.network.Interface` objects
         vlans (list): A list of strings of VLANs
         virtual_wires (list): A list of strings of virtual wires
         virtual_routers (list): A list of strings of virtual routers
@@ -232,7 +232,7 @@ class NTPServer(PanObject):
 class NTPServerPrimary(NTPServer):
     """A primary NTP server
 
-    Add to a :class:`pandevice.device.SystemSettings` object
+    Add to a :class:`panos.device.SystemSettings` object
 
     Args:
         address (str): IP address or hostname of NTP server
@@ -245,7 +245,7 @@ class NTPServerPrimary(NTPServer):
 class NTPServerSecondary(NTPServer):
     """A secondary NTP server
 
-    Add to a :class:`pandevice.device.SystemSettings` object
+    Add to a :class:`panos.device.SystemSettings` object
 
     Args:
         address (str): IP address or hostname of NTP server

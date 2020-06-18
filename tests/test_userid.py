@@ -18,8 +18,8 @@ except ImportError:
 import sys
 import unittest
 
-import pandevice.firewall
-import pandevice.panorama
+import panos.firewall
+import panos.panorama
 
 
 class TestUserId(unittest.TestCase):
@@ -51,7 +51,7 @@ class TestUserId(unittest.TestCase):
             )
         vsys = "vsys3"
 
-        fw = pandevice.firewall.Firewall(
+        fw = panos.firewall.Firewall(
             "fw1", "user", "passwd", "authkey", serial="Serial", vsys=vsys
         )
         fw.xapi

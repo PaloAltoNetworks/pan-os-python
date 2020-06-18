@@ -4,15 +4,15 @@ Module: panorama
 Inheritance diagram
 -------------------
 
-.. inheritance-diagram:: pandevice.panorama
+.. inheritance-diagram:: panos.panorama
    :parts: 1
 
 Configuration tree diagram
 --------------------------
 
-.. graphviz:: _diagrams/pandevice.panorama.dot 
+.. graphviz:: _diagrams/panos.panorama.dot 
 
 Class Reference
 ---------------
 
-.. automodule:: pandevice.panorama
+.. automodule:: panos.panorama

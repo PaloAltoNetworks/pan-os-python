@@ -35,8 +35,8 @@ grep -E '^version = ".+"$' "$ROOT/pyproject.toml" >/dev/null
 sed -i.bak -E "s/^version = \".+\"$/version = \"$NEW_VERSION\"/" "$ROOT/pyproject.toml" && rm "$ROOT/pyproject.toml.bak"
 
 # Set version in __init__.py
-grep -E '^__version__ = ".+"$' "$ROOT/pandevice/__init__.py" >/dev/null
-sed -i.bak -E "s/^__version__ = \".+\"$/__version__ = \"$NEW_VERSION\"/" "$ROOT/pandevice/__init__.py" && rm "$ROOT/pandevice/__init__.py.bak"
+grep -E '^__version__ = ".+"$' "$ROOT/panos/__init__.py" >/dev/null
+sed -i.bak -E "s/^__version__ = \".+\"$/__version__ = \"$NEW_VERSION\"/" "$ROOT/panos/__init__.py" && rm "$ROOT/panos/__init__.py.bak"
 
 # Generate setup.py from pyproject.toml
 make sync-deps

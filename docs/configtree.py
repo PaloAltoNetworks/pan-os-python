@@ -18,12 +18,11 @@
 
 """Generate class diagram from module and class source code"""
 
-import os
-import sys
-import pkgutil
-import inspect
 import errno
-
+import inspect
+import os
+import pkgutil
+import sys
 
 header = """digraph configtree {
     graph [rankdir=LR, fontsize=10, margin=0.001];
@@ -70,7 +69,7 @@ def node_style(cls):
                 style = "style=filled " + nodestyle[module] + " "
             except:
                 pass
-        result = '    {0} [{1}URL="../module-{2}.html#pandevice.{3}" target="_top"];\n'.format(
+        result = '    {0} [{1}URL="../module-{2}.html#panos.{3}" target="_top"];\n'.format(
             cls_name, style, module, cls
         )
     else:
@@ -107,16 +106,14 @@ def create_object_diagram(directory=None):
     # Set paths to package and modules
     curdir = os.path.dirname(os.path.abspath(__file__))
     rootpath = [os.path.join(curdir, os.pardir)]
-    libpath = [os.path.join(curdir, os.pardir, "pandevice")]
+    libpath = [os.path.join(curdir, os.pardir, "panos")]
     sys.path[:0] = rootpath
     sys.path[:0] = libpath
-    # print "Looking for pandevice in path: %s" % libpath
+    # print "Looking for panos in path: %s" % libpath
 
     # Import all modules in package
     modules = []
-    for importer, modname, ispkg in pkgutil.iter_modules(
-        path=libpath, prefix="pandevice."
-    ):
+    for importer, modname, ispkg in pkgutil.iter_modules(path=libpath, prefix="panos."):
         modules.append(__import__(modname, fromlist="dummy"))
 
     output = {}

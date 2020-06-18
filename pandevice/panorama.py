@@ -23,12 +23,12 @@ from copy import deepcopy
 
 import pan.commit
 
-import pandevice
-import pandevice.errors as err
-from pandevice import base, firewall, getlogger, policies, yesno
-from pandevice.base import ENTRY, MEMBER, PanObject, Root
-from pandevice.base import VarPath as Var
-from pandevice.base import VersionedPanObject, VersionedParamPath
+import panos
+import panos.errors as err
+from panos import base, firewall, getlogger, policies, yesno
+from panos.base import ENTRY, MEMBER, PanObject, Root
+from panos.base import VarPath as Var
+from panos.base import VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
@@ -36,10 +36,10 @@ logger = getlogger(__name__)
 class DeviceGroup(VersionedPanObject):
     """Panorama Device-group
 
-    This class and the :class:`pandevice.panorama.Panorama` classes are the only objects that can
-    have a :class:`pandevice.firewall.Firewall` child object. In addition to a Firewall, a
-    DeviceGroup can have the same children objects as a :class:`pandevice.firewall.Firewall`
-    or :class:`pandevice.device.Vsys`.
+    This class and the :class:`panos.panorama.Panorama` classes are the only objects that can
+    have a :class:`panos.firewall.Firewall` child object. In addition to a Firewall, a
+    DeviceGroup can have the same children objects as a :class:`panos.firewall.Firewall`
+    or :class:`panos.device.Vsys`.
 
     See also :ref:`classtree`
 
@@ -468,7 +468,7 @@ class Panorama(base.PanDevice):
             devices (list): Limit refresh to these serial numbers
             only_connected (bool): Ignore devices that are not 'connected' to Panorama (Default: False)
             expand_vsys (bool): Instantiate a Firewall object for every Vsys (Default: True)
-            include_device_groups (bool): Instantiate :class:`pandevice.panorama.DeviceGroup` objects with Firewall
+            include_device_groups (bool): Instantiate :class:`panos.panorama.DeviceGroup` objects with Firewall
                 objects added to them.
             add (bool): Add the new tree of instantiated DeviceGroup and Firewall objects to the Panorama config tree.
                 Warning: This removes all current DeviceGroup and Firewall objects from the configuration tree, and all

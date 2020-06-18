@@ -29,9 +29,9 @@ the script ends.  If not, it is created, and then a commit is performed.
 
 import sys
 
-import pandevice
-import pandevice.firewall
-import pandevice.policies
+import panos
+import panos.firewall
+import panos.policies
 
 
 HOSTNAME = "127.0.0.1"
@@ -40,11 +40,11 @@ PASSWORD = "admin"
 
 
 def main():
-    # Before we begin, you'll need to use the pandevice documentation both
+    # Before we begin, you'll need to use the pan-os-python documentation both
     # for this example and for any scripts you may write for yourself.  The
     # docs can be found here:
     #
-    # http://pandevice.readthedocs.io/en/latest/reference.html
+    # http://pan-os-python.readthedocs.io/en/latest/reference.html
     #
     # Here's the security rule parameters we want for our new rule.  You can
     # check policies.SecurityRule to see all of the parameters you could
@@ -60,7 +60,7 @@ def main():
     }
 
     # First, let's create the firewall object that we want to modify.
-    fw = pandevice.firewall.Firewall(HOSTNAME, USERNAME, PASSWORD)
+    fw = panos.firewall.Firewall(HOSTNAME, USERNAME, PASSWORD)
 
     # You can determine the parent/child relationships by checking the
     # various "CHILDTYPES" of each object in the various modules.
@@ -80,7 +80,7 @@ def main():
     # former option (which will also make our script faster).
     #
     # Now, let's create our unnamed Rulebase object.
-    rulebase = pandevice.policies.Rulebase()
+    rulebase = panos.policies.Rulebase()
 
     # Next, we attach it to our firewall object.
     fw.add(rulebase)
@@ -90,10 +90,10 @@ def main():
     # what's on the firewall.  In our case, the parent is our rulebase
     # object, so we'll use that as the first parameter, and we'll save the
     # current security policies to a new variable: current_security_rules.
-    current_security_rules = pandevice.policies.SecurityRule.refreshall(rulebase)
+    current_security_rules = panos.policies.SecurityRule.refreshall(rulebase)
 
     # You'll notice that we never called any "login()" or similar function
-    # before we refreshed.  This is because pandevice does the API key
+    # before we refreshed.  This is because pan-os-python does the API key
     # retrieval for you when you attempt to do something that would require
     # access to the live device.  In our case, this was the above call
     # to "refreshall()".
@@ -138,7 +138,7 @@ def main():
     #
     # First is to make all necessary new object(s).  In our example, we only
     # have one object to create, which is the rule itself.
-    new_rule = pandevice.policies.SecurityRule(**desired_rule_params)
+    new_rule = panos.policies.SecurityRule(**desired_rule_params)
 
     # Second is to configure the object hierarchy using the .add() method.  As
     # we already know, security rules are children of the rulebase, which in

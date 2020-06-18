@@ -1,14 +1,14 @@
 import pytest
 
-from pandevice.device import Vsys
-from pandevice.firewall import Firewall
-from pandevice.network import EthernetInterface
-from pandevice.network import VirtualRouter
-from pandevice.network import VirtualWire
-from pandevice.network import Vlan
-from pandevice.network import Zone
-from pandevice.panorama import Panorama
-from pandevice.panorama import Template
+from panos.device import Vsys
+from panos.firewall import Firewall
+from panos.network import EthernetInterface
+from panos.network import VirtualRouter
+from panos.network import VirtualWire
+from panos.network import Vlan
+from panos.network import Zone
+from panos.panorama import Panorama
+from panos.panorama import Template
 
 from tests.live import testlib
 

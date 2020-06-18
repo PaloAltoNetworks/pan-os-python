@@ -1,4 +1,4 @@
-from pandevice import objects
+from panos import objects
 from tests.live import testlib
 
 

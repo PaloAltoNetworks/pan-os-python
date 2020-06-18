@@ -22,9 +22,9 @@ from copy import deepcopy
 
 from pan.xapi import PanXapiError
 
-import pandevice.errors as err
-from pandevice import getlogger, string_or_list, string_or_list_or_none
-from pandevice.updater import PanOSVersion
+import panos.errors as err
+from panos import getlogger, string_or_list, string_or_list_or_none
+from panos.updater import PanOSVersion
 
 logger = getlogger(__name__)
 
