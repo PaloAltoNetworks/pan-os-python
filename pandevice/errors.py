@@ -15,7 +15,7 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-"""Exception classes used by pandevice package"""
+"""Exception classes used by pan-os-python package"""
 
 from pan.xapi import PanXapiError
 

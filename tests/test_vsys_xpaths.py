@@ -1,10 +1,10 @@
 import pytest
 
-from pandevice import device
-from pandevice import firewall
-from pandevice import network
-from pandevice import objects
-from pandevice import panorama
+from panos import device
+from panos import firewall
+from panos import network
+from panos import objects
+from panos import panorama
 
 
 def _check(obj, vsys, with_pano, chk_import=False):

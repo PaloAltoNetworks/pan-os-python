@@ -34,8 +34,8 @@ Environment variables required:
 
 import os
 
-from pandevice.firewall import Firewall
-from pandevice.policies import Rulebase, SecurityRule
+from panos.firewall import Firewall
+from panos.policies import Rulebase, SecurityRule
 
 HOSTNAME = os.environ["PAN_HOSTNAME"]
 USERNAME = os.environ["PAN_USERNAME"]

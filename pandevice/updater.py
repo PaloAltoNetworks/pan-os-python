@@ -19,8 +19,8 @@
 
 from pan.config import PanConfig
 
-import pandevice.errors as err
-from pandevice import PanOSVersion, getlogger, isstring
+import panos.errors as err
+from panos import PanOSVersion, getlogger, isstring
 
 logger = getlogger(__name__)
 
@@ -264,7 +264,7 @@ class SoftwareUpdater(Updater):
         return next_version
 
     def _next_minor_version(self, version):
-        from pandevice.firewall import Firewall
+        from panos.firewall import Firewall
 
         if isstring(version):
             next_version = PanOSVersion(version)
@@ -333,7 +333,7 @@ class SoftwareUpdater(Updater):
 
         # Upgrading a firewall from PAN-OS 5.0.x to 6.0.x
         # This is a special case because there is no PAN-OS 5.1.x
-        from pandevice.firewall import Firewall
+        from panos.firewall import Firewall
 
         if (
             current_version.major == 5

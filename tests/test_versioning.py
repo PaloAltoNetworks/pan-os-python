@@ -5,12 +5,12 @@ except ImportError:
 import unittest
 import xml.etree.ElementTree as ET
 
-import pandevice.base
-import pandevice.device
-import pandevice.ha
-import pandevice.network
-import pandevice.objects
-import pandevice.policies
+import panos.base
+import panos.device
+import panos.ha
+import panos.network
+import panos.objects
+import panos.policies
 
 
 class TestObject(unittest.TestCase):
@@ -97,7 +97,7 @@ class TestObject(unittest.TestCase):
         orig.refresh(xml=old.element())
         new.parse_xml(orig.element())
 
-        if orig.SUFFIX == pandevice.base.ENTRY:
+        if orig.SUFFIX == panos.base.ENTRY:
             self.assertEqual(orig.uid, new.uid)
 
         if orig.element_str() != new.element_str():
@@ -268,7 +268,7 @@ class TestVersionedObject(unittest.TestCase):
     NEWEST_VALUE = "7.0 profile"
 
     def setUp(self):
-        self.obj = pandevice.base.VersioningSupport()
+        self.obj = panos.base.VersioningSupport()
         self.obj.add_profile("1.0.0", self.MASKED_VALUE)
         self.obj.add_profile("1.0.0", self.DEFAULT_VALUE)
         self.obj.add_profile("6.1.0", self.MIDDLE_VALUE)

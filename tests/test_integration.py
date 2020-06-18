@@ -16,23 +16,23 @@ try:
 except ImportError:
     import mock
 import unittest
+import xml.etree.ElementTree as ET
+
 import pan.xapi
 
-import pandevice.base as Base
-import pandevice.device
-import pandevice.errors as Err
-import pandevice.firewall
-import pandevice.ha
-import pandevice.network
-import pandevice.objects
-import pandevice.panorama
-
-import xml.etree.ElementTree as ET
+import panos.base as Base
+import panos.device
+import panos.errors as Err
+import panos.firewall
+import panos.ha
+import panos.network
+import panos.objects
+import panos.panorama
 
 
 class TestTemplates(unittest.TestCase):
     def setUp(self):
-        self.pano = pandevice.panorama.Panorama("foo", "bar", "baz", "apikey")
+        self.pano = panos.panorama.Panorama("foo", "bar", "baz", "apikey")
         self.pano._version_info = (8, 0, 0)
 
     def test_template_element_str_stays_consistent(self):
@@ -50,7 +50,7 @@ class TestTemplates(unittest.TestCase):
         )
 
         xml_tree = ET.fromstring("<result>{0}</result>".format(expected))
-        t = pandevice.panorama.Template()
+        t = panos.panorama.Template()
         self.pano.add(t)
         other = t.refreshall_from_xml(xml_tree)[0]
 
@@ -71,10 +71,10 @@ class TestNearestPandevice(unittest.TestCase):
     """
 
     def setUp(self):
-        self.panorama = pandevice.panorama.Panorama("foo", "bar", "baz", "apikey")
-        self.device_group = pandevice.panorama.DeviceGroup("My pandevice Group")
-        self.firewall = pandevice.firewall.Firewall("foo", "bar", "baz", "apikey")
-        self.address_object = pandevice.objects.AddressObject(
+        self.panorama = panos.panorama.Panorama("foo", "bar", "baz", "apikey")
+        self.device_group = panos.panorama.DeviceGroup("My pan-os-python Group")
+        self.firewall = panos.firewall.Firewall("foo", "bar", "baz", "apikey")
+        self.address_object = panos.objects.AddressObject(
             "webserver",
             "192.168.1.100",
             description="Intranet web server",
@@ -131,7 +131,7 @@ class TestNearestPandevice(unittest.TestCase):
         self.assertEqual(self.panorama, ret_val)
 
     def test_nearest_pandevice_from_firewall_with_no_parents_returns_self(self):
-        fw = pandevice.firewall.Firewall("foo", "bar", "baz", "apikey")
+        fw = panos.firewall.Firewall("foo", "bar", "baz", "apikey")
 
         ret_val = fw.nearest_pandevice()
 
@@ -177,7 +177,7 @@ class TestElementStr_7_0(unittest.TestCase):
             ]
         )
 
-        h1o = pandevice.ha.HA1(
+        h1o = panos.ha.HA1(
             name="ha101",
             ip_address="10.5.1.1",
             netmask="255.255.255.0",
@@ -187,7 +187,7 @@ class TestElementStr_7_0(unittest.TestCase):
             link_duplex="auto",
             monitor_hold_time=7,
         )
-        h2o = pandevice.ha.HA2(
+        h2o = panos.ha.HA2(
             name="ha202",
             ip_address="10.6.1.1",
             netmask="255.255.255.0",
@@ -196,7 +196,7 @@ class TestElementStr_7_0(unittest.TestCase):
             link_speed="1000",
             link_duplex="auto",
         )
-        ha_config = pandevice.ha.HighAvailability(
+        ha_config = panos.ha.HighAvailability(
             "my high availability config",
             True,
             "1",
@@ -233,8 +233,8 @@ class TestElementStr_7_0(unittest.TestCase):
             ]
         )
 
-        vro = pandevice.network.VirtualRouter("default", "ethernet1/3")
-        sro = pandevice.network.StaticRoute(
+        vro = panos.network.VirtualRouter("default", "ethernet1/3")
+        sro = panos.network.StaticRoute(
             "my static route", "0.0.0.0/0", "ip-address", "192.168.5.1", "ethernet1/4"
         )
 
@@ -254,7 +254,7 @@ class TestElementStr_7_0(unittest.TestCase):
             ]
         )
 
-        o = pandevice.network.EthernetInterface(
+        o = panos.network.EthernetInterface(
             "ethernet1/1",
             "layer3",
             "10.1.1.1",
@@ -280,11 +280,11 @@ class TestElementStr_7_0(unittest.TestCase):
             ]
         )
 
-        ao = pandevice.network.Arp("10.5.10.15", "00:30:48:52:cd:dc")
-        l3so = pandevice.network.Layer3Subinterface(
+        ao = panos.network.Arp("10.5.10.15", "00:30:48:52:cd:dc")
+        l3so = panos.network.Layer3Subinterface(
             "ethernet1/1.355", 355, "10.20.30.40/24", mtu=1500, adjust_tcp_mss=True
         )
-        eio = pandevice.network.EthernetInterface(
+        eio = panos.network.EthernetInterface(
             "ethernet1/1", mode="layer3", ip="10.3.6.12"
         )
 
@@ -306,7 +306,7 @@ class TestElementStr_7_0(unittest.TestCase):
                 b"</aggregate-group></entry>",
             ]
         )
-        eio = pandevice.network.EthernetInterface(
+        eio = panos.network.EthernetInterface(
             "ethernet1/1", "aggregate-group", "10.3.6.12", aggregate_group="ae1"
         )
 
@@ -327,11 +327,11 @@ class TestElementStr_7_0(unittest.TestCase):
             [b'<entry name="Serial"><vsys>', b'<entry name="vsys1" /></vsys></entry>',]
         )
 
-        fw = pandevice.firewall.Firewall(
+        fw = panos.firewall.Firewall(
             "fw1", "user", "passwd", "authkey", serial="Serial", vsys="vsys3"
         )
-        pano = pandevice.panorama.Panorama("10.100.5.2")
-        conf = pandevice.device.SystemSettings(
+        pano = panos.panorama.Panorama("10.100.5.2")
+        conf = panos.device.SystemSettings(
             hostname="Hostname-Setting",
             domain="paloaltonetworks.com",
             ip_address="10.20.30.40",
@@ -350,7 +350,7 @@ class TestElementStr_7_0(unittest.TestCase):
         self.assertEqual(expected, ret_val)
 
     def test_element_str_from_firewall_without_serial_number_raises_error(self):
-        fw = pandevice.firewall.Firewall("foo")
+        fw = panos.firewall.Firewall("foo")
 
         self.assertRaises(ValueError, fw.element_str)
 
@@ -359,7 +359,7 @@ class TestElementStr_7_0(unittest.TestCase):
             [b'<entry name="serial"><vsys><entry name="vsys3" />', b"</vsys></entry>",]
         )
 
-        fw = pandevice.firewall.Firewall(
+        fw = panos.firewall.Firewall(
             "fw1",
             "user",
             "passwd",
@@ -368,8 +368,8 @@ class TestElementStr_7_0(unittest.TestCase):
             vsys="vsys3",
             multi_vsys=True,
         )
-        dg = pandevice.panorama.DeviceGroup("my group")
-        p = pandevice.panorama.Panorama("pano")
+        dg = panos.panorama.DeviceGroup("my group")
+        p = panos.panorama.Panorama("pano")
 
         dg.add(fw)
         p.add(dg)
@@ -387,7 +387,7 @@ class TestElementStr_7_0(unittest.TestCase):
                 b"https</member><member>http</member></tag></entry>",
             ]
         )
-        o = pandevice.objects.AddressObject(
+        o = panos.objects.AddressObject(
             "webserver",
             "192.168.1.100",
             description="Intranet web server",
@@ -412,7 +412,7 @@ class TestElementStr_7_0(unittest.TestCase):
                 b"</entry>\n",
             ]
         )
-        o = pandevice.objects.AddressObject(
+        o = panos.objects.AddressObject(
             "webserver",
             "192.168.1.100",
             description="Intranet web server",
@@ -442,9 +442,9 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        child = pandevice.ha.HA1()
-        parent = pandevice.ha.HighAvailability()
-        fw = pandevice.firewall.Firewall()
+        child = panos.ha.HA1()
+        parent = panos.ha.HighAvailability()
+        fw = panos.firewall.Firewall()
 
         parent.add(child)
         fw.add(parent)
@@ -462,10 +462,10 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        child = pandevice.ha.HA1("ha1")
-        parent = pandevice.ha.HighAvailability("ha parent")
-        fw = pandevice.firewall.Firewall("myfw")
-        pano = pandevice.panorama.Panorama("panorama")
+        child = panos.ha.HA1("ha1")
+        parent = panos.ha.HighAvailability("ha parent")
+        fw = panos.firewall.Firewall("myfw")
+        pano = panos.panorama.Panorama("panorama")
 
         parent.add(child)
         fw.add(parent)
@@ -484,9 +484,9 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        child = pandevice.ha.HA2("child")
-        parent = pandevice.ha.HighAvailability("parent")
-        fw = pandevice.firewall.Firewall("myfw")
+        child = panos.ha.HA2("child")
+        parent = panos.ha.HighAvailability("parent")
+        fw = panos.firewall.Firewall("myfw")
 
         parent.add(child)
         fw.add(parent)
@@ -504,9 +504,9 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        child = pandevice.ha.HA2("child")
-        parent = pandevice.ha.HighAvailability("HighAvail")
-        fw = pandevice.firewall.Firewall("myfw")
+        child = panos.ha.HA2("child")
+        parent = panos.ha.HighAvailability("HighAvail")
+        fw = panos.firewall.Firewall("myfw")
 
         parent.add(child)
         fw.add(parent)
@@ -527,9 +527,9 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        child = pandevice.network.VirtualRouter("vr")
-        parent = pandevice.network.StaticRoute("sr")
-        fw = pandevice.firewall.Firewall("fw")
+        child = panos.network.VirtualRouter("vr")
+        parent = panos.network.StaticRoute("sr")
+        fw = panos.firewall.Firewall("fw")
         fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         parent.add(child)
@@ -549,9 +549,9 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        child = pandevice.network.VirtualRouter("vr")
-        parent = pandevice.network.StaticRoute("sr")
-        fw = pandevice.firewall.Firewall("fw")
+        child = panos.network.VirtualRouter("vr")
+        parent = panos.network.StaticRoute("sr")
+        fw = panos.firewall.Firewall("fw")
         fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         parent.add(child)
@@ -572,10 +572,10 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        ao = pandevice.network.Arp("arp object")
-        l3so = pandevice.network.Layer3Subinterface("Layer3 Subint Object")
-        eio = pandevice.network.EthernetInterface("Eth Interface Object")
-        fw = pandevice.firewall.Firewall("fw")
+        ao = panos.network.Arp("arp object")
+        l3so = panos.network.Layer3Subinterface("Layer3 Subint Object")
+        eio = panos.network.EthernetInterface("Eth Interface Object")
+        fw = panos.firewall.Firewall("fw")
         fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         l3so.add(ao)
@@ -596,10 +596,10 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        ao = pandevice.network.Arp("arp object")
-        l3so = pandevice.network.Layer3Subinterface("Layer3 Subint Object")
-        eio = pandevice.network.EthernetInterface("Eth Interface Object")
-        fw = pandevice.firewall.Firewall("fw")
+        ao = panos.network.Arp("arp object")
+        l3so = panos.network.Layer3Subinterface("Layer3 Subint Object")
+        eio = panos.network.EthernetInterface("Eth Interface Object")
+        fw = panos.firewall.Firewall("fw")
         fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         l3so.add(ao)
@@ -616,7 +616,7 @@ class TestXpaths_7_0(unittest.TestCase):
         # if there is no parent
         expected = "".join(["/devices/entry[@name='serial']",])
 
-        fw = pandevice.firewall.Firewall("foo", vsys="vsys2", serial="serial")
+        fw = panos.firewall.Firewall("foo", vsys="vsys2", serial="serial")
 
         ret_val = fw.xpath()
 
@@ -627,7 +627,7 @@ class TestXpaths_7_0(unittest.TestCase):
         # if there is no parent
         expected = "".join(["/devices",])
 
-        fw = pandevice.firewall.Firewall("foo", vsys="vsys2", serial="serial")
+        fw = panos.firewall.Firewall("foo", vsys="vsys2", serial="serial")
 
         ret_val = fw.xpath_short()
 
@@ -636,8 +636,8 @@ class TestXpaths_7_0(unittest.TestCase):
     def test_edit_xpath_from_firewall_with_pano_parent(self):
         expected = "/config/mgt-config/devices/entry[@name='serial']"
 
-        p = pandevice.panorama.Panorama("pano")
-        fw = pandevice.firewall.Firewall("foo", vsys="vsys2", serial="serial")
+        p = panos.panorama.Panorama("pano")
+        fw = panos.firewall.Firewall("foo", vsys="vsys2", serial="serial")
 
         p.add(fw)
 
@@ -648,8 +648,8 @@ class TestXpaths_7_0(unittest.TestCase):
     def test_set_xpath_from_firewall_with_pano_parent(self):
         expected = "/config/mgt-config/devices"
 
-        p = pandevice.panorama.Panorama("pano")
-        fw = pandevice.firewall.Firewall("foo", vsys="vsys2", serial="serial")
+        p = panos.panorama.Panorama("pano")
+        fw = panos.firewall.Firewall("foo", vsys="vsys2", serial="serial")
 
         p.add(fw)
 
@@ -666,9 +666,9 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        p = pandevice.panorama.Panorama("pano")
-        dg = pandevice.panorama.DeviceGroup("my group")
-        fw = pandevice.firewall.Firewall("foo", vsys="vsys2", serial="serial")
+        p = panos.panorama.Panorama("pano")
+        dg = panos.panorama.DeviceGroup("my group")
+        fw = panos.firewall.Firewall("foo", vsys="vsys2", serial="serial")
 
         dg.add(fw)
         p.add(dg)
@@ -685,9 +685,9 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        p = pandevice.panorama.Panorama("pano")
-        dg = pandevice.panorama.DeviceGroup("my group")
-        fw = pandevice.firewall.Firewall("foo", vsys="vsys2", serial="serial")
+        p = panos.panorama.Panorama("pano")
+        dg = panos.panorama.DeviceGroup("my group")
+        fw = panos.firewall.Firewall("foo", vsys="vsys2", serial="serial")
 
         dg.add(fw)
         p.add(dg)
@@ -706,8 +706,8 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        ao = pandevice.objects.AddressObject("ntp server")
-        fw = pandevice.firewall.Firewall("fw", vsys="vsys2")
+        ao = panos.objects.AddressObject("ntp server")
+        fw = panos.firewall.Firewall("fw", vsys="vsys2")
         fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         fw.add(ao)
@@ -725,9 +725,9 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        ao = pandevice.objects.AddressObject("webproxy")
-        dg = pandevice.panorama.DeviceGroup("My Group")
-        pano = pandevice.panorama.Panorama("My Panorama")
+        ao = panos.objects.AddressObject("webproxy")
+        dg = panos.panorama.DeviceGroup("My Group")
+        pano = panos.panorama.Panorama("My Panorama")
         pano.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         dg.add(ao)
@@ -746,8 +746,8 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        ao = pandevice.objects.AddressObject("ntp server")
-        fw = pandevice.firewall.Firewall("fw", vsys="vsys2")
+        ao = panos.objects.AddressObject("ntp server")
+        fw = panos.firewall.Firewall("fw", vsys="vsys2")
         fw.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         fw.add(ao)
@@ -765,9 +765,9 @@ class TestXpaths_7_0(unittest.TestCase):
             ]
         )
 
-        ao = pandevice.objects.AddressObject("webproxy")
-        dg = pandevice.panorama.DeviceGroup("My Group")
-        pano = pandevice.panorama.Panorama("My Panorama")
+        ao = panos.objects.AddressObject("webproxy")
+        dg = panos.panorama.DeviceGroup("My Group")
+        pano = panos.panorama.Panorama("My Panorama")
         pano.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         dg.add(ao)
@@ -780,8 +780,8 @@ class TestXpaths_7_0(unittest.TestCase):
     def test_xpath_from_addressobject_with_pano_parent(self):
         expected = "/config/shared/address/entry[@name='shared ao']"
 
-        ao = pandevice.objects.AddressObject("shared ao")
-        pano = pandevice.panorama.Panorama("pano")
+        ao = panos.objects.AddressObject("shared ao")
+        pano = panos.panorama.Panorama("pano")
         pano.get_device_version = mock.Mock(return_value=(7, 0, 0))
 
         pano.add(ao)
@@ -793,9 +793,9 @@ class TestXpaths_7_0(unittest.TestCase):
 
 class TestVariousSubinterfaceXpaths(unittest.TestCase):
     def test_l2_subinterface_with_firewall_parent(self):
-        fw = pandevice.firewall.Firewall("192.168.1.1", "admin", "admin", vsys="vsys2")
-        iface = pandevice.network.EthernetInterface("ethernet1/3", "layer2")
-        eth = pandevice.network.Layer2Subinterface("ethernet1/3.3", 3)
+        fw = panos.firewall.Firewall("192.168.1.1", "admin", "admin", vsys="vsys2")
+        iface = panos.network.EthernetInterface("ethernet1/3", "layer2")
+        eth = panos.network.Layer2Subinterface("ethernet1/3.3", 3)
         iface.add(eth)
         fw.add(iface)
 
@@ -806,10 +806,10 @@ class TestVariousSubinterfaceXpaths(unittest.TestCase):
         self.assertEqual(expected, eth.xpath())
 
     def test_l2_subinterface_with_vsys_parent(self):
-        fw = pandevice.firewall.Firewall("192.168.1.1", "admin", "admin")
-        vsys = pandevice.device.Vsys("vsys2")
-        iface = pandevice.network.EthernetInterface("ethernet1/3", "layer2")
-        eth = pandevice.network.Layer2Subinterface("ethernet1/3.3", 3)
+        fw = panos.firewall.Firewall("192.168.1.1", "admin", "admin")
+        vsys = panos.device.Vsys("vsys2")
+        iface = panos.network.EthernetInterface("ethernet1/3", "layer2")
+        eth = panos.network.Layer2Subinterface("ethernet1/3.3", 3)
         iface.add(eth)
         vsys.add(iface)
         fw.add(vsys)
@@ -821,9 +821,9 @@ class TestVariousSubinterfaceXpaths(unittest.TestCase):
         self.assertEqual(expected, eth.xpath())
 
     def test_l3_subinterface_with_firewall_parent(self):
-        fw = pandevice.firewall.Firewall("192.168.1.1", "admin", "admin", vsys="vsys3")
-        iface = pandevice.network.EthernetInterface("ethernet1/4", "layer3")
-        eth = pandevice.network.Layer3Subinterface("ethernet1/4.4", 4)
+        fw = panos.firewall.Firewall("192.168.1.1", "admin", "admin", vsys="vsys3")
+        iface = panos.network.EthernetInterface("ethernet1/4", "layer3")
+        eth = panos.network.Layer3Subinterface("ethernet1/4.4", 4)
         iface.add(eth)
         fw.add(iface)
 
@@ -834,10 +834,10 @@ class TestVariousSubinterfaceXpaths(unittest.TestCase):
         self.assertEqual(expected, eth.xpath())
 
     def test_l3_subinterface_with_vsys_parent(self):
-        fw = pandevice.firewall.Firewall("192.168.1.1", "admin", "admin")
-        vsys = pandevice.device.Vsys("vsys3")
-        iface = pandevice.network.EthernetInterface("ethernet1/4", "layer3")
-        eth = pandevice.network.Layer2Subinterface("ethernet1/4.4", 4)
+        fw = panos.firewall.Firewall("192.168.1.1", "admin", "admin")
+        vsys = panos.device.Vsys("vsys3")
+        iface = panos.network.EthernetInterface("ethernet1/4", "layer3")
+        eth = panos.network.Layer2Subinterface("ethernet1/4.4", 4)
         iface.add(eth)
         vsys.add(iface)
         fw.add(vsys)

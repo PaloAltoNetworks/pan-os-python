@@ -23,10 +23,10 @@ import re
 import xml.etree.ElementTree as ET
 from decimal import Decimal
 
-import pandevice.errors as err
-from pandevice import device, getlogger, yesno
-from pandevice.base import ENTRY, PanDevice, Root
-from pandevice.base import VarPath as Var
+import panos.errors as err
+from panos import device, getlogger, yesno
+from panos.base import ENTRY, PanDevice, Root
+from panos.base import VarPath as Var
 
 logger = getlogger(__name__)
 
@@ -428,9 +428,9 @@ class Firewall(PanDevice):
             refresh_vsys (bool): Refresh all vsys objects' parameters before doing the reorganization or not.  This is assumed True if create_vsys_objects is True.
 
         """
-        from pandevice import network
+        from panos import network
 
-        # Mapping of device.Vsys params to pandevice classes.
+        # Mapping of device.Vsys params to pan-os-python classes.
         mapping = {
             "interface": network.Interface,
             "vlans": network.Vlan,

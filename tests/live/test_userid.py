@@ -2,7 +2,7 @@ import pytest
 import time
 
 from tests.live import testlib
-from pandevice import base
+from panos import base
 
 
 class TestUserID_FW(object):

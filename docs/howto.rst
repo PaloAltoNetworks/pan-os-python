@@ -34,8 +34,8 @@ This method is best in the following cases:
 
 To use this method:
 
-1. Create a :class:`pandevice.firewall.Firewall` instance and a
-   :class:`pandevice.panorama.Panorama` instance.
+1. Create a :class:`panos.firewall.Firewall` instance and a
+   :class:`panos.panorama.Panorama` instance.
 2. In both instances, set the 'hostname' attribute and either the
    'api_key' or the 'api_username' and 'api_password' attributes.
 
@@ -65,7 +65,7 @@ are to Panorama.
    digraph directconnect {
       graph [rankdir=LR, fontsize=10, margin=0.001];
       node [shape=box, fontsize=10, height=0.001, margin=0.1, ordering=out];
-      "pandevice script" -> "Panorama" -> "Firewall";
+      "pan-os-python script" -> "Panorama" -> "Firewall";
       Panorama [style=filled];
       Firewall [style=filled];
    }
@@ -78,8 +78,8 @@ This method is best in the following cases:
 
 To use this method:
 
-1. Create a :class:`pandevice.firewall.Firewall` instance and a
-   :class:`pandevice.panorama.Panorama` instance.
+1. Create a :class:`panos.firewall.Firewall` instance and a
+   :class:`panos.panorama.Panorama` instance.
 2. In the Panorama instance, set the 'hostname' attribute and either the
    'api_key' or the 'api_username' and 'api_password' attributes.
 3. In the Firewall instance, set the 'serial' attribute.
@@ -158,7 +158,7 @@ This library tries to handle High Availability (HA) pairs of devices as
 elegantly as possible. Having two devices can pose challenges because some
 configuration needs to be applied to both firewalls, while other configuration
 should be applied only to the active firewall. Also, two devices implies two
-pandevice configuration trees. But, pandevice offers a few features to make
+pan-os-python configuration trees. But, pan-os-python offers a few features to make
 working with HA pairs easier:
 
 - Only one configuration tree to manage for an HA pair
@@ -174,18 +174,18 @@ the standby device.
 
 Here's an example of configuration with an HA pair of firewalls::
 
-    from pandevice.firewall import Firewall
-    from pandevice.objects import AddressObject
+    from panos.firewall import Firewall
+    from panos.objects import AddressObject
 
     # Don't assume either firewall is primary or active.
-    # Just start by telling pandevice they are an HA pair
+    # Just start by telling pan-os-python they are an HA pair
     # and how to connect to them.
     fw = Firewall('10.0.0.1', 'admin', 'password')
     fw.set_ha_peers(Firewall('10.0.0.2', 'admin', 'password'))
 
     # Notice I didn't save the second firewall to a variable, because I don't need it.
     # The point is to treat the HA pair as one firewall, so we only need one variable.
-    # This way, we have only one pandevice configuration tree to manage,
+    # This way, we have only one pan-os-python configuration tree to manage,
     # NOT one tree for each fw in the pair.
 
     # At this point, it's a good idea to collect the active/passive state from
@@ -207,7 +207,7 @@ Here's an example of configuration with an HA pair of firewalls::
 In the above code, we added the AddressObject to the ``fw`` variable. Even
 though we created this above with the IP of 10.0.0.1, it represents both
 firewalls in the pair. So when we create the AddressObject on the live device,
-pandevice will reach out to the active firewall in the pair. It will
+pan-os-python will reach out to the active firewall in the pair. It will
 automatically detect if the active failed and switch to standby.
 
 Note: We didn't save the second firewall to a variable, because our ``fw`` variable
@@ -241,8 +241,8 @@ the tree are pushed to the live device in a single API call.
 
 Here's code for the above example using individual API calls and using bulk operations::
 
-    from pandevice.firewall import Firewall
-    from pandevice.objects import AddressObject, AddressGroup
+    from panos.firewall import Firewall
+    from panos.objects import AddressObject, AddressGroup
 
     # Build out the configuration tree with a Firewall object at the root and an
     # array of AddressObjects and AddressGroups as children of the Firewall
@@ -272,7 +272,7 @@ Bulk operations for the win!
 
 One thing to keep in mind when using bulk operations is that the methods will
 push any objects that share the same type and **location**. This means if you
-call a bulk operation method on an AddressObject in vsys2, pandevice will NOT
+call a bulk operation method on an AddressObject in vsys2, pan-os-python will NOT
 push the AddressObjects in vsys3, or Device Group 7, or the shared scope. Under
 the hood, it verifies that the objects share the same XPath and type before they
 are pushed to the live device.

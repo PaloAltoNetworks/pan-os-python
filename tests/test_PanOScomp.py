@@ -1,6 +1,6 @@
 import pytest
 
-from pandevice import PanOSVersion
+from panos import PanOSVersion
 
 
 @pytest.mark.parametrize(

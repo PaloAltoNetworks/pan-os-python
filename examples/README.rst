@@ -1,6 +1,6 @@
 Examples
 ========
 
-Full documentation of these examples is available in the `pandevice library documentation`_
+Full documentation of these examples is available in the `pan-os-python library documentation`_
 
-.. _library documentation: http://pandevice.readthedocs.io/en/latest/examples.html
+.. _library documentation: http://pan-os-python.readthedocs.io/en/latest/examples.html

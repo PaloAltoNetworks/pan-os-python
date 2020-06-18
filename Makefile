@@ -41,17 +41,17 @@ clean-test:
 	rm -fr .pytest_cache
 
 lint:
-	flake8 pandevice tests
+	flake8 panos tests
 
 bandit:
 	bandit -r --ini .bandit
 
 format:
-	isort --recursive --atomic pandevice
+	isort --recursive --atomic panos
 	black .
 
 check-format:
-	isort --recursive --atomic --check-only pandevice
+	isort --recursive --atomic --check-only panos
 	black --check .
 
 test:
@@ -61,7 +61,7 @@ test-all:
 	tox
 
 coverage:
-	pytest --cov=pandevice
+	pytest --cov=panos
 
 docs: clean-docs
 	$(MAKE) -C docs html

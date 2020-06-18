@@ -4,10 +4,10 @@ Module: updater
 Inheritance diagram
 -------------------
 
-.. inheritance-diagram:: pandevice.updater
+.. inheritance-diagram:: panos.updater
    :parts: 1
 
 Class Reference
 ---------------
 
-.. automodule:: pandevice.updater
+.. automodule:: panos.updater

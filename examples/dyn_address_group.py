@@ -52,8 +52,8 @@ import logging
 curpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(curpath, os.pardir)]
 
-from pandevice.base import PanDevice
-from pandevice.panorama import Panorama
+from panos.base import PanDevice
+from panos.panorama import Panorama
 
 
 def main():

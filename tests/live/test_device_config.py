@@ -1,6 +1,6 @@
 import pytest
 
-from pandevice import device
+from panos import device
 from tests.live import testlib
 
 

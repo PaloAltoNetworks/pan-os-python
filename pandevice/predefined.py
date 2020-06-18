@@ -19,9 +19,9 @@
 
 from pan.xapi import PanXapiError
 
-import pandevice.errors as err
-from pandevice import getlogger, objects
-from pandevice.updater import PanOSVersion
+import panos.errors as err
+from panos import getlogger, objects
+from panos.updater import PanOSVersion
 
 logger = getlogger(__name__)
 
@@ -355,12 +355,12 @@ class Predefined(object):
     def object(self, name, classtype, refresh_if_none=True):
         """Get object by classtype
 
-        For example, if you pass in pandevice.objects.ApplicationObject as the
+        For example, if you pass in panos.objects.ApplicationObject as the
         classtype, an application will be returned
 
         Args:
             name (str): Name of the object
-            classtype: The class of the object (eg. pandevice.objects.ApplicationObject
+            classtype: The class of the object (eg. panos.objects.ApplicationObject
             refresh_if_none (bool): Refresh the object if it is not found
 
         """
@@ -376,12 +376,12 @@ class Predefined(object):
     def objects(self, names, classtype, refresh_if_none=True):
         """Get a list of objects by classtype
 
-        For example, if you pass in pandevice.objects.ApplicationObject as the
+        For example, if you pass in panos.objects.ApplicationObject as the
         classtype, a list of application will be returned
 
         Args:
             names (list): List of names of the objects
-            classtype: The class of the object (eg. pandevice.objects.ApplicationObject
+            classtype: The class of the object (eg. panos.objects.ApplicationObject
             refresh_if_none (bool): Refresh the object if it is not found
 
         """

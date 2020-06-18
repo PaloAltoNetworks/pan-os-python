@@ -3,8 +3,8 @@ import random
 
 import pytest
 
-from pandevice import firewall
-from pandevice import panorama
+from panos import firewall
+from panos import panorama
 
 
 live_devices = {}

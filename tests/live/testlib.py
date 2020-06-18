@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from pandevice import network
+from panos import network
 
 
 def random_name():

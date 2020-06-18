@@ -20,8 +20,8 @@ import uuid
 import xml.etree.ElementTree as ET
 
 import pan.xapi
-import pandevice.base as Base
-import pandevice.errors as Err
+import panos.base as Base
+import panos.errors as Err
 
 
 OBJECT_NAME = "MyObjectName"
@@ -302,7 +302,7 @@ class TestPanObject(unittest.TestCase):
 
     # Skip element()
 
-    @mock.patch("pandevice.base.ET")
+    @mock.patch("panos.base.ET")
     def test_element_str(self, m_ET):
         Element_Value = 42
         self.obj.element = mock.Mock(return_value=Element_Value)
@@ -319,8 +319,8 @@ class TestPanObject(unittest.TestCase):
         self.obj.element.assert_called_once_with()
         m_ET.tostring.assert_called_once_with(Element_Value, encoding="utf-8")
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
-    @mock.patch("pandevice.base.ET")
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.ET")
     def test_root_element_with_entry_suffix(self, m_ET, m_uid):
         self.obj.SUFFIX = Base.ENTRY
         Uid = "uid"
@@ -337,8 +337,8 @@ class TestPanObject(unittest.TestCase):
         self.assertEqual(expected, ret_val)
         m_ET.Element.assert_called_once_with("entry", {"name": Uid})
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
-    @mock.patch("pandevice.base.ET")
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.ET")
     def test_root_element_with_member_suffix(self, m_ET, m_uid):
         self.obj.SUFFIX = Base.MEMBER
         Uid = "uid"
@@ -355,7 +355,7 @@ class TestPanObject(unittest.TestCase):
         self.assertEqual(Uid, ret_val.text)
         m_ET.Element.assert_called_once_with("member")
 
-    @mock.patch("pandevice.base.ET")
+    @mock.patch("panos.base.ET")
     def test_root_element_with_none_suffix_no_slashes(self, m_ET):
         self.obj.SUFFIX = None
 
@@ -374,7 +374,7 @@ class TestPanObject(unittest.TestCase):
         self.assertEqual(expected_value, ret_val)
         m_ET.Element.assert_called_once_with(expected_tag)
 
-    @mock.patch("pandevice.base.ET")
+    @mock.patch("panos.base.ET")
     def test_root_element_with_none_suffix_multiple_slashes(self, m_ET):
         self.obj.SUFFIX = None
 
@@ -431,7 +431,7 @@ class TestPanObject(unittest.TestCase):
         for c in self.obj.children:
             c._check_child_methods.assert_called_once_with(Method)
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test_apply_with_ha_sync(self, m_uid):
         PanDeviceId = "42"
         PanDeviceXpath = "path"
@@ -440,8 +440,8 @@ class TestPanObject(unittest.TestCase):
         spec = {
             "id": PanDeviceId,
         }
-        m_pandevice = mock.Mock(**spec)
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = "uid"
@@ -452,8 +452,8 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj.apply()
 
         self.assertIsNone(ret_val)
-        m_pandevice.set_config_changed.assert_called_once_with()
-        m_pandevice.active().xapi.edit.assert_called_once_with(
+        m_panos.set_config_changed.assert_called_once_with()
+        m_panos.active().xapi.edit.assert_called_once_with(
             PanDeviceXpath, PanDeviceElementStr, retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath.assert_called_once_with()
@@ -461,7 +461,7 @@ class TestPanObject(unittest.TestCase):
         for c in self.obj.children:
             c._check_child_methods.assert_called_once_with("apply")
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test_apply_without_ha_sync(self, m_uid):
         PanDeviceId = "42"
         PanDeviceXpath = "path"
@@ -472,8 +472,8 @@ class TestPanObject(unittest.TestCase):
         spec = {
             "id": PanDeviceId,
         }
-        m_pandevice = mock.Mock(**spec)
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = "uid"
@@ -484,8 +484,8 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj.apply()
 
         self.assertIsNone(ret_val)
-        m_pandevice.set_config_changed.assert_called_once_with()
-        m_pandevice.xapi.edit.assert_called_once_with(
+        m_panos.set_config_changed.assert_called_once_with()
+        m_panos.xapi.edit.assert_called_once_with(
             PanDeviceXpath, PanDeviceElementStr, retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath.assert_called_once_with()
@@ -493,7 +493,7 @@ class TestPanObject(unittest.TestCase):
         for c in self.obj.children:
             c._check_child_methods.assert_called_once_with("apply")
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test_create_with_ha_sync(self, m_uid):
         PanDeviceId = "42"
         PanDeviceXpath = "path"
@@ -502,8 +502,8 @@ class TestPanObject(unittest.TestCase):
         spec = {
             "id": PanDeviceId,
         }
-        m_pandevice = mock.Mock(**spec)
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath_short = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = "uid"
@@ -514,8 +514,8 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj.create()
 
         self.assertIsNone(ret_val)
-        m_pandevice.set_config_changed.assert_called_once_with()
-        m_pandevice.active().xapi.set.assert_called_once_with(
+        m_panos.set_config_changed.assert_called_once_with()
+        m_panos.active().xapi.set.assert_called_once_with(
             PanDeviceXpath, PanDeviceElementStr, retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath_short.assert_called_once_with()
@@ -523,7 +523,7 @@ class TestPanObject(unittest.TestCase):
         for c in self.obj.children:
             c._check_child_methods.assert_called_once_with("create")
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test_create_without_ha_sync(self, m_uid):
         PanDeviceId = "42"
         PanDeviceXpath = "path"
@@ -534,8 +534,8 @@ class TestPanObject(unittest.TestCase):
         spec = {
             "id": PanDeviceId,
         }
-        m_pandevice = mock.Mock(**spec)
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath_short = mock.Mock(return_value=PanDeviceXpath)
         self.obj.element_str = mock.Mock(return_value=PanDeviceElementStr)
         m_uid.return_value = "uid"
@@ -546,8 +546,8 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj.create()
 
         self.assertIsNone(ret_val)
-        m_pandevice.set_config_changed.assert_called_once_with()
-        m_pandevice.xapi.set.assert_called_once_with(
+        m_panos.set_config_changed.assert_called_once_with()
+        m_panos.xapi.set.assert_called_once_with(
             PanDeviceXpath, PanDeviceElementStr, retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath_short.assert_called_once_with()
@@ -555,7 +555,7 @@ class TestPanObject(unittest.TestCase):
         for c in self.obj.children:
             c._check_child_methods.assert_called_once_with("create")
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test_delete_with_ha_sync_no_parent(self, m_uid):
         PanDeviceId = "42"
         PanDeviceXpath = "path"
@@ -563,8 +563,8 @@ class TestPanObject(unittest.TestCase):
         spec = {
             "id": PanDeviceId,
         }
-        m_pandevice = mock.Mock(**spec)
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         m_uid.return_value = "uid"
         for x in range(3):
@@ -574,15 +574,15 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj.delete()
 
         self.assertIsNone(ret_val)
-        m_pandevice.set_config_changed.assert_called_once_with()
-        m_pandevice.active().xapi.delete.assert_called_once_with(
+        m_panos.set_config_changed.assert_called_once_with()
+        m_panos.active().xapi.delete.assert_called_once_with(
             PanDeviceXpath, retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath.assert_called_once_with()
         for c in self.obj.children:
             c._check_child_methods.assert_called_once_with("delete")
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test_delete_with_ha_sync_and_parent(self, m_uid):
         PanDeviceId = "42"
         PanDeviceXpath = "path"
@@ -591,9 +591,9 @@ class TestPanObject(unittest.TestCase):
         spec = {
             "id": PanDeviceId,
         }
-        m_pandevice = mock.Mock(**spec)
+        m_panos = mock.Mock(**spec)
         self.obj.parent = mock.Mock()
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         m_uid.return_value = Uid
         for x in range(3):
@@ -604,15 +604,15 @@ class TestPanObject(unittest.TestCase):
 
         self.assertIsNone(ret_val)
         self.obj.parent.remove.assert_called_once_with(self.obj)
-        m_pandevice.set_config_changed.assert_called_once_with()
-        m_pandevice.active().xapi.delete.assert_called_once_with(
+        m_panos.set_config_changed.assert_called_once_with()
+        m_panos.active().xapi.delete.assert_called_once_with(
             PanDeviceXpath, retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath.assert_called_once_with()
         for c in self.obj.children:
             c._check_child_methods.assert_called_once_with("delete")
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test_delete_without_ha_sync(self, m_uid):
         PanDeviceId = "42"
         PanDeviceXpath = "path"
@@ -624,8 +624,8 @@ class TestPanObject(unittest.TestCase):
         spec = {
             "id": PanDeviceId,
         }
-        m_pandevice = mock.Mock(**spec)
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
         for x in range(3):
             child = mock.Mock()
@@ -638,7 +638,7 @@ class TestPanObject(unittest.TestCase):
 
     # Skip _refresh_children
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_default_args_none_suffix(self, m_uid):
         Xpath = "/x/path"
         lasttag = ""
@@ -654,21 +654,19 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.get.return_value": m_root,
         }
-        m_pandevice = mock.Mock(**spec)
+        m_panos = mock.Mock(**spec)
 
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
 
         ret_val = self.obj._refresh_xml(False, True)
 
         self.assertEqual(expected, ret_val)
-        m_pandevice.xapi.get.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.get.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with("result/{0}".format(lasttag))
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_default_args_with_member_suffix(self, m_uid):
         Xpath = "/x/path"
         lasttag = "member"
@@ -684,22 +682,20 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.get.return_value": m_root,
         }
-        m_pandevice = mock.Mock(**spec)
+        m_panos = mock.Mock(**spec)
 
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
         self.obj.SUFFIX = Base.MEMBER
 
         ret_val = self.obj._refresh_xml(False, True)
 
         self.assertEqual(expected, ret_val)
-        m_pandevice.xapi.get.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.get.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with("result/{0}".format(lasttag))
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_default_args_with_entry_suffix(self, m_uid):
         Xpath = "/x/path"
         lasttag = "entry"
@@ -715,22 +711,20 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.get.return_value": m_root,
         }
-        m_pandevice = mock.Mock(**spec)
+        m_panos = mock.Mock(**spec)
 
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
         self.obj.SUFFIX = Base.ENTRY
 
         ret_val = self.obj._refresh_xml(False, True)
 
         self.assertEqual(expected, ret_val)
-        m_pandevice.xapi.get.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.get.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with("result/{0}".format(lasttag))
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_with_running_config(self, m_uid):
         Xpath = "/x/path"
         lasttag = ""
@@ -746,22 +740,20 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.show.return_value": m_root,
         }
-        m_pandevice = mock.Mock(**spec)
+        m_panos = mock.Mock(**spec)
 
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
         self.obj.refresh = mock.Mock()
 
         ret_val = self.obj._refresh_xml(True, True)
 
         self.assertEqual(expected, ret_val)
-        m_pandevice.xapi.show.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.show.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with("result/{0}".format(lasttag))
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_no_refresh_children(self, m_uid):
         Xpath = "/x/path"
         lasttag = ""
@@ -777,22 +769,20 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.get.return_value": m_root,
         }
-        m_pandevice = mock.Mock(**spec)
+        m_panos = mock.Mock(**spec)
 
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
         self.obj.refresh = mock.Mock()
 
         ret_val = self.obj._refresh_xml(False, False)
 
         self.assertEqual(expected, ret_val)
-        m_pandevice.xapi.get.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.get.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with("result/{0}".format(lasttag))
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_api_action_raises_pannosuchnode_with_exceptions_on_raises_error(
         self, m_uid
     ):
@@ -802,18 +792,16 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.get.side_effect": Err.PanNoSuchNode,
         }
-        m_pandevice = mock.Mock(**spec)
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
         m_uid.return_value = "uid"
 
         self.assertRaises(Err.PanObjectMissing, self.obj._refresh_xml, False, True)
-        m_pandevice.xapi.get.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.get.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_api_action_raises_pannosuchnode_with_exceptions_off_returns_none(
         self, m_uid
     ):
@@ -823,20 +811,18 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.get.side_effect": Err.PanNoSuchNode,
         }
-        m_pandevice = mock.Mock(**spec)
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
         m_uid.return_value = "uid"
 
         ret_val = self.obj._refresh_xml(False, False)
 
         self.assertIsNone(ret_val)
-        m_pandevice.xapi.get.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.get.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_api_action_raises_panxapierror_with_exceptions_on_raises_error(
         self, m_uid
     ):
@@ -846,18 +832,16 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.get.side_effect": pan.xapi.PanXapiError,
         }
-        m_pandevice = mock.Mock(**spec)
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
         m_uid.return_value = "uid"
 
         self.assertRaises(Err.PanObjectMissing, self.obj._refresh_xml, False, True)
-        m_pandevice.xapi.get.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.get.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_api_action_raises_panxapierror_with_exceptions_off_returns_none(
         self, m_uid
     ):
@@ -867,20 +851,18 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.get.side_effect": pan.xapi.PanXapiError,
         }
-        m_pandevice = mock.Mock(**spec)
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
         m_uid.return_value = "uid"
 
         ret_val = self.obj._refresh_xml(False, False)
 
         self.assertIsNone(ret_val)
-        m_pandevice.xapi.get.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.get.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_find_fails_with_exceptions_on_raises_error(self, m_uid):
         Xpath = "/x/path"
         lasttag = ""
@@ -896,19 +878,17 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.get.return_value": m_root,
         }
-        m_pandevice = mock.Mock(**spec)
+        m_panos = mock.Mock(**spec)
 
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
 
         self.assertRaises(Err.PanObjectMissing, self.obj._refresh_xml, False, True)
-        m_pandevice.xapi.get.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.get.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with("result/{0}".format(lasttag))
 
-    @mock.patch("pandevice.base.PanObject.uid", new_callable=mock.PropertyMock)
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test__refresh_xml_find_fails_with_exceptions_off_returns_none(self, m_uid):
         """Requires exceptions=False."""
         Xpath = "/x/path"
@@ -925,17 +905,15 @@ class TestPanObject(unittest.TestCase):
             "id": "myid",
             "xapi.get.return_value": m_root,
         }
-        m_pandevice = mock.Mock(**spec)
+        m_panos = mock.Mock(**spec)
 
-        self.obj.nearest_pandevice = mock.Mock(return_value=m_pandevice)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
         self.obj.xpath = mock.Mock(return_value=Xpath)
 
         ret_val = self.obj._refresh_xml(False, False)
 
         self.assertIsNone(ret_val)
-        m_pandevice.xapi.get.assert_called_once_with(
-            Xpath, retry_on_peer=self.obj.HA_SYNC
-        )
+        m_panos.xapi.get.assert_called_once_with(Xpath, retry_on_peer=self.obj.HA_SYNC)
         self.obj.xpath.assert_called_once_with()
         m_root.find.assert_called_once_with("result/{0}".format(lasttag))
 
@@ -1327,16 +1305,16 @@ class TestEqual(unittest.TestCase):
 
 class TestTree(unittest.TestCase):
     def test_dot(self):
-        import pandevice.device as Device
+        import panos.device as Device
 
         expected = (
             "digraph configtree {graph [rankdir=LR, fontsize=10, margin=0.001];"
             "node [shape=box, fontsize=10, height=0.001, margin=0.1, ordering=out];"
             '"PanDevice : None" [style=filled fillcolor= '
-            'URL="http://pandevice.readthedocs.io/en/latest/module-base.html#pandevice.base.PanDevice" '
+            'URL="http://pan-os-python.readthedocs.io/en/latest/module-base.html#panos.base.PanDevice" '
             'target="_blank"];"SystemSettings : " [style=filled fillcolor=lightpink '
-            'URL="http://pandevice.readthedocs.io/en/latest/module-device.html'
-            '#pandevice.device.SystemSettings" target="_blank"];'
+            'URL="http://pan-os-python.readthedocs.io/en/latest/module-device.html'
+            '#panos.device.SystemSettings" target="_blank"];'
             '"PanDevice : None" -> "SystemSettings : ";}'
         )
 

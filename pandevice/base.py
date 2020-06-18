@@ -34,13 +34,13 @@ import pan.commit
 import pan.xapi
 from pan.config import PanConfig
 
-import pandevice
-import pandevice.errors as err
-from pandevice import isstring, string_or_list, updater, userid, yesno
+import panos
+import panos.errors as err
+from panos import isstring, string_or_list, updater, userid, yesno
 
-logger = pandevice.getlogger(__name__)
+logger = panos.getlogger(__name__)
 
-Root = pandevice.enum("DEVICE", "VSYS", "MGTCONFIG")
+Root = panos.enum("DEVICE", "VSYS", "MGTCONFIG")
 SELF = "/%s"
 ENTRY = "/entry[@name='%s']"
 MEMBER = "/member[text()='%s']"
@@ -110,7 +110,7 @@ class PanObject(object):
                     continue
             # For member variables, store a list containing the value instead of the individual value
             if var.vartype in ("member", "entry"):
-                varvalue = pandevice.string_or_list(varvalue)
+                varvalue = panos.string_or_list(varvalue)
             # Store the value in the instance variable
             setattr(self, varname, varvalue)
 
@@ -131,8 +131,8 @@ class PanObject(object):
     def vsys(self):
         """Return the vsys for this object
 
-        Traverses the tree to determine the vsys from a :class:`pandevice.firewall.Firewall`
-        or :class:`pandevice.device.Vsys` instance somewhere before this node in the tree.
+        Traverses the tree to determine the vsys from a :class:`panos.firewall.Firewall`
+        or :class:`panos.device.Vsys` instance somewhere before this node in the tree.
 
         Returns:
             str: The vsys id (eg. vsys2)
@@ -292,7 +292,7 @@ class PanObject(object):
         while True:
             if isinstance(p, PanDevice) and p != self:
                 # Stop on the first pandevice encountered, unless the
-                # pandevice.PanDevice object is the object whose xpath
+                # panos.PanDevice object is the object whose xpath
                 # was asked for.
                 path.insert(0, p.xpath_root(root, vsys, label))
                 break
@@ -430,7 +430,7 @@ class PanObject(object):
                     if matchedvar.vartype == "entry":
                         # If it's an 'entry' variable
                         # XXX: this is using a quick patch.  Should handle array-based entry vars better.
-                        entry_value = pandevice.string_or_list(
+                        entry_value = panos.string_or_list(
                             getattr(self, matchedvar.variable)
                         )
                         section = re.sub(
@@ -679,7 +679,7 @@ class PanObject(object):
         **Modifies the live device**
 
         NOTE:  This does not change any references that may exist in your
-        pandevice object hierarchy, but it does update the name of the
+        pan-os-python object hierarchy, but it does update the name of the
         object itself.
 
         Args:
@@ -704,12 +704,12 @@ class PanObject(object):
         This is useful for stuff like moving one security policy above another.
 
         If this object's parent is a rulebase object, then this object is also
-        moved to the appropriate position in the local pandevice object tree.
+        moved to the appropriate position in the local pan-os-python object tree.
 
         Args:
             location (str): Any of the following: before, after, top, or bottom
             ref (PanObject/str): If location is "before" or "after", move this object before/after the ref object.  If this is a string, then the string should just be the name of the object.
-            update (bool): If this is set to False, then only move this object in the pandevice object tree, do not actually perform the MOVE operation on the live device.  Note that in order for this object to be moved in the pandevice object tree, the parent object must be a rulebase object.
+            update (bool): If this is set to False, then only move this object in the pan-os-python object tree, do not actually perform the MOVE operation on the live device.  Note that in order for this object to be moved in the pan-os-python object tree, the parent object must be a rulebase object.
 
         Raises:
             ValueError
@@ -754,7 +754,7 @@ class PanObject(object):
 
         logger.debug('{0}: move called on {1} "{2}"'.format(d.id, type(self), self.uid))
 
-        # Move the rule in the pandevice object tree, if applicable.
+        # Move the rule in the pan-os-python object tree, if applicable.
         if new_index is not None:
             parent.remove(self)
             parent.insert(new_index, self)
@@ -816,9 +816,7 @@ class PanObject(object):
             if matchedvar.vartype == "entry":
                 # If it's an 'entry' variable
                 # XXX: this is using a quick patch.  Should handle array-based entry vars better.
-                entry_value = pandevice.string_or_list(
-                    getattr(self, matchedvar.variable)
-                )
+                entry_value = panos.string_or_list(getattr(self, matchedvar.variable))
                 varpath = re.sub(
                     regex,
                     matchedvar.path + "/" + "entry[@name='%s']" % entry_value[0],
@@ -962,20 +960,20 @@ class PanObject(object):
         for child_type_string in self.CHILDTYPES:
             module_name, class_name = child_type_string.split(".")
             if module_name == "device":
-                import pandevice.device
+                import panos.device
             elif module_name == "firewall":
-                import pandevice.firewall
+                import panos.firewall
             elif module_name == "ha":
-                import pandevice.ha
+                import panos.ha
             elif module_name == "network":
-                import pandevice.network
+                import panos.network
             elif module_name == "objects":
-                import pandevice.objects
+                import panos.objects
             elif module_name == "panorama":
-                import pandevice.panorama
+                import panos.panorama
             elif module_name == "policies":
-                import pandevice.policies
-            child = getattr(getattr(pandevice, module_name), class_name)()
+                import panos.policies
+            child = getattr(getattr(panos, module_name), class_name)()
 
             # Versioned objects need a PanDevice to get the version from, so
             # set the child's parent before accessing XPATH.
@@ -1043,7 +1041,7 @@ class PanObject(object):
         return elm
 
     def nearest_pandevice(self):
-        """The nearest :class:`pandevice.base.PanDevice` object to.
+        """The nearest :class:`panos.base.PanDevice` object to.
 
         This method is used to determine the device to apply this object.
 
@@ -1063,7 +1061,7 @@ class PanObject(object):
         raise err.PanDeviceNotSet("No PanDevice set for object tree")
 
     def panorama(self):
-        """The nearest :class:`pandevice.panorama.Panorama` object.
+        """The nearest :class:`panos.panorama.Panorama` object.
 
         This method is used to determine the device to apply this object to.
 
@@ -1080,7 +1078,7 @@ class PanObject(object):
         raise err.PanDeviceNotSet("No Panorama set for object tree")
 
     def devicegroup(self):
-        """The nearest :class:`pandevice.panorama.DeviceGroup` object.
+        """The nearest :class:`panos.panorama.DeviceGroup` object.
 
         This method is used to determine the device to apply this object to.
 
@@ -1228,7 +1226,7 @@ class PanObject(object):
                 PanDevice as its parental root.
             running_config (bool): False for candidate config, True for running
                 config.
-            add (bool): Update the objects of this type in pandevice with
+            add (bool): Update the objects of this type in pan-os-python with
                 the refreshed values.
             exceptions (bool): If False, exceptions are ignored if the xpath
                 can't be found.
@@ -1477,7 +1475,7 @@ class PanObject(object):
         This function has two modes:  refresh=True and refresh=False.  You
         should only ever use refresh=False if:
 
-            1) all reference objects are in the current pandevice object tree
+            1) all reference objects are in the current pan-os-python object tree
             2) all reference objects are children attached to nearest_pandevice()
             3) this is for firewall only, not a template / template stack
             4) you're using firewall.vsys, not the device.Vsys object
@@ -1493,20 +1491,20 @@ class PanObject(object):
 
         if refresh:
             """
-            pandevice is too flexible:  users can use simple vsys mode or a
+            pan-os-python is too flexible:  users can use simple vsys mode or a
             device.Vsys object, which means vsys importables can be attached
             to a Vsys object or a Firewall.  But a Vsys object can also be
             attached to a Firewall or a Template or a TemplateStack.  So
-            create a separate pandevice object tree to operate on, leaving
+            create a separate pan-os-python object tree to operate on, leaving
             the user's tree alone, but making it so we know where things are.
 
-            Basically, we need a pandevice object tree where all objects are
+            Basically, we need a pan-os-python object tree where all objects are
             are sibling objects, just like refresh=False assumes.  Doing
             this allows the rest of this function to operate as before.
             """
-            from pandevice.firewall import Firewall
-            from pandevice.panorama import Panorama, Template, TemplateStack
-            from pandevice.device import Vsys
+            from panos.firewall import Firewall
+            from panos.panorama import Panorama, Template, TemplateStack
+            from panos.device import Vsys
 
             new_tree = None
             if reference_type.ROOT == Root.VSYS:
@@ -1553,7 +1551,7 @@ class PanObject(object):
                 p = p.parent
 
             if parent is None or isinstance(parent, Panorama):
-                raise err.PanDeviceError("Improper pandevice object tree")
+                raise err.PanDeviceError("Improper pan-os-python object tree")
 
             allobjects = reference_type.refreshall(
                 parent, name_only=name_only, running_config=running_config
@@ -1868,7 +1866,7 @@ class PanObject(object):
 
         Since apply does a replace of the config at the given xpath, please
         be careful when using this function that all objects, whether they
-        be updated or not, exist in your pandevice object tree.
+        be updated or not, exist in your pan-os-python object tree.
 
         """
         dev, instances, vsys_dict = self._gather_bulk_info("apply_similar")
@@ -1906,7 +1904,7 @@ class PanObject(object):
         from the nearest firewall or panorama instance.
 
         As an example, if you called delete_similar on an object representing
-        ethernet1/5.42, all of the subinterfaces in your pandevice object
+        ethernet1/5.42, all of the subinterfaces in your pan-os-python object
         tree for ethernet1/5 would be removed.
 
         """
@@ -1985,15 +1983,15 @@ class PanObject(object):
         result = (
             '"{node_name}" [style=filled fillcolor={color} '
             'URL="{url}'
-            '/module-{module}.html#pandevice.{module}.{node}" '
+            '/module-{module}.html#panos.{module}.{node}" '
             'target="_blank"];'
         )
         result = result.format(
             node_name=node + " : " + self.uid,
             node=node,
             module=module,
-            url=pandevice.DOCUMENTATION_URL,
-            color=pandevice.node_color(module),
+            url=panos.DOCUMENTATION_URL,
+            color=panos.node_color(module),
         )
         # Make recursive call to children
         for child in self.children:
@@ -2075,7 +2073,7 @@ class VersioningSupport(object):
                 version.
 
         """
-        # TODO(gfreeman): use pandevice versioning
+        # TODO(gfreeman): use pan-os-python versioning
         if version is None:
             version_tuple = (0, 0, 0)
         else:
@@ -2241,7 +2239,7 @@ class ParentAwareXpath(object):
 class VersionedPanObject(PanObject):
     """Base class for all versioned package objects.
 
-    This class is an extention of :class:`pandevice.base.PanObject` that
+    This class is an extention of :class:`panos.base.PanObject` that
     supports versioning.
 
     Args:
@@ -2319,7 +2317,7 @@ class VersionedPanObject(PanObject):
 
         If you want this to have versioned parameters, be sure to
         set a `_params` variable here.  It should be a tuple of
-        :class:`pandevice.base.VersionedParamPath` objects.
+        :class:`panos.base.VersionedParamPath` objects.
 
         """
         pass
@@ -2463,7 +2461,7 @@ class VersionedPanObject(PanObject):
                     continue
                 if ap.startswith("entry "):
                     junk, var_to_use = ap.split()
-                    sol_value = pandevice.string_or_list(settings[var_to_use])[0]
+                    sol_value = panos.string_or_list(settings[var_to_use])[0]
                     find_path.append("entry[@name='{0}']".format(sol_val))
                 elif ap == "entry[@name='localhost.localdomain']":
                     find_path.append(ap)
@@ -2785,13 +2783,13 @@ class VarPath(object):
         """
         # Create an element containing the value in the instance variable
         if self.vartype == "member":
-            values = pandevice.string_or_list(value)
+            values = panos.string_or_list(value)
             if comparable:
                 values = sorted(values)
             for member in values:
                 ET.SubElement(elm, "member").text = str(member)
         elif self.vartype == "entry":
-            values = pandevice.string_or_list(value)
+            values = panos.string_or_list(value)
             if comparable:
                 values = sorted(values)
             for entry in values:
@@ -2921,7 +2919,7 @@ class ParamPath(object):
                 continue
             if token.startswith("entry "):
                 junk, var_to_use = token.split()
-                sol_val = pandevice.string_or_list(settings[var_to_use])[0]
+                sol_val = panos.string_or_list(settings[var_to_use])[0]
                 child = ET.Element("entry", {"name": str(sol_val)})
             elif token == "entry[@name='localhost.localdomain']":
                 child = ET.Element("entry", {"name": "localhost.localdomain"})
@@ -2999,7 +2997,7 @@ class ParamPath(object):
                     if ans is None:
                         return
                     settings[entry_var] = ans.attrib["name"]
-                sol_val = pandevice.string_or_list(settings[entry_var])[0]
+                sol_val = panos.string_or_list(settings[entry_var])[0]
                 path_str = "entry[@name='{0}']".format(sol_val)
             else:
                 # Standard path part
@@ -3283,7 +3281,7 @@ class VsysOperations(VersionedPanObject):
         else:
             raise ValueError("Unknown import type: {0}".format(self.XPATH_IMPORT))
 
-        from pandevice.device import Vsys
+        from panos.device import Vsys
 
         return self._set_reference(
             vsys_id,
@@ -3401,7 +3399,7 @@ class PanDevice(PanObject):
         """Initialize PanDevice"""
         super(PanDevice, self).__init__(*args, **kwargs)
         # create a class logger
-        self._logger = pandevice.getlogger(__name__ + "." + self.__class__.__name__)
+        self._logger = panos.getlogger(__name__ + "." + self.__class__.__name__)
 
         self.hostname = hostname
         self.port = port
@@ -3439,18 +3437,18 @@ class PanDevice(PanObject):
         self.userid = userid.UserId(self)
         """User-ID subsystem
 
-        See Also: :class:`pandevice.userid`
+        See Also: :class:`panos.userid`
 
         """
 
         # create a predefined object subsystem
         # avoid a premature import
-        from pandevice import predefined
+        from panos import predefined
 
         self.predefined = predefined.Predefined(self)
         """Predefined object subsystem
 
-        See Also: :class:`pandevice.predefined`
+        See Also: :class:`panos.predefined`
 
         """
 
@@ -3474,8 +3472,8 @@ class PanDevice(PanObject):
     def create_from_device(
         cls, hostname, api_username=None, api_password=None, api_key=None, port=443,
     ):
-        """Factory method to create a :class:`pandevice.firewall.Firewall`
-        or :class:`pandevice.panorama.Panorama` object from a live device
+        """Factory method to create a :class:`panos.firewall.Firewall`
+        or :class:`panos.panorama.Panorama` object from a live device
 
         Connects to the device and detects its type and current state
         in order to create a PanDevice subclass.
@@ -3492,7 +3490,7 @@ class PanDevice(PanObject):
 
         """
         # Create generic PanDevice to connect and get information
-        from pandevice import firewall, panorama
+        from panos import firewall, panorama
 
         device = PanDevice(hostname, api_username, api_password, api_key, port,)
         system_info = device.refresh_system_info()
@@ -3666,7 +3664,7 @@ class PanDevice(PanObject):
                         == "URLError: reason: [Errno 54] Connection reset by peer"
                     ):
                         min_openssl_version = ["1", "0", "1"]
-                        help_url = "http://pandevice.readthedocs.io/en/latest/usage.html#connecting-to-pan-os-8-0"
+                        help_url = "http://pan-os-python.readthedocs.io/en/latest/usage.html#connecting-to-pan-os-8-0"
                         try:
                             # Examples:
                             #   OpenSSL 1.0.2j  26 Sep 2016
@@ -3814,7 +3812,7 @@ class PanDevice(PanObject):
 
         This is useful for checking if a commit is necessary by knowing
         if the configuration was actually changed. This method is already
-        used by every pandevice package method that makes a configuration
+        used by every pan-os-python package method that makes a configuration
         change. But this method could also by run directly to force
         a 'dirty' configuration state in a PanDevice object.
 
@@ -3907,7 +3905,7 @@ class PanDevice(PanObject):
         - version
         - platform
         - serial
-        - multi_vsys (if this is a :class:`pandevice.firewall.Firewall`)
+        - multi_vsys (if this is a :class:`panos.firewall.Firewall`)
 
         Returns:
             namedtuple: version, platform, serial
@@ -4000,10 +3998,10 @@ class PanDevice(PanObject):
         """
         if hostname is None:
             raise ValueError("hostname should not be None")
-        import pandevice.device
+        import panos.device
 
         self._logger.debug("Set hostname: %s" % str(hostname))
-        system = self.findall_or_create(pandevice.device.SystemSettings)[0]
+        system = self.findall_or_create(panos.device.SystemSettings)[0]
         if system.hostname != hostname:
             system.hostname = hostname
             # This handles addition and deletion
@@ -4019,12 +4017,12 @@ class PanDevice(PanObject):
             secondary (str): IP address of secondary DNS server
 
         """
-        import pandevice.device
+        import panos.device
 
         self._logger.debug(
             "Set dns-servers: primary:%s secondary:%s" % (primary, secondary)
         )
-        system = self.findall_or_create(pandevice.device.SystemSettings)[0]
+        system = self.findall_or_create(panos.device.SystemSettings)[0]
         if system.dns_primary != primary:
             system.dns_primary = primary
             # This handles addition and deletion
@@ -4043,27 +4041,27 @@ class PanDevice(PanObject):
             secondary (str): IP address of secondary DNS server
 
         """
-        import pandevice.device
+        import panos.device
 
         self._logger.debug(
             "Set ntp-servers: primary:%s secondary:%s" % (primary, secondary)
         )
-        system = self.findall_or_create(pandevice.device.SystemSettings)[0]
+        system = self.findall_or_create(panos.device.SystemSettings)[0]
         if primary is None:
-            ntp1 = system.findall(pandevice.device.NTPServerPrimary)
+            ntp1 = system.findall(panos.device.NTPServerPrimary)
             if ntp1:
                 ntp1[0].delete()
         else:
-            ntp1 = system.findall_or_create(pandevice.device.NTPServerPrimary)[0]
+            ntp1 = system.findall_or_create(panos.device.NTPServerPrimary)[0]
             if ntp1.address != primary:
                 ntp1.address = primary
                 ntp1.create()
         if secondary is None:
-            ntp2 = system.findall(pandevice.device.NTPServerSecondary)
+            ntp2 = system.findall(panos.device.NTPServerSecondary)
             if ntp2:
                 ntp2[0].delete()
         else:
-            ntp2 = system.findall_or_create(pandevice.device.NTPServerSecondary)[0]
+            ntp2 = system.findall_or_create(panos.device.NTPServerSecondary)[0]
             if ntp2.address != secondary:
                 ntp2.address = secondary
                 ntp2.create()
@@ -4472,7 +4470,7 @@ class PanDevice(PanObject):
             sync (bool): Block until the commit is finished (Default: False)
             exception (bool): Create an exception on commit errors (Default: False)
             cmd (str): Commit options in XML format
-            admins (str/list): name or list of admins whose changes need to be committed 
+            admins (str/list): name or list of admins whose changes need to be committed
             sync_all (bool): If this is a Panorama commit, wait for firewalls jobs to finish (Default: False)
 
         Returns:
@@ -4539,7 +4537,7 @@ class PanDevice(PanObject):
                 partial = ET.SubElement(cmd, "partial")
                 if admins is not None:
                     partial_admin = ET.SubElement(partial, "admin")
-                    admins = pandevice.string_or_list(admins)
+                    admins = panos.string_or_list(admins)
                     for admin in admins:
                         admin_xml = ET.SubElement(partial_admin, "member")
                         admin_xml.text = admin
@@ -4914,7 +4912,7 @@ class PanDevice(PanObject):
             time.sleep(interval)
 
     def nearest_pandevice(self):
-        """The nearest :class:`pandevice.base.PanDevice` object.
+        """The nearest :class:`panos.base.PanDevice` object.
 
         This method is used to determine the device to apply this object to.
 

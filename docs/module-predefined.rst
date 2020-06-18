@@ -4,10 +4,10 @@ Module: predefined
 Inheritance diagram
 -------------------
 
-.. inheritance-diagram:: pandevice.predefined
+.. inheritance-diagram:: panos.predefined
    :parts: 1
 
 Class Reference
 ---------------
 
-.. automodule:: pandevice.predefined
+.. automodule:: panos.predefined
