@@ -395,6 +395,8 @@ class Panorama(base.PanDevice):
     ):
         """Trigger a commit-all (commit to devices) on Panorama
 
+        NOTE:  Use the new panorama.PanoramaCommitAll with commit() instead.
+
         Args:
             sync (bool): Block until the Panorama commit is finished (Default: False)
             sync_all (bool): Block until every Firewall commit is finished, requires sync=True (Default: False)
@@ -748,3 +750,226 @@ class Panorama(base.PanDevice):
             )
 
         return ans
+
+
+class PanoramaCommit(object):
+    """Normalization of a Panorama commit."""
+
+    def __init__(
+        self,
+        description=None,
+        admins=None,
+        device_groups=None,
+        templates=None,
+        template_stacks=None,
+        wildfire_appliances=None,
+        wildfire_clusters=None,
+        log_collectors=None,
+        log_collector_groups=None,
+        exclude_device_and_network=False,
+        exclude_shared_objects=False,
+        force=False,
+    ):
+        largs = [
+            "admins",
+            "device_groups",
+            "templates",
+            "template_stacks",
+            "wildfire_appliances",
+            "wildfire_clusters",
+            "log_collectors",
+            "log_collector_groups",
+        ]
+        for x in largs:
+            if locals()[x] is not None and not isinstance(locals()[x], list):
+                raise ValueError("{0} must be a list".format(x))
+        self.description = description
+        self.admins = admins
+        self.device_groups = device_groups
+        self.templates = templates
+        self.template_stacks = template_stacks
+        self.wildfire_appliances = wildfire_appliances
+        self.wildfire_clusters = wildfire_clusters
+        self.log_collectors = log_collectors
+        self.log_collector_groups = log_collector_groups
+        self.exclude_device_and_network = exclude_device_and_network
+        self.exclude_shared_objects = exclude_shared_objects
+        self.force = force
+
+    @property
+    def commit_action(self):
+        return None
+
+    def is_partial(self):
+        pp_list = [
+            self.admins,
+            self.device_groups,
+            self.templates,
+            self.template_stacks,
+            self.wildfire_appliances,
+            self.wildfire_clusters,
+            self.log_collectors,
+            self.log_collector_groups,
+            self.exclude_device_and_network,
+            self.exclude_shared_objects,
+            self.force,
+        ]
+
+        return any(x for x in pp_list)
+
+    def element_str(self):
+        return ET.tostring(self.element(), encoding="utf-8")
+
+    def element(self):
+        """Returns an xml representation of the commit requested.
+
+        Returns:
+            xml.etree.ElementTree
+        """
+        root = ET.Element("commit")
+
+        if self.description:
+            ET.SubElement(root, "description").text = self.description
+
+        if self.is_partial():
+            partial = ET.Element("partial")
+            mlist = [
+                ("admin", self.admins),
+                ("device-group", self.device_groups),
+                ("template", self.templates),
+                ("template-stack", self.template_stacks),
+                ("wildfire-appliance", self.wildfire_appliances),
+                ("wildfire-appliance-cluster", self.wildfire_clusters),
+                ("log-collector", self.log_collectors),
+                ("log-collector-group", self.log_collector_groups),
+            ]
+            for loc, vals in mlist:
+                if vals:
+                    e = ET.SubElement(partial, loc)
+                    for name in vals:
+                        ET.SubElement(e, "member").text = name
+
+            if self.exclude_device_and_network:
+                ET.SubElement(partial, "device-and-network").text = "excluded"
+            if self.exclude_shared_objects:
+                ET.SubElement(partial, "shared-object").text = "excluded"
+
+            if self.force:
+                fe = ET.SubElement(root, "force")
+                fe.append(partial)
+            else:
+                root.append(partial)
+
+        return root
+
+
+class PanoramaCommitAll(object):
+    """Normalization of a Panorama commit all."""
+
+    STYLE_DEVICE_GROUP = "device group"
+    STYLE_TEMPLATE = "template"
+    STYLE_TEMPLATE_STACK = "template stack"
+    STYLE_LOG_COLLECTOR_GROUP = "log collector group"
+    STYLE_WILDFIRE_APPLIANCE = "wildfire appliance"
+    STYLE_WILDFIRE_CLUSTER = "wildfire cluster"
+
+    def __init__(
+        self,
+        style,
+        name,
+        description=None,
+        include_template=None,
+        force_template_values=None,
+        devices=None,
+    ):
+        if style and style not in (
+            self.STYLE_DEVICE_GROUP,
+            self.STYLE_TEMPLATE,
+            self.STYLE_TEMPLATE_STACK,
+            self.STYLE_LOG_COLLECTOR_GROUP,
+            self.STYLE_WILDFIRE_APPLIANCE,
+            self.STYLE_WILDFIRE_CLUSTER,
+        ):
+            raise ValueError("Invalid style {0}".format(style))
+        if devices and not isinstance(devices, list):
+            raise ValueError("devices must be a list")
+
+        self.style = style
+        self.name = name
+        self.description = description
+        self.include_template = include_template
+        self.force_template_values = force_template_values
+        self.devices = devices
+
+    @property
+    def commit_action(self):
+        return "all"
+
+    def element_str(self):
+        return ET.tostring(self.element(), encoding="utf-8")
+
+    def element(self):
+        """Returns an xml representation of the commit all.
+
+        Returns:
+            xml.etree.ElementTree
+        """
+        root = ET.Element("commit-all")
+
+        body = None
+        if self.style == self.STYLE_DEVICE_GROUP:
+            body = ET.Element("shared-policy")
+            dgInfo = ET.SubElement(body, "device-group")
+            dge = ET.SubElement(dgInfo, "entry", {"name": self.name})
+            if self.devices:
+                de = ET.SubElement(dge, "devices")
+                for x in self.devices:
+                    ET.SubElement(de, "entry", {"name": x})
+            if self.description:
+                ET.SubElement(body, "description").text = self.description
+            if self.include_template:
+                ET.SubElement(body, "include-template").text = "yes"
+            if self.force_template_values:
+                ET.SubElement(body, "force-template-values").text = "yes"
+        elif self.style == self.STYLE_TEMPLATE:
+            body = ET.Element("template")
+            ET.SubElement(body, "name").text = self.name
+            if self.description:
+                ET.SubElement(body, "description").text = self.description
+            if self.force_template_values:
+                ET.SubElement(body, "force-template-values").text = "yes"
+            if self.devices:
+                de = ET.SubElement(body, "device")
+                for x in self.devices:
+                    ET.SubElement(de, "member").text = x
+        elif self.style == self.STYLE_TEMPLATE_STACK:
+            body = ET.Element("template-stack")
+            ET.SubElement(body, "name").text = self.name
+            if self.description:
+                ET.SubElement(body, "description").text = self.description
+            if self.force_template_values:
+                ET.SubElement(body, "force-template-values").text = "yes"
+            if self.devices:
+                de = ET.SubElement(body, "device")
+                for x in self.devices:
+                    ET.SubElement(de, "member").text = x
+        elif self.style == self.STYLE_LOG_COLLECTOR_GROUP:
+            body = ET.Element("log-collector-config")
+            ET.SubElement(body, "log-collector-group").text = self.name
+            if self.description:
+                ET.SubElement(body, "description").text = self.description
+        elif self.style == self.STYLE_WILDFIRE_APPLIANCE:
+            body = ET.Element("wildfire-appliance-config")
+            if self.description:
+                ET.SubElement(body, "description").text = self.description
+            ET.SubElement(body, "wildfire-appliance").text = self.name
+        elif self.style == self.STYLE_WILDFIRE_CLUSTER:
+            body = ET.Element("wildfire-appliance-config")
+            if self.description:
+                ET.SubElement(body, "description").text = self.description
+            ET.SubElement(body, "wildfire-appliance-cluster").text = self.name
+
+        if body is not None:
+            root.append(body)
+
+        return root

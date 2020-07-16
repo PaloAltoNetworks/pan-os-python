@@ -502,3 +502,75 @@ class FirewallState(object):
             raise err.PanDeviceError(
                 "Unknown shared policy status: %s" % str(sync_status)
             )
+
+
+class FirewallCommit(object):
+    """Normalization of a firewall commit."""
+
+    def __init__(
+        self,
+        description=None,
+        admins=None,
+        exclude_device_and_network=False,
+        exclude_shared_objects=False,
+        exclude_policy_and_objects=False,
+        force=False,
+    ):
+        self.description = description
+        self.admins = admins
+        if admins and not isinstance(admins, list):
+            raise ValueError("admins must be a list")
+        self.exclude_device_and_network = exclude_device_and_network
+        self.exclude_shared_objects = exclude_shared_objects
+        self.exclude_policy_and_objects = exclude_policy_and_objects
+        self.force = force
+
+    @property
+    def commit_action(self):
+        return None
+
+    def is_partial(self):
+        pp_list = [
+            self.admins,
+            self.exclude_device_and_network,
+            self.exclude_shared_objects,
+            self.exclude_policy_and_objects,
+            self.force,
+        ]
+
+        return any(x for x in pp_list)
+
+    def element_str(self):
+        return ET.tostring(self.element(), encoding="utf-8")
+
+    def element(self):
+        """Returns an xml representation of the commit requested.
+
+        Returns:
+            xml.etree.ElementTree
+        """
+        root = ET.Element("commit")
+
+        if self.description:
+            ET.SubElement(root, "description").text = self.description
+
+        if self.is_partial():
+            partial = ET.Element("partial")
+            if self.admins:
+                e = ET.SubElement(partial, "admin")
+                for name in self.admins:
+                    ET.SubElement(e, "member").text = name
+            if self.exclude_device_and_network:
+                ET.SubElement(partial, "device-and-network").text = "excluded"
+            if self.exclude_shared_objects:
+                ET.SubElement(partial, "shared-object").text = "excluded"
+            if self.exclude_policy_and_objects:
+                ET.SubElement(partial, "policy-and-objects").text = "excluded"
+
+            if self.force:
+                fe = ET.SubElement(root, "force")
+                fe.append(partial)
+            else:
+                root.append(partial)
+
+        return root

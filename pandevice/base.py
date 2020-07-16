@@ -4463,7 +4463,9 @@ class PanDevice(PanObject):
 
     # Commit methods
 
-    def commit(self, sync=False, exception=False, cmd=None, admins=None):
+    def commit(
+        self, sync=False, exception=False, cmd=None, admins=None, sync_all=False
+    ):
         """Trigger a commit
 
         Args:
@@ -4471,13 +4473,16 @@ class PanDevice(PanObject):
             exception (bool): Create an exception on commit errors (Default: False)
             cmd (str): Commit options in XML format
             admins (str/list): name or list of admins whose changes need to be committed 
+            sync_all (bool): If this is a Panorama commit, wait for firewalls jobs to finish (Default: False)
 
         Returns:
             dict: Commit results
 
         """
         self._logger.debug("Commit initiated on device: %s" % (self.id,))
-        return self._commit(sync=sync, exception=exception, cmd=cmd, admins=admins)
+        return self._commit(
+            sync=sync, exception=exception, cmd=cmd, admins=admins, sync_all=sync_all
+        )
 
     def _commit(
         self,
@@ -4510,6 +4515,17 @@ class PanDevice(PanObject):
                 messages: list of warnings or errors
 
         """
+        action = None
+
+        # Adding in handling for the commit normalizations.
+        if (
+            cmd is not None
+            and hasattr(cmd, "element")
+            and hasattr(cmd, "commit_action")
+        ):
+            action = cmd.commit_action
+            cmd = cmd.element()
+
         # TODO: Support per-vsys commit
         if isinstance(cmd, pan.commit.PanCommit):
             cmd = cmd.cmd()
@@ -4538,8 +4554,7 @@ class PanDevice(PanObject):
         )
         if commit_all:
             action = "all"
-        else:
-            action = None
+
         self._logger.debug("Initiating commit")
         commit_response = self.xapi.commit(
             cmd=cmd,
