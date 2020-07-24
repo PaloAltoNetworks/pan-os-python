@@ -39,14 +39,14 @@ class TestUserId(unittest.TestCase):
             expected = (
                 b"<uid-message><version>1.0</version>"
                 b"<type>update</type><payload><login>"
-                b'<entry ip="10.1.1.1" name="example.com\username" timeout="10" />'
+                b'<entry ip="10.1.1.1" name="example.com\\username" timeout="10" />'
                 b"</login></payload></uid-message>"
             )
         else:
             expected = (
                 b"<uid-message><version>1.0</version>"
                 b"<type>update</type><payload><login>"
-                b'<entry name="example.com\username" ip="10.1.1.1" timeout="10" />'
+                b'<entry name="example.com\\username" ip="10.1.1.1" timeout="10" />'
                 b"</login></payload></uid-message>"
             )
         vsys = "vsys3"
