@@ -42,7 +42,7 @@ flake8-mock = "^0.3"
 flake8-docstrings = "^1.5.0"
 flake8-variables-names = "^0.0.3"
 pep8-naming = "^0.9.1"
-dephell = {version = "^0.8.0", python = "^3.6"}
+dephell = {version = "^0.8.3", python = "^3.6"}
 fissix = {version = "^19.2b1", python = "^3.6"}
 sphinx = {version = "^2.3.1", python = "^3.5"}
 pytest-cov = {version = "^2.8.1", python = "^3.5"}

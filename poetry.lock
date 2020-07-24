@@ -148,21 +148,6 @@ d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
 
 [[package]]
 category = "dev"
-description = "Safe code refactoring for modern Python projects"
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
-name = "bowler"
-optional = false
-python-versions = ">=3.6"
-version = "0.8.0"
-
-[package.dependencies]
-attrs = "*"
-click = "*"
-fissix = "*"
-sh = "*"
-
-[[package]]
-category = "dev"
 description = "Lightweight, extensible schema and data validation tool for Python dictionaries."
 marker = "python_version >= \"3.6\" and python_version < \"4.0\""
 name = "cerberus"
@@ -176,7 +161,7 @@ setuptools = "*"
 [[package]]
 category = "dev"
 description = "Python package for providing Mozilla's CA Bundle."
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
+marker = "python_version >= \"3.6\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
 name = "certifi"
 optional = false
 python-versions = "*"
@@ -185,7 +170,7 @@ version = "2019.11.28"
 [[package]]
 category = "dev"
 description = "Universal encoding detector for Python 2 and 3"
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.6\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
+marker = "python_version >= \"3.6\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
 name = "chardet"
 optional = false
 python-versions = "*"
@@ -241,16 +226,16 @@ marker = "python_version >= \"3.6\" and python_version < \"4.0\""
 name = "dephell"
 optional = false
 python-versions = ">=3.6"
-version = "0.8.0"
+version = "0.8.3"
 
 [package.dependencies]
 aiohttp = "*"
-appdirs = "*"
 attrs = ">=19.2.0"
-bowler = "*"
 cerberus = ">=1.3"
+certifi = "*"
 dephell-archive = ">=0.1.5"
 dephell-argparse = ">=0.1.1"
+dephell-changelogs = "*"
 dephell-discover = ">=0.2.6"
 dephell-licenses = ">=0.1.6"
 dephell-links = ">=0.1.4"
@@ -261,27 +246,19 @@ dephell-shells = ">=0.1.3"
 dephell-specifier = ">=0.1.7"
 dephell-venvs = ">=0.1.16"
 dephell-versioning = "*"
-docker = "*"
-dockerpty = "*"
-fissix = "*"
-flatdict = "*"
-html5lib = "*"
 jinja2 = "*"
 m2r = "*"
 packaging = "*"
-pip = ">=18.0"
-pygments = "*"
+pip = ">=18.0,<=19.3.1"
 requests = "*"
 "ruamel.yaml" = "*"
-setuptools = "*"
-tabulate = "*"
 tomlkit = "*"
 yaspin = "*"
 
 [package.extras]
 dev = ["aioresponses", "alabaster", "flake8-isort", "isort", "pygments-github-lexers", "pytest", "recommonmark", "requests-mock", "sphinx"]
 docs = ["alabaster", "pygments-github-lexers", "recommonmark", "sphinx"]
-full = ["aiofiles", "autopep8", "colorama", "graphviz", "yapf"]
+full = ["aiofiles", "appdirs", "autopep8", "bowler", "colorama", "docker", "dockerpty", "fissix", "graphviz", "html5lib", "pygments", "python-gnupg", "tabulate", "yapf"]
 tests = ["aioresponses", "pytest", "requests-mock"]
 
 [[package]]
@@ -304,6 +281,21 @@ name = "dephell-argparse"
 optional = false
 python-versions = ">=3.5"
 version = "0.1.2"
+
+[[package]]
+category = "dev"
+description = "Find changelog for github repository, local dir, parse changelog"
+marker = "python_version >= \"3.6\" and python_version < \"4.0\""
+name = "dephell-changelogs"
+optional = false
+python-versions = ">=3.5"
+version = "0.0.1"
+
+[package.dependencies]
+requests = "*"
+
+[package.extras]
+dev = ["pytest", "pytest-xdist"]
 
 [[package]]
 category = "dev"
@@ -439,42 +431,8 @@ packaging = "*"
 
 [[package]]
 category = "dev"
-description = "A Python library for the Docker Engine API."
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
-name = "docker"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-version = "4.1.0"
-
-[package.dependencies]
-requests = ">=2.14.2,<2.18.0 || >2.18.0"
-six = ">=1.4.0"
-websocket-client = ">=0.32.0"
-
-[package.dependencies.pypiwin32]
-python = ">=3.6"
-version = "223"
-
-[package.extras]
-ssh = ["paramiko (>=2.4.2)"]
-tls = ["pyOpenSSL (>=17.5.0)", "cryptography (>=1.3.4)", "idna (>=2.0.0)"]
-
-[[package]]
-category = "dev"
-description = "Python library to use the pseudo-tty of a docker container"
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
-name = "dockerpty"
-optional = false
-python-versions = "*"
-version = "0.4.1"
-
-[package.dependencies]
-six = ">=1.3.0"
-
-[[package]]
-category = "dev"
 description = "Docutils -- Python Documentation Utilities"
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\""
+marker = "python_version >= \"3.6\" and python_version < \"4.0\" or python_version >= \"3.5\" and python_version < \"4.0\""
 name = "docutils"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
@@ -709,15 +667,6 @@ setuptools = "*"
 
 [[package]]
 category = "dev"
-description = "Python module for interacting with nested dicts as a single level dict with delimited keys."
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
-name = "flatdict"
-optional = false
-python-versions = "*"
-version = "3.4.0"
-
-[[package]]
-category = "dev"
 description = "Backport of the functools module from Python 3.2.3 for use on 2.7 and PyPy."
 marker = "python_version < \"3.2\""
 name = "functools32"
@@ -751,46 +700,15 @@ description = "Python Git Library"
 name = "gitpython"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "2.1.14"
+version = "2.1.15"
 
 [package.dependencies]
-gitdb2 = ">=2.0.0"
-
-[[package]]
-category = "dev"
-description = "Python Git Library"
-name = "gitpython"
-optional = false
-python-versions = ">=3.0, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "3.0.5"
-
-[package.dependencies]
-gitdb2 = ">=2.0.0"
-
-[[package]]
-category = "dev"
-description = "HTML parser based on the WHATWG HTML specification"
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
-name = "html5lib"
-optional = false
-python-versions = "*"
-version = "1.0.1"
-
-[package.dependencies]
-six = ">=1.9"
-webencodings = "*"
-
-[package.extras]
-all = ["genshi", "chardet (>=2.2)", "datrie", "lxml"]
-chardet = ["chardet (>=2.2)"]
-datrie = ["datrie"]
-genshi = ["genshi"]
-lxml = ["lxml"]
+gitdb2 = ">=2,<3"
 
 [[package]]
 category = "dev"
 description = "Internationalized Domain Names in Applications (IDNA)"
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.6\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"3.7\" or python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
+marker = "python_version >= \"3.6\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"3.7\" or python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
 name = "idna"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -859,7 +777,7 @@ xdg_home = ["appdirs (>=1.4.0)"]
 [[package]]
 category = "dev"
 description = "A very fast and expressive template engine."
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\""
+marker = "python_version >= \"3.6\" and python_version < \"4.0\" or python_version >= \"3.5\" and python_version < \"4.0\""
 name = "jinja2"
 optional = false
 python-versions = "*"
@@ -900,7 +818,7 @@ mistune = "*"
 [[package]]
 category = "dev"
 description = "Safely add untrusted strings to HTML/XML markup."
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
+marker = "python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
 name = "markupsafe"
 optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
@@ -944,7 +862,7 @@ version = "4.7.4"
 [[package]]
 category = "dev"
 description = "Core utilities for Python packages"
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\""
+marker = "python_version >= \"3.6\" and python_version < \"4.0\" or python_version >= \"3.5\" and python_version < \"4.0\""
 name = "packaging"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -1088,17 +1006,6 @@ snowballstemmer = "*"
 
 [[package]]
 category = "dev"
-description = "Python docstring style checker"
-name = "pydocstyle"
-optional = false
-python-versions = ">=3.5"
-version = "5.0.2"
-
-[package.dependencies]
-snowballstemmer = "*"
-
-[[package]]
-category = "dev"
 description = "passive checker of Python programs"
 name = "pyflakes"
 optional = false
@@ -1108,7 +1015,7 @@ version = "2.1.1"
 [[package]]
 category = "dev"
 description = "Pygments is a syntax highlighting package written in Python."
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\""
+marker = "python_version >= \"3.5\" and python_version < \"4.0\""
 name = "pygments"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
@@ -1117,23 +1024,11 @@ version = "2.5.2"
 [[package]]
 category = "dev"
 description = "Python parsing module"
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
+marker = "python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
 name = "pyparsing"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 version = "2.4.6"
-
-[[package]]
-category = "dev"
-description = ""
-marker = "python_version >= \"3.6\" and python_version < \"4.0\" and sys_platform == \"win32\""
-name = "pypiwin32"
-optional = false
-python-versions = "*"
-version = "223"
-
-[package.dependencies]
-pywin32 = ">=223"
 
 [[package]]
 category = "dev"
@@ -1192,15 +1087,6 @@ version = "2019.3"
 
 [[package]]
 category = "dev"
-description = "Python for Window Extensions"
-marker = "python_version >= \"3.6\" and python_version < \"4.0\" and sys_platform == \"win32\""
-name = "pywin32"
-optional = false
-python-versions = "*"
-version = "227"
-
-[[package]]
-category = "dev"
 description = "YAML parser and emitter for Python"
 name = "pyyaml"
 optional = false
@@ -1219,7 +1105,7 @@ version = "2020.1.8"
 [[package]]
 category = "dev"
 description = "Python HTTP for Humans."
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\""
+marker = "python_version >= \"3.6\" and python_version < \"4.0\" or python_version >= \"3.5\" and python_version < \"4.0\""
 name = "requests"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
@@ -1261,15 +1147,6 @@ name = "ruamel.yaml.clib"
 optional = false
 python-versions = "*"
 version = "0.2.0"
-
-[[package]]
-category = "dev"
-description = "Python subprocess replacement"
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
-name = "sh"
-optional = false
-python-versions = "*"
-version = "1.12.14"
 
 [[package]]
 category = "dev"
@@ -1452,18 +1329,6 @@ six = ">=1.10.0"
 
 [[package]]
 category = "dev"
-description = "Pretty-print tabular data"
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
-name = "tabulate"
-optional = false
-python-versions = "*"
-version = "0.8.6"
-
-[package.extras]
-widechars = ["wcwidth"]
-
-[[package]]
-category = "dev"
 description = "Python Library for Tom's Obvious, Minimal Language"
 marker = "python_version >= \"3.6\" and python_version < \"4.0\""
 name = "toml"
@@ -1519,7 +1384,7 @@ version = "3.7.4.1"
 [[package]]
 category = "dev"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
-marker = "python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
+marker = "python_version >= \"3.6\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\") or python_version >= \"3.5\" and python_version < \"4.0\" and (python_version >= \"3.5\" and python_version < \"4.0\" or python_version >= \"3.6\" and python_version < \"4.0\")"
 name = "urllib3"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4"
@@ -1552,27 +1417,6 @@ name = "wcwidth"
 optional = false
 python-versions = "*"
 version = "0.1.8"
-
-[[package]]
-category = "dev"
-description = "Character encoding aliases for legacy web content"
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
-name = "webencodings"
-optional = false
-python-versions = "*"
-version = "0.5.1"
-
-[[package]]
-category = "dev"
-description = "WebSocket client for Python. hybi13 is supported."
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
-name = "websocket-client"
-optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "0.57.0"
-
-[package.dependencies]
-six = "*"
 
 [[package]]
 category = "dev"
@@ -1613,7 +1457,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "contextlib2", "unittest2"]
 
 [metadata]
-content-hash = "1b3ed790bd1b543aaf8182508d9d1f4ccbae6a08bb37eaf90d8e91eebc32d3e6"
+content-hash = "1cd23fceb26e7ee4aa61aa662fa470eb6e403ac72ebadbe0eaf785aa5b7f5232"
 python-versions = "^2.7 || ^3.5"
 
 [metadata.files]
@@ -1670,10 +1514,6 @@ bandit = [
 black = [
     {file = "black-19.10b0-py36-none-any.whl", hash = "sha256:1b30e59be925fafc1ee4565e5e08abef6b03fe455102883820fe5ee2e4734e0b"},
     {file = "black-19.10b0.tar.gz", hash = "sha256:c2edb73a08e9e0e6f65a0e6af18b059b8b1cdd5bef997d7a0b181df93dc81539"},
-]
-bowler = [
-    {file = "bowler-0.8.0-py3-none-any.whl", hash = "sha256:844ed17ebf4e81927d4b676c258f8db0cc60858c199ba28b9e55dee80b32bb67"},
-    {file = "bowler-0.8.0.tar.gz", hash = "sha256:f3e0ba2e6d62d84e9dc34c07fd4ae6453c8de480e14cdd67a5665cfeedbf8cb2"},
 ]
 cerberus = [
     {file = "Cerberus-1.3.2.tar.gz", hash = "sha256:302e6694f206dd85cb63f13fd5025b31ab6d38c99c50c6d769f8fa0b0f299589"},
@@ -1732,8 +1572,8 @@ coverage = [
     {file = "coverage-5.0.3.tar.gz", hash = "sha256:77afca04240c40450c331fa796b3eab6f1e15c5ecf8bf2b8bee9706cd5452fef"},
 ]
 dephell = [
-    {file = "dephell-0.8.0-py3-none-any.whl", hash = "sha256:e10d9b9e9bddc51cd50b4bf5e870b650ea9b2f508ccb9b08430412ce630bfa91"},
-    {file = "dephell-0.8.0.tar.gz", hash = "sha256:2ba41eb46c2915d6c4b2c0cf5ae90a6cc553b3754710b38cbe011f588bd8beb5"},
+    {file = "dephell-0.8.3-py3-none-any.whl", hash = "sha256:3ca3661e2a353b5c67c77034b69b379e360d4c70ce562e8161db32d39064be5a"},
+    {file = "dephell-0.8.3.tar.gz", hash = "sha256:a9fcc528a0c6f9f5d721292bdf846e5338e4dca7cd6fef1551fbe71564dfe61e"},
 ]
 dephell-archive = [
     {file = "dephell-archive-0.1.6.tar.gz", hash = "sha256:6370a97233d0e4c536b415b88e5d08bc5acf98b2019d878b5b222d2ab34ebebf"},
@@ -1742,6 +1582,10 @@ dephell-archive = [
 dephell-argparse = [
     {file = "dephell_argparse-0.1.2-py3-none-any.whl", hash = "sha256:4a1e99e6b9eae229fc865a2f2ad23d800b4d32f1a6cd30e3a69a490ab6f89a9c"},
     {file = "dephell_argparse-0.1.2.tar.gz", hash = "sha256:91ec36d46cd696054e0e2702b6fc4d45d83a89e161ca9b977360d5da8cf38df3"},
+]
+dephell-changelogs = [
+    {file = "dephell_changelogs-0.0.1-py3-none-any.whl", hash = "sha256:963d31346790a3aacc3409bbc7cb0b44cdc0e29c167eec196fb49a131c3035b8"},
+    {file = "dephell_changelogs-0.0.1.tar.gz", hash = "sha256:e639a3d08d389e22fbac0cc64181dbe93c4b4ba9f0134e273e6dd3e26ae70b21"},
 ]
 dephell-discover = [
     {file = "dephell_discover-0.2.10-py3-none-any.whl", hash = "sha256:abf190e9707d4a88f14e91be1f80e996e195b20b5400da2362e98cf19e59a1e4"},
@@ -1782,13 +1626,6 @@ dephell-venvs = [
 dephell-versioning = [
     {file = "dephell_versioning-0.1.1-py3-none-any.whl", hash = "sha256:dd22263a273abcf792304093447400f230e69d930ba3a800191173c4b3b3ecd3"},
     {file = "dephell_versioning-0.1.1.tar.gz", hash = "sha256:c438a39662fdf88b00196b56ece4e542db8fa9b16ee5c164a834451240026848"},
-]
-docker = [
-    {file = "docker-4.1.0-py2.py3-none-any.whl", hash = "sha256:8f93775b8bdae3a2df6bc9a5312cce564cade58d6555f2c2570165a1270cd8a7"},
-    {file = "docker-4.1.0.tar.gz", hash = "sha256:6e06c5e70ba4fad73e35f00c55a895a448398f3ada7faae072e2bb01348bafc1"},
-]
-dockerpty = [
-    {file = "dockerpty-0.4.1.tar.gz", hash = "sha256:69a9d69d573a0daa31bcd1c0774eeed5c15c295fe719c61aca550ed1393156ce"},
 ]
 docutils = [
     {file = "docutils-0.16-py2.py3-none-any.whl", hash = "sha256:0c5b78adfbf7762415433f5515cd5c9e762339e23369dbe8000d84a4bf4ab3af"},
@@ -1863,10 +1700,6 @@ flake8-string-format = [
 flake8-variables-names = [
     {file = "flake8_variables_names-0.0.3.tar.gz", hash = "sha256:d109f5a8fe8c20d64e165287330f1b0160b442d7f96e1527124ba1b63c438347"},
 ]
-flatdict = [
-    {file = "flatdict-3.4.0-py3-none-any.whl", hash = "sha256:a60aaa27de0dfac2098edaffc109ee3f8eeeb47dcab68aa9140f0d9e24a6aa25"},
-    {file = "flatdict-3.4.0.tar.gz", hash = "sha256:bcfb4ea75d7465346a6072f477e795bbbf1bbb6c3da9cf3749b0d3d31988dd28"},
-]
 functools32 = [
     {file = "functools32-3.2.3-2.tar.gz", hash = "sha256:f6253dfbe0538ad2e387bd8fdfd9293c925d63553f5813c4e587745416501e6d"},
     {file = "functools32-3.2.3-2.zip", hash = "sha256:89d824aa6c358c421a234d7f9ee0bd75933a67c29588ce50aaa3acdf4d403fa0"},
@@ -1881,14 +1714,8 @@ gitdb2 = [
     {file = "gitdb2-2.0.6.tar.gz", hash = "sha256:1b6df1433567a51a4a9c1a5a0de977aa351a405cc56d7d35f3388bad1f630350"},
 ]
 gitpython = [
-    {file = "GitPython-2.1.14-py2.py3-none-any.whl", hash = "sha256:17815b908454e49604e86ffb0e4d981c463d009b54ab30ead7f6ad8ad3a8cffb"},
-    {file = "GitPython-2.1.14.tar.gz", hash = "sha256:392f31eaadc19db35a54e3ab7285577fb4a86d96ecee08cf22a573f06633baab"},
-    {file = "GitPython-3.0.5-py3-none-any.whl", hash = "sha256:c155c6a2653593ccb300462f6ef533583a913e17857cfef8fc617c246b6dc245"},
-    {file = "GitPython-3.0.5.tar.gz", hash = "sha256:9c2398ffc3dcb3c40b27324b316f08a4f93ad646d5a6328cafbb871aa79f5e42"},
-]
-html5lib = [
-    {file = "html5lib-1.0.1-py2.py3-none-any.whl", hash = "sha256:20b159aa3badc9d5ee8f5c647e5efd02ed2a66ab8d354930bd9ff139fc1dc0a3"},
-    {file = "html5lib-1.0.1.tar.gz", hash = "sha256:66cb0dcfdbbc4f9c3ba1a63fdb511ffdbd4f513b2b6d81b80cd26ce6b3fb3736"},
+    {file = "GitPython-2.1.15-py2.py3-none-any.whl", hash = "sha256:23b4de99c5fc1564701301cead04e16aa3e47019034668327206d1b52e1e54f7"},
+    {file = "GitPython-2.1.15.tar.gz", hash = "sha256:838c38d882a97b2fd146dbd4eb9baaf857cb65ebaa64e4c06fca48aaa491e1c6"},
 ]
 idna = [
     {file = "idna-2.8-py2.py3-none-any.whl", hash = "sha256:ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c"},
@@ -1948,6 +1775,11 @@ markupsafe = [
     {file = "MarkupSafe-1.1.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:ba59edeaa2fc6114428f1637ffff42da1e311e29382d81b339c1817d37ec93c6"},
     {file = "MarkupSafe-1.1.1-cp37-cp37m-win32.whl", hash = "sha256:b00c1de48212e4cc9603895652c5c410df699856a2853135b3967591e4beebc2"},
     {file = "MarkupSafe-1.1.1-cp37-cp37m-win_amd64.whl", hash = "sha256:9bf40443012702a1d2070043cb6291650a0841ece432556f784f004937f0f32c"},
+    {file = "MarkupSafe-1.1.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:6788b695d50a51edb699cb55e35487e430fa21f1ed838122d722e0ff0ac5ba15"},
+    {file = "MarkupSafe-1.1.1-cp38-cp38-manylinux1_i686.whl", hash = "sha256:cdb132fc825c38e1aeec2c8aa9338310d29d337bebbd7baa06889d09a60a1fa2"},
+    {file = "MarkupSafe-1.1.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:13d3144e1e340870b25e7b10b98d779608c02016d5184cfb9927a9f10c689f42"},
+    {file = "MarkupSafe-1.1.1-cp38-cp38-win32.whl", hash = "sha256:596510de112c685489095da617b5bcbbac7dd6384aeebeda4df6025d0256a81b"},
+    {file = "MarkupSafe-1.1.1-cp38-cp38-win_amd64.whl", hash = "sha256:e8313f01ba26fbbe36c7be1966a7b7424942f670f38e666995b88d012765b9be"},
     {file = "MarkupSafe-1.1.1.tar.gz", hash = "sha256:29872e92839765e546828bb7754a68c418d927cd064fd4708fab9fe9c8bb116b"},
 ]
 mccabe = [
@@ -2032,8 +1864,6 @@ pycodestyle = [
 ]
 pydocstyle = [
     {file = "pydocstyle-4.0.0-py3-none-any.whl", hash = "sha256:58c421dd605eec0bce65df8b8e5371bb7ae421582cdf0ba8d9435ac5b0ffc36a"},
-    {file = "pydocstyle-5.0.2-py3-none-any.whl", hash = "sha256:da7831660b7355307b32778c4a0dbfb137d89254ef31a2b2978f50fc0b4d7586"},
-    {file = "pydocstyle-5.0.2.tar.gz", hash = "sha256:f4f5d210610c2d153fae39093d44224c17429e2ad7da12a8b419aba5c2f614b5"},
 ]
 pyflakes = [
     {file = "pyflakes-2.1.1-py2.py3-none-any.whl", hash = "sha256:17dbeb2e3f4d772725c777fabc446d5634d1038f234e77343108ce445ea69ce0"},
@@ -2047,10 +1877,6 @@ pyparsing = [
     {file = "pyparsing-2.4.6-py2.py3-none-any.whl", hash = "sha256:c342dccb5250c08d45fd6f8b4a559613ca603b57498511740e65cd11a2e7dcec"},
     {file = "pyparsing-2.4.6.tar.gz", hash = "sha256:4c830582a84fb022400b85429791bc551f1f4871c33f23e44f353119e92f969f"},
 ]
-pypiwin32 = [
-    {file = "pypiwin32-223-py3-none-any.whl", hash = "sha256:67adf399debc1d5d14dffc1ab5acacb800da569754fafdc576b2a039485aa775"},
-    {file = "pypiwin32-223.tar.gz", hash = "sha256:71be40c1fbd28594214ecaecb58e7aa8b708eabfa0125c8a109ebd51edbd776a"},
-]
 pytest = [
     {file = "pytest-5.3.2-py3-none-any.whl", hash = "sha256:e41d489ff43948babd0fad7ad5e49b8735d5d55e26628a58673c39ff61d95de4"},
     {file = "pytest-5.3.2.tar.gz", hash = "sha256:6b571215b5a790f9b41f19f3531c53a45cf6bb8ef2988bc1ff9afb38270b25fa"},
@@ -2062,20 +1888,6 @@ pytest-cov = [
 pytz = [
     {file = "pytz-2019.3-py2.py3-none-any.whl", hash = "sha256:1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d"},
     {file = "pytz-2019.3.tar.gz", hash = "sha256:b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be"},
-]
-pywin32 = [
-    {file = "pywin32-227-cp27-cp27m-win32.whl", hash = "sha256:371fcc39416d736401f0274dd64c2302728c9e034808e37381b5e1b22be4a6b0"},
-    {file = "pywin32-227-cp27-cp27m-win_amd64.whl", hash = "sha256:4cdad3e84191194ea6d0dd1b1b9bdda574ff563177d2adf2b4efec2a244fa116"},
-    {file = "pywin32-227-cp35-cp35m-win32.whl", hash = "sha256:f4c5be1a293bae0076d93c88f37ee8da68136744588bc5e2be2f299a34ceb7aa"},
-    {file = "pywin32-227-cp35-cp35m-win_amd64.whl", hash = "sha256:a929a4af626e530383a579431b70e512e736e9588106715215bf685a3ea508d4"},
-    {file = "pywin32-227-cp36-cp36m-win32.whl", hash = "sha256:300a2db938e98c3e7e2093e4491439e62287d0d493fe07cce110db070b54c0be"},
-    {file = "pywin32-227-cp36-cp36m-win_amd64.whl", hash = "sha256:9b31e009564fb95db160f154e2aa195ed66bcc4c058ed72850d047141b36f3a2"},
-    {file = "pywin32-227-cp37-cp37m-win32.whl", hash = "sha256:47a3c7551376a865dd8d095a98deba954a98f326c6fe3c72d8726ca6e6b15507"},
-    {file = "pywin32-227-cp37-cp37m-win_amd64.whl", hash = "sha256:31f88a89139cb2adc40f8f0e65ee56a8c585f629974f9e07622ba80199057511"},
-    {file = "pywin32-227-cp38-cp38-win32.whl", hash = "sha256:7f18199fbf29ca99dff10e1f09451582ae9e372a892ff03a28528a24d55875bc"},
-    {file = "pywin32-227-cp38-cp38-win_amd64.whl", hash = "sha256:7c1ae32c489dc012930787f06244426f8356e129184a02c25aef163917ce158e"},
-    {file = "pywin32-227-cp39-cp39-win32.whl", hash = "sha256:c054c52ba46e7eb6b7d7dfae4dbd987a1bb48ee86debe3f245a2884ece46e295"},
-    {file = "pywin32-227-cp39-cp39-win_amd64.whl", hash = "sha256:f27cec5e7f588c3d1051651830ecc00294f90728d19c3bf6916e6dba93ea357c"},
 ]
 pyyaml = [
     {file = "PyYAML-5.3-cp27-cp27m-win32.whl", hash = "sha256:940532b111b1952befd7db542c370887a8611660d2b9becff75d39355303d82d"},
@@ -2142,10 +1954,6 @@ requests = [
     {file = "ruamel.yaml.clib-0.2.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:be018933c2f4ee7de55e7bd7d0d801b3dfb09d21dad0cce8a97995fd3e44be30"},
     {file = "ruamel.yaml.clib-0.2.0.tar.gz", hash = "sha256:b66832ea8077d9b3f6e311c4a53d06273db5dc2db6e8a908550f3c14d67e718c"},
 ]
-sh = [
-    {file = "sh-1.12.14-py2.py3-none-any.whl", hash = "sha256:ae3258c5249493cebe73cb4e18253a41ed69262484bad36fdb3efcb8ad8870bb"},
-    {file = "sh-1.12.14.tar.gz", hash = "sha256:b52bf5833ed01c7b5c5fb73a7f71b3d98d48e9b9b8764236237bdc7ecae850fc"},
-]
 shellingham = [
     {file = "shellingham-1.3.1-py2.py3-none-any.whl", hash = "sha256:77d37a4fd287c1e663006f7ecf1b9deca9ad492d0082587bd813c44eb49e4e62"},
     {file = "shellingham-1.3.1.tar.gz", hash = "sha256:985b23bbd1feae47ca6a6365eacd314d93d95a8a16f8f346945074c28fe6f3e0"},
@@ -2201,9 +2009,6 @@ sphinxcontrib-serializinghtml = [
 stevedore = [
     {file = "stevedore-1.31.0-py2.py3-none-any.whl", hash = "sha256:01d9f4beecf0fbd070ddb18e5efb10567801ba7ef3ddab0074f54e3cd4e91730"},
     {file = "stevedore-1.31.0.tar.gz", hash = "sha256:e0739f9739a681c7a1fda76a102b65295e96a144ccdb552f2ae03c5f0abe8a14"},
-]
-tabulate = [
-    {file = "tabulate-0.8.6.tar.gz", hash = "sha256:5470cc6687a091c7042cee89b2946d9235fe9f6d49c193a4ae2ac7bf386737c8"},
 ]
 toml = [
     {file = "toml-0.10.0-py2.7.egg", hash = "sha256:f1db651f9657708513243e61e6cc67d101a39bad662eaa9b5546f789338e07a3"},
@@ -2266,14 +2071,6 @@ watchdog = [
 wcwidth = [
     {file = "wcwidth-0.1.8-py2.py3-none-any.whl", hash = "sha256:8fd29383f539be45b20bd4df0dc29c20ba48654a41e661925e612311e9f3c603"},
     {file = "wcwidth-0.1.8.tar.gz", hash = "sha256:f28b3e8a6483e5d49e7f8949ac1a78314e740333ae305b4ba5defd3e74fb37a8"},
-]
-webencodings = [
-    {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
-    {file = "webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923"},
-]
-websocket-client = [
-    {file = "websocket_client-0.57.0-py2.py3-none-any.whl", hash = "sha256:0fc45c961324d79c781bab301359d5a1b00b13ad1b10415a4780229ef71a5549"},
-    {file = "websocket_client-0.57.0.tar.gz", hash = "sha256:d735b91d6d1692a6a181f2a8c9e0238e5f6373356f561bb9dc4c7af36f452010"},
 ]
 yarl = [
     {file = "yarl-1.4.2-cp35-cp35m-macosx_10_13_x86_64.whl", hash = "sha256:3ce3d4f7c6b69c4e4f0704b32eca8123b9c58ae91af740481aa57d7857b5e41b"},

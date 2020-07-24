@@ -53,7 +53,7 @@ setup(
     extras_require={
         "dev": [
             'black==19.*,>=19.10.0; python_version == "3.*" and python_version >= "3.6.0"',
-            'dephell==0.*,>=0.8.0; python_version == "3.*" and python_version >= "3.6.0"',
+            'dephell==0.*,>=0.8.3; python_version == "3.*" and python_version >= "3.6.0"',
             'fissix==19.*,>=19.2.0; python_version == "3.*" and python_version >= "3.6.0"',
             "flake8==3.*,>=3.7.9",
             'flake8-bugbear==20.*,>=20.1.2; python_version == "3.*" and python_version >= "3.6.0"',
