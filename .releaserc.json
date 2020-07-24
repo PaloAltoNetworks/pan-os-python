@@ -11,7 +11,7 @@
       "@semantic-release/exec",
       {
         "prepareCmd": "poetry run .github/set-version.sh ${nextRelease.version}",
-        "publishCmd": "poetry publish --build -u $PYPI_USER -p $PYPI_PASS"
+        "publishCmd": "poetry publish --build"
       }
     ],
     [
