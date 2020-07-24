@@ -3200,6 +3200,7 @@ class BgpPolicyRule(BgpPolicyFilter):
                     "action_community_type": ["remove-regex", "append", "overwrite"],
                 },
                 path="action/{action}/update/community/{action_community_type}",
+                vartype="member",
             )
         )
         params.append(
