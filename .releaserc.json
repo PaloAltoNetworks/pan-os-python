@@ -11,7 +11,7 @@
       "@semantic-release/exec",
       {
         "prepareCmd": "poetry run .github/set-version.sh ${nextRelease.version}",
-        "publishCmd": "${!nextRelease.channel ? poetry publish --build -u $PYPI_USER -p $PYPI_PASS : echo >&2 \"Not using default release channel, publish to PyPI skipped\"}"
+        "publishCmd": "poetry publish --build -u $PYPI_USER -p $PYPI_PASS"
       }
     ],
     [
