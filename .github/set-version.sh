@@ -28,7 +28,7 @@ if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
     exit 0
 fi
 
-NEW_VERSION=$1
+NEW_VERSION=$(echo "$1" | sed -e 's/-beta\./.b/' | sed -e 's/-alpha\./.a/')
 
 # Set version in pyproject.toml
 grep -E '^version = ".+"$' "$ROOT/pyproject.toml" >/dev/null
