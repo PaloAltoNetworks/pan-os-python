@@ -9,6 +9,9 @@ readme = "README.rst"
 homepage = "https://github.com/PaloAltoNetworks/pan-os-python"
 repository = "https://github.com/PaloAltoNetworks/pan-os-python"
 documentation = "https://pan-os-python.readthedocs.io"
+packages = [
+    { include = "panos" }
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
