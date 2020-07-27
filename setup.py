@@ -70,6 +70,7 @@ setup(
             "flake8-string-format==0.*,>=0.2.3",
             "flake8-variables-names==0.*,>=0.0.3",
             "isort==4.*,>=4.3.21",
+            "m2r==0.*,>=0.2.1",
             "pep8-naming==0.*,>=0.9.1",
             'pytest==5.*,>=5.3.2; python_version == "3.*" and python_version >= "3.5.0"',
             'pytest-cov==2.*,>=2.8.1; python_version == "3.*" and python_version >= "3.5.0"',
