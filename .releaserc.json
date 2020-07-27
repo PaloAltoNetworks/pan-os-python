@@ -17,7 +17,12 @@
     [
       "@semantic-release/git",
       {
-        "assets": ["pyproject.toml", "setup.py", "panos/__init__.py"],
+        "assets": [
+          "pyproject.toml",
+          "setup.py",
+          "README.rst",
+          "panos/__init__.py"
+        ],
         "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ],

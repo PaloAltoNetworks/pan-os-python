@@ -52,6 +52,7 @@ extensions = [
     "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
     "sphinx.ext.napoleon",
+    "m2r",
 ]
 
 # Suppress warnings about nonlocal images
@@ -61,7 +62,7 @@ suppress_warnings = ["image.nonlocal_uri"]
 templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = ".rst"
+source_suffix = [".rst", ".md"]
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'

@@ -5,7 +5,7 @@ description = "Framework for interacting with Palo Alto Networks devices via API
 authors = ["Palo Alto Networks <devrel@paloaltonetworks.com>"]
 license = "ISC"
 keywords = ["panos", "pan-os-python"]
-readme = "README.rst"
+readme = "README.md"
 homepage = "https://github.com/PaloAltoNetworks/pan-os-python"
 repository = "https://github.com/PaloAltoNetworks/pan-os-python"
 documentation = "https://pan-os-python.readthedocs.io"
@@ -53,6 +53,7 @@ sphinx_rtd_theme = {version = "^0.4.3", python = "^3.5"}
 sphinx-autobuild = {version = "^0.7.1", python = "^3.5"}
 bandit = "^1.6.2"
 isort = "^4.3.21"
+m2r = "^0.2.1"
 
 [tool.dephell.main]
 # read from poetry file
