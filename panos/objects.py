@@ -638,6 +638,7 @@ class CustomUrlCategory(VersionedPanObject):
 
         params.append(VersionedParamPath("url_value", path="list", vartype="member"))
         params.append(VersionedParamPath("description", path="description"))
+        params.append(VersionedParamPath("type"))
 
         self._params = tuple(params)
 
