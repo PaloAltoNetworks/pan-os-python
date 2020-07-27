@@ -118,6 +118,49 @@ fw.refresh_system_info()
 
 See more examples in the [Usage Guide](http://pan-os-python.readthedocs.io/en/latest/usage.html).
 
+Upgrade from pandevice
+----------------------
+
+This `pan-os-python` package is the evolution of the older `pandevice` package. To
+upgrade from `pandevice` to `pan-os-python`, follow these steps.
+
+1. Ensure you are using python3. [Python2 is
+   end-of-life](https://www.python.org/doc/sunset-python-2/) and not supported
+   by `pan-os-python`.
+
+2. Uninstall pandevice:
+
+```shell
+pip uninstall pandevice
+ # or
+poetry remove pandevice
+```
+
+3. Install pan-os-python:
+
+```shell
+pip3 install pan-os-python
+ # or
+poetry add pan-os-python
+```
+
+4. Change the import statements in your code from `pandevice` to `panos`. For example:
+
+```python
+import pandevice
+from pandevice.firewall import Firewall
+
+ # would change to
+
+import panos
+from panos.firewall import Firewall
+```
+
+5. Test your script or application
+
+   There are no known breaking changes
+   between `pandevice v0.14.0` and `pan-os-python v1.0.0`, but it is a major
+   upgrade so please verify everything works as expected.
 
 Contributors
 ------------
