@@ -8,11 +8,7 @@ Firewalls and Panorama).  The pan-os-python SDK is object oriented and mimics
 the traditional interaction with the device via the GUI or CLI/API.
 
 
-* 
-  Free software: ISC License
-
-* 
-  Documentation: http://pan-os-python.readthedocs.io
+* Documentation: http://pan-os-python.readthedocs.io
 
 ----
 
@@ -20,6 +16,16 @@ the traditional interaction with the device via the GUI or CLI/API.
 .. image:: https://img.shields.io/pypi/v/pan-os-python.svg
    :target: https://pypi.python.org/pypi/pan-os-python
    :alt: Latest version released on PyPi
+
+
+.. image:: https://img.shields.io/badge/python-3.5%20%7C%203.6%20%7C%203.7%20%7C%203.8-blueviolet
+   :target: https://pypi.python.org/pypi/pan-os-python
+   :alt: Python versions
+
+
+.. image:: https://img.shields.io/pypi/l/pan-os-python
+   :target: https://github.com/PaloAltoNetworks/pan-os-python/blob/develop/LICENSE
+   :alt: License
 
 
 .. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
@@ -30,6 +36,27 @@ the traditional interaction with the device via the GUI or CLI/API.
 .. image:: https://badges.gitter.im/PaloAltoNetworks/pan-os-python.svg
    :target: https://gitter.im/PaloAltoNetworks/pan-os-python
    :alt: Chat on Gitter
+
+
+
+.. image:: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg
+   :target: https://github.com/semantic-release/semantic-release
+   :alt: semantic-release
+
+
+.. image:: https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg
+   :target: https://conventionalcommits.org/
+   :alt: Conventional Commits
+
+
+.. image:: https://img.shields.io/badge/Powered%20by-DepHell-red
+   :target: https://github.com/dephell/dephell
+   :alt: Powered by DepHell
+
+
+.. image:: https://img.shields.io/github/contributors/PaloAltoNetworks/pan-os-python
+   :target: https://github.com/PaloAltoNetworks/pan-os-python/graphs/contributors/
+   :alt: GitHub contributors
 
 
 ----
