@@ -15,9 +15,9 @@ Contents:
    getting-started
    howto
    examples
-   contributing
-   history
    reference
+   history
+   contributing
 
 Indices and tables
 ==================
