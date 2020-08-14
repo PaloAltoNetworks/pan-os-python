@@ -3629,8 +3629,8 @@ class IkeGateway(VersionedPanObject):
         version: (7.0+) ikev1, ikev2, or ikev2-prefered (default: ikev1)
         enable_ipv6 (bool): (7.0+) enable IPv6
         disabled (bool): (7.0+) disable this object
-        peer_ip_type: ip or dynamic (default: ip)
-        peer_ip_value: the IP for peer_ip_type of 'ip'
+        peer_ip_type: ip, dynamic, or fqdn (8.1+) (default: ip)
+        peer_ip_value: the IP for peer_ip_type of 'ip' or 'fqdn'
         interface: local gateway end-point
         local_ip_address_type: ip or floating-ip
         local_ip_address: IP address if interface has multiple addresses
