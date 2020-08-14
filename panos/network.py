@@ -3709,12 +3709,23 @@ class IkeGateway(VersionedPanObject):
                 path="peer-address/{peer_ip_type}",
             )
         )
+        params[-1].add_profile(
+            "8.1.0",
+            values=("ip", "dynamic", "fqdn",),
+            default="ip",
+            path="peer-address/{peer_ip_type}",
+        )
         params.append(
             VersionedParamPath(
                 "peer_ip_value",
                 condition={"peer_ip_type": "ip"},
                 path="peer-address/{peer_ip_type}",
             )
+        )
+        params[-1].add_profile(
+            "8.1.0",
+            condition={"peer_ip_type": ["ip", "fqdn"]},
+            path="peer-address/{peer_ip_type}",
         )
         params.append(VersionedParamPath("interface", path="local-address/interface"))
         params.append(
