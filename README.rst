@@ -162,14 +162,12 @@ Upgrade from pandevice
 This ``pan-os-python`` package is the evolution of the older ``pandevice`` package. To
 upgrade from ``pandevice`` to ``pan-os-python``\ , follow these steps.
 
+Step 1. Ensure you are using python3
 
-#. 
-   Ensure you are using python3. `Python2 is
-   end-of-life <https://www.python.org/doc/sunset-python-2/>`_ and not supported
-   by ``pan-os-python``.
+   `Python2 is end-of-life <https://www.python.org/doc/sunset-python-2/>`_ and not
+   supported by ``pan-os-python``.
 
-#. 
-   Uninstall pandevice:
+Step 2. Uninstall pandevice:
 
 .. code-block:: shell
 
@@ -177,8 +175,7 @@ upgrade from ``pandevice`` to ``pan-os-python``\ , follow these steps.
     # or
    poetry remove pandevice
 
-
-#. Install pan-os-python:
+Step 3. Install pan-os-python:
 
 .. code-block:: shell
 
@@ -186,8 +183,7 @@ upgrade from ``pandevice`` to ``pan-os-python``\ , follow these steps.
     # or
    poetry add pan-os-python
 
-
-#. Change the import statements in your code from ``pandevice`` to ``panos``. For example:
+Step 4. Change the import statements in your code from ``pandevice`` to ``panos``. For example:
 
 .. code-block:: python
 
@@ -199,9 +195,7 @@ upgrade from ``pandevice`` to ``pan-os-python``\ , follow these steps.
    import panos
    from panos.firewall import Firewall
 
-
-#. 
-   Test your script or application
+Step 5. Test your script or application
 
    There are no known breaking changes
    between ``pandevice v0.14.0`` and ``pan-os-python v1.0.0``\ , but it is a major
