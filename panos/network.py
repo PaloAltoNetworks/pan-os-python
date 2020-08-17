@@ -3712,7 +3712,6 @@ class IkeGateway(VersionedPanObject):
         params[-1].add_profile(
             "8.1.0",
             values=("ip", "dynamic", "fqdn",),
-            default="ip",
             path="peer-address/{peer_ip_type}",
         )
         params.append(
