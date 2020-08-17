@@ -1,5 +1,4 @@
 {
-  "python.pythonPath": "${workspaceFolder}/.venv/bin/python3",
   "files.exclude": {
     "**/__pycache__": true
   },
