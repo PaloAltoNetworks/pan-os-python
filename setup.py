@@ -25,7 +25,7 @@ setup(
     name="pan-os-python",
     version="1.0.0",
     description="Framework for interacting with Palo Alto Networks devices via API",
-    python_requires="!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,<4.0,>=2.7",
+    python_requires="==3.*,>=3.5.0",
     project_urls={
         "documentation": "https://pan-os-python.readthedocs.io",
         "homepage": "https://github.com/PaloAltoNetworks/pan-os-python",
@@ -53,13 +53,13 @@ setup(
     extras_require={
         "dev": [
             "bandit==1.*,>=1.6.2",
-            'black==19.*,>=19.10.0; python_version == "3.*" and python_version >= "3.6.0"',
+            'black==19.*,>=19.10.0.b0; python_version == "3.*" and python_version >= "3.6.0"',
             'dephell==0.*,>=0.8.3; python_version == "3.*" and python_version >= "3.6.0"',
-            'fissix==19.*,>=19.2.0; python_version == "3.*" and python_version >= "3.6.0"',
+            'fissix==19.*,>=19.2.0.b1; python_version == "3.*" and python_version >= "3.6.0"',
             "flake8==3.*,>=3.7.9",
             'flake8-bugbear==20.*,>=20.1.2; python_version == "3.*" and python_version >= "3.6.0"',
             "flake8-builtins==1.*,>=1.4.2",
-            'flake8-comprehensions==3.*,>=3.1.4; python_version == "3.*" and python_version >= "3.5.0"',
+            "flake8-comprehensions==3.*,>=3.2.3",
             "flake8-docstrings==1.*,>=1.5.0",
             'flake8-eradicate==0.*,>=0.2.4; python_version == "3.*" and python_version >= "3.6.0"',
             "flake8-logging-format==0.*,>=0.6.0",
@@ -72,11 +72,11 @@ setup(
             "isort==4.*,>=4.3.21",
             "m2r==0.*,>=0.2.1",
             "pep8-naming==0.*,>=0.9.1",
-            'pytest==5.*,>=5.3.2; python_version == "3.*" and python_version >= "3.5.0"',
-            'pytest-cov==2.*,>=2.8.1; python_version == "3.*" and python_version >= "3.5.0"',
-            'sphinx==2.*,>=2.3.1; python_version == "3.*" and python_version >= "3.5.0"',
-            'sphinx-autobuild==0.*,>=0.7.1; python_version == "3.*" and python_version >= "3.5.0"',
-            'sphinx-rtd-theme==0.*,>=0.4.3; python_version == "3.*" and python_version >= "3.5.0"',
+            "pytest==6.*,>=6.0.1",
+            "pytest-cov==2.*,>=2.10.1",
+            "sphinx==3.*,>=3.2.1",
+            "sphinx-autobuild==0.*,>=0.7.1",
+            "sphinx-rtd-theme==0.*,>=0.5.0",
         ]
     },
 )
