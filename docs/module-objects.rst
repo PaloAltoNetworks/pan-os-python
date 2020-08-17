@@ -4,10 +4,10 @@ Module: objects
 Inheritance diagram
 -------------------
 
-.. inheritance-diagram:: pandevice.objects
+.. inheritance-diagram:: panos.objects
    :parts: 1
 
 Class Reference
 ---------------
 
-.. automodule:: pandevice.objects
+.. automodule:: panos.objects

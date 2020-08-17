@@ -17,11 +17,11 @@
 
 """Retrieving and parsing predefined objects from the firewall"""
 
-from pandevice import getlogger
-import pandevice.errors as err
 from pan.xapi import PanXapiError
-from pandevice.updater import PanOSVersion
-from pandevice import objects
+
+import panos.errors as err
+from panos import getlogger, objects
+from panos.updater import PanOSVersion
 
 logger = getlogger(__name__)
 
@@ -231,7 +231,9 @@ class Predefined(object):
         if obj is None and refresh_if_none:
             self.refresh_application(name)
             # recursive call but with no refresh
-            obj = self.application(name, refresh_if_none=False, include_containers=include_containers)
+            obj = self.application(
+                name, refresh_if_none=False, include_containers=include_containers
+            )
 
         return obj
 
@@ -296,7 +298,11 @@ class Predefined(object):
         objs = []
 
         for name in set(names):
-            obj = self.application(name, refresh_if_none=refresh_if_none, include_containers=include_containers)
+            obj = self.application(
+                name,
+                refresh_if_none=refresh_if_none,
+                include_containers=include_containers,
+            )
             if obj:
                 objs.append(obj)
 
@@ -349,12 +355,12 @@ class Predefined(object):
     def object(self, name, classtype, refresh_if_none=True):
         """Get object by classtype
 
-        For example, if you pass in pandevice.objects.ApplicationObject as the
+        For example, if you pass in panos.objects.ApplicationObject as the
         classtype, an application will be returned
 
         Args:
             name (str): Name of the object
-            classtype: The class of the object (eg. pandevice.objects.ApplicationObject
+            classtype: The class of the object (eg. panos.objects.ApplicationObject
             refresh_if_none (bool): Refresh the object if it is not found
 
         """
@@ -370,12 +376,12 @@ class Predefined(object):
     def objects(self, names, classtype, refresh_if_none=True):
         """Get a list of objects by classtype
 
-        For example, if you pass in pandevice.objects.ApplicationObject as the
+        For example, if you pass in panos.objects.ApplicationObject as the
         classtype, a list of application will be returned
 
         Args:
             names (list): List of names of the objects
-            classtype: The class of the object (eg. pandevice.objects.ApplicationObject
+            classtype: The class of the object (eg. panos.objects.ApplicationObject
             refresh_if_none (bool): Refresh the object if it is not found
 
         """

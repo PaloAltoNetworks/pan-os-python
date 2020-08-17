@@ -4,10 +4,10 @@ Module: base
 Inheritance diagram
 -------------------
 
-.. inheritance-diagram:: pandevice.base
+.. inheritance-diagram:: panos.base
    :parts: 1
 
 Class Reference
 ---------------
 
-.. automodule:: pandevice.base
+.. automodule:: panos.base

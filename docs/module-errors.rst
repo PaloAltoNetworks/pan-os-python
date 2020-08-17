@@ -4,10 +4,10 @@ Module: errors
 Inheritance diagram
 -------------------
 
-.. inheritance-diagram:: pandevice.errors
+.. inheritance-diagram:: panos.errors
    :parts: 1
 
 Class Reference
 ---------------
 
-.. automodule:: pandevice.errors
+.. automodule:: panos.errors

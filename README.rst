@@ -1,162 +1,219 @@
-===================================
-Palo Alto Networks Device Framework
-===================================
 
-The Device Framework is a mechanism for interacting with Palo Alto Networks
-devices (including physical and virtualized Next-generation Firewalls and
-Panorama).  The Device Framework is object oriented and mimics the traditional
-interaction with the device via the GUI or CLI/API.
+Palo Alto Networks PAN-OS SDK for Python
+========================================
 
-* Documentation: http://pandevice.readthedocs.io
-* Overview: http://paloaltonetworks.github.io/pandevice
-* Free software: ISC License
+The PAN-OS SDK for Python (pan-os-python) is a package to help interact with
+Palo Alto Networks devices (including physical and virtualized Next-generation
+Firewalls and Panorama).  The pan-os-python SDK is object oriented and mimics
+the traditional interaction with the device via the GUI or CLI/API.
 
------
 
-|pypi| |travis| |rtd| |gitter|
+* Documentation: http://pan-os-python.readthedocs.io
 
------
+----
+
+
+.. image:: https://img.shields.io/pypi/v/pan-os-python.svg
+   :target: https://pypi.python.org/pypi/pan-os-python
+   :alt: Latest version released on PyPi
+
+
+.. image:: https://img.shields.io/badge/python-3.5%20%7C%203.6%20%7C%203.7%20%7C%203.8-blueviolet
+   :target: https://pypi.python.org/pypi/pan-os-python
+   :alt: Python versions
+
+
+.. image:: https://img.shields.io/pypi/l/pan-os-python
+   :target: https://github.com/PaloAltoNetworks/pan-os-python/blob/develop/LICENSE
+   :alt: License
+
+
+.. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
+   :target: http://pan-os-python.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+
+.. image:: https://badges.gitter.im/PaloAltoNetworks/pan-os-python.svg
+   :target: https://gitter.im/PaloAltoNetworks/pan-os-python
+   :alt: Chat on Gitter
+
+
+
+.. image:: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg
+   :target: https://github.com/semantic-release/semantic-release
+   :alt: semantic-release
+
+
+.. image:: https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg
+   :target: https://conventionalcommits.org/
+   :alt: Conventional Commits
+
+
+.. image:: https://img.shields.io/badge/Powered%20by-DepHell-red
+   :target: https://github.com/dephell/dephell
+   :alt: Powered by DepHell
+
+
+.. image:: https://img.shields.io/github/contributors/PaloAltoNetworks/pan-os-python
+   :target: https://github.com/PaloAltoNetworks/pan-os-python/graphs/contributors/
+   :alt: GitHub contributors
+
+
+----
 
 Features
 --------
 
-- Object model of Firewall and Panorama configuration
-- Multiple connection methods including Panorama as a proxy
-- All operations natively vsys-aware
-- Support for high availability pairs and retry/recovery during node failure
-- Batch User-ID operations
-- Device API exception classification
+
+* Object model of Firewall and Panorama configuration
+* Multiple connection methods including Panorama as a proxy
+* All operations natively vsys-aware
+* Support for high availability pairs and retry/recovery during node failure
+* Batch User-ID operations
+* Device API exception classification
 
 Status
 ------
 
-Palo Alto Networks Device Framework is considered **alpha**. It is fully tested
-and used in many production environments, but it maintains alpha status because
-the API interface could change at any time without notification. Please be
-prepared to modify your scripts to work with each subsequent version of this
-package because backward compatibility is not guaranteed.
+Palo Alto Networks PAN-OS SDK for Python is considered stable. It is fully tested
+and used in many production environments. Semantic versioning is applied to indicate
+bug fixes, new features, and breaking changes in each version.
 
-Installation
-------------
+Install
+-------
 
-The easiest method to install pandevice is using pip::
+Install using pip:
 
-    pip install pandevice
+.. code-block:: shell
 
-Or, if you have virtualenvwrapper installed::
+   pip install pan-os-python
 
-    $ mkvirtualenv pandevice
-    $ pip install pandevice
+Upgrade to the latest version:
 
-Pip will install the pan-python_ library as a dependency.
+.. code-block:: shell
 
-Upgrade to the latest version::
+   pip install --upgrade pan-os-python
 
-    pip install --upgrade pandevice
+If you have poetry installed, you can also add pan-os-python to your project:
+
+.. code-block:: shell
+
+   poetry add pan-os-python
 
 How to import
 -------------
 
-To use Palo Alto Networks Device Framework in a project::
+To use pan-os-python in a project:
 
-    import pandevice
+.. code-block:: python
 
-You can also be more specific about which modules you want to import::
+   import panos
 
-    from pandevice import firewall
-    from pandevice import network
+You can also be more specific about which modules you want to import:
 
+.. code-block:: python
+
+   from panos import firewall
+   from panos import network
 
 A few examples
 --------------
 
 For configuration tasks, create a tree structure using the classes in
 each module. Nodes hierarchy must follow the model in the
-`Configuration Tree`_.
+`Configuration Tree <http://pan-os-python.readthedocs.io/en/latest/configtree.html>`_.
 
-The following examples assume the modules were imported as such::
+The following examples assume the modules were imported as such:
 
-    from pandevice import firewall
-    from pandevice import network
+.. code-block:: python
 
-Create a subinterface and commit::
+   from panos import firewall
+   from panos import network
 
-    fw = firewall.Firewall("10.0.0.1", api_username="admin", api_password="admin")
-    eth = fw.add(network.EthernetInterface("ethernet1/1", mode="layer3"))
-    subeth = eth.add(network.Layer3Subinterface("ethernet1/1.30", ip="4.4.4.4/24", tag=30))
-    subeth.create()
-    fw.commit()
+Create an interface and commit:
 
-Operational commands leverage the 'op' method of the device::
+.. code-block:: python
 
-    fw = firewall.Firewall("10.0.0.1", api_username="admin", api_password="admin")
-    print fw.op("show system info")
+   fw = firewall.Firewall("10.0.0.1", api_username="admin", api_password="admin")
+   eth1 = network.EthernetInterface("ethernet1/1", mode="layer3")
+   fw.add(eth1)
+   eth1.create()
+   fw.commit()
 
-Some operational commands have methods to refresh the variables in an object::
+Operational commands leverage the 'op' method of the device:
 
-    # populates the version, serial, and model variables from the live device
-    fw.refresh_system_info()
+.. code-block:: python
 
-See more examples in the `Usage Guide`_.
+   fw = firewall.Firewall("10.0.0.1", api_username="admin", api_password="admin")
+   print fw.op("show system info")
+
+Some operational commands have methods to refresh the variables in an object:
+
+.. code-block:: python
+
+   # populates the version, serial, and model variables from the live device
+   fw.refresh_system_info()
+
+See more examples in the `Usage Guide <http://pan-os-python.readthedocs.io/en/latest/usage.html>`_.
+
+Upgrade from pandevice
+----------------------
+
+This ``pan-os-python`` package is the evolution of the older ``pandevice`` package. To
+upgrade from ``pandevice`` to ``pan-os-python``\ , follow these steps.
 
 
-Connect to PAN-OS 8.0 and higher
---------------------------------
+#. 
+   Ensure you are using python3. `Python2 is
+   end-of-life <https://www.python.org/doc/sunset-python-2/>`_ and not supported
+   by ``pan-os-python``.
 
-PAN-OS 8.0 by default does not allow connections to the API with TLS 1.0. Unfortunately, the
-latest OSX and many linux distros come with OpenSSL versions that don't support
-TLS 1.1 or 1.2. OpenSSL 1.0.1 or higher is needed to connect to PAN-OS 8.0. If
-you try to connect with a lower version of OpenSSL, you'll get a connection error.
-There are two solutions:
+#. 
+   Uninstall pandevice:
 
-**Option 1: Upgrade OpenSSL** (more secure)
+.. code-block:: shell
 
-*Mac OSX:* In Mac OSX you can't upgrade the built-in OpenSSL, but you can install your own python
-and OpenSSL using `Homebrew`_.  Follow this guide to get set up: `Definitive guide to python on OSX`_
+   pip uninstall pandevice
+    # or
+   poetry remove pandevice
 
-*Linux:* Use the instructions for your distribution's package manager to upgrade OpenSSL to 1.0.1 or higher.
 
-**Option 2: Enable TLS 1.0 on PAN-OS** (less secure)
+#. Install pan-os-python:
 
-Follow the direction in the PAN-OS Administrator Guide:
-`Replace the Certificate for Inbound Management Traffic`_
+.. code-block:: shell
 
+   pip3 install pan-os-python
+    # or
+   poetry add pan-os-python
+
+
+#. Change the import statements in your code from ``pandevice`` to ``panos``. For example:
+
+.. code-block:: python
+
+   import pandevice
+   from pandevice.firewall import Firewall
+
+    # would change to
+
+   import panos
+   from panos.firewall import Firewall
+
+
+#. 
+   Test your script or application
+
+   There are no known breaking changes
+   between ``pandevice v0.14.0`` and ``pan-os-python v1.0.0``\ , but it is a major
+   upgrade so please verify everything works as expected.
 
 Contributors
 ------------
 
-- Brian Torres-Gil - `github <https://github.com/btorresgil>`__
-- Garfield Freeman - `github <https://github.com/shinmog>`__
-- John Anderson - `github <https://github.com/lampwins>`__
-- Aditya Sripal - `github <https://github.com/AdityaSripal>`__
 
-Thank you to Kevin Steves, creator of the pan-python library:
-    https://github.com/kevinsteves/pan-python
+* Brian Torres-Gil - `btorresgil <https://github.com/btorresgil>`_
+* Garfield Freeman - `shinmog <https://github.com/shinmog>`_
+* John Anderson - `lampwins <https://github.com/lampwins>`_
+* Aditya Sripal - `AdityaSripal <https://github.com/AdityaSripal>`_
 
-
-.. _pan-python: http://github.com/kevinsteves/pan-python
-.. _Configuration Tree: http://pandevice.readthedocs.io/en/latest/configtree.html
-.. _Usage Guide: http://pandevice.readthedocs.io/en/latest/usage.html
-.. _Homebrew: https://brew.sh/
-.. _Definitive guide to python on OSX: https://medium.com/@briantorresgil/definitive-guide-to-python-on-mac-osx-65acd8d969d0
-.. _Replace the Certificate for Inbound Management Traffic: https://www.paloaltonetworks.com/documentation/80/pan-os/pan-os/certificate-management/replace-the-certificate-for-inbound-management-traffic
-
-.. |pypi| image:: https://img.shields.io/pypi/v/pandevice.svg
-    :target: https://pypi.python.org/pypi/pandevice
-    :alt: Latest version released on PyPi
-
-.. |rtd| image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
-    :target: http://pandevice.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
-
-.. |coverage| image:: https://img.shields.io/coveralls/PaloAltoNetworks/pandevice/master.svg?label=coverage
-    :target: https://coveralls.io/r/PaloAltoNetworks/pandevice?branch=master
-    :alt: Test coverage
-
-.. |travis| image:: https://img.shields.io/travis/PaloAltoNetworks/pandevice/master.svg
-    :target: http://travis-ci.org/PaloAltoNetworks/pandevice
-    :alt: Build status from Travis
-
-.. |gitter| image:: https://badges.gitter.im/PaloAltoNetworks/pandevice.svg
-    :target: https://gitter.im/PaloAltoNetworks/pandevice
-    :alt: Chat on Gitter
+Thank you to `Kevin Steves <https://github.com/kevinsteves>`_\ , creator of the `pan-python library <https://github.com/kevinsteves/pan-python>`_

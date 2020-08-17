@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Palo Alto Networks Device Framework
-===================================
+Palo Alto Networks PAN-OS SDK for Python
+========================================
 
 Contents:
 
@@ -12,11 +12,12 @@ Contents:
    :maxdepth: 2
 
    readme
-   usage
+   getting-started
+   howto
    examples
-   contributing
-   history
    reference
+   history
+   contributing
 
 Indices and tables
 ==================

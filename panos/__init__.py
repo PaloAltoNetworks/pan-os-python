@@ -15,15 +15,18 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-"""pandevice library is a framework for interacting with Palo Alto Networks devices
+"""Palo Alto Networks PAN-OS SDK for Python
 
-Documentation available at http://pandevice.readthedocs.io
+The pan-os-python library is a SDK framework for interacting with Palo Alto
+Networks Next-generation Firewalls and Panorama.
+
+Documentation available at https://pan-os-python.readthedocs.io
 
 """
 
-__author__ = 'Palo Alto Networks'
-__email__ = 'techpartners@paloaltonetworks.com'
-__version__ = '0.14.0'
+__author__ = "Palo Alto Networks"
+__email__ = "devrel@paloaltonetworks.com"
+__version__ = "1.0.0.b2"
 
 
 import logging
@@ -32,34 +35,47 @@ from distutils.version import LooseVersion  # Used by PanOSVersion class
 try:
     import pan
 except ImportError as e:
-    message = e.message + ", please install the pan-python library (pip install pan-python)"
+    message = (
+        str(e) + ", please install the pan-python library (pip install pan-python)"
+    )
     raise ImportError(message)
 
 # python 2.6 doesn't have a null handler, so create it
-if not hasattr(logging, 'NullHandler'):
+if not hasattr(logging, "NullHandler"):
+
     class NullHandler(logging.Handler):
         def emit(self, record):
             pass
+
     logging.NullHandler = NullHandler
 
 
-DOCUMENTATION_URL = 'http://pandevice.readthedocs.io/en/latest'
+DOCUMENTATION_URL = "http://pan-os-python.readthedocs.io/en/latest"
 
 
 def getlogger(name=__name__):
     import types
+
     logger_instance = logging.getLogger(name)
     # Add nullhandler to prevent exceptions in python 2.6
     logger_instance.addHandler(logging.NullHandler())
     # Add convenience methods for logging
     logger_instance.debug1 = types.MethodType(
-        lambda inst, msg, *args, **kwargs: inst.log(DEBUG1, msg, *args, **kwargs), logger_instance)
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG1, msg, *args, **kwargs),
+        logger_instance,
+    )
     logger_instance.debug2 = types.MethodType(
-        lambda inst, msg, *args, **kwargs: inst.log(DEBUG2, msg, *args, **kwargs), logger_instance)
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG2, msg, *args, **kwargs),
+        logger_instance,
+    )
     logger_instance.debug3 = types.MethodType(
-        lambda inst, msg, *args, **kwargs: inst.log(DEBUG3, msg, *args, **kwargs), logger_instance)
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG3, msg, *args, **kwargs),
+        logger_instance,
+    )
     logger_instance.debug4 = types.MethodType(
-        lambda inst, msg, *args, **kwargs: inst.log(DEBUG4, msg, *args, **kwargs), logger_instance)
+        lambda inst, msg, *args, **kwargs: inst.log(DEBUG4, msg, *args, **kwargs),
+        logger_instance,
+    )
     return logger_instance
 
 
@@ -70,8 +86,9 @@ logger = getlogger(__name__)
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     reverse = dict(((v, k) for (k, v) in enums.items()))
-    enums['reverse_mapping'] = reverse
-    return type('Enum', (), enums)
+    enums["reverse_mapping"] = reverse
+    return type("Enum", (), enums)
+
 
 def isstring(arg):
     try:
@@ -81,17 +98,17 @@ def isstring(arg):
 
 
 # Create more debug logging levels
-DEBUG1 = logging.DEBUG -1
+DEBUG1 = logging.DEBUG - 1
 DEBUG2 = DEBUG1 - 1
 DEBUG3 = DEBUG2 - 1
 DEBUG4 = DEBUG3 - 1
 
-logging.addLevelName(DEBUG1, 'DEBUG1')
-logging.addLevelName(DEBUG2, 'DEBUG2')
-logging.addLevelName(DEBUG3, 'DEBUG3')
-logging.addLevelName(DEBUG4, 'DEBUG4')
+logging.addLevelName(DEBUG1, "DEBUG1")
+logging.addLevelName(DEBUG2, "DEBUG2")
+logging.addLevelName(DEBUG3, "DEBUG3")
+logging.addLevelName(DEBUG4, "DEBUG4")
 
-# Adjust pan-python logging levels so they don't interfere with pandevice logging
+# Adjust pan-python logging levels so they don't interfere with pan-os-python logging
 pan.DEBUG1 = logging.DEBUG - 2  # equavalent to DEBUG2
 pan.DEBUG2 = pan.DEBUG1 - 1
 pan.DEBUG3 = pan.DEBUG2 - 1
@@ -99,6 +116,7 @@ pan.DEBUG3 = pan.DEBUG2 - 1
 
 class PanOSVersion(LooseVersion):
     """LooseVersion with convenience properties to access version components"""
+
     @property
     def major(self):
         return self.version[0]
@@ -143,21 +161,26 @@ class PanOSVersion(LooseVersion):
             subrelease_num = None
         return subrelease_num
 
-    def __repr__ (self):
+    def __repr__(self):
         return "PanOSVersion ('%s')" % str(self)
 
     def __lt__(self, other):
+
+        # Handle 'latest' is always higher
+        if isstring(other) and other == "latest":
+            return True
+
         other = stringToVersion(other)
         for (x, y) in zip(self.mainrelease, other.mainrelease):
             if x < y:
                 return True
             if x > y:
                 return False
-        if self.subrelease_type == 'h' and other.subrelease_type != 'h':
+        if self.subrelease_type == "h" and other.subrelease_type != "h":
             return False
-        if self.subrelease_type != 'c' and other.subrelease_type == 'c':
+        if self.subrelease_type != "c" and other.subrelease_type == "c":
             return False
-        elif self.subrelease is None and other.subrelease_type == 'b':
+        elif self.subrelease is None and other.subrelease_type == "b":
             return False
         elif self.subrelease_type == other.subrelease_type and self.subrelease_type:
             return self.subrelease_num < other.subrelease_num
@@ -167,6 +190,11 @@ class PanOSVersion(LooseVersion):
         return not self.__lt__(other)
 
     def __eq__(self, other):
+
+        # Handle 'latest' which is always different
+        if isstring(other) and other == "latest":
+            return False
+
         other = stringToVersion(other)
         if self.mainrelease != other.mainrelease:
             return False
@@ -190,24 +218,27 @@ def stringToVersion(other):
 
 def tree_legend_dot():
     """Create a graphviz dot string for a legend graph"""
-    modules = ['firewall', 'policies', 'objects', 'network', 'device', 'panorama', 'ha']
-    result = 'graph legend {' \
-             'graph [fontsize=10, margin=0.001];' \
-             'node [shape=box, fontsize=10, height=0.001, margin=0.1, ordering=out];'
+    modules = ["firewall", "policies", "objects", "network", "device", "panorama", "ha"]
+    result = (
+        "graph legend {"
+        "graph [fontsize=10, margin=0.001];"
+        "node [shape=box, fontsize=10, height=0.001, margin=0.1, ordering=out];"
+    )
     for module in modules:
-        result += '{module} [style=filled fillcolor={color} URL="{url}' \
-                  '/module-{module}.html" target="_blank"];'.format(
-                   module=module,
-                   color=node_color(module),
-                   url=DOCUMENTATION_URL,
+        result += (
+            '{module} [style=filled fillcolor={color} URL="{url}'
+            '/module-{module}.html" target="_blank"];'.format(
+                module=module, color=node_color(module), url=DOCUMENTATION_URL,
+            )
         )
-    result += '}'
+    result += "}"
     return result
 
 
 def tree_legend():
     """Display a legend for the colors of the tree method"""
     import graphviz
+
     return graphviz.Source(tree_legend_dot())
 
 
@@ -238,8 +269,12 @@ def string_or_list(value):
     if value is None:
         return None
     if isstring(value):
-        return [value, ]
-    return list(value) if "__iter__" in dir(value) else [value, ]
+        return [
+            value,
+        ]
+    return (
+        list(value) if "__iter__" in dir(value) else [value,]
+    )
 
 
 def string_or_list_or_none(value):
@@ -333,15 +368,15 @@ def yesno(value):
 
 def node_color(module):
     nodecolor = {
-        'device':    'lightpink',
-        'firewall':  'lightblue',
-        'ha':        'lavender',
-        'network':   'lightcyan',
-        'objects':   'lemonchiffon',
-        'policies':  'lightsalmon',
-        'panorama':  'palegreen2',
+        "device": "lightpink",
+        "firewall": "lightblue",
+        "ha": "lavender",
+        "network": "lightcyan",
+        "objects": "lemonchiffon",
+        "policies": "lightsalmon",
+        "panorama": "palegreen2",
     }
     try:
         return nodecolor[module]
     except KeyError:
-        return ''
+        return ""

@@ -14,41 +14,38 @@
 
 import unittest
 
-import pandevice
-import pandevice.firewall
+import panos
+import panos.firewall
 
 
 class TestFirewall(unittest.TestCase):
     def test_id_returns_serial(self):
-        expected = 'serial#'
+        expected = "serial#"
 
-        fw = pandevice.firewall.Firewall(
-            serial=expected,
-        )
+        fw = panos.firewall.Firewall(serial=expected,)
 
         ret_val = fw.id
 
         self.assertEqual(expected, ret_val)
 
     def test_id_returns_hostname(self):
-        expected = 'hostName'
+        expected = "hostName"
 
-        fw = pandevice.firewall.Firewall(
-            hostname=expected,
-        )
+        fw = panos.firewall.Firewall(hostname=expected,)
 
         ret_val = fw.id
 
         self.assertEqual(expected, ret_val)
 
     def test_id_returns_no_id(self):
-        expected = '<no-id>'
+        expected = "<no-id>"
 
-        fw = pandevice.firewall.Firewall()
+        fw = panos.firewall.Firewall()
 
         ret_val = fw.id
 
         self.assertEqual(expected, ret_val)
 
-if __name__=='__main__':
+
+if __name__ == "__main__":
     unittest.main()

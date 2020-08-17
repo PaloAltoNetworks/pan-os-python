@@ -16,15 +16,11 @@
 
 """Device module contains objects that exist in the 'Device' tab in the firewall GUI"""
 
-from pandevice.base import PanObject, Root, MEMBER, ENTRY
-from pandevice.base import VarPath as Var
-from pandevice.base import VersionedPanObject
-from pandevice.base import VersionedParamPath
-from pandevice.base import ValueEntry
-
-# import other parts of this pandevice package
-from pandevice import getlogger
-import pandevice.errors as err
+import panos.errors as err
+from panos import getlogger
+from panos.base import ENTRY, MEMBER, PanObject, Root, ValueEntry
+from panos.base import VarPath as Var
+from panos.base import VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
@@ -46,27 +42,36 @@ class VsysResources(VersionedPanObject):
         max_sessions (int): Maximum sessions
 
     """
+
     NAME = None
     ROOT = Root.VSYS
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/import/resource')
+        self._xpaths.add_profile(value="/import/resource")
         self._xpaths.add_profile(
-            value='{0}/import/resource'.format(self._TEMPLATE_VSYS_XPATH),
-            parents=('Template', ))
+            value="{0}/import/resource".format(self._TEMPLATE_VSYS_XPATH),
+            parents=("Template",),
+        )
 
         # params
         params = []
 
-        int_params = ("max-security-rules", "max-nat-rules",
-            "max-ssl-decryption-rules", "max-qos-rules",
-            "max-application-override-rules", "max-pbf-rules",
-            "max-cp-rules", "max-dos-rules", "max-site-to-site-vpn-tunnels",
-            "max-concurrent-ssl-vpn-tunnels", "max-sessions",
+        int_params = (
+            "max-security-rules",
+            "max-nat-rules",
+            "max-ssl-decryption-rules",
+            "max-qos-rules",
+            "max-application-override-rules",
+            "max-pbf-rules",
+            "max-cp-rules",
+            "max-dos-rules",
+            "max-site-to-site-vpn-tunnels",
+            "max-concurrent-ssl-vpn-tunnels",
+            "max-sessions",
         )
         for x in int_params:
-            params.append(VersionedParamPath(x, path=x, vartype='int'))
+            params.append(VersionedParamPath(x, path=x, vartype="int"))
 
         self._params = tuple(params)
 
@@ -76,21 +81,21 @@ class Vsys(VersionedPanObject):
 
     You can interact with virtual systems in two different ways:
 
-    **Method 1**. Use a :class:`pandevice.firewall.Firewall` object with the 'vsys'
+    **Method 1**. Use a :class:`panos.firewall.Firewall` object with the 'vsys'
     variable set to a vsys identifier (eg. 'vsys2'). In this case,
     you don't need to use this Vsys class. Add other PanObject instances
-    (like :class:`pandevice.objects.AddressObject`) to the Firewall instance
+    (like :class:`panos.objects.AddressObject`) to the Firewall instance
 
-    **Method 2**. Add an instance of this Vsys class to a :class:`pandevice.firewall.Firewall`
+    **Method 2**. Add an instance of this Vsys class to a :class:`panos.firewall.Firewall`
     object. It is best practice to set the Firewall instance's 'shared'
     variable to True when using this method. Add other PanObject instances
-    (like :class:`pandevice.objects.AddressObject`) to the Vsys instance.
+    (like :class:`panos.objects.AddressObject`) to the Vsys instance.
 
     Args:
         name (str): Vsys identifier (eg. 'vsys1', 'vsys5', etc)
         display_name (str): Friendly name of the vsys
         interface (list): A list of strings with names of interfaces
-            or a list of :class:`pandevice.network.Interface` objects
+            or a list of :class:`panos.network.Interface` objects
         vlans (list): A list of strings of VLANs
         virtual_wires (list): A list of strings of virtual wires
         virtual_routers (list): A list of strings of virtual routers
@@ -99,8 +104,9 @@ class Vsys(VersionedPanObject):
         decrypt_forwarding (bool): Allow forwarding of decrypted content
 
     """
+
     ROOT = Root.DEVICE
-    VSYS_LABEL = 'vsys'
+    VSYS_LABEL = "vsys"
     SUFFIX = ENTRY
     CHILDTYPES = (
         "device.VsysResources",
@@ -115,10 +121,12 @@ class Vsys(VersionedPanObject):
         "objects.ApplicationObject",
         "objects.ApplicationGroup",
         "objects.ApplicationFilter",
+        "objects.ScheduleObject",
         "objects.SecurityProfileGroup",
         "objects.CustomUrlCategory",
         "objects.LogForwardingProfile",
         "objects.DynamicUserGroup",
+        "objects.Region",
         "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",
@@ -133,36 +141,49 @@ class Vsys(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/vsys')
+        self._xpaths.add_profile(value="/vsys")
         self._xpaths.add_profile(
-            value='{0}/vsys'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/vsys".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'display_name', path='display-name'))
-        params.append(VersionedParamPath(
-            'interface', vartype='member',
-            path='import/network/interface'))
-        params.append(VersionedParamPath(
-            'vlans', vartype='member',
-            path='import/network/vlan'))
-        params.append(VersionedParamPath(
-            'virtual_wires', vartype='member',
-            path='import/network/virtual-wire'))
-        params.append(VersionedParamPath(
-            'virtual_routers', vartype='member',
-            path='import/network/virtual-router'))
-        params.append(VersionedParamPath(
-            'visible_vsys', vartype='member',
-            path='import/visible-vsys'))
-        params.append(VersionedParamPath(
-            'dns_proxy', path='import/dns-proxy'))
-        params.append(VersionedParamPath(
-            'decrypt_forwarding', vartype='yesno',
-            path='setting/ssl-decrypt/allow-forward-decrypted-content'))
+        params.append(VersionedParamPath("display_name", path="display-name"))
+        params.append(
+            VersionedParamPath(
+                "interface", vartype="member", path="import/network/interface"
+            )
+        )
+        params.append(
+            VersionedParamPath("vlans", vartype="member", path="import/network/vlan")
+        )
+        params.append(
+            VersionedParamPath(
+                "virtual_wires", vartype="member", path="import/network/virtual-wire"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "virtual_routers",
+                vartype="member",
+                path="import/network/virtual-router",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "visible_vsys", vartype="member", path="import/visible-vsys"
+            )
+        )
+        params.append(VersionedParamPath("dns_proxy", path="import/dns-proxy"))
+        params.append(
+            VersionedParamPath(
+                "decrypt_forwarding",
+                vartype="yesno",
+                path="setting/ssl-decrypt/allow-forward-decrypted-content",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -171,7 +192,7 @@ class Vsys(VersionedPanObject):
 
     def _build_xpath(self, root, vsys):
         if self.parent is None:
-            return ''
+            return ""
         return self.parent._build_xpath(root, self.name)
 
     @property
@@ -192,6 +213,7 @@ class NTPServer(PanObject):
         address (str): The IP address of the NTP server
 
     """
+
     # TODO: Add authentication
     # TODO: Add PAN-OS pre-7.0 support
 
@@ -204,32 +226,32 @@ class NTPServer(PanObject):
 
     @classmethod
     def variables(cls):
-        return (
-            Var("ntp-server-address", "address"),
-        )
+        return (Var("ntp-server-address", "address"),)
 
 
 class NTPServerPrimary(NTPServer):
     """A primary NTP server
 
-    Add to a :class:`pandevice.device.SystemSettings` object
+    Add to a :class:`panos.device.SystemSettings` object
 
     Args:
         address (str): IP address or hostname of NTP server
 
     """
+
     XPATH = "/ntp-servers/primary-ntp-server"
 
 
 class NTPServerSecondary(NTPServer):
     """A secondary NTP server
 
-    Add to a :class:`pandevice.device.SystemSettings` object
+    Add to a :class:`panos.device.SystemSettings` object
 
     Args:
         address (str): IP address or hostname of NTP server
 
     """
+
     XPATH = "/ntp-servers/secondary-ntp-server"
 
 
@@ -263,6 +285,7 @@ class SystemSettings(VersionedPanObject):
         accept_dhcp_domain (bool): (DHCP Mngt) Accept DHCP domain name
 
     """
+
     NAME = None
     ROOT = Root.DEVICE
     HA_SYNC = False
@@ -274,57 +297,72 @@ class SystemSettings(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/deviceconfig/system')
+        self._xpaths.add_profile(value="/deviceconfig/system")
         self._xpaths.add_profile(
-            value='{0}/deviceconfig/system'.format(self._TEMPLATE_DEVICE_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/deviceconfig/system".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'hostname', path='hostname'))
-        params.append(VersionedParamPath(
-            'domain', path='domain'))
-        params.append(VersionedParamPath(
-            'ip_address', path='ip-address'))
-        params.append(VersionedParamPath(
-            'netmask', path='netmask'))
-        params.append(VersionedParamPath(
-            'default_gateway', path='default-gateway'))
-        params.append(VersionedParamPath(
-            'ipv6_address', path='ipv6-address'))
-        params.append(VersionedParamPath(
-            'ipv6_default_gateway', path='ipv6-default-gateway'))
-        params.append(VersionedParamPath(
-            'dns_primary', path='dns-setting/servers/primary'))
-        params.append(VersionedParamPath(
-            'dns_secondary', path='dns-setting/servers/secondary'))
-        params.append(VersionedParamPath(
-            'timezone', path='timezone'))
-        params.append(VersionedParamPath(
-            'panorama', path='panorama-server'))
-        params.append(VersionedParamPath(
-            'panorama2', path='panorama-server-2'))
-        params.append(VersionedParamPath(
-            'login_banner', path='login-banner'))
-        params.append(VersionedParamPath(
-            'update_server', path='update-server'))
-        params.append(VersionedParamPath(
-            'verify_update_server', vartype='yesno',
-            path='server-verification'))
-        params.append(VersionedParamPath(
-            'dhcp_send_hostname', vartype='yesno',
-            path='type/dhcp-client/send-hostname'))
-        params.append(VersionedParamPath(
-            'dhcp_send_client_id', vartype='yesno',
-            path='type/dhcp-client/send-client-id'))
-        params.append(VersionedParamPath(
-            'accept_dhcp_hostname', vartype='yesno',
-            path='type/dhcp-client/accept-dhcp-hostname'))
-        params.append(VersionedParamPath(
-            'accept_dhcp_domain', vartype='yesno',
-            path='type/dhcp-client/accept-dhcp-domain'))
+        params.append(VersionedParamPath("hostname", path="hostname"))
+        params.append(VersionedParamPath("domain", path="domain"))
+        params.append(VersionedParamPath("ip_address", path="ip-address"))
+        params.append(VersionedParamPath("netmask", path="netmask"))
+        params.append(VersionedParamPath("default_gateway", path="default-gateway"))
+        params.append(VersionedParamPath("ipv6_address", path="ipv6-address"))
+        params.append(
+            VersionedParamPath("ipv6_default_gateway", path="ipv6-default-gateway")
+        )
+        params.append(
+            VersionedParamPath("dns_primary", path="dns-setting/servers/primary")
+        )
+        params.append(
+            VersionedParamPath("dns_secondary", path="dns-setting/servers/secondary")
+        )
+        params.append(VersionedParamPath("timezone", path="timezone"))
+        params.append(VersionedParamPath("panorama", path="panorama-server"))
+        params[-1].add_profile("9.1.0", path="panorama/local-panorama/panorama-server")
+        params.append(VersionedParamPath("panorama2", path="panorama-server-2"))
+        params[-1].add_profile(
+            "9.1.0", path="panorama/local-panorama/panorama-server-2"
+        )
+        params.append(VersionedParamPath("login_banner", path="login-banner"))
+        params.append(VersionedParamPath("update_server", path="update-server"))
+        params.append(
+            VersionedParamPath(
+                "verify_update_server", vartype="yesno", path="server-verification"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "dhcp_send_hostname",
+                vartype="yesno",
+                path="type/dhcp-client/send-hostname",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "dhcp_send_client_id",
+                vartype="yesno",
+                path="type/dhcp-client/send-client-id",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "accept_dhcp_hostname",
+                vartype="yesno",
+                path="type/dhcp-client/accept-dhcp-hostname",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "accept_dhcp_domain",
+                vartype="yesno",
+                path="type/dhcp-client/accept-dhcp-domain",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -340,31 +378,47 @@ class PasswordProfile(VersionedPanObject):
         grace_period (int): Post expiration grace period
 
     """
+
     ROOT = Root.MGTCONFIG
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/password-profile')
+        self._xpaths.add_profile(value="/password-profile")
         self._xpaths.add_profile(
-            value='{0}/password-profile'.format(self._TEMPLATE_MGTCONFIG_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/password-profile".format(self._TEMPLATE_MGTCONFIG_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'expiration', vartype='int',
-            path='password-change/expiration-period'))
-        params.append(VersionedParamPath(
-            'warning', vartype='int',
-            path='password-change/expiration-warning-period'))
-        params.append(VersionedParamPath(
-            'login_count', vartype='int',
-            path='password-change/post-expiration-admin-login-count'))
-        params.append(VersionedParamPath(
-            'grace_period', vartype='int',
-            path='password-change/post-expiration-grace-period'))
+        params.append(
+            VersionedParamPath(
+                "expiration", vartype="int", path="password-change/expiration-period"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "warning",
+                vartype="int",
+                path="password-change/expiration-warning-period",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "login_count",
+                vartype="int",
+                path="password-change/post-expiration-admin-login-count",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "grace_period",
+                vartype="int",
+                path="password-change/post-expiration-grace-period",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -389,62 +443,105 @@ class Administrator(VersionedPanObject):
         password_profile (str): The password profile for this user
 
     """
+
     ROOT = Root.MGTCONFIG
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/users')
+        self._xpaths.add_profile(value="/users")
         self._xpaths.add_profile(
-            value='{0}/users'.format(self._TEMPLATE_MGTCONFIG_XPATH),
-            parents=('Template', 'TemplateStack'))
+            value="{0}/users".format(self._TEMPLATE_MGTCONFIG_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'authentication_profile', path='authentication-profile'))
-        params.append(VersionedParamPath(
-            'web_client_cert_only', vartype='yesno',
-            path='client-certificate-only'))
-        params.append(VersionedParamPath(
-            'superuser', vartype='yesno',
-            path='permissions/role-based/superuser'))
-        params.append(VersionedParamPath(
-            'superuser_read_only', vartype='yesno',
-            path='permissions/role-based/superreader'))
-        params.append(VersionedParamPath(
-            'panorama_admin', vartype='yesno',
-            path='permissions/role-based/panorama-admin'))
-        params.append(VersionedParamPath(
-            'device_admin', vartype='exist',
-            path='permissions/role-based/deviceadmin'))
-        params.append(VersionedParamPath(
-            'device_admin_read_only', vartype='exist',
-            path='permissions/role-based/devicereader'))
-        params.append(VersionedParamPath(
-            'vsys', vartype='member',
-            path='permissions/role-based/vsysadmin/entry vsys_device/vsys'))
-        params.append(VersionedParamPath(
-            'vsys_read_only', vartype='member',
-            path='permissions/role-based/vsysreader' +
-                 '/entry vsys_read_only_device/vsys'))
-        params.append(VersionedParamPath(
-            'ssh_public_key', path='public-key'))
-        params.append(VersionedParamPath(
-            'role_profile', path='permissions/role-based/custom/profile'))
-        params.append(VersionedParamPath(
-            'password_hash', path='phash', vartype='encrypted'))
-        params.append(VersionedParamPath(
-            'password_profile', path='password-profile'))
-        params.append(VersionedParamPath(
-            'vsys_device', exclude=True, vartype='entry',
-            path='permissions/role-based/vsysadmin',
-            default='localhost.localdomain'))
-        params.append(VersionedParamPath(
-            'vsys_read_only_device', exclude=True, vartype='entry',
-            path='permissions/role-based/vsysreader',
-            default='localhost.localdomain'))
+        params.append(
+            VersionedParamPath("authentication_profile", path="authentication-profile")
+        )
+        params.append(
+            VersionedParamPath(
+                "web_client_cert_only", vartype="yesno", path="client-certificate-only"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "superuser", vartype="yesno", path="permissions/role-based/superuser"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "superuser_read_only",
+                vartype="yesno",
+                path="permissions/role-based/superreader",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "panorama_admin",
+                vartype="yesno",
+                path="permissions/role-based/panorama-admin",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "device_admin",
+                vartype="exist",
+                path="permissions/role-based/deviceadmin",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "device_admin_read_only",
+                vartype="exist",
+                path="permissions/role-based/devicereader",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "vsys",
+                vartype="member",
+                path="permissions/role-based/vsysadmin/entry vsys_device/vsys",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "vsys_read_only",
+                vartype="member",
+                path="permissions/role-based/vsysreader"
+                + "/entry vsys_read_only_device/vsys",
+            )
+        )
+        params.append(VersionedParamPath("ssh_public_key", path="public-key"))
+        params.append(
+            VersionedParamPath(
+                "role_profile", path="permissions/role-based/custom/profile"
+            )
+        )
+        params.append(
+            VersionedParamPath("password_hash", path="phash", vartype="encrypted")
+        )
+        params.append(VersionedParamPath("password_profile", path="password-profile"))
+        params.append(
+            VersionedParamPath(
+                "vsys_device",
+                exclude=True,
+                vartype="entry",
+                path="permissions/role-based/vsysadmin",
+                default="localhost.localdomain",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "vsys_read_only_device",
+                exclude=True,
+                vartype="entry",
+                path="permissions/role-based/vsysreader",
+                default="localhost.localdomain",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -459,7 +556,7 @@ class Administrator(VersionedPanObject):
         """
         dev = self.nearest_pandevice()
         self.password_hash = dev.request_password_hash(new_password)
-        self.update('password_hash')
+        self.update("password_hash")
 
 
 class Telemetry(VersionedPanObject):
@@ -489,26 +586,27 @@ class Telemetry(VersionedPanObject):
         passive_dns_monitoring (bool): Passive DNS monitoring
 
     """
+
     NAME = None
     ROOT = Root.DEVICE
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/update-schedule/statistics-service')
+        self._xpaths.add_profile(value="/update-schedule/statistics-service")
 
         bool_params = (
-            ('app_reports', 'application-reports'),
-            ('threat_reports', 'threat-prevention-reports'),
-            ('url_reports', 'url-reports'),
-            ('file_type_reports', 'file-identification-reports'),
-            ('threat_data', 'threat-prevention-information'),
-            ('threat_pcaps', 'threat-prevention-pcap'),
-            ('product_usage_stats', 'health-performance-reports'),
-            ('passive_dns_monitoring', 'passive-dns-monitoring'),
+            ("app_reports", "application-reports"),
+            ("threat_reports", "threat-prevention-reports"),
+            ("url_reports", "url-reports"),
+            ("file_type_reports", "file-identification-reports"),
+            ("threat_data", "threat-prevention-information"),
+            ("threat_pcaps", "threat-prevention-pcap"),
+            ("product_usage_stats", "health-performance-reports"),
+            ("passive_dns_monitoring", "passive-dns-monitoring"),
         )
 
         self._params = tuple(
-            VersionedParamPath(param, vartype='yesno', path=path)
+            VersionedParamPath(param, vartype="yesno", path=path)
             for param, path in bool_params
         )
 
@@ -522,6 +620,7 @@ class SnmpServerProfile(VersionedPanObject):
             v3.
 
     """
+
     ROOT = Root.VSYS
     SUFFIX = ENTRY
     CHILDTYPES = (
@@ -531,14 +630,16 @@ class SnmpServerProfile(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/log-settings/snmptrap')
+        self._xpaths.add_profile(value="/log-settings/snmptrap")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'version', default='v2c', values=['v2c', 'v3'],
-            path='version/{version}'))
+        params.append(
+            VersionedParamPath(
+                "version", default="v2c", values=["v2c", "v3"], path="version/{version}"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -552,20 +653,19 @@ class SnmpV2cServer(VersionedPanObject):
         community (str): SNMP community
 
     """
+
     ROOT = Root.VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/version/v2c/server')
+        self._xpaths.add_profile(value="/version/v2c/server")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'manager', path='manager'))
-        params.append(VersionedParamPath(
-            'community', path='community'))
+        params.append(VersionedParamPath("manager", path="manager"))
+        params.append(VersionedParamPath("community", path="community"))
 
         self._params = tuple(params)
 
@@ -582,26 +682,26 @@ class SnmpV3Server(VersionedPanObject):
         priv_password (str): Privacy protocol password
 
     """
+
     ROOT = Root.VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/version/v3/server')
+        self._xpaths.add_profile(value="/version/v3/server")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'manager', path='manager'))
-        params.append(VersionedParamPath(
-            'user', path='user'))
-        params.append(VersionedParamPath(
-            'engine_id', path='engineid'))
-        params.append(VersionedParamPath(
-            'auth_password', vartype='encrypted', path='authpwd'))
-        params.append(VersionedParamPath(
-            'priv_password', vartype='encrypted', path='privpwd'))
+        params.append(VersionedParamPath("manager", path="manager"))
+        params.append(VersionedParamPath("user", path="user"))
+        params.append(VersionedParamPath("engine_id", path="engineid"))
+        params.append(
+            VersionedParamPath("auth_password", vartype="encrypted", path="authpwd")
+        )
+        params.append(
+            VersionedParamPath("priv_password", vartype="encrypted", path="privpwd")
+        )
 
         self._params = tuple(params)
 
@@ -629,78 +729,47 @@ class EmailServerProfile(VersionedPanObject):
         escape_character (str): Escape character
 
     """
+
     ROOT = Root.VSYS
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "device.EmailServer",
-    )
+    CHILDTYPES = ("device.EmailServer",)
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/log-settings/email')
+        self._xpaths.add_profile(value="/log-settings/email")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'config', path='format/config'))
-        params.append(VersionedParamPath(
-            'system', path='format/system'))
-        params.append(VersionedParamPath(
-            'threat', path='format/threat'))
-        params.append(VersionedParamPath(
-            'traffic', path='format/traffic'))
-        params.append(VersionedParamPath(
-            'hip_match', path='format/hip-match'))
-        params.append(VersionedParamPath(
-            'url', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/url')
-        params.append(VersionedParamPath(
-            'data', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/data')
-        params.append(VersionedParamPath(
-            'wildfire', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/wildfire')
-        params.append(VersionedParamPath(
-            'tunnel', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/tunnel')
-        params.append(VersionedParamPath(
-            'user_id', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/userid')
-        params.append(VersionedParamPath(
-            'gtp', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/gtp')
-        params.append(VersionedParamPath(
-            'auth', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/auth')
-        params.append(VersionedParamPath(
-            'sctp', exclude=True))
-        params[-1].add_profile(
-            '8.1.0',
-            path='format/sctp')
-        params.append(VersionedParamPath(
-            'iptag', exclude=True))
-        params[-1].add_profile(
-            '9.0.0',
-            path='format/iptag')
-        params.append(VersionedParamPath(
-            'escaped_characters', path='escaping/escaped-characters'))
-        params.append(VersionedParamPath(
-            'escape_character', path='escaping/escape_character'))
+        params.append(VersionedParamPath("config", path="format/config"))
+        params.append(VersionedParamPath("system", path="format/system"))
+        params.append(VersionedParamPath("threat", path="format/threat"))
+        params.append(VersionedParamPath("traffic", path="format/traffic"))
+        params.append(VersionedParamPath("hip_match", path="format/hip-match"))
+        params.append(VersionedParamPath("url", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/url")
+        params.append(VersionedParamPath("data", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/data")
+        params.append(VersionedParamPath("wildfire", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/wildfire")
+        params.append(VersionedParamPath("tunnel", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/tunnel")
+        params.append(VersionedParamPath("user_id", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/userid")
+        params.append(VersionedParamPath("gtp", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/gtp")
+        params.append(VersionedParamPath("auth", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/auth")
+        params.append(VersionedParamPath("sctp", exclude=True))
+        params[-1].add_profile("8.1.0", path="format/sctp")
+        params.append(VersionedParamPath("iptag", exclude=True))
+        params[-1].add_profile("9.0.0", path="format/iptag")
+        params.append(
+            VersionedParamPath("escaped_characters", path="escaping/escaped-characters")
+        )
+        params.append(
+            VersionedParamPath("escape_character", path="escaping/escape_character")
+        )
 
         self._params = tuple(params)
 
@@ -717,26 +786,22 @@ class EmailServer(VersionedPanObject):
         email_gateway (str): IP address or FQDN of email gateway to use
 
     """
+
     ROOT = Root.VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/server')
+        self._xpaths.add_profile(value="/server")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'display_name', path='display-name'))
-        params.append(VersionedParamPath(
-            'from', path='from'))
-        params.append(VersionedParamPath(
-            'to', path='to'))
-        params.append(VersionedParamPath(
-            'also_to', path='and-also-to'))
-        params.append(VersionedParamPath(
-            'email_gateway', path='gateway'))
+        params.append(VersionedParamPath("display_name", path="display-name"))
+        params.append(VersionedParamPath("from", path="from"))
+        params.append(VersionedParamPath("to", path="to"))
+        params.append(VersionedParamPath("also_to", path="and-also-to"))
+        params.append(VersionedParamPath("email_gateway", path="gateway"))
 
         self._params = tuple(params)
 
@@ -764,78 +829,47 @@ class SyslogServerProfile(VersionedPanObject):
         escape_character (str): Escape character
 
     """
+
     ROOT = Root.VSYS
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "device.SyslogServer",
-    )
+    CHILDTYPES = ("device.SyslogServer",)
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/log-settings/syslog')
+        self._xpaths.add_profile(value="/log-settings/syslog")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'config', path='format/config'))
-        params.append(VersionedParamPath(
-            'system', path='format/system'))
-        params.append(VersionedParamPath(
-            'threat', path='format/threat'))
-        params.append(VersionedParamPath(
-            'traffic', path='format/traffic'))
-        params.append(VersionedParamPath(
-            'hip_match', path='format/hip-match'))
-        params.append(VersionedParamPath(
-            'url', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/url')
-        params.append(VersionedParamPath(
-            'data', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/data')
-        params.append(VersionedParamPath(
-            'wildfire', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/wildfire')
-        params.append(VersionedParamPath(
-            'tunnel', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/tunnel')
-        params.append(VersionedParamPath(
-            'user_id', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/userid')
-        params.append(VersionedParamPath(
-            'gtp', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/gtp')
-        params.append(VersionedParamPath(
-            'auth', exclude=True))
-        params[-1].add_profile(
-            '8.0.0',
-            path='format/auth')
-        params.append(VersionedParamPath(
-            'sctp', exclude=True))
-        params[-1].add_profile(
-            '8.1.0',
-            path='format/sctp')
-        params.append(VersionedParamPath(
-            'iptag', exclude=True))
-        params[-1].add_profile(
-            '9.0.0',
-            path='format/iptag')
-        params.append(VersionedParamPath(
-            'escaped_characters', path='escaping/escaped-characters'))
-        params.append(VersionedParamPath(
-            'escape_character', path='escaping/escape_character'))
+        params.append(VersionedParamPath("config", path="format/config"))
+        params.append(VersionedParamPath("system", path="format/system"))
+        params.append(VersionedParamPath("threat", path="format/threat"))
+        params.append(VersionedParamPath("traffic", path="format/traffic"))
+        params.append(VersionedParamPath("hip_match", path="format/hip-match"))
+        params.append(VersionedParamPath("url", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/url")
+        params.append(VersionedParamPath("data", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/data")
+        params.append(VersionedParamPath("wildfire", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/wildfire")
+        params.append(VersionedParamPath("tunnel", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/tunnel")
+        params.append(VersionedParamPath("user_id", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/userid")
+        params.append(VersionedParamPath("gtp", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/gtp")
+        params.append(VersionedParamPath("auth", exclude=True))
+        params[-1].add_profile("8.0.0", path="format/auth")
+        params.append(VersionedParamPath("sctp", exclude=True))
+        params[-1].add_profile("8.1.0", path="format/sctp")
+        params.append(VersionedParamPath("iptag", exclude=True))
+        params[-1].add_profile("9.0.0", path="format/iptag")
+        params.append(
+            VersionedParamPath("escaped_characters", path="escaping/escaped-characters")
+        )
+        params.append(
+            VersionedParamPath("escape_character", path="escaping/escape_character")
+        )
 
         self._params = tuple(params)
 
@@ -855,28 +889,40 @@ class SyslogServer(VersionedPanObject):
             or LOG_LOCAL0 through LOG_LOCAL7.
 
     """
+
     ROOT = Root.VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/server')
+        self._xpaths.add_profile(value="/server")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'server', path='server'))
-        params.append(VersionedParamPath(
-            'transport', default='UDP', values=['UDP', 'TCP', 'SSL'],
-            path='transport'))
-        params.append(VersionedParamPath(
-            'port', vartype='int', path='port'))
-        params.append(VersionedParamPath(
-            'format', default='BSD', values=['BSD', 'IETF'], path='format'))
-        params.append(VersionedParamPath(
-            'facility', default='LOG_USER', path='facility',
-            values=['LOG_USER', ] + ['LOG_LOCAL{0}'.format(x) for x in range(8)]))
+        params.append(VersionedParamPath("server", path="server"))
+        params.append(
+            VersionedParamPath(
+                "transport",
+                default="UDP",
+                values=["UDP", "TCP", "SSL"],
+                path="transport",
+            )
+        )
+        params.append(VersionedParamPath("port", vartype="int", path="port"))
+        params.append(
+            VersionedParamPath(
+                "format", default="BSD", values=["BSD", "IETF"], path="format"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "facility",
+                default="LOG_USER",
+                path="facility",
+                values=["LOG_USER",] + ["LOG_LOCAL{0}".format(x) for x in range(8)],
+            )
+        )
 
         self._params = tuple(params)
 
@@ -934,6 +980,7 @@ class HttpServerProfile(VersionedPanObject):
         iptag_payload (str): (PAN-OS 9.0+) Payload for custom IP tag format
 
     """
+
     ROOT = Root.VSYS
     SUFFIX = ENTRY
     CHILDTYPES = (
@@ -970,115 +1017,108 @@ class HttpServerProfile(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/log-settings/http')
+        self._xpaths.add_profile(value="/log-settings/http")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'tag_registration', vartype='yesno', path='tag-registration'))
-        params.append(VersionedParamPath(
-            'config_name', path='format/config/name'))
-        params.append(VersionedParamPath(
-            'config_uri_format', path='format/config/url-format'))
-        params.append(VersionedParamPath(
-            'config_payload', path='format/config/payload'))
-        params.append(VersionedParamPath(
-            'system_name', path='format/system/name'))
-        params.append(VersionedParamPath(
-            'system_uri_format', path='format/system/url-format'))
-        params.append(VersionedParamPath(
-            'system_payload', path='format/system/payload'))
-        params.append(VersionedParamPath(
-            'threat_name', path='format/threat/name'))
-        params.append(VersionedParamPath(
-            'threat_uri_format', path='format/threat/url-format'))
-        params.append(VersionedParamPath(
-            'threat_payload', path='format/threat/payload'))
-        params.append(VersionedParamPath(
-            'traffic_name', path='format/traffic/name'))
-        params.append(VersionedParamPath(
-            'traffic_uri_format', path='format/traffic/url-format'))
-        params.append(VersionedParamPath(
-            'traffic_payload', path='format/traffic/payload'))
-        params.append(VersionedParamPath(
-            'hip_match_name', path='format/hip-match/name'))
-        params.append(VersionedParamPath(
-            'hip_match_uri_format', path='format/hip-match/url-format'))
-        params.append(VersionedParamPath(
-            'hip_match_payload', path='format/hip-match/payload'))
-        params.append(VersionedParamPath(
-            'url_name', path='format/url/name'))
-        params.append(VersionedParamPath(
-            'url_uri_format', path='format/url/url-format'))
-        params.append(VersionedParamPath(
-            'url_payload', path='format/url/payload'))
-        params.append(VersionedParamPath(
-            'data_name', path='format/data/name'))
-        params.append(VersionedParamPath(
-            'data_uri_format', path='format/data/url-format'))
-        params.append(VersionedParamPath(
-            'data_payload', path='format/data/payload'))
-        params.append(VersionedParamPath(
-            'wildfire_name', path='format/wildfire/name'))
-        params.append(VersionedParamPath(
-            'wildfire_uri_format', path='format/wildfire/url-format'))
-        params.append(VersionedParamPath(
-            'wildfire_payload', path='format/wildfire/payload'))
-        params.append(VersionedParamPath(
-            'tunnel_name', path='format/tunnel/name'))
-        params.append(VersionedParamPath(
-            'tunnel_uri_format', path='format/tunnel/url-format'))
-        params.append(VersionedParamPath(
-            'tunnel_payload', path='format/tunnel/payload'))
-        params.append(VersionedParamPath(
-            'user_id_name', path='format/userid/name'))
-        params.append(VersionedParamPath(
-            'user_id_uri_format', path='format/userid/url-format'))
-        params.append(VersionedParamPath(
-            'user_id_payload', path='format/userid/payload'))
-        params.append(VersionedParamPath(
-            'gtp_name', path='format/gtp/name'))
-        params.append(VersionedParamPath(
-            'gtp_uri_format', path='format/gtp/url-format'))
-        params.append(VersionedParamPath(
-            'gtp_payload', path='format/gtp/payload'))
-        params.append(VersionedParamPath(
-            'auth_name', path='format/auth/name'))
-        params.append(VersionedParamPath(
-            'auth_uri_format', path='format/auth/url-format'))
-        params.append(VersionedParamPath(
-            'auth_payload', path='format/auth/payload'))
-        params.append(VersionedParamPath(
-            'sctp_name', exclude=True))
-        params[-1].add_profile(
-            '8.1.0',
-            path='format/sctp/name')
-        params.append(VersionedParamPath(
-            'sctp_uri_format', exclude=True))
-        params[-1].add_profile(
-            '8.1.0',
-            path='format/sctp/url-format')
-        params.append(VersionedParamPath(
-            'sctp_payload', exclude=True))
-        params[-1].add_profile(
-            '8.1.0',
-            path='format/sctp/payload')
-        params.append(VersionedParamPath(
-            'iptag_name', exclude=True))
-        params[-1].add_profile(
-            '9.0.0',
-            path='format/iptag/name')
-        params.append(VersionedParamPath(
-            'iptag_uri_format', exclude=True))
-        params[-1].add_profile(
-            '9.0.0',
-            path='format/iptag/url-format')
-        params.append(VersionedParamPath(
-            'iptag_payload', exclude=True))
-        params[-1].add_profile(
-            '9.0.0',
-            path='format/iptag/payload')
+        params.append(
+            VersionedParamPath(
+                "tag_registration", vartype="yesno", path="tag-registration"
+            )
+        )
+        params.append(VersionedParamPath("config_name", path="format/config/name"))
+        params.append(
+            VersionedParamPath("config_uri_format", path="format/config/url-format")
+        )
+        params.append(
+            VersionedParamPath("config_payload", path="format/config/payload")
+        )
+        params.append(VersionedParamPath("system_name", path="format/system/name"))
+        params.append(
+            VersionedParamPath("system_uri_format", path="format/system/url-format")
+        )
+        params.append(
+            VersionedParamPath("system_payload", path="format/system/payload")
+        )
+        params.append(VersionedParamPath("threat_name", path="format/threat/name"))
+        params.append(
+            VersionedParamPath("threat_uri_format", path="format/threat/url-format")
+        )
+        params.append(
+            VersionedParamPath("threat_payload", path="format/threat/payload")
+        )
+        params.append(VersionedParamPath("traffic_name", path="format/traffic/name"))
+        params.append(
+            VersionedParamPath("traffic_uri_format", path="format/traffic/url-format")
+        )
+        params.append(
+            VersionedParamPath("traffic_payload", path="format/traffic/payload")
+        )
+        params.append(
+            VersionedParamPath("hip_match_name", path="format/hip-match/name")
+        )
+        params.append(
+            VersionedParamPath(
+                "hip_match_uri_format", path="format/hip-match/url-format"
+            )
+        )
+        params.append(
+            VersionedParamPath("hip_match_payload", path="format/hip-match/payload")
+        )
+        params.append(VersionedParamPath("url_name", path="format/url/name"))
+        params.append(
+            VersionedParamPath("url_uri_format", path="format/url/url-format")
+        )
+        params.append(VersionedParamPath("url_payload", path="format/url/payload"))
+        params.append(VersionedParamPath("data_name", path="format/data/name"))
+        params.append(
+            VersionedParamPath("data_uri_format", path="format/data/url-format")
+        )
+        params.append(VersionedParamPath("data_payload", path="format/data/payload"))
+        params.append(VersionedParamPath("wildfire_name", path="format/wildfire/name"))
+        params.append(
+            VersionedParamPath("wildfire_uri_format", path="format/wildfire/url-format")
+        )
+        params.append(
+            VersionedParamPath("wildfire_payload", path="format/wildfire/payload")
+        )
+        params.append(VersionedParamPath("tunnel_name", path="format/tunnel/name"))
+        params.append(
+            VersionedParamPath("tunnel_uri_format", path="format/tunnel/url-format")
+        )
+        params.append(
+            VersionedParamPath("tunnel_payload", path="format/tunnel/payload")
+        )
+        params.append(VersionedParamPath("user_id_name", path="format/userid/name"))
+        params.append(
+            VersionedParamPath("user_id_uri_format", path="format/userid/url-format")
+        )
+        params.append(
+            VersionedParamPath("user_id_payload", path="format/userid/payload")
+        )
+        params.append(VersionedParamPath("gtp_name", path="format/gtp/name"))
+        params.append(
+            VersionedParamPath("gtp_uri_format", path="format/gtp/url-format")
+        )
+        params.append(VersionedParamPath("gtp_payload", path="format/gtp/payload"))
+        params.append(VersionedParamPath("auth_name", path="format/auth/name"))
+        params.append(
+            VersionedParamPath("auth_uri_format", path="format/auth/url-format")
+        )
+        params.append(VersionedParamPath("auth_payload", path="format/auth/payload"))
+        params.append(VersionedParamPath("sctp_name", exclude=True))
+        params[-1].add_profile("8.1.0", path="format/sctp/name")
+        params.append(VersionedParamPath("sctp_uri_format", exclude=True))
+        params[-1].add_profile("8.1.0", path="format/sctp/url-format")
+        params.append(VersionedParamPath("sctp_payload", exclude=True))
+        params[-1].add_profile("8.1.0", path="format/sctp/payload")
+        params.append(VersionedParamPath("iptag_name", exclude=True))
+        params[-1].add_profile("9.0.0", path="format/iptag/name")
+        params.append(VersionedParamPath("iptag_uri_format", exclude=True))
+        params[-1].add_profile("9.0.0", path="format/iptag/url-format")
+        params.append(VersionedParamPath("iptag_payload", exclude=True))
+        params[-1].add_profile("9.0.0", path="format/iptag/payload")
 
         self._params = tuple(params)
 
@@ -1100,39 +1140,39 @@ class HttpServer(VersionedPanObject):
         password (str): Password for basic HTTP auth
 
     """
+
     ROOT = Root.VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value='/server')
+        self._xpaths.add_profile(value="/server")
 
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            'address', path='address'))
-        params.append(VersionedParamPath(
-            'protocol', default='HTTPS',
-            values=['HTTP', 'HTTPS'], path='protocol'))
-        params.append(VersionedParamPath(
-            'port', default=443, vartype='int', path='port'))
-        params.append(VersionedParamPath(
-            'tls_version', exclude=True))
+        params.append(VersionedParamPath("address", path="address"))
+        params.append(
+            VersionedParamPath(
+                "protocol", default="HTTPS", values=["HTTP", "HTTPS"], path="protocol"
+            )
+        )
+        params.append(
+            VersionedParamPath("port", default=443, vartype="int", path="port")
+        )
+        params.append(VersionedParamPath("tls_version", exclude=True))
         params[-1].add_profile(
-            '9.0.0',
-            values=['1.0', '1.1', '1.2'], path='tls-version')
-        params.append(VersionedParamPath(
-            'certificate_profile', exclude=True))
-        params[-1].add_profile(
-            '9.0.0',
-            path='certificate-profile')
-        params.append(VersionedParamPath(
-            'http_method', default='POST', path='http-method'))
-        params.append(VersionedParamPath(
-            'username', path='username'))
-        params.append(VersionedParamPath(
-            'password', vartype='encrypted', path='password'))
+            "9.0.0", values=["1.0", "1.1", "1.2"], path="tls-version"
+        )
+        params.append(VersionedParamPath("certificate_profile", exclude=True))
+        params[-1].add_profile("9.0.0", path="certificate-profile")
+        params.append(
+            VersionedParamPath("http_method", default="POST", path="http-method")
+        )
+        params.append(VersionedParamPath("username", path="username"))
+        params.append(
+            VersionedParamPath("password", vartype="encrypted", path="password")
+        )
 
         self._params = tuple(params)
 
@@ -1147,7 +1187,8 @@ class HttpConfigHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/config/headers'
+
+    LOCATION = "/format/config/headers"
 
 
 class HttpConfigParam(ValueEntry):
@@ -1160,7 +1201,8 @@ class HttpConfigParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/config/params'
+
+    LOCATION = "/format/config/params"
 
 
 class HttpSystemHeader(ValueEntry):
@@ -1173,7 +1215,8 @@ class HttpSystemHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/system/headers'
+
+    LOCATION = "/format/system/headers"
 
 
 class HttpSystemParam(ValueEntry):
@@ -1186,7 +1229,8 @@ class HttpSystemParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/system/params'
+
+    LOCATION = "/format/system/params"
 
 
 class HttpThreatHeader(ValueEntry):
@@ -1199,7 +1243,8 @@ class HttpThreatHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/threat/headers'
+
+    LOCATION = "/format/threat/headers"
 
 
 class HttpThreatParam(ValueEntry):
@@ -1212,7 +1257,8 @@ class HttpThreatParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/threat/params'
+
+    LOCATION = "/format/threat/params"
 
 
 class HttpTrafficHeader(ValueEntry):
@@ -1225,7 +1271,8 @@ class HttpTrafficHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/traffic/headers'
+
+    LOCATION = "/format/traffic/headers"
 
 
 class HttpTrafficParam(ValueEntry):
@@ -1238,7 +1285,8 @@ class HttpTrafficParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/traffic/params'
+
+    LOCATION = "/format/traffic/params"
 
 
 class HttpHipMatchHeader(ValueEntry):
@@ -1251,7 +1299,8 @@ class HttpHipMatchHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/hip-match/headers'
+
+    LOCATION = "/format/hip-match/headers"
 
 
 class HttpHipMatchParam(ValueEntry):
@@ -1264,7 +1313,8 @@ class HttpHipMatchParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/hip-match/params'
+
+    LOCATION = "/format/hip-match/params"
 
 
 class HttpUrlHeader(ValueEntry):
@@ -1277,7 +1327,8 @@ class HttpUrlHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/url/headers'
+
+    LOCATION = "/format/url/headers"
 
 
 class HttpUrlParam(ValueEntry):
@@ -1290,7 +1341,8 @@ class HttpUrlParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/url/params'
+
+    LOCATION = "/format/url/params"
 
 
 class HttpDataHeader(ValueEntry):
@@ -1303,7 +1355,8 @@ class HttpDataHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/data/headers'
+
+    LOCATION = "/format/data/headers"
 
 
 class HttpDataParam(ValueEntry):
@@ -1316,7 +1369,8 @@ class HttpDataParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/data/params'
+
+    LOCATION = "/format/data/params"
 
 
 class HttpWildfireHeader(ValueEntry):
@@ -1329,7 +1383,8 @@ class HttpWildfireHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/wildfire/headers'
+
+    LOCATION = "/format/wildfire/headers"
 
 
 class HttpWildfireParam(ValueEntry):
@@ -1342,7 +1397,8 @@ class HttpWildfireParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/wildfire/params'
+
+    LOCATION = "/format/wildfire/params"
 
 
 class HttpTunnelHeader(ValueEntry):
@@ -1355,7 +1411,8 @@ class HttpTunnelHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/tunnel/headers'
+
+    LOCATION = "/format/tunnel/headers"
 
 
 class HttpTunnelParam(ValueEntry):
@@ -1368,7 +1425,8 @@ class HttpTunnelParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/tunnel/params'
+
+    LOCATION = "/format/tunnel/params"
 
 
 class HttpUserIdHeader(ValueEntry):
@@ -1381,7 +1439,8 @@ class HttpUserIdHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/userid/headers'
+
+    LOCATION = "/format/userid/headers"
 
 
 class HttpUserIdParam(ValueEntry):
@@ -1394,7 +1453,8 @@ class HttpUserIdParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/userid/params'
+
+    LOCATION = "/format/userid/params"
 
 
 class HttpGtpHeader(ValueEntry):
@@ -1407,7 +1467,8 @@ class HttpGtpHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/gtp/headers'
+
+    LOCATION = "/format/gtp/headers"
 
 
 class HttpGtpParam(ValueEntry):
@@ -1420,7 +1481,8 @@ class HttpGtpParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/gtp/params'
+
+    LOCATION = "/format/gtp/params"
 
 
 class HttpAuthHeader(ValueEntry):
@@ -1433,7 +1495,8 @@ class HttpAuthHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/auth/headers'
+
+    LOCATION = "/format/auth/headers"
 
 
 class HttpAuthParam(ValueEntry):
@@ -1446,7 +1509,8 @@ class HttpAuthParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/auth/params'
+
+    LOCATION = "/format/auth/params"
 
 
 class HttpSctpHeader(ValueEntry):
@@ -1459,7 +1523,8 @@ class HttpSctpHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/sctp/headers'
+
+    LOCATION = "/format/sctp/headers"
 
 
 class HttpSctpParam(ValueEntry):
@@ -1472,7 +1537,8 @@ class HttpSctpParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/sctp/params'
+
+    LOCATION = "/format/sctp/params"
 
 
 class HttpIpTagHeader(ValueEntry):
@@ -1485,7 +1551,8 @@ class HttpIpTagHeader(ValueEntry):
         value (str): The header value
 
     """
-    LOCATION = '/format/iptag/headers'
+
+    LOCATION = "/format/iptag/headers"
 
 
 class HttpIpTagParam(ValueEntry):
@@ -1498,4 +1565,5 @@ class HttpIpTagParam(ValueEntry):
         value (str): The param value
 
     """
-    LOCATION = '/format/iptag/params'
+
+    LOCATION = "/format/iptag/params"

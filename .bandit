@@ -1,0 +1,3 @@
+[bandit]
+targets: panos/
+skips: B314,B405
