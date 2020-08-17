@@ -36,7 +36,7 @@ setup(
     license="ISC",
     keywords="panos pan-os-python",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: ISC License (ISCL)",
         "Natural Language :: English",
