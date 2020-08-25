@@ -1,9 +1,5 @@
 {
-  "branches": [
-    "master",
-    { "name": "beta", "prerelease": true },
-    { "name": "alpha", "prerelease": true }
-  ],
+  "preset": "conventionalcommits",
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
@@ -32,6 +28,5 @@
         "successComment": ":tada: This ${issue.pull_request ? 'PR is included' : 'issue has been resolved'} in version ${nextRelease.version} :tada:\n\nThe release is available on [PyPI](https://pypi.org/project/pan-os-python/) and [GitHub release](<github_release_url>)\n\n> Posted by [semantic-release](https://github.com/semantic-release/semantic-release) bot"
       }
     ]
-  ],
-  "preset": "conventionalcommits"
+  ]
 }
