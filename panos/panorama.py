@@ -600,7 +600,7 @@ class Panorama(base.PanDevice):
                         "entry/devices/entry[@name='%s']" % fw_entry.get("name")
                     )
                     if fw_entry_op is not None:
-                        pandevice.xml_combine(fw_entry, fw_entry_op)
+                        panos.xml_combine(fw_entry, fw_entry_op)
 
         dg = DeviceGroup()
         dg.parent = self
