@@ -497,7 +497,7 @@ class Interface(VsysOperations):
                     entry = counters["ifnet"]["ifnet"]["entry"][0]
 
             # Convert strings to integers, if they are integers
-            entry.update((k, pandevice.convert_if_int(v)) for k, v in entry.items())
+            entry.update((k, panos.convert_if_int(v)) for k, v in entry.items())
 
             # If empty dictionary (no results) it usually means the interface is not
             # configured, so return None
