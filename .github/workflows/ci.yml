@@ -7,10 +7,11 @@ on:
       - develop
       - beta
       - alpha
+      - '[0-9]+.x'
+      - '[0-9]+.[0-9]+.x'
   pull_request:
 
 jobs:
-
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -28,18 +29,18 @@ jobs:
 
       - name: Install Poetry
         uses: dschep/install-poetry-action@v1.3
-        with:
-          create_virtualenvs: true
 
-      - name: Get poetry cache
+      - name: Get poetry cache directory
         id: poetry-cache
         run: echo "::set-output name=dir::$(poetry config cache-dir)"
 
-      - name: Cache poetry
-        uses: actions/cache@v1
+      - name: Cache poetry dependencies
+        uses: actions/cache@v2
         with:
           path: ${{ steps.poetry-cache.outputs.dir }}
-          key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          key:
+            ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{
+            hashFiles('**/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-${{ matrix.python-version }}-
 
@@ -62,14 +63,12 @@ jobs:
 
       - name: Install Poetry
         uses: dschep/install-poetry-action@v1.3
-        with:
-          create_virtualenvs: true
 
-      - name: Get poetry cache
+      - name: Get poetry cache directory
         id: poetry-cache
         run: echo "::set-output name=dir::$(poetry config cache-dir)"
 
-      - name: Cache poetry
+      - name: Cache poetry dependencies
         uses: actions/cache@v1
         with:
           path: ${{ steps.poetry-cache.outputs.dir }}
@@ -85,33 +84,12 @@ jobs:
 
   release:
     name: Release
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/alpha')
+    if: github.event_name == 'push' && github.ref != 'refs/heads/develop'
     needs: [test, format]
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Cache npm modules
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-global-install
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12
-
-      - name: Install semantic-release
-        run: |
-          npm install -g \
-          semantic-release@^17.0.4 \
-          @semantic-release/exec@^5.0.0 \
-          @semantic-release/git@^9.0.0 \
-          conventional-changelog-conventionalcommits@^4.2.3
 
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
@@ -120,14 +98,12 @@ jobs:
 
       - name: Install Poetry
         uses: dschep/install-poetry-action@v1.3
-        with:
-          create_virtualenvs: true
 
-      - name: Get poetry cache
+      - name: Get poetry cache directory
         id: poetry-cache
         run: echo "::set-output name=dir::$(poetry config cache-dir)"
 
-      - name: Cache poetry
+      - name: Cache poetry dependencies
         uses: actions/cache@v1
         with:
           path: ${{ steps.poetry-cache.outputs.dir }}
@@ -139,7 +115,14 @@ jobs:
         run: poetry install
 
       - name: Create release and publish
+        id: release
+        uses: cycjimmy/semantic-release-action@v2
+        with:
+          semantic_version: 17.1.1
+          extra_plugins: |
+            conventional-changelog-conventionalcommits@^4.4.0
+            @semantic-release/git@^9.0.0
+            @semantic-release/exec@^5.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
-        run: npx semantic-release
