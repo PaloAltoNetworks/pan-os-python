@@ -875,7 +875,7 @@ description = "Multi-tool set for Palo Alto Networks PAN-OS, Panorama, WildFire 
 name = "pan-python"
 optional = false
 python-versions = "*"
-version = "0.10.0"
+version = "0.16.0"
 
 [[package]]
 category = "dev"
@@ -1454,7 +1454,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "contextlib2", "unittest2"]
 
 [metadata]
-content-hash = "433c5d50119f4248c58f11d52a3e5e57826716599ba4d270cce10e37e53fd2e0"
+content-hash = "7859b7e5ca09776489d5c910d2fc71b392f37b773825c95cd73864e1f37f0dd6"
 lock-version = "1.0"
 python-versions = "^2.7 || ^3.5"
 
@@ -1816,7 +1816,8 @@ packaging = [
     {file = "packaging-20.0.tar.gz", hash = "sha256:fe1d8331dfa7cc0a883b49d75fc76380b2ab2734b220fbb87d774e4fd4b851f8"},
 ]
 pan-python = [
-    {file = "pan-python-0.10.0.tar.gz", hash = "sha256:e95670b65a3c480c4b25b9682bb23e65b7ad5ef21adf12304ee587b04af65090"},
+    {file = "pan-python-0.16.0.tar.gz", hash = "sha256:538bd6cbfb64478bce4cea9ba5c4b2d3edfd533c32d0fe740106ec145bc5a35c"},
+    {file = "pan_python-0.16.0-py2.py3-none-any.whl", hash = "sha256:8955111ca1ad3cc7d82250a83505f6d094dcceb880f996d2005541c9d7be0942"},
 ]
 pathlib2 = [
     {file = "pathlib2-2.3.5-py2.py3-none-any.whl", hash = "sha256:0ec8205a157c80d7acc301c0b18fbd5d44fe655968f5d947b6ecef5290fc35db"},

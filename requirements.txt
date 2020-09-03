@@ -1,2 +1,3 @@
-pan-python==0.10.0 \
-    --hash=sha256:e95670b65a3c480c4b25b9682bb23e65b7ad5ef21adf12304ee587b04af65090
+pan-python==0.16.0 \
+    --hash=sha256:538bd6cbfb64478bce4cea9ba5c4b2d3edfd533c32d0fe740106ec145bc5a35c \
+    --hash=sha256:8955111ca1ad3cc7d82250a83505f6d094dcceb880f996d2005541c9d7be0942
