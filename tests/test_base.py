@@ -1326,5 +1326,48 @@ class TestTree(unittest.TestCase):
         self.assertEqual(ret_val, expected)
 
 
+class TestPanDevice(unittest.TestCase):
+    def setUp(self):
+        self.obj = Base.PanObject("localhost", "admin", "admin", "secret")
+        self.obj._version_info = (99, 0, 0)
+
+    def test_plugins_empty_release_note(self):
+        resp = [
+            '<response status="success"><result><plugins>',
+            "<entry>",
+            "<name>vm_series</name>",
+            "<version>1.0.11</version>",
+            "<release-date>Built-in</release-date>",
+            "<release-note-url><![CDATA[]]></release-note-url>",
+            "<pkg-file>vm_series-1.0.11</pkg-file>",
+            "<size>15M</size>",
+            "<platform>any</platform>",
+            "<installed>yes</installed>",
+            "<downloaded>yes</downloaded>",
+            "</entry>",
+            "</plugins></result></response>",
+        ]
+
+        spec = {
+            "op.return_value": ET.fromstring("".join(resp)),
+        }
+
+        ans = self.obj.plugins()
+        self.assertTrue(ans is not None)
+        self.assertTrue(len(ans) == 1)
+
+        ad = ans[0]
+        self.assertTrue(isinstance(ad, dict))
+        self.assertEqual(ad.get("name"), "vm_series")
+        self.assertEqual(ad.get("version"), "1.0.11")
+        self.assertEqual(ad.get("release_date"), "Built-in")
+        self.assertEqual(ad.get("release_note_url"), "")
+        self.assertEqual(ad.get("package_file"), "vm_series-1.0.11")
+        self.assertEqual(ad.get("size"), "15M")
+        self.assertEqual(ad.get("platform"), "any")
+        self.assertEqual(ad.get("installed"), "yes")
+        self.assertEqual(ad.get("downloaded"), "yes")
+
+
 if __name__ == "__main__":
     unittest.main()
