@@ -1328,7 +1328,7 @@ class TestTree(unittest.TestCase):
 
 class TestPanDevice(unittest.TestCase):
     def setUp(self):
-        self.obj = Base.PanObject("localhost", "admin", "admin", "secret")
+        self.obj = Base.PanDevice("localhost", "admin", "admin", "secret")
         self.obj._version_info = (99, 0, 0)
 
     def test_plugins_empty_release_note(self):
