@@ -1355,6 +1355,7 @@ class TestPanDevice(unittest.TestCase):
 
         ans = self.obj.plugins()
         self.assertTrue(ans is not None)
+        self.assertTrue(isinstance(ans, list))
         self.assertTrue(len(ans) == 1)
 
         ad = ans[0]
