@@ -1349,8 +1349,9 @@ class TestPanDevice(unittest.TestCase):
         ]
 
         spec = {
-            "op.return_value": ET.fromstring("".join(resp)),
+            "return_value": ET.fromstring("".join(resp)),
         }
+        self.obj.op = mock.Mock(**spec)
 
         ans = self.obj.plugins()
         self.assertTrue(ans is not None)
