@@ -505,7 +505,19 @@ class FirewallState(object):
 
 
 class FirewallCommit(object):
-    """Normalization of a firewall commit."""
+    """Normalization of a firewall commit.
+
+    Instances of this class can be passed in to ``panos.firewall.Firewall.commit()``.
+
+    Args:
+        description (str): The commit message.
+        admins (list): (PAN-OS 8.0+) List of admins whose changes are to be committed.
+        exclude_device_and_network (bool): Set to True to exclude device and network changes.
+        exclude_shared_objects (bool): Set to True to exclude shared objects changes.
+        exclude_policy_and_objects (bool): Set to True to exclude policy and objects changes.
+        force (bool): Set to True to force a commit even if one is not needed.
+
+    """
 
     def __init__(
         self,
