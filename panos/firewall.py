@@ -507,7 +507,8 @@ class FirewallState(object):
 class FirewallCommit(object):
     """Normalization of a firewall commit.
 
-    Instances of this class can be passed in to ``panos.firewall.Firewall.commit()``.
+    Instances of this class can be passed in to
+    :meth:`panos.firewall.Firewall.commit()` as the ``cmd`` parameter.
 
     Args:
         description (str): The commit message.
