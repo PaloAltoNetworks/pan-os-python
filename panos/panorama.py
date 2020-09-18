@@ -758,8 +758,8 @@ class PanoramaCommit(object):
     This performs a commit to Panorama.  Changes must first be committed to Panorama before
     they can be pushed out elsewhere, such as to device groups or log collectors.
 
-    Instances of this class can be passed in to
-    :meth:`panos.panorama.Panorama.commit()` as the ``cmd`` parameter.
+    Instances of this class can be passed in to ``Panorama.commit()`` (inherited from
+    :meth:`panos.base.PanDevice.commit()`) as the ``cmd`` parameter.
 
     Args:
         description (str): The commit message.
@@ -891,8 +891,8 @@ class PanoramaCommitAll(object):
     This performs a commit-all in Panorama, pushing config out to the specified
     location.
 
-    Instances of this class can be passed in to
-    :meth:`panos.panorama.Panorama.commit()` as the ``cmd`` parameter.
+    Instances of this class can be passed in to ``Panorama.commit()`` (inherited from
+    :meth:`panos.base.PanDevice.commit()`) as the ``cmd`` parameter.
 
     Args:
         style (str): The type of commit-all to perform:
