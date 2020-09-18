@@ -5235,3 +5235,47 @@ class PanDevice(PanObject):
         fmt = "%a %b %d %H:%M:%S %Z %Y"
         text = res.text.strip()
         return datetime.strptime(text, fmt)
+
+    def plugins(self):
+        """Returns plugin information.
+
+        Each dict in the list returned has the following keys:
+            * name
+            * version
+            * release_date
+            * release_note_url
+            * package_file
+            * size
+            * platform
+            * installed
+            * downloaded
+
+        Returns:
+            list of dicts
+        """
+        # Older versions of PAN-OS do not have this command, so if we get an
+        # exception, just return None.
+        try:
+            res = self.op("<show><plugins><packages/></plugins></show>", cmd_xml=False)
+        except err.PanDeviceError:
+            return None
+
+        ans = []
+        for o in res.findall("./result/plugins/entry"):
+            ans.append(
+                {
+                    "name": o.find("./name").text,
+                    "version": o.find("./version").text,
+                    "release_date": o.find("./release-date").text,
+                    "release_note_url": (
+                        o.find("./release-note-url").text or ""
+                    ).strip(),
+                    "package_file": o.find("./pkg-file").text,
+                    "size": o.find("./size").text,
+                    "platform": o.find("./platform").text,
+                    "installed": o.find("./installed").text,
+                    "downloaded": o.find("./downloaded").text,
+                }
+            )
+
+        return ans
