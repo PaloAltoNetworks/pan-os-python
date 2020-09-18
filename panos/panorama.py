@@ -753,7 +753,29 @@ class Panorama(base.PanDevice):
 
 
 class PanoramaCommit(object):
-    """Normalization of a Panorama commit."""
+    """Normalization of a Panorama commit.
+
+    This performs a commit to Panorama.  Changes must first be committed to Panorama before
+    they can be pushed out elsewhere, such as to device groups or log collectors.
+
+    Instances of this class can be passed in to ``Panorama.commit()`` (inherited from
+    :meth:`panos.base.PanDevice.commit()`) as the ``cmd`` parameter.
+
+    Args:
+        description (str): The commit message.
+        admins (list): (PAN-OS 8.0+) List of admins whose changes are to be committed.
+        device_groups (list): List of device groups to save changes for.
+        templates (list): List of templates to save changes for.
+        template_stacks (list): List of template stacks to save changes for.
+        wildfire_appliances (list): List of Wildfire appliances to save changes for.
+        wildfire_clusters (list): List of Wildfire clusters to save changes for.
+        log_collectors (list): List of log collectors to save changes for.
+        log_collector_groups (list): List of log collector groups to save changes for.
+        exclude_device_and_network (bool): Set to True to exclude device and network changes.
+        exclude_shared_objects (bool): Set to True to exclude shared objects changes.
+        force (bool): Set to True to force a commit even if one is not needed.
+
+    """
 
     def __init__(
         self,
@@ -864,7 +886,32 @@ class PanoramaCommit(object):
 
 
 class PanoramaCommitAll(object):
-    """Normalization of a Panorama commit all."""
+    """Normalization of a Panorama commit all.
+
+    This performs a commit-all in Panorama, pushing config out to the specified
+    location.
+
+    Instances of this class can be passed in to ``Panorama.commit()`` (inherited from
+    :meth:`panos.base.PanDevice.commit()`) as the ``cmd`` parameter.
+
+    Args:
+        style (str): The type of commit-all to perform:
+                * device group
+                * template
+                * template stack
+                * log collector group
+                * wildfire appliance
+                * wildfire cluster
+        name (str): The name of the location to push the config to (e.g. - name
+            of the device group, name of the template, etc).
+        description (str): The commit message.
+        include_template (bool): (For `device group` style commits) Set to True to include
+            template changes.
+        force_template_values (bool): (For `device group`, `template`, or `template stack`
+            style commits) Set to True to force template values.
+        devices (list): (For `device group`, `template`, or `template stack` style
+            commits) Specific devices to commit to.
+    """
 
     STYLE_DEVICE_GROUP = "device group"
     STYLE_TEMPLATE = "template"
