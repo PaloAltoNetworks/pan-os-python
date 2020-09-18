@@ -99,7 +99,7 @@ class DeviceGroup(VersionedPanObject):
         This operation results in a job being submitted to the backend, which
         this function will block until the move is completed.  The return value of
         this function is what is returned from
-        :meth:`panos.base.syncjob()`.
+        :meth:`panos.base.PanDevice.syncjob()`.
 
         Args:
             parent (str): The device group that should be the parent of this
