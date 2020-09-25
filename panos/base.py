@@ -3759,6 +3759,19 @@ class PanDevice(PanObject):
     ):
         """Perform operational command on this device
 
+        Operational commands are most any command that is not a debug or config
+        command. These include many 'show' commands such as ``show system info``.
+
+        When passing the cmd as a command string (not XML) you must include any
+        non-keyword strings in the command inside double quotes (``"``). Here's some
+        examples::
+
+            # The string "facebook-base" must be in quotes because it is not a keyword
+            fw.op('clear session all filter application "facebook-base"')
+
+            # The string "ethernet1/1" must be in quotes because it is not a keyword
+            fw.op('show interface "ethernet1/1"')
+
         Args:
             cmd (str): The operational command to execute
             vsys (str): Vsys id.

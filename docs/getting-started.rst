@@ -66,16 +66,98 @@ determined by checking the live device.::
 Operational commands
 --------------------
 
-Perform operational commands using the ``op`` method on a PanDevice. The return value is
-an xml.etree.ElementTree object::
+Operational commands are used to get or clear the current operational state of
+the device or make operational requests such as content upgrades. Most any
+command that is not a config mode or debug command is an operational command.
+These include many 'show' commands such as ``show system info`` and ``show
+interface ethernet1/1`` and 'request' commands. You cannot use operational
+commands to change the running configuration of the firewall or Panorama. See
+`Configure your device`_ below to configure your firewall by changing the
+running configuration.
+
+Perform operational commands using the ``op`` method on a PanDevice instance.
+By default, the return value is an xml.etree.ElementTree object which can be
+easily parsed::
 
     from panos import firewall
     fw = firewall.Firewall('10.0.0.1', 'admin', 'mypassword')
     element_response = fw.op('show system info')
 
-Use the ``xml`` argument to return a string with xml::
+Use the ``xml`` argument to return a string of xml. This is harder to parse, but
+sometimes a string is needed such as when saving to a file.::
 
-    xml_response = fw.op('show system info', xml=True)
+    xml_str_response = fw.op('show system info', xml=True)
+
+**Important:** When passing the cmd as a command string (not XML) you must include any
+non-keyword strings in the command inside double quotes (``"``). Here's some
+examples::
+
+    fw.op('clear session all filter application "facebook-base"')
+    # The string "facebook-base" must be in quotes because it is not a keyword
+
+    fw.op('show interface "ethernet1/1"')
+    # The string "ethernet1/1" must be in quotes because it is not a keyword
+
+This works by converting all unquoted arguments in cmd to XML elements and
+double quoted arguments as text after removing the quotes. For example:
+
+* ``show system info`` -> ``<show><system><info></info></system></show>``
+* ``show interface "ethernet1/1"`` -> ``<show><interface>ethernet1/1</interface></show>``
+
+The command's XML is then sent to the firewall.
+
+**Parse the result**
+
+You can parse an ElementTree using the `python ElementTree library`_.
+
+Assuming the first ``op()`` call returns a response with this XML (output
+simplified for example purposes)::
+
+    <response status="success">
+        <result>
+            <ifnet>
+                <counters>
+                    <ifnet>
+                        <entry>
+                            <name>ethernet1/1</name>
+                            <ipackets>329744</ipackets>
+                            <opackets>508805</opackets>
+                            <ierrors>0</ierrors>
+                        </entry>
+                    </ifnet>
+                </counters>
+                <name>ethernet1/1</name>
+                <zone>DMZ</zone>
+            </ifnet>
+            <hw>
+                <name>ethernet1/1</name>
+                <mac>08:30:6b:1e:55:42</mac>
+                <state>up</state>
+            </hw>
+        </result>
+    </response>
+
+Then this example collects the zone, mac address, and packet output for
+ethernet1/1::
+
+    response = fw.op('show interface "ethernet1/1"')
+
+    name = response.find(".//zone").text
+    # name = "DMZ"
+
+    mac_address = response.find("./result/hw/mac").text
+    # mac_address = "08:30:6b:1e:55:42"
+
+    counter_entries = response.findall(".//counters/ifnet/entry")
+    packets_out = [(counters.find("./name").text, int(counters.find("./opackets").text)) for counters in counter_entries]
+    # packets_out = [("ethernet1/1", 508805)]
+
+In the example above, we use a deep search to find the ``<zone>`` element, an
+absolute path to get the ``<mac>`` element, and a findall with both deep search and
+relative path to get packets out for every subinterface. In this example there
+are no subinterfaces, so it returns one list item.
+
+.. _python ElementTree library: https://docs.python.org/3/library/xml.etree.elementtree.html
 
 Configure your device
 ---------------------
