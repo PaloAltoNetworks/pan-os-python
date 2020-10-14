@@ -1827,6 +1827,8 @@ class PanObject(object):
         dev, instances, vsys_dict = self._gather_bulk_info("create_similar")
         if not instances:
             return
+        elif len(instances) == 1:
+            return self.create()
 
         # The new root tag is the last tag in the xpath, while the new xpath
         # is what remains.
@@ -1872,6 +1874,8 @@ class PanObject(object):
         dev, instances, vsys_dict = self._gather_bulk_info("apply_similar")
         if not instances:
             return
+        elif len(instances) == 1:
+            return self.apply()
 
         # The new root tag is the last tag in the xpath, while the new xpath
         # is what remains.
@@ -1911,6 +1915,8 @@ class PanObject(object):
         dev, instances, vsys_dict = self._gather_bulk_info("delete_similar")
         if not instances:
             return
+        elif len(instances) == 1:
+            return self.delete()
 
         # This operation is only supported for entry/member objects.
         if self.SUFFIX not in (ENTRY, MEMBER):
