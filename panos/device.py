@@ -1003,7 +1003,7 @@ class EmailServer(VersionedPanObject):
 
     Args:
         name (str): The name
-        from str import :Fromemailaddress
+        display_name (str): Display name
         from (str): From email address
         to (str): To email address
         also_to (str): Additional destination email address
