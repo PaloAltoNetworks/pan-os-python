@@ -437,6 +437,27 @@ class AuthenticationProfile(VersionedPanObject):
 
     Args:
         allow_list (member/str): Allow users
+        lockout_time (int): 
+        failed_attempts (int):
+        method: none (default), kerberos, ldap, local-database, radius, saml-idp, tacplus
+        server_profile (string): login method server profile
+        kb_realm (string): Kerberos realm
+        ldap_login_attribute (string): Ldap login attribute
+        ldap_passwd_exp_days (string): Ldap password expiration days
+        checkgroup (bool): Radius checkgroup for tacplus or radius
+        si_attribute_name_access_domain (string): saml-idp attribute name access domain
+        si_attribute_name_admin_role (string): saml-idp attribute name admin role
+        si_attribute_name_usergroup (string): saml-idp attribute name usergroup
+        si_attribute_name_username (string): saml-idp attribute name usrname
+        si_enable_single_logout (bool): saml-idp enable single_logout
+        si_request_signing_certificate (): saml-idp request signing certificate
+        mfa_factors (member): Multi factor auth factors
+        mfa_enable (bool): Multi factor auth enable
+        sso_kerberos_keytab (string): single-sign-on kerberos keytab
+        sso_service_principal (string): single-sign-on service principal
+        user_domain (string): user domain
+        username_modifier (string): username modifier
+
     """
 
     ROOT = Root.VSYS
@@ -496,7 +517,7 @@ class AuthenticationProfile(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "login-attribute",
+                "ldap_login_attribute",
                 condition={"method": "ldap"},
                 path="method/{method}/login-attribute",
             )
@@ -510,8 +531,9 @@ class AuthenticationProfile(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "rd_checkgroup",
-                condition={"method": "radius"},
+                "checkgroup",
+                vartype="bool",
+                condition={"method": ["radius", "tacplus"]},
                 path="method/{method}/checkgroup",
             )
         )
@@ -553,6 +575,7 @@ class AuthenticationProfile(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "si_enable_single_logout",
+                vartype="bool",
                 condition={"method": "saml-idp"},
                 path="method/{method}/enable-single-logout",
             )
@@ -566,15 +589,12 @@ class AuthenticationProfile(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "tp_checkgroup",
-                condition={"method": "tacplus"},
-                path="method/{method}/checkgroup",
+                "mfa_factors", vartype="member", path="multi-factor-auth/factors"
             )
         )
-        params.append(VersionedParamPath("factors", path="multi-factor-auth/factors"))
         params.append(
             VersionedParamPath(
-                "mfa-enable", vartype="bool", path="multi-factor-auth/mfa-enable"
+                "mfa_enable", vartype="bool", path="multi-factor-auth/mfa-enable"
             )
         )
         params.append(
