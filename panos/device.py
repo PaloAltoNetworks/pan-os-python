@@ -594,7 +594,7 @@ class AuthenticationProfile(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "mfa_enable", vartype="bool", path="multi-factor-auth/mfa-enable"
+                "mfa_enable", vartype="yesno", path="multi-factor-auth/mfa-enable"
             )
         )
         params.append(
@@ -613,7 +613,35 @@ class AuthenticationProfile(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "username_modifier", vartype="member", path="username-modifier"
+                "username_modifier", vartype="string", path="username-modifier"
+            )
+        )
+        self._params = tuple(params)
+
+
+class AuthenticationSequance(VersionedPanObject):
+    """AuthenticationSequance object
+    Args:
+        authentication_profiles (member): The authentication profiles
+        use_domain_find_profile (bool): Use domain find profile
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/authentication-sequence")
+
+        # params
+        params = []
+        params.append(
+            VersionedParamPath(
+                "authentication_profiles", vartype="member", path="authentication-profiles"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "use_domain_find_profile", vartype="yesno", path="use-domain-find-profile"
             )
         )
         self._params = tuple(params)
