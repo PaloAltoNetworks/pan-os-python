@@ -437,8 +437,8 @@ class AuthenticationProfile(VersionedPanObject):
 
     Args:
         allow_list (member/str): Allow users
-        lockout_time (int): 
-        failed_attempts (int):
+        lockout_time (int): amount of time use will be locked
+        failed_attempts (int): number of permitted failed attempts
         method: none (default), kerberos, ldap, local-database, radius, saml-idp, tacplus
         server_profile (string): login method server profile
         kb_realm (string): Kerberos realm
@@ -450,7 +450,7 @@ class AuthenticationProfile(VersionedPanObject):
         si_attribute_name_usergroup (string): saml-idp attribute name usergroup
         si_attribute_name_username (string): saml-idp attribute name usrname
         si_enable_single_logout (bool): saml-idp enable single_logout
-        si_request_signing_certificate (): saml-idp request signing certificate
+        si_request_signing_certificate (string): saml-idp request signing certificate
         mfa_factors (member): Multi factor auth factors
         mfa_enable (bool): Multi factor auth enable
         sso_kerberos_keytab (string): single-sign-on kerberos keytab
