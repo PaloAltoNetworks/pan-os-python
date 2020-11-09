@@ -636,12 +636,16 @@ class AuthenticationSequance(VersionedPanObject):
         params = []
         params.append(
             VersionedParamPath(
-                "authentication_profiles", vartype="member", path="authentication-profiles"
+                "authentication_profiles",
+                vartype="member",
+                path="authentication-profiles",
             )
         )
         params.append(
             VersionedParamPath(
-                "use_domain_find_profile", vartype="yesno", path="use-domain-find-profile"
+                "use_domain_find_profile",
+                vartype="yesno",
+                path="use-domain-find-profile",
             )
         )
         self._params = tuple(params)
