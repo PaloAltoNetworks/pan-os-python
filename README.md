@@ -14,7 +14,7 @@ the traditional interaction with the device via the GUI or CLI/API.
 [![Python versions](https://img.shields.io/badge/python-3.5%20%7C%203.6%20%7C%203.7%20%7C%203.8-blueviolet)](https://pypi.python.org/pypi/pan-os-python)
 [![License](https://img.shields.io/pypi/l/pan-os-python)](https://github.com/PaloAltoNetworks/pan-os-python/blob/develop/LICENSE)
 [![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg)](http://pan-os-python.readthedocs.io/en/latest/?badge=latest)
-[![Chat on Gitter](https://badges.gitter.im/PaloAltoNetworks/pan-os-python.svg)](https://gitter.im/PaloAltoNetworks/pan-os-python)
+[![Chat on GitHub Discussions](https://img.shields.io/badge/chat%20on-GitHub%20Discussions-brightgreen)](https://github.com/PaloAltoNetworks/pan-os-python/discussions)
 
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org/)
