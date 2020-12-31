@@ -1746,6 +1746,10 @@ class StaticRoute(VersionedPanObject):
     """
 
     SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.StaticRoutePathMonitor",
+    )
+
 
     def _setup(self):
         # xpaths
@@ -1817,6 +1821,57 @@ class StaticRouteV6(VersionedPanObject):
         params.append(
             VersionedParamPath("metric", default=10, vartype="int", path="metric")
         )
+
+        self._params = tuple(params)
+
+class StaticRoutePathMonitor(VersionedPanObject):
+    """PathMonitor Route
+
+    Add to a :class:`panos.network.VirtualRouter` instance.
+
+    Args:
+        enabled: bool
+        Failure condition: 
+            - any (default)
+            - all
+        Preemptive_HoldTime:
+            - 2 min (default)
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/path-monitor")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "enable_path_monitor",
+                vartype="yesno",
+                path="/enable",
+            )
+        )
+       
+        params.append(
+            VersionedParamPath(
+                "failure_condition", 
+                default=any, 
+                values=("all", "any"), 
+                path="/failure-condition"
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "preemptive_holdtime", 
+                default=2, 
+                vartype="int", 
+                path="/hold-time"
+            )
+        )
+
 
         self._params = tuple(params)
 
