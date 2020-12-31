@@ -1857,7 +1857,7 @@ class StaticRoutePathMonitor(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "failure_condition", 
-                default=any, 
+                default="any", 
                 values=("all", "any"), 
                 path="/failure-condition"
             )
