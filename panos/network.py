@@ -1849,7 +1849,7 @@ class StaticRouteV6(VersionedPanObject):
         self._params = tuple(params)
 
 class PathMonitorDestination(VersionedPanObject):
-    """PathMonitorDestination of static route 
+    """PathMonitorDestination Static Route 
 
     Args:
         name (str): Name of Path Monitor Destination 
