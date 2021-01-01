@@ -1746,10 +1746,6 @@ class StaticRoute(VersionedPanObject):
     """
 
     SUFFIX = ENTRY
-#    CHILDTYPES = (
-#        "network.StaticRoutePathMonitor",
-#    )
-
 
     def _setup(self):
         # xpaths
@@ -1787,7 +1783,6 @@ class StaticRoute(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "failure_condition", 
-                #default="any", 
                 values=("all", "any"), 
                 path="/path-monitor/failure-condition"
             )
@@ -1796,7 +1791,6 @@ class StaticRoute(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "preemptive_holdtime", 
-                #default=2, 
                 vartype="int", 
                 path="/path-monitor/hold-time"
             )
