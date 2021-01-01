@@ -1751,7 +1751,7 @@ class StaticRoute(VersionedPanObject):
     """
 
     SUFFIX = ENTRY
-    CHILDTYPES = ("network.PathMonitorDestinaton",)
+    CHILDTYPES = ("network.PathMonitorDestination",)
 
     def _setup(self):
         # xpaths
@@ -1850,10 +1850,11 @@ class StaticRouteV6(VersionedPanObject):
 
         self._params = tuple(params)
 
-class PathMonitorDestinaton(VersionedPanObject):
+class PathMonitorDestination(VersionedPanObject):
     """PathMonitorDestinaton Route
 
     Args:
+        name (str): Name of PathMonitorDestinaton
         enabled: bool
         source_ip:
         destination_ip:
@@ -1875,11 +1876,11 @@ class PathMonitorDestinaton(VersionedPanObject):
         )
 
         params.append(
-            VersionedParamPath("source_ip",vartype="entry",path="/source")
+            VersionedParamPath("source",path="/source")
         ) 
       
         params.append(
-            VersionedParamPath("destination_ip",vartype="entry",path="/destination")
+            VersionedParamPath("destination",path="/destination")
         )
 
         params.append(
