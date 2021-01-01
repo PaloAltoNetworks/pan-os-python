@@ -1865,7 +1865,7 @@ class PathMonitorDestinaton(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value="/monitor-destinations")
+        self._xpaths.add_profile(value="/path-monitor/monitor-destinations")
 
         # params
         params = []
