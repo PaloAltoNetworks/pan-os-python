@@ -1742,11 +1742,9 @@ class StaticRoute(VersionedPanObject):
         interface (str): Next hop interface
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
-        enable_path_monitor: bool
-        Failure condition (choices): 
-            - any 
-            - all
-        Preemptive_HoldTime: (int)
+        enable_path_monitor (bool): Enable Path Monitor
+        failure_condition: Path Monitor failure condition set 'any' or 'all' 
+        preemptive_holdtime (int): Path Monitor Preemptive Hold Time in minutes
         
     """
 
@@ -1851,15 +1849,15 @@ class StaticRouteV6(VersionedPanObject):
         self._params = tuple(params)
 
 class PathMonitorDestination(VersionedPanObject):
-    """PathMonitorDestinaton Route
+    """PathMonitorDestination of static route 
 
     Args:
-        name (str): Name of PathMonitorDestinaton
-        enabled: bool
-        source_ip:
-        destination_ip:
-        interval: (int)
-        count: (int)
+        name (str): Name of Path Monitor Destination 
+        enabled (bool): Enable Path Monitor Destination 
+        source (str): Source ip of interface
+        destination (str): Destination ip 
+        interval (int): Ping Interval (sec) (Default: 3)
+        count (int): Ping count (Default: 5)
        
     """
     SUFFIX = ENTRY
