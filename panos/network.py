@@ -1746,9 +1746,9 @@ class StaticRoute(VersionedPanObject):
     """
 
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.StaticRoutePathMonitor",
-    )
+#    CHILDTYPES = (
+#        "network.StaticRoutePathMonitor",
+#    )
 
 
     def _setup(self):
@@ -1775,22 +1775,19 @@ class StaticRoute(VersionedPanObject):
         params.append(
             VersionedParamPath("metric", default=10, vartype="int", path="metric")
         )
-        
-        self._params = tuple(params)
 
-'''
         params.append(
             VersionedParamPath(
                 "enable_path_monitor",
                 vartype="yesno",
-                path="/path-monitor/enable"
+                path="/path-monitor/enable",
             )
         )
 
         params.append(
             VersionedParamPath(
                 "failure_condition", 
-                default="any", 
+                #default="any", 
                 values=("all", "any"), 
                 path="/path-monitor/failure-condition"
             )
@@ -1799,13 +1796,13 @@ class StaticRoute(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "preemptive_holdtime", 
-                default=2, 
+                #default=2, 
                 vartype="int", 
                 path="/path-monitor/hold-time"
             )
         ) 
-'''
-       
+
+        self._params = tuple(params)
 
 
 class StaticRouteV6(VersionedPanObject):
@@ -1878,9 +1875,8 @@ class StaticRoutePathMonitor(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "enable_path_monitor",
-                default=True,
                 vartype="yesno",
-                path="enable",
+                path="/enable",
             )
         )
        
@@ -1889,7 +1885,7 @@ class StaticRoutePathMonitor(VersionedPanObject):
                 "failure_condition", 
                 default="any", 
                 values=("all", "any"), 
-                path="failure-condition"
+                path="/failure-condition"
             )
         )
 
@@ -1898,7 +1894,7 @@ class StaticRoutePathMonitor(VersionedPanObject):
                 "preemptive_holdtime", 
                 default=2, 
                 vartype="int", 
-                path="hold-time"
+                path="/hold-time"
             )
         )
 
