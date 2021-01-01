@@ -1780,7 +1780,7 @@ class StaticRoute(VersionedPanObject):
             VersionedParamPath(
                 "enable_path_monitor",
                 vartype="yesno",
-                path="/path-monitor/enable",
+                path="/path-monitor/enable"
             )
         )
 
