@@ -1775,6 +1775,8 @@ class StaticRoute(VersionedPanObject):
         params.append(
             VersionedParamPath("metric", default=10, vartype="int", path="metric")
         )
+        
+        self._params = tuple(params)
 
 '''
         params.append(
@@ -1803,8 +1805,7 @@ class StaticRoute(VersionedPanObject):
             )
         ) 
 '''
-
-        self._params = tuple(params)
+       
 
 
 class StaticRouteV6(VersionedPanObject):
