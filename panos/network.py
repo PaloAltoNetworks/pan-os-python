@@ -1742,10 +1742,16 @@ class StaticRoute(VersionedPanObject):
         interface (str): Next hop interface
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
-
+        enable_path_monitor: bool
+        Failure condition (choices): 
+            - any 
+            - all
+        Preemptive_HoldTime: (int)
+        
     """
 
     SUFFIX = ENTRY
+    CHILDTYPES = ("network.PathMonitorDestinaton",)
 
     def _setup(self):
         # xpaths
@@ -1844,54 +1850,45 @@ class StaticRouteV6(VersionedPanObject):
 
         self._params = tuple(params)
 
-class StaticRoutePathMonitor(VersionedPanObject):
-    """PathMonitor Route
-
-    Add to a :class:`panos.network.VirtualRouter` instance.
+class PathMonitorDestinaton(VersionedPanObject):
+    """PathMonitorDestinaton Route
 
     Args:
         enabled: bool
-        Failure condition: 
-            - any (default)
-            - all
-        Preemptive_HoldTime:
-            - 2 min (default)
+        source_ip:
+        destination_ip:
+        interval: (int)
+        count: (int)
+       
     """
     SUFFIX = ENTRY
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value="/path-monitor")
+        self._xpaths.add_profile(value="/monitor-destinations")
 
         # params
         params = []
 
         params.append(
-            VersionedParamPath(
-                "enable_path_monitor",
-                vartype="yesno",
-                path="/enable",
-            )
-        )
-       
-        params.append(
-            VersionedParamPath(
-                "failure_condition", 
-                default="any", 
-                values=("all", "any"), 
-                path="/failure-condition"
-            )
+            VersionedParamPath("enable",vartype="yesno",path="/enable")
         )
 
         params.append(
-            VersionedParamPath(
-                "preemptive_holdtime", 
-                default=2, 
-                vartype="int", 
-                path="/hold-time"
-            )
+            VersionedParamPath("source_ip",vartype="entry",path="/source")
+        ) 
+      
+        params.append(
+            VersionedParamPath("destination_ip",vartype="entry",path="/destination")
         )
 
+        params.append(
+            VersionedParamPath("interval",default=3,vartype="int",path="/interval")
+        )
+
+        params.append(
+            VersionedParamPath("count",default=5,vartype="int",path="/count")
+        ) 
 
         self._params = tuple(params)
 
