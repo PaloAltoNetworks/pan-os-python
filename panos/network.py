@@ -1778,27 +1778,23 @@ class StaticRoute(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "enable_path_monitor",
-                path="/path-monitor/enable",
-                vartype="yesno"
+                "enable_path_monitor", path="/path-monitor/enable", vartype="yesno"
             )
         )
 
         params.append(
             VersionedParamPath(
-                "failure_condition", 
-                values=("all", "any"), 
-                path="/path-monitor/failure-condition"
+                "failure_condition",
+                values=("all", "any"),
+                path="/path-monitor/failure-condition",
             )
         )
 
         params.append(
             VersionedParamPath(
-                "preemptive_holdtime", 
-                vartype="int", 
-                path="/path-monitor/hold-time"
+                "preemptive_holdtime", vartype="int", path="/path-monitor/hold-time"
             )
-        ) 
+        )
 
         self._params = tuple(params)
 
@@ -1848,6 +1844,7 @@ class StaticRouteV6(VersionedPanObject):
 
         self._params = tuple(params)
 
+
 class PathMonitorDestination(VersionedPanObject):
     """PathMonitorDestination Static Route 
 
@@ -1860,6 +1857,7 @@ class PathMonitorDestination(VersionedPanObject):
         count (int): Ping count (Default: 5)
        
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -1869,25 +1867,19 @@ class PathMonitorDestination(VersionedPanObject):
         # params
         params = []
 
+        params.append(VersionedParamPath("enable", vartype="yesno", path="/enable"))
+
+        params.append(VersionedParamPath("source", path="/source"))
+
+        params.append(VersionedParamPath("destination", path="/destination"))
+
         params.append(
-            VersionedParamPath("enable",vartype="yesno",path="/enable")
+            VersionedParamPath("interval", default=3, vartype="int", path="/interval")
         )
 
         params.append(
-            VersionedParamPath("source",path="/source")
-        ) 
-      
-        params.append(
-            VersionedParamPath("destination",path="/destination")
+            VersionedParamPath("count", default=5, vartype="int", path="/count")
         )
-
-        params.append(
-            VersionedParamPath("interval",default=3,vartype="int",path="/interval")
-        )
-
-        params.append(
-            VersionedParamPath("count",default=5,vartype="int",path="/count")
-        ) 
 
         self._params = tuple(params)
 
