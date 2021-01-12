@@ -1743,8 +1743,8 @@ class StaticRoute(VersionedPanObject):
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
         enable_path_monitor (bool): Enable Path Monitor
-        failure_condition: Path Monitor failure condition set 'any' or 'all' 
-        preemptive_holdtime (int): Path Monitor Preemptive Hold Time in minutes
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
+        preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
         
     """
 
@@ -1775,24 +1775,21 @@ class StaticRoute(VersionedPanObject):
         params.append(
             VersionedParamPath("metric", default=10, vartype="int", path="metric")
         )
-
         params.append(
             VersionedParamPath(
-                "enable_path_monitor", path="/path-monitor/enable", vartype="yesno"
+                "enable_path_monitor", path="path-monitor/enable", vartype="yesno"
             )
         )
-
         params.append(
             VersionedParamPath(
                 "failure_condition",
                 values=("all", "any"),
-                path="/path-monitor/failure-condition",
+                path="path-monitor/failure-condition",
             )
         )
-
         params.append(
             VersionedParamPath(
-                "preemptive_holdtime", vartype="int", path="/path-monitor/hold-time"
+                "preemptive_hold_time", vartype="int", path="path-monitor/hold-time"
             )
         )
 
@@ -1812,10 +1809,14 @@ class StaticRouteV6(VersionedPanObject):
         interface (str): Next hop interface
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
+        enable_path_monitor (bool): Enable Path Monitor
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
+        preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
 
     """
 
     SUFFIX = ENTRY
+    CHILDTYPES = ("network.PathMonitorDestination",)
 
     def _setup(self):
         # xpaths
@@ -1841,6 +1842,23 @@ class StaticRouteV6(VersionedPanObject):
         params.append(
             VersionedParamPath("metric", default=10, vartype="int", path="metric")
         )
+        params.append(
+            VersionedParamPath(
+                "enable_path_monitor", path="path-monitor/enable", vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "failure_condition",
+                values=("all", "any"),
+                path="path-monitor/failure-condition",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "preemptive_hold_time", vartype="int", path="path-monitor/hold-time"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -1850,7 +1868,7 @@ class PathMonitorDestination(VersionedPanObject):
 
     Args:
         name (str): Name of Path Monitor Destination 
-        enabled (bool): Enable Path Monitor Destination 
+        enable (bool): Enable Path Monitor Destination 
         source (str): Source ip of interface
         destination (str): Destination ip 
         interval (int): Ping Interval (sec) (Default: 3)
@@ -1867,18 +1885,14 @@ class PathMonitorDestination(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath("enable", vartype="yesno", path="/enable"))
-
-        params.append(VersionedParamPath("source", path="/source"))
-
-        params.append(VersionedParamPath("destination", path="/destination"))
-
+        params.append(VersionedParamPath("enable", vartype="yesno", path="enable"))
+        params.append(VersionedParamPath("source", path="source"))
+        params.append(VersionedParamPath("destination", path="destination"))
         params.append(
-            VersionedParamPath("interval", default=3, vartype="int", path="/interval")
+            VersionedParamPath("interval", default=3, vartype="int", path="interval")
         )
-
         params.append(
-            VersionedParamPath("count", default=5, vartype="int", path="/count")
+            VersionedParamPath("count", default=5, vartype="int", path="count")
         )
 
         self._params = tuple(params)
