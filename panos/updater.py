@@ -40,12 +40,24 @@ class Updater(object):
 
 class SoftwareUpdater(Updater):
     def info(self):
+        """Fetch version list from live device.
+
+        Synchronizes this current updater state with the live device.
+
+        """
         self._logger.debug("Device %s software updater: info" % self.pandevice.id)
         response = self._op("request system software info")
         self.pandevice.version = self._parse_current_version(response)
         self.versions = self._parse_version_list(response)
 
     def check(self):
+        """Trigger PAN-OS to get versions, then synchronize this object instance.
+
+        First, PAN-OS will reach out to the upgrade servers to get the list of
+        all version that can be upgraded to. Then synchronizes this current
+        updater state with the live device.
+
+        """
         self._logger.debug(
             "Device %s software updater: check for new versions" % self.pandevice.id
         )
@@ -54,6 +66,20 @@ class SoftwareUpdater(Updater):
         self.versions = self._parse_version_list(response)
 
     def download(self, version, sync_to_peer=True, sync=False):
+        """PAN-OS downloads the requested version.
+
+        Args:
+            version (string): PAN-OS version (eg. "10.0.2")
+            sync_to_peer (bool, optional): Send a copy to HA peer. Defaults to True.
+            sync (bool, optional): Run job synchronously and return the result. Defaults to False.
+
+        Raises:
+            err.PanDeviceError: on unsuccessful download
+
+        Returns:
+            If sync, returns result of PAN-OS download job
+
+        """
         self._logger.info(
             "Device %s downloading version: %s" % (self.pandevice.id, version)
         )
@@ -73,6 +99,23 @@ class SoftwareUpdater(Updater):
             return True
 
     def install(self, version, load_config=None, sync=False):
+        """Install the requested PAN-OS version.
+
+        Does not download the software or perform the reboot required after
+        installation.
+
+        Args:
+            version (string): PAN-OS version (eg. "10.0.2")
+            load_config (string, optional): Configuration to use for booting new software. Defaults to None.
+            sync (bool, optional): Run job synchronously and return the result. Defaults to False.
+
+        Raises:
+            err.PanDeviceError: on unsuccessful install
+
+        Returns:
+            If sync, returns result of PAN-OS install job
+
+        """
         self._logger.info(
             "Device %s installing version: %s" % (self.pandevice.id, version)
         )
@@ -109,6 +152,27 @@ class SoftwareUpdater(Updater):
         return current_version
 
     def download_install(self, version, load_config=None, sync=False):
+        """Download and install the requested PAN-OS version.
+
+        Like a combinations of the ``check()``, ``download()``, and
+        ``install()`` methods, but with some additional checks. For example, it
+        will not act if the requested version is already running, and it will
+        skip to the install if it is already downloaded.
+
+        Does not perform the required reboot after the install.
+
+        Args:
+            version (string): PAN-OS version (eg. "10.0.2")
+            load_config (string, optional): Configuration to use for booting new software. Defaults to None.
+            sync (bool, optional): Run jobs synchronously and return the result. Defaults to False.
+
+        Raises:
+            err.PanDeviceError: problem found in pre-download checks
+
+        Returns:
+            If sync, returns result of PAN-OS install job
+
+        """
         if isstring(version):
             version = PanOSVersion(version)
         # Get list of software if needed
@@ -139,6 +203,22 @@ class SoftwareUpdater(Updater):
         return result
 
     def download_install_reboot(self, version, load_config=None, sync=False):
+        """Download and install the requested PAN-OS version, then reboot.
+
+        Like a combinations of the ``check()``, ``download()``, and
+        ``install()`` methods with a reboot at the end. It has additional
+        checks. For example, it will not act if the requested version is already
+        running, and it will skip to the install if it is already downloaded.
+
+        Args:
+            version (string): PAN-OS version (eg. "10.0.2")
+            load_config (string, optional): Configuration to use for booting new software. Defaults to None.
+            sync (bool, optional): Run jobs synchronously and return the result. Defaults to False.
+
+        Raises:
+            err.PanDeviceError: problem found in pre-download checks or after reboot
+
+        """
         if isstring(version):
             version = PanOSVersion(version)
         self.download_install(version, load_config, sync=True)
@@ -162,17 +242,35 @@ class SoftwareUpdater(Updater):
             return None
 
     def upgrade_to_version(self, target_version, dryrun=False):
-        """Upgrade to the target version, completely all intermediate upgrades
+        """Upgrade to the target version, completing all intermediate upgrades.
 
-        For example, if firewall is running version 6.0.5 and target version is 7.0.2,
+        For example, if firewall is running version 9.0.5 and target version is 10.0.2,
         then this method will proceed through the following steps:
 
-         - Upgrade to 6.1.0 and reboot
-         - Upgrade to 7.0.0 and reboot
-         - Upgrade to 7.0.1 and reboot
+         - Upgrade to 9.1.0 and reboot
+         - Upgrade to 10.0.0 and reboot
+         - Upgrade to 10.0.2 and reboot
 
-         This method does not support HA pairs.
-         """
+        Does not account for HA pairs.
+
+        Example:
+            This shows how to upgrade a firewall to version 10.0.2. This will
+            work regardless of which version the firewall is currently running::
+
+                from panos.firewall import Firewall
+
+                fw = Firewall("10.0.0.5", "admin", "password")
+                fw.software.upgrade_to_version("10.0.2")
+
+        Args:
+            target_version (string): PAN-OS version (eg. "10.0.2") or "latest"
+            dryrun (bool, optional): Log what steps would be taken, but don't
+                make any changes to the live device. Defaults to False.
+
+        Raises:
+            err.PanDeviceError: any problem during the upgrade process
+
+        """
         # Get list of software if needed
         if not self.versions:
             self.check()
@@ -348,16 +446,41 @@ class SoftwareUpdater(Updater):
 
 class ContentUpdater(Updater):
     def info(self):
+        """Fetch version list from live device.
+
+        Synchronizes this current updater state with the live device.
+
+        """
         response = self._op("request content upgrade info")
         self.pandevice.content_version = self._parse_current_version(response)
         self.versions = self._parse_version_list(response)
 
     def check(self):
+        """Trigger PAN-OS to get versions, then synchronize this object instance.
+
+        First, PAN-OS will reach out to the upgrade servers to get the list of
+        all version that can be upgraded to. Then synchronizes this current
+        updater state with the live device.
+
+        """
         response = self._op("request content upgrade check")
         self.pandevice.content_version = self._parse_current_version(response)
         self.versions = self._parse_version_list(response)
 
     def download(self, sync_to_peer=None, sync=False):
+        """Download the latest content version.
+
+        Args:
+            sync_to_peer (bool, optional): Send a copy to HA peer. Defaults to None.
+            sync (bool, optional): Run jobs synchronously and return the result. Defaults to False.
+
+        Raises:
+            err.PanDeviceError: on unsuccessful download
+
+        Returns:
+            If sync, returns result of download job
+
+        """
         if not self.versions:
             self.check()
         available_versions = map(PanOSVersion, self.versions.keys())
@@ -390,6 +513,21 @@ class ContentUpdater(Updater):
     def install(
         self, version="latest", sync_to_peer=True, skip_commit=False, sync=False
     ):
+        """Install the requested content version.
+
+        Args:
+            version (string): Content version (eg. "8357-6464"). Defaults to "latest".
+            sync_to_peer (bool, optional): Send a copy to HA peer. Defaults to True.
+            skip_commit (bool, optional): Do not perform a commit after install. Defaults to False.
+            sync (bool, optional): Run jobs synchronously and return the result. Defaults to False.
+
+        Raises:
+            err.PanDeviceError: on unsuccessful install
+
+        Returns:
+            If sync, returns result of install job
+
+        """
         if not self.versions:
             self.check()
         available_versions = map(PanOSVersion, self.versions.keys())
@@ -420,6 +558,15 @@ class ContentUpdater(Updater):
         self.install(sync=sync)
 
     def downgrade(self, sync=False):
+        """Return to the previous content version.
+
+        Args:
+            sync (bool, optional): Run jobs synchronously and return the result. Defaults to False.
+
+        Returns:
+            If sync, returns result of install job
+
+        """
         response = self._op('request content downgrade install "previous"')
         if sync:
             return self.pandevice.syncjob(response)
@@ -447,6 +594,18 @@ class ContentUpdater(Updater):
     def download_install(
         self, version="latest", sync_to_peer=False, skip_commit=False, sync=False
     ):
+        """Download and install the requested content version.
+
+        Like a combinations of the ``check()``, ``download()``, and
+        ``install()`` methods.
+
+        Args:
+            version (string): Content version (eg. "8357-6464"). Defaults to "latest".
+            sync_to_peer (bool, optional): Send a copy to HA peer. Defaults to False.
+            skip_commit (bool, optional): Do not perform a commit after install. Defaults to False.
+            sync (bool, optional): Run jobs synchronously and return the result. Defaults to False.
+
+        """
         # Get list of software if needed
         if not self.versions:
             self.check()
