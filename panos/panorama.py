@@ -789,8 +789,8 @@ class Panorama(base.PanDevice):
 
         return ans
 
-    def get_device_group_hierarchy(self):
-        """Returns the device group hierarchy as a flat dict.
+    def get_device_groups_and_parents(self):
+        """Returns a dict of device groups and their parents.
 
         Keys in the dict are the device group's name, while the value is the
         name of that device group's parent.  Top level device groups will have a
