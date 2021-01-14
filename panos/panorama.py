@@ -91,6 +91,44 @@ class DeviceGroup(VersionedPanObject):
     def xpath_vsys(self):
         return self.xpath()
 
+    def update_hierarchical_parent(self, parent=None):
+        """Update this device group's hierarchical parent to the specified device group.
+
+        **Modifies the live device**
+
+        This operation results in a job being submitted to the backend, which
+        this function will block until the move is completed.  The return value of
+        this function is what is returned from
+        :meth:`panos.base.PanDevice.syncjob()`.
+
+        Args:
+            parent (str): The device group that should be the parent of this
+                device group in the hierarchy.  A parent of ``None`` means this device
+                group should not have any parents.
+
+        Returns:
+            dict: Job result
+
+        """
+        dev = self.panorama()
+        logger.debug(
+            '{0}: update hierarchical parent for "{1}": {2}'.format(
+                dev.id, self.name, parent
+            )
+        )
+
+        e = ET.Element("request")
+        em = ET.SubElement(e, "move-dg")
+        eme = ET.SubElement(em, "entry")
+        eme.attrib["name"] = self.name
+
+        if parent is not None:
+            ET.SubElement(eme, "new-parent-dg").text = parent
+
+        cmd = ET.tostring(e, encoding="utf-8")
+        resp = dev.op(cmd, cmd_xml=False)
+        return dev.syncjob(resp)
+
 
 class Template(VersionedPanObject):
     """A panorama template.
@@ -748,6 +786,34 @@ class Panorama(base.PanDevice):
                     "expires": x.find("./expiry-time").text,
                 }
             )
+
+        return ans
+
+    def get_device_groups_and_parents(self):
+        """Returns a dict of device groups and their parents.
+
+        Keys in the dict are the device group's name, while the value is the
+        name of that device group's parent.  Top level device groups will have a
+        parent of ``None``.
+
+        Returns:
+            dict
+
+        """
+        cmd = "show dg-hierarchy"
+
+        # Raises PanDeviceError.
+        resp = self.op(cmd)
+
+        data = resp.find("./result/dg-hierarchy")
+        if data is None:
+            return {}
+
+        ans = {}
+        nodes = [(None, x) for x in data.findall("./dg")]
+        for parent, elm in iter(nodes):
+            ans[elm.attrib["name"]] = parent
+            nodes.extend((elm.attrib["name"], x) for x in elm.findall("./dg"))
 
         return ans
 
