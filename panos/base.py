@@ -5247,7 +5247,7 @@ class PanDevice(PanObject):
 
         fmt = "%a %b %d %H:%M:%S %Z %Y"
         text = res.text.strip()
-        return datetime.strptime(text, fmt)
+        return datetime.datetime.strptime(text, fmt)
 
     def plugins(self):
         """Returns plugin information.
