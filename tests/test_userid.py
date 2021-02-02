@@ -61,6 +61,24 @@ class TestUserId(unittest.TestCase):
 
         fw._xapi_private.user_id.assert_called_once_with(cmd=expected, vsys=vsys)
 
+    def test_batch_tag_user(self):
+        fw = panos.firewall.Firewall(
+            "fw1", "user", "passwd", "authkey", serial="Serial", vsys="vsys1"
+        )
+        fw.xapi
+        fw.userid.batch_start()
+        fw.userid.tag_user("user1", ["tag1",])
+        fw.userid.tag_user("user2", ["tag1",])
+
+    def test_batch_untag_user(self):
+        fw = panos.firewall.Firewall(
+            "fw1", "user", "passwd", "authkey", serial="Serial", vsys="vsys2"
+        )
+        fw.xapi
+        fw.userid.batch_start()
+        fw.userid.untag_user("user1", ["tag1",])
+        fw.userid.untag_user("user2", ["tag1",])
+
 
 if __name__ == "__main__":
     unittest.main()
