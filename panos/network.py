@@ -4028,7 +4028,6 @@ class IpsecTunnel(VersionedPanObject):
     Args:
         name: IPSec tunnel name
         tunnel_interface: apply IPSec VPN tunnels to tunnel interface
-        anti_replay (bool): enable anti-replay check on this tunnel
         ipv6 (bool): (7.0+) use IPv6 for the IPSec tunnel
         type: auto-key (default), manual-key, or global-protect-satellite
         ak_ike_gateway (string/list): IKE gateway name
@@ -4102,9 +4101,6 @@ class IpsecTunnel(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath("tunnel_interface", path="tunnel-interface"))
-        params.append(
-            VersionedParamPath("anti_replay", path="anti-replay", vartype="yesno")
-        )
         params.append(VersionedParamPath("ipv6", exclude=True))
         params[-1].add_profile("7.0.0", vartype="yesno", path="ipv6")
         params.append(
