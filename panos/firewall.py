@@ -386,7 +386,7 @@ class Firewall(PanDevice):
         result = self.xapi.xml_root()
         if self._version_info >= (9, 0, 0):
             regex = re.compile(
-                r"load average: ([\d\.]+).*? ([\d\.]+) id,.*KiB Mem : (\d+) total,.*? (\d+) free",
+                r"load average: ([\d\.]+).*? ([\d\.]+) id,.*KiB Mem :\s+(\d+) total,.*? (\d+) free",
                 re.DOTALL,
             )
         else:
