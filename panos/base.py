@@ -1502,9 +1502,9 @@ class PanObject(object):
             are sibling objects, just like refresh=False assumes.  Doing
             this allows the rest of this function to operate as before.
             """
+            from panos.device import Vsys
             from panos.firewall import Firewall
             from panos.panorama import Panorama, Template, TemplateStack
-            from panos.device import Vsys
 
             new_tree = None
             if reference_type.ROOT == Root.VSYS:
@@ -3420,7 +3420,10 @@ class PanDevice(PanObject):
         # Create a PAN-OS updater subsystem
         self.software = updater.SoftwareUpdater(self)
         # Create a content updater subsystem
-        self.content = updater.ContentUpdater(self)
+        self.content = updater.DynamicUpdater(self, update_type="content")
+
+        self.antivirus = updater.DynamicUpdater(self, update_type="anti-virus")
+        self.wildfire = updater.DynamicUpdater(self, update_type="wildfire")
 
         # State variables
         self.version = None

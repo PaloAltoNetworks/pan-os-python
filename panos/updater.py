@@ -444,16 +444,26 @@ class SoftwareUpdater(Updater):
         return False
 
 
-class ContentUpdater(Updater):
+class DynamicUpdater(Updater):
+    """Install PAN-OS dynamic updates."""
+
+    def __init__(self, pandevice, update_type="content"):
+        super().__init__(pandevice)
+
+        if update_type not in ["content", "anti-virus", "wildfire"]:
+            raise ValueError(
+                "update_type must be one of 'content', 'anti-virus', 'wildfire"
+            )
+
+        self.update_type = update_type
+
     def info(self):
-        """Fetch version list from live device.
-
-        Synchronizes this current updater state with the live device.
-
-        """
-        response = self._op("request content upgrade info")
-        self.pandevice.content_version = self._parse_current_version(response)
+        """Fetch version list from live device."""
+        response = self._op("request {0} upgrade info".format(self.update_type))
         self.versions = self._parse_version_list(response)
+
+        if self.update_type == "content":
+            self.pandevice.content_version = self._parse_current_version(response)
 
     def check(self):
         """Trigger PAN-OS to get versions, then synchronize this object instance.
@@ -463,9 +473,11 @@ class ContentUpdater(Updater):
         updater state with the live device.
 
         """
-        response = self._op("request content upgrade check")
-        self.pandevice.content_version = self._parse_current_version(response)
+        response = self._op("request {0} upgrade check".format(self.update_type))
         self.versions = self._parse_version_list(response)
+
+        if self.update_type == "content":
+            self.pandevice.content_version = self._parse_current_version(response)
 
     def download(self, sync_to_peer=None, sync=False):
         """Download the latest content version.
@@ -488,8 +500,9 @@ class ContentUpdater(Updater):
         if self.versions[str(latest_version)]["downloaded"]:
             return
         self._logger.info(
-            "Device %s downloading content version: %s"
-            % (self.pandevice.id, latest_version)
+            "Device {0} downloading {1} version: {2}".format(
+                self.pandevice.id, self.update_type, latest_version
+            )
         )
         if sync_to_peer is None:
             sync_to_peer_text = ""
@@ -497,14 +510,20 @@ class ContentUpdater(Updater):
             sync_to_peer_text = ' "" sync-to-peer "yes"'
         else:
             sync_to_peer_text = ' "" sync-to-peer "no"'
-        command = "request content upgrade download latest{0}".format(sync_to_peer_text)
+        command = "request {0} upgrade download latest{1}".format(
+            self.update_type, sync_to_peer_text
+        )
         response = self._op(command)
         if sync:
             result = self.pandevice.syncjob(response)
             if not result["success"]:
                 raise err.PanDeviceError(
-                    "Device %s attempt to download content version %s failed: %s"
-                    % (self.pandevice.id, latest_version, result["messages"])
+                    "Device {0} attempt to download {1} version {2} failed: {3}".format(
+                        self.pandevice.id,
+                        self.content_type,
+                        latest_version,
+                        result["messages"],
+                    )
                 )
             return result
         else:
@@ -535,19 +554,28 @@ class ContentUpdater(Updater):
         if self.versions[str(latest_version)]["current"]:
             return
         self._logger.info(
-            "Device %s installing content version: %s" % (self.pandevice.id, version)
+            "Device {0} installing {1} version: {2}".format(
+                self.pandevice.id, self.update_type, version
+            )
         )
-        op = (
-            'request content upgrade install commit "%s" sync-to-peer "%s" version "%s"'
-            % ("no" if skip_commit else "yes", "yes" if sync_to_peer else "no", version)
+        op = 'request {0} upgrade install {1}{2}version "{3}"'.format(
+            self.update_type,
+            'sync-to-peer "yes" ' if sync_to_peer else 'sync-to-peer "no" ',
+            'skip-commit "yes" ' if skip_commit else 'skip-commit "no" ',
+            version,
         )
+
         response = self._op(op)
         if sync:
             result = self.pandevice.syncjob(response)
             if not result["success"]:
                 raise err.PanDeviceError(
-                    "Device %s attempt to install content version %s failed: %s"
-                    % (self.pandevice.id, version, result["messages"])
+                    "Device {0} attempt to install {1} version {2} failed: {3}".format(
+                        self.pandevice.id,
+                        self.update_type,
+                        version,
+                        result["messages"],
+                    )
                 )
             return result
         else:
@@ -567,7 +595,9 @@ class ContentUpdater(Updater):
             If sync, returns result of install job
 
         """
-        response = self._op('request content downgrade install "previous"')
+        response = self._op(
+            'request {0} downgrade install "previous"'.format(self.update_type)
+        )
         if sync:
             return self.pandevice.syncjob(response)
         else:
