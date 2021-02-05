@@ -1502,9 +1502,9 @@ class PanObject(object):
             are sibling objects, just like refresh=False assumes.  Doing
             this allows the rest of this function to operate as before.
             """
+            from panos.device import Vsys
             from panos.firewall import Firewall
             from panos.panorama import Panorama, Template, TemplateStack
-            from panos.device import Vsys
 
             new_tree = None
             if reference_type.ROOT == Root.VSYS:
@@ -5292,3 +5292,80 @@ class PanDevice(PanObject):
             )
 
         return ans
+
+    def is_ready(self, sync=False, interval=5.0):
+        """Returns if the autocommit job has completed successfully, and the
+        device is ready for configuration.  Optionally blocks until the device
+        is ready.
+
+        Returns: boolean
+        """
+
+        if interval is not None:
+            try:
+                interval = float(interval)
+                if interval < 0:
+                    raise ValueError
+            except ValueError:
+                raise err.PanDeviceError("Invalid interval {0}".format(interval))
+
+        start_time = time.time()
+        attempts = 0
+
+        time.sleep(interval)
+
+        while True:
+            attempts += 1
+
+            result = self._is_ready()
+
+            if result:
+                self._logger.debug("Device is ready!")
+                return result
+            elif sync is False:
+                self._logger.debug("Device is not ready, but sync=False.")
+                return result
+
+            # See if we hit timeout.
+            if (
+                self.timeout is not None
+                and self.timeout != 0
+                and time.time() > start_time + self.timeout
+            ):
+                raise err.PanDeviceError("Timeout waiting for device to become ready.")
+
+            # Sleep and try again.
+            self._logger.debug("Device is not ready.  Attempts: {}".format(attempts))
+            self._logger.debug("Sleeping {:.2f} seconds".format(interval))
+            time.sleep(interval)
+
+    def _is_ready(self):
+        """Individual check to see if the autocommit job has completed
+        successfully, and the device is ready for configuration.
+
+        This method will also return true if the device has been running long
+        enough for the AutoCom job to disappear from the queue.
+
+        Returns: boolean
+        """
+
+        jobs = self.op("<show><jobs><all></all></jobs></show>", cmd_xml=False)
+
+        if len(jobs) == 0:
+            return False
+
+        for j in jobs:
+            job_type = j.findtext(".//type")
+            job_result = j.findtext(".//result")
+
+            if job_type is None or job_result is None:
+                return False
+
+            if job_type == "AutoCom" and job_result == "OK":
+                return True
+            elif job_type == "AutoCom":
+                return False
+
+        # If we get to this point, the autocommit job is no longer in the job
+        # history and it is assumed the device is ready.
+        return True
