@@ -342,13 +342,10 @@ class Firewall(PanDevice):
             )
         op_vars = (
             Var("serial"),
-            Var("ip-address", "management_ip"),
-            Var("sw-version", "version"),
             Var("multi-vsys", vartype="bool"),
             Var("vsys_id", "vsys", default="vsys1"),
             Var("vsys_name"),
             Var("ha/state/peer/serial", "serial_ha_peer"),
-            Var("connected", "state.connected"),
         )
         if len(xml[0]) > 1:
             # This is a 'show devices' op command
@@ -361,11 +358,15 @@ class Firewall(PanDevice):
                 system = fw.find_or_create(None, device.SystemSettings)
                 system.hostname = entry.findtext("hostname")
                 system.ip_address = entry.findtext("ip-address")
+                if entry.findtext("ipv6-address") != "unknown":
+                    system.ipv6_address = entry.findtext("ipv6-address")
                 # Add state
                 fw.state.connected = yesno(entry.findtext("connected"))
                 fw.state.unsupported_version = yesno(
                     entry.findtext("unsupported-version")
                 )
+                fw._set_version_and_version_info(entry.findtext("sw-version"))
+                fw.content_version = entry.findtext("app-version")
         else:
             # This is a config command
             # For each vsys, instantiate a new firewall
