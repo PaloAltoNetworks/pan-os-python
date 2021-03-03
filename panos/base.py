@@ -3915,9 +3915,10 @@ class PanDevice(PanObject):
 
         Variables refreshed:
 
-        - version
+        - PAN-OS version
         - platform
         - serial
+        - content version (if this is a :class:`panos.firewall.Firewall`)
         - multi_vsys (if this is a :class:`panos.firewall.Firewall`)
 
         Returns:

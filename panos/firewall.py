@@ -239,6 +239,7 @@ class Firewall(PanDevice):
 
         """
         super(Firewall, self)._save_system_info(system_info)
+        self.content_version = system_info["system"]["app-version"]
         self.multi_vsys = system_info["system"]["multi-vsys"] == "on"
 
     def element(self):
