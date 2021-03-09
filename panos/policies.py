@@ -119,6 +119,7 @@ class SecurityRule(VersionedPanObject):
     # TODO: Add QoS variables
     SUFFIX = ENTRY
     ROOT = Root.VSYS
+    HIT_COUNT_STYLE = "security"
 
     def _setup(self):
         # xpaths
@@ -283,6 +284,7 @@ class NatRule(VersionedPanObject):
 
     SUFFIX = ENTRY
     ROOT = Root.VSYS
+    HIT_COUNT_STYLE = "nat"
 
     def _setup(self):
         # xpaths
@@ -613,6 +615,7 @@ class PolicyBasedForwarding(VersionedPanObject):
 
     SUFFIX = ENTRY
     ROOT = Root.VSYS
+    HIT_COUNT_STYLE = "pbf"
 
     def _setup(self):
         # xpaths

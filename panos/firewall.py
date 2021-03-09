@@ -484,6 +484,90 @@ class Firewall(PanDevice):
                             self.add(x)
                     break
 
+    def rule_hit_count(self, style=None, rules=None):
+        """Retrieve the rule hit count.
+
+        PAN-OS 8.1+
+
+        Args:
+            style (str): The rule style to use (used if the style cannot automatically
+                be determined from the `rules` param).  The style can be
+                "application-override", "authentication", "decryption", "dos",
+                "nat", "pbf", "qos", "sdwan", "security", or "tunnel-inspect".  If
+                unspecified and no rules are specified in which the type can be
+                inferred, then this param defaults to "security".
+            rules (list): A list of rules.  This can be a mix of `panos.policies`
+                instances or basic strings.  If no rules are given, then the hit
+                count for all rules is retrieved.
+
+        Returns:
+            dict:  A dict where the key is the rule name and the value is a dict of hit count information.
+
+        """
+        if self.retrieve_panos_version() < (8, 1, 0):
+            raise err.PanDeviceError("Rule hit count is supported in PAN-OS 8.1+")
+
+        vals = []
+        val_types = set([])
+        for r in rules or []:
+            if hasattr(r, "HIT_COUNT_STYLE") and hasattr(r, "uid"):
+                val_types.add(r.HIT_COUNT_STYLE)
+                vals.append(r.uid)
+            elif not isstring(r):
+                raise ValueError("Unsupported type sent: {0}".format(r.__class__))
+            else:
+                vals.append(r)
+
+        if len(val_types) > 1:
+            raise ValueError("Multiple types encountered: {0}".format(val_types))
+
+        if val_types:
+            style = val_types.pop()
+
+        if style is None:
+            style = "security"
+
+        cmd = ET.Element("show")
+        sub = ET.SubElement(cmd, "rule-hit-count")
+        sub = ET.SubElement(sub, "vsys")
+        sub = ET.SubElement(sub, "vsys-name")
+        sub = ET.SubElement(sub, "entry", {"name": self.vsys or "vsys1"})
+        sub = ET.SubElement(sub, "rule-base")
+        sub = ET.SubElement(sub, "entry", {"name": style})
+        sub = ET.SubElement(sub, "rules")
+
+        if not vals:
+            ET.SubElement(sub, "all")
+        else:
+            sub = ET.SubElement(sub, "list")
+            for r in vals:
+                ET.SubElement(sub, "member").text = r
+
+        res = self.op(ET.tostring(cmd, encoding="utf-8"), cmd_xml=False)
+
+        str_fields = ("latest",)
+        int_fields = (
+            "hit-count",
+            "last-hit-timestamp",
+            "last-reset-timestamp",
+            "first-hit-timestamp",
+            "rule-creation-timestamp",
+            "rule-modification-timestamp",
+        )
+        ans = {}
+        for elm in res.findall(
+            "./result/rule-hit-count/vsys/entry/rule-base/entry/rules/entry"
+        ):
+            name = elm.attrib["name"]
+            val = {"name": name}
+            for field in str_fields:
+                val[field] = elm.find("./{0}".format(field)).text
+            for field in int_fields:
+                val[field] = int(elm.find("./{0}".format(field)).text)
+            ans[name] = val
+
+        return ans
+
 
 class FirewallState(object):
     def __init__(self):
