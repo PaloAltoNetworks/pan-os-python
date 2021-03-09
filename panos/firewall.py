@@ -24,7 +24,7 @@ import xml.etree.ElementTree as ET
 from decimal import Decimal
 
 import panos.errors as err
-from panos import device, getlogger, yesno
+from panos import device, getlogger, isstring, yesno
 from panos.base import ENTRY, PanDevice, Root
 from panos.base import VarPath as Var
 
