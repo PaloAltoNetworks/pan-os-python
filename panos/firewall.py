@@ -484,21 +484,21 @@ class Firewall(PanDevice):
                             self.add(x)
                     break
 
-    def rule_hit_count(self, style=None, rules=None):
+    def rule_hit_count(self, rules=None, style=None):
         """Retrieve the rule hit count.
 
         PAN-OS 8.1+
 
         Args:
+            rules (list): A list of rules.  This can be a mix of `panos.policies`
+                instances or basic strings.  If no rules are given, then the hit
+                count for all rules is retrieved.
             style (str): The rule style to use (used if the style cannot automatically
                 be determined from the `rules` param).  The style can be
                 "application-override", "authentication", "decryption", "dos",
                 "nat", "pbf", "qos", "sdwan", "security", or "tunnel-inspect".  If
                 unspecified and no rules are specified in which the type can be
                 inferred, then this param defaults to "security".
-            rules (list): A list of rules.  This can be a mix of `panos.policies`
-                instances or basic strings.  If no rules are given, then the hit
-                count for all rules is retrieved.
 
         Returns:
             dict:  A dict where the key is the rule name and the value is a dict of hit count information.
