@@ -70,6 +70,7 @@ class PanObject(object):
     CHILDMETHODS = ()
     HA_SYNC = True
     TEMPLATE_NATIVE = False
+    _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
 
     def __init__(self, *args, **kwargs):
         # Set the 'name' variable
@@ -2257,7 +2258,6 @@ class VersionedPanObject(PanObject):
 
     """
 
-    _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
     _DEFAULT_NAME = None
     _TEMPLATE_DEVICE_XPATH = "/config/devices/entry[@name='localhost.localdomain']"
     _TEMPLATE_VSYS_XPATH = _TEMPLATE_DEVICE_XPATH + "/vsys/entry[@name='{vsys}']"
