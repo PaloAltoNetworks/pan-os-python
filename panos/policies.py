@@ -773,9 +773,16 @@ class RulebaseOpState(object):
     """Operational state handling for rulebase classes."""
 
     def __init__(self, obj):
+        self.hit_count = RulebaseHitCount(obj)
+
+
+class RulebaseHitCount(object):
+    """Operational state handling for rulebase hit counts."""
+
+    def __init__(self, obj):
         self.obj = obj
 
-    def get_rule_hit_count(self, style, rules=None, all_rules=False):
+    def refresh(self, style, rules=None, all_rules=False):
         """Retrieves hit count information for the specified rules.
 
         PAN-OS 8.1+
@@ -839,12 +846,13 @@ class RulebaseOpState(object):
             "./result/rule-hit-count/vsys/entry/rule-base/entry/rules/entry"
         ):
             name = elm.attrib["name"]
-            val = HitCount(name, elm)
-            ans[name] = val
             for x in kids:
                 if x.uid == name:
-                    x.opstate.hit_count = val
+                    x.opstate.hit_count.refresh(elm)
+                    ans[name] = x.opstate.hit_count
                     break
+            else:
+                ans[name] = HitCount(name=name, elm=elm)
 
         return ans
 
@@ -852,8 +860,20 @@ class RulebaseOpState(object):
 class HitCount(object):
     """Hit count operational data."""
 
-    def __init__(self, name=None, elm=None):
-        self.name = name
+    def __init__(self, obj=None, name=None, elm=None):
+        self.obj = obj
+        self.name = name if obj is None else obj.uid
+        self._from(elm)
+
+    def refresh(self, elm=None):
+        if elm is None and self.obj is not None:
+            self.obj.parent.opstate.hit_count.refresh(
+                self.obj.HIT_COUNT_STYLE, [self.name,],
+            )
+        else:
+            self._from(elm)
+
+    def _from(self, elm=None):
         self.latest = self._str(elm, "latest")
         self.hit_count = self._int(elm, "hit-count")
         self.last_hit_timestamp = self._int(elm, "last-hit-timestamp")
@@ -880,13 +900,4 @@ class RuleOpState(object):
 
     def __init__(self, obj):
         self.obj = obj
-        self.hit_count = HitCount()
-
-    def get_rule_hit_count(self):
-        """Refreshes the rule hit count for this specific rule."""
-        name = self.obj.uid
-        ans = self.obj.parent.opstate.get_rule_hit_count(
-            self.obj.HIT_COUNT_STYLE, [name,]
-        )
-        self.hit_count = ans[name]
-        self.hit_count = ans.get(name, HitCount())
+        self.hit_count = HitCount(obj)
