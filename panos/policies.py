@@ -277,6 +277,12 @@ class NatRule(VersionedPanObject):
         target (list): Apply this policy to the listed firewalls only
             (applies to panorama/device groups only)
         tag (list): Administrative tags
+        destination_dynamic_translated_address (str): (PAN-OS 8.1+) Dynamic
+            destination translated address.
+        destination_dynamic_translated_port (int): (PAN-OS 8.1+) Dynamic
+            destination translated port.
+        destination_dynamic_translated_distribution (str): (PAN-OS 8.1+) Dynamic
+            destination translated distribution.
         uuid (str): (PAN-OS 9.0+) The UUID for this rule.
 
     """
