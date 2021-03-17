@@ -860,10 +860,20 @@ class RulebaseHitCount(object):
 class HitCount(object):
     """Hit count operational data."""
 
+    FIELDS = (
+        ("latest", "latest", "str"),
+        ("hit_count", "hit-count", "int"),
+        ("last_hit_timestamp", "last-hit-timestamp", "int"),
+        ("last_reset_timestamp", "last-reset-timestamp", "int"),
+        ("first_hit_timestamp", "first-hit-timestamp", "int"),
+        ("rule_creation_timestamp", "rule-creation-timestamp", "int"),
+        ("rule_modification_timestamp", "rule-modification-timestamp", "int"),
+    )
+
     def __init__(self, obj=None, name=None, elm=None):
         self.obj = obj
         self.name = name if obj is None else obj.uid
-        self._from(elm)
+        self._refresh_xml(elm)
 
     def refresh(self, elm=None):
         if elm is None and self.obj is not None:
@@ -871,28 +881,28 @@ class HitCount(object):
                 self.obj.HIT_COUNT_STYLE, [self.name,],
             )
         else:
-            self._from(elm)
+            self._refresh_xml(elm)
 
-    def _from(self, elm=None):
-        self.latest = self._str(elm, "latest")
-        self.hit_count = self._int(elm, "hit-count")
-        self.last_hit_timestamp = self._int(elm, "last-hit-timestamp")
-        self.last_reset_timestamp = self._int(elm, "last-reset-timestamp")
-        self.first_hit_timestamp = self._int(elm, "first-hit-timestamp")
-        self.rule_creation_timestamp = self._int(elm, "rule-creation-timestamp")
-        self.rule_modification_timestamp = self._int(elm, "rule-modification-timestamp")
+    def _refresh_xml(self, elm):
+        for param, path, param_type in self.FIELDS:
+            if param_type == "int":
+                setattr(self, param, self._int(elm, path))
+            else:
+                setattr(self, param, self._str(elm, path))
 
     def _str(self, elm, field):
         if elm is None:
-            return None
+            return
 
-        return elm.find("./{0}".format(field)).text
+        val = elm.find("./{0}".format(field))
+        if val is not None:
+            return val.text
 
     def _int(self, elm, field):
-        if elm is None:
-            return None
+        val = self._str(elm, field)
 
-        return int(elm.find("./{0}".format(field)).text)
+        if val is not None:
+            return int(val)
 
 
 class RuleOpState(object):
