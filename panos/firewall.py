@@ -381,6 +381,9 @@ class Firewall(PanDevice):
                         )
                 else:
                     firewall_instances.append(Firewall(serial=entry.get("name")))
+        # Propagate parent to firewall instances
+        for fw in firewall_instances:
+            fw.parent = self.parent
         return firewall_instances
 
     def show_system_resources(self):

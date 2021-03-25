@@ -566,6 +566,7 @@ class Panorama(base.PanDevice):
 
         # Create firewall instances
         tmp_fw = self.FIREWALL_CLASS()
+        tmp_fw.parent = self
         firewall_instances = tmp_fw.refreshall_from_xml(
             devices_xml, refresh_children=not expand_vsys
         )
