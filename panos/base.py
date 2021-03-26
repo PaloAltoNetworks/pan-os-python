@@ -5293,3 +5293,25 @@ class PanDevice(PanObject):
             )
 
         return ans
+
+    def whoami(self):
+        """Returns which user you're currently authenticated as.
+
+        NOTE:  PAN-OS 10.0+
+
+        Returns:
+            string
+        """
+        res = self.op("<show><admins/></show>", cmd_xml=False)
+
+        for o in res.findall("./result/admins/entry"):
+            name = None
+            is_self = False
+            for child in o:
+                if child.tag == "admin":
+                    name = child.text
+                elif child.tag == "self":
+                    is_self = True
+
+                if name is not None and is_self:
+                    return name
