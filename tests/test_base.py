@@ -1371,5 +1371,51 @@ class TestPanDevice(unittest.TestCase):
         self.assertEqual(ad.get("downloaded"), "yes")
 
 
+class TestWhoami(unittest.TestCase):
+    def test_self_is_present(self):
+        expected = "user2"
+        resp = [
+            "<response>",
+            "<result>",
+            "<admins>",
+            "<entry><admin>user1</admin><type>Web</type></entry>",
+            "<entry><admin>{0}</admin><type>Web</type><self/></entry>".format(expected),
+            "</admins>",
+            "</result>",
+            "</response>",
+        ]
+
+        spec = {
+            "return_value": ET.fromstring("".join(resp)),
+        }
+
+        con = Base.PanDevice("127.0.0.1", "a", "b", "c")
+        con.op = mock.Mock(**spec)
+
+        self.assertEqual(expected, con.whoami())
+
+    def test_not_present(self):
+        resp = [
+            "<response>",
+            "<result>",
+            "<admins>",
+            "<entry><admin>user1</admin><type>Web</type></entry>",
+            "<entry><admin>user2</admin><type>Web</type></entry>",
+            "<entry><admin>user3</admin><type>Web</type></entry>",
+            "</admins>",
+            "</result>",
+            "</response>",
+        ]
+
+        spec = {
+            "return_value": ET.fromstring("".join(resp)),
+        }
+
+        con = Base.PanDevice("127.0.0.1", "a", "b", "c")
+        con.op = mock.Mock(**spec)
+
+        self.assertIsNone(con.whoami())
+
+
 if __name__ == "__main__":
     unittest.main()
