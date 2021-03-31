@@ -4958,3 +4958,81 @@ class GreTunnel(VersionedPanObject):
         params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled"))
 
         self._params = tuple(params)
+
+
+class Dhcp(VersionedPanObject):
+    """DHCP config.
+
+    Args:
+        name (str): Interface name.
+
+    """
+
+    SUFFIX = ENTRY
+    ROOT = Root.DEVICE
+
+    CHILDTYPES = ("network.DhcpRelay",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/network/dhcp/interface")
+
+        # params
+        self._params = ()
+
+
+class DhcpRelay(VersionedPanObject):
+    """DHCP relay config.
+
+    Args:
+        enabled (bool): Enabled.
+        servers (list): Relay server IP addresses.
+        ipv6_enabled (bool): Enable DHCPv6 relay.
+
+    """
+
+    SUFFIX = None
+    CHILDTYPES = ("network.DhcpRelayIpv6Address",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/relay")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath("enabled", vartype="yesno", path="ip/enabled"),
+        )
+        params.append(
+            VersionedParamPath("servers", vartype="member", path="ip/server"),
+        )
+        params.append(
+            VersionedParamPath("ipv6_enabled", vartype="yesno", path="ipv6/enabled"),
+        )
+
+        self._params = tuple(params)
+
+
+class DhcpRelayIpv6Address(VersionedPanObject):
+    """DHCP relay IPv6 address.
+
+    Args:
+        name (str): DHCP server IPv6 address.
+        interface (str): Outgoing interface when using an IPv6 multicast address for
+            the DHCPv6 server.
+
+    """
+
+    SUFFIX = ENTRY
+    ROOT = Root.DEVICE
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/ipv6/server")
+
+        params = []
+
+        params.append(VersionedParamPath("interface", path="interface"),)
+
+        self._params = tuple(params)
