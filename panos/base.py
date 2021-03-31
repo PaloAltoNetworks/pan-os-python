@@ -2278,6 +2278,9 @@ class VersionedPanObject(PanObject):
 
         self._setup()
 
+        if hasattr(self, "_setup_opstate") and callable(self._setup_opstate):
+            self._setup_opstate()
+
         try:
             params = super(VersionedPanObject, self).__getattribute__("_params")
         except AttributeError:
