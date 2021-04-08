@@ -70,6 +70,7 @@ class PanObject(object):
     CHILDMETHODS = ()
     HA_SYNC = True
     TEMPLATE_NATIVE = False
+    _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
 
     def __init__(self, *args, **kwargs):
         # Set the 'name' variable
@@ -2257,7 +2258,6 @@ class VersionedPanObject(PanObject):
 
     """
 
-    _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
     _DEFAULT_NAME = None
     _TEMPLATE_DEVICE_XPATH = "/config/devices/entry[@name='localhost.localdomain']"
     _TEMPLATE_VSYS_XPATH = _TEMPLATE_DEVICE_XPATH + "/vsys/entry[@name='{vsys}']"
@@ -2277,6 +2277,9 @@ class VersionedPanObject(PanObject):
         self._stubs = VersionedStubs()
 
         self._setup()
+
+        if hasattr(self, "_setup_opstate") and callable(self._setup_opstate):
+            self._setup_opstate()
 
         try:
             params = super(VersionedPanObject, self).__getattribute__("_params")
@@ -3915,9 +3918,10 @@ class PanDevice(PanObject):
 
         Variables refreshed:
 
-        - version
+        - PAN-OS version
         - platform
         - serial
+        - content version (if this is a :class:`panos.firewall.Firewall`)
         - multi_vsys (if this is a :class:`panos.firewall.Firewall`)
 
         Returns:
@@ -5247,7 +5251,7 @@ class PanDevice(PanObject):
 
         fmt = "%a %b %d %H:%M:%S %Z %Y"
         text = res.text.strip()
-        return datetime.strptime(text, fmt)
+        return datetime.datetime.strptime(text, fmt)
 
     def plugins(self):
         """Returns plugin information.
@@ -5292,3 +5296,25 @@ class PanDevice(PanObject):
             )
 
         return ans
+
+    def whoami(self):
+        """Returns which user you're currently authenticated as.
+
+        NOTE:  PAN-OS 10.0+
+
+        Returns:
+            string
+        """
+        res = self.op("<show><admins/></show>", cmd_xml=False)
+
+        for o in res.findall("./result/admins/entry"):
+            name = None
+            is_self = False
+            for child in o:
+                if child.tag == "admin":
+                    name = child.text
+                elif child.tag == "self":
+                    is_self = True
+
+                if name is not None and is_self:
+                    return name

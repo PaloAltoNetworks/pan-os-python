@@ -1,11 +1,12 @@
 [flake8]
 select = C,E,F,W,B,D,B950
-ignore = E203,E501,W503,D203,D102,D103,D400
+ignore = E203,E501,W503,D203,D102,D103,D107,D400
 # E203,E501,W503: per recommendation from black
 # D203: Not compatible with pep257
 # D102,D103: Hopefully remove someday, too many public functions to document for now
+# D107: __init__ docstring is redundant, already require class docstring
 # D400: Period at end of every docstring, maybe change some day, not high priority
-max-line-length = 80
+max-line-length = 88
 # max-complexity = 20
 no-isort-config = true
 use-varnames-strict-mode = true
