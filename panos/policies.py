@@ -18,6 +18,7 @@
 """Policies module contains policies and rules that exist in the 'Policies' tab in the firewall GUI"""
 
 import xml.etree.ElementTree as ET
+from datetime import datetime
 
 import panos.errors as err
 from panos import getlogger
@@ -864,6 +865,8 @@ class RulebaseHitCount(object):
 
 
 class OpStateObject(object):
+    """A container object for opstate data."""
+
     def _str(self, elm, field):
         if elm is not None:
             val = elm.find("./{0}".format(field))
@@ -874,6 +877,15 @@ class OpStateObject(object):
         val = self._str(elm, field)
         if val is not None:
             return int(val)
+
+    def _datetime(self, elm, field, fmt):
+        val = self._str(elm, field)
+        if val is not None:
+            try:
+                return datetime.strptime(val, fmt)
+            except ValueError:
+                pass
+            return val
 
 
 class HitCount(OpStateObject):
@@ -945,7 +957,6 @@ class RuleAuditComment(object):
 
         """
         dev = self.obj.nearest_pandevice()
-        xpath = self.obj.xpath()
 
         # Build up the query.
         query = "(subtype eq audit-comment)"
@@ -984,7 +995,6 @@ class RuleAuditComment(object):
             string
 
         """
-        dev = self.obj.nearest_pandevice()
         cmd = ET.Element("show")
         sub = ET.SubElement(cmd, "config")
         sub = ET.SubElement(sub, "list")
@@ -1023,4 +1033,4 @@ class AuditCommentLog(OpStateObject):
         self.admin = self._str(elm, "admin")
         self.comment = self._str(elm, "comment")
         self.config_version = self._int(elm, "config_ver")
-        self.time = self._str(elm, "time_generated")
+        self.time = self._datetime(elm, "time_generated", "%Y/%m/%d %H:%M:%S")
