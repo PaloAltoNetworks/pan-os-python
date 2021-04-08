@@ -1,3 +1,4 @@
+from datetime import datetime
 import xml.etree.ElementTree as ET
 
 try:
@@ -371,6 +372,8 @@ def test_audit_comment_history():
         """
         ),
     )
+    t1 = datetime(2021, 4, 5, 15, 21, 50)
+    t2 = datetime(2021, 4, 5, 14, 57, 40)
 
     ans = obj.opstate.audit_comment.history()
 
@@ -378,6 +381,8 @@ def test_audit_comment_history():
     assert ans[0].admin == "admin1"
     assert ans[0].comment == "newest comment"
     assert ans[0].config_version == 16
+    assert ans[0].time == t1
     assert ans[1].admin == "admin2"
     assert ans[1].comment == "initial comment"
     assert ans[1].config_version == 15
+    assert ans[1].time == t2
