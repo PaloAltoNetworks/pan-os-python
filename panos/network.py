@@ -99,6 +99,10 @@ class Zone(VersionedPanObject):
         enable_user_identification (bool): If user identification is enabled
         include_acl (list/str): User identification ACL include list
         exclude_acl (list/str): User identification ACL exclude list
+        enable_packet_buffer_protection (bool): (PAN-OS 8.0+) Enable packet buffer protection
+        enable_device_identification (bool): (PAN-OS 10.0+) Enable device identification
+        device_include_acl (list): (PAN-OS 10.0+) Device include ACLs list
+        device_exclude_acl (list): (PAN-OS 10.0+) Device exclude ACLs list
 
     """
 
@@ -147,6 +151,24 @@ class Zone(VersionedPanObject):
             VersionedParamPath(
                 "exclude_acl", vartype="member", path="user-acl/exclude-list"
             )
+        )
+        params.append(
+            VersionedParamPath("enable_packet_buffer_protection", exclude=True,)
+        )
+        params[-1].add_profile(
+            "8.0.0", path="network/enable-packet-buffer-protection", vartype="yesno",
+        )
+        params.append(VersionedParamPath("enable_device_identification", exclude=True,))
+        params[-1].add_profile(
+            "10.0.0", path="enable-device-identification", vartype="yesno",
+        )
+        params.append(VersionedParamPath("device_include_acl", exclude=True,))
+        params[-1].add_profile(
+            "10.0.0", path="device-acl/include-list", vartype="member",
+        )
+        params.append(VersionedParamPath("device_exclude_acl", exclude=True,))
+        params[-1].add_profile(
+            "10.0.0", path="device-acl/exclude-acl", vartype="member",
         )
 
         self._params = tuple(params)
