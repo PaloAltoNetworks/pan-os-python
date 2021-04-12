@@ -977,14 +977,13 @@ class RuleAuditComment(object):
         query += " and (path contains '\\'{0}\\'')".format(p.vsys)
 
         extra_qs = {
-            "query": query,
             "dir": direction,
             "uniq": "yes",
         }
         if skip is not None:
             extra_qs["skip"] = "{0}".format(int(skip))
 
-        resp = dev.xapi.log("config", count, extra_qs=extra_qs)
+        resp = dev.xapi.log("config", count, filter=query, extra_qs=extra_qs)
 
         return [AuditCommentLog(x) for x in resp.findall("./result/log/logs/entry")]
 
