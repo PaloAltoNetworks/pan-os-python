@@ -1,3 +1,4 @@
+from datetime import datetime
 import xml.etree.ElementTree as ET
 
 try:
@@ -9,6 +10,7 @@ from panos.firewall import Firewall
 from panos.policies import HitCount
 from panos.policies import Rulebase
 from panos.policies import SecurityRule
+from panos.policies import AuditCommentLog
 
 
 HIT_COUNT_PREFIX = """
@@ -34,9 +36,14 @@ HIT_COUNT_SUFFIX = """
 """
 
 
-def _hit_count_fw_setup(*args):
+def _fw():
     fw = Firewall("127.0.0.1", "admin", "admin", "secret")
     fw._version_info = (9999, 0, 0)
+    return fw
+
+
+def _hit_count_fw_setup(*args):
+    fw = _fw()
 
     inner = "".join(ET.tostring(x, encoding="utf-8").decode("utf-8") for x in args)
 
@@ -238,3 +245,144 @@ def test_security_rule_hit_count_refresh():
     o.opstate.hit_count.refresh()
 
     _hit_count_eq(expected, o.opstate.hit_count)
+
+
+def test_current_audit_comment():
+    expected = "Hello, world"
+
+    fw = _fw()
+    rb = Rulebase()
+    fw.add(rb)
+    obj = SecurityRule("foo")
+    rb.add(obj)
+    fw.op = mock.Mock(
+        return_value=ET.fromstring(
+            "\n".join(
+                [
+                    "<response>",
+                    "<result>",
+                    "<entry>",
+                    "<xpath>{0}</xpath>".format(obj.xpath()),
+                    "<dirtyId>17</dirtyId>",
+                    "<comment>{0}</comment>".format(expected),
+                    "<prevdirtyId>0</prevdirtyId>",
+                    "</entry>",
+                    "</result>",
+                    "</response>",
+                ]
+            ),
+        ),
+    )
+
+    assert expected == obj.opstate.audit_comment.current()
+
+
+def test_audit_comment_history():
+    fw = _fw()
+    rb = Rulebase()
+    fw.add(rb)
+    obj = SecurityRule("my policy")
+    rb.add(obj)
+    fw.xapi.log = mock.Mock(
+        return_value=ET.fromstring(
+            """
+<response status="success"><result>
+  <job>
+    <tenq>10:28:38</tenq>
+    <tdeq>10:28:38</tdeq>
+    <tlast>10:28:38</tlast>
+    <status>FIN</status>
+    <id>729</id>
+  </job>
+  <log>
+    <logs count="2" progress="100">
+      <entry logid="6947456634637516808">
+        <domain>1</domain>
+        <receive_time>2021/04/05 15:21:50</receive_time>
+        <serial>unknown</serial>
+        <seqno>2306</seqno>
+        <actionflags>0x0</actionflags>
+        <is-logging-service>no</is-logging-service>
+        <type>CONFIG</type>
+        <subtype>1</subtype>
+        <config_ver>16</config_ver>
+        <time_generated>2021/04/05 15:21:50</time_generated>
+        <dg_hier_level_1>0</dg_hier_level_1>
+        <dg_hier_level_2>0</dg_hier_level_2>
+        <dg_hier_level_3>0</dg_hier_level_3>
+        <dg_hier_level_4>0</dg_hier_level_4>
+        <device_name>PA-VM</device_name>
+        <vsys_id>0</vsys_id>
+        <host>174.87.104.22</host>
+        <cmd>audit-commit</cmd>
+        <admin>admin1</admin>
+        <client>Web</client>
+        <result>Succeeded</result>
+        <path> vsys  vsys1 rulebase security rules  my policy</path>
+        <dg_id>0</dg_id>
+        <comment>newest comment</comment>
+        <before-change-preview>d0c5e58b-63d1-475b-a9b3-25f169ee296e</before-change-preview>
+        <after-change-preview>d0c5e58b-63d1-475b-a9b3-25f169ee296e</after-change-preview>
+        <full-path>/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security/rules/entry[@name='my policy']</full-path>
+      </entry>
+      <entry logid="6947456634637516805">
+        <domain>1</domain>
+        <receive_time>2021/04/05 14:57:40</receive_time>
+        <serial>unknown</serial>
+        <seqno>2303</seqno>
+        <actionflags>0x0</actionflags>
+        <is-logging-service>no</is-logging-service>
+        <type>CONFIG</type>
+        <subtype>1</subtype>
+        <config_ver>15</config_ver>
+        <time_generated>2021/04/05 14:57:40</time_generated>
+        <dg_hier_level_1>0</dg_hier_level_1>
+        <dg_hier_level_2>0</dg_hier_level_2>
+        <dg_hier_level_3>0</dg_hier_level_3>
+        <dg_hier_level_4>0</dg_hier_level_4>
+        <device_name>PA-VM</device_name>
+        <vsys_id>0</vsys_id>
+        <host>174.87.104.22</host>
+        <cmd>audit-commit</cmd>
+        <admin>admin2</admin>
+        <client>Web</client>
+        <result>Succeeded</result>
+        <path> vsys  vsys1 rulebase security rules  my policy</path>
+        <dg_id>0</dg_id>
+        <comment>initial comment</comment>
+        <before-change-preview>d0c5e58b-63d1-475b-a9b3-25f169ee296e</before-change-preview>
+        <after-change-preview>d0c5e58b-63d1-475b-a9b3-25f169ee296e</after-change-preview>
+        <full-path>/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security/rules/entry[@name='my policy']</full-path>
+      </entry>
+    </logs>
+  </log>
+  <meta>
+    <devices>
+      <entry name="localhost.localdomain">
+        <hostname>localhost.localdomain</hostname>
+        <vsys>
+          <entry name="vsys1">
+            <display-name>vsys1</display-name>
+          </entry>
+        </vsys>
+      </entry>
+    </devices>
+  </meta>
+</result></response>
+        """
+        ),
+    )
+    t1 = datetime(2021, 4, 5, 15, 21, 50)
+    t2 = datetime(2021, 4, 5, 14, 57, 40)
+
+    ans = obj.opstate.audit_comment.history()
+
+    assert len(ans) == 2
+    assert ans[0].admin == "admin1"
+    assert ans[0].comment == "newest comment"
+    assert ans[0].config_version == 16
+    assert ans[0].time == t1
+    assert ans[1].admin == "admin2"
+    assert ans[1].comment == "initial comment"
+    assert ans[1].config_version == 15
+    assert ans[1].time == t2
