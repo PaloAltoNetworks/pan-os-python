@@ -18,6 +18,7 @@
 """Policies module contains policies and rules that exist in the 'Policies' tab in the firewall GUI"""
 
 import xml.etree.ElementTree as ET
+from datetime import datetime
 
 import panos.errors as err
 from panos import getlogger
@@ -863,7 +864,31 @@ class RulebaseHitCount(object):
         return ans
 
 
-class HitCount(object):
+class OpStateObject(object):
+    """A container object for opstate data."""
+
+    def _str(self, elm, field):
+        if elm is not None:
+            val = elm.find("./{0}".format(field))
+            if val is not None:
+                return val.text
+
+    def _int(self, elm, field):
+        val = self._str(elm, field)
+        if val is not None:
+            return int(val)
+
+    def _datetime(self, elm, field, fmt):
+        val = self._str(elm, field)
+        if val is not None:
+            try:
+                return datetime.strptime(val, fmt)
+            except ValueError:
+                pass
+            return val
+
+
+class HitCount(OpStateObject):
     """Hit count operational data."""
 
     FIELDS = (
@@ -896,24 +921,115 @@ class HitCount(object):
             else:
                 setattr(self, param, self._str(elm, path))
 
-    def _str(self, elm, field):
-        if elm is None:
-            return
-
-        val = elm.find("./{0}".format(field))
-        if val is not None:
-            return val.text
-
-    def _int(self, elm, field):
-        val = self._str(elm, field)
-
-        if val is not None:
-            return int(val)
-
 
 class RuleOpState(object):
     """Operational state handling for a rule in the rulebase."""
 
     def __init__(self, obj):
         self.obj = obj
+        self.audit_comment = RuleAuditComment(obj)
         self.hit_count = HitCount(obj)
+
+
+class RuleAuditComment(object):
+    """Operational state handling for a rule's audit comments.
+
+    Note:  Audit comments are present in PAN-OS 9.0+.
+
+    """
+
+    def __init__(self, obj):
+        self.obj = obj
+
+    def history(self, count=100, direction="backward", skip=None):
+        """Returns a chunk of historical audit comment logs.
+
+        Args:
+            count (int): Number of audit comments to return, maximum 5000.
+            direction (str): Specify whether logs are shown oldest first
+                (``forward``) or newest first (``backward``).
+            skip (int): Specify the number of logs to skip when doing log
+                retrieval.  This is useful when retrieving logs in batches
+                where you can skip the previously retrieved logs.
+
+        Returns:
+            list of :class:`panos.policies.AuditCommentLog`
+
+        """
+        dev = self.obj.nearest_pandevice()
+
+        # Build up the query.
+        query = "(subtype eq audit-comment)"
+        # Add in the name.
+        query += " and (path contains '\\'{0}\\'')".format(self.obj.uid)
+        # Add in the rule type.
+        query += " and (path contains '{0}')".format(
+            self.obj.xpath_short().split("/")[-2],
+        )
+        # Add in the rulebase type.
+        p = self.obj.parent
+        if p is None:
+            raise err.PanDeviceError("rule has empty parent")
+        if not any(isinstance(p, x) for x in (Rulebase, PreRulebase, PostRulebase)):
+            raise err.PanDeviceError("{0} has non-rulebase parent".format(self.obj.uid))
+        query += " and (path contains {0})".format(p.xpath().split("/")[-1])
+        # Add in the vsys or device group.
+        query += " and (path contains '\\'{0}\\'')".format(p.vsys)
+
+        extra_qs = {
+            "dir": direction,
+            "uniq": "yes",
+        }
+        if skip is not None:
+            extra_qs["skip"] = "{0}".format(int(skip))
+
+        resp = dev.xapi.log("config", count, filter=query, extra_qs=extra_qs)
+
+        return [AuditCommentLog(x) for x in resp.findall("./result/log/logs/entry")]
+
+    def current(self):
+        """Returns the current audit comment.
+
+        Returns:
+            string
+
+        """
+        cmd = ET.Element("show")
+        sub = ET.SubElement(cmd, "config")
+        sub = ET.SubElement(sub, "list")
+        sub = ET.SubElement(sub, "audit-comments")
+        ET.SubElement(sub, "xpath").text = self.obj.xpath()
+
+        ans = self.obj.nearest_pandevice().op(
+            ET.tostring(cmd, encoding="utf-8"), cmd_xml=False,
+        )
+
+        resp = ans.find("./result/entry/comment")
+        if resp is not None:
+            return resp.text
+
+    def update(self, comment):
+        """Sets an audit comment for the given rule.
+
+        Args:
+            comment (str): The audit comment.
+
+        """
+        cmd = ET.Element("set")
+        sub = ET.SubElement(cmd, "audit-comment")
+        ET.SubElement(sub, "xpath").text = self.obj.xpath()
+        ET.SubElement(sub, "comment").text = comment
+
+        self.obj.nearest_pandevice().op(
+            ET.tostring(cmd, encoding="utf-8"), cmd_xml=False,
+        )
+
+
+class AuditCommentLog(OpStateObject):
+    """A single audit comment log entry."""
+
+    def __init__(self, elm):
+        self.admin = self._str(elm, "admin")
+        self.comment = self._str(elm, "comment")
+        self.config_version = self._int(elm, "config_ver")
+        self.time = self._datetime(elm, "time_generated", "%Y/%m/%d %H:%M:%S")
