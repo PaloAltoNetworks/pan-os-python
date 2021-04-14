@@ -12,7 +12,7 @@ from panos.panorama import Panorama
 def _device_group_hierarchy():
     pano = Panorama("127.0.0.1", "admin", "admin", "secret")
     pano._version_info = (9999, 0, 0)
-    dg = DeviceGroup("foo")
+    dg = DeviceGroup("drums")
     pano.add(dg)
     pano.op = mock.Mock(
         return_value=ET.fromstring(
@@ -45,20 +45,20 @@ def _device_group_hierarchy():
     return dg
 
 
-def test_dg_hierarchy_top_has_none_parent():
+def test_panorama_dg_hierarchy_top_has_none_parent():
     dg = _device_group_hierarchy()
 
-    ans = dg.opstate.hierarchy.refresh()
+    ans = dg.parent.opstate.dg_hierarchy.fetch()
 
     for key in ("people", "solo group", "another solo group", "instruments", "parent"):
         assert key in ans
         assert ans[key] is None
 
 
-def test_dg_hierarchy_first_level_child():
+def test_panorama_dg_hierarchy_first_level_child():
     dg = _device_group_hierarchy()
 
-    ans = dg.opstate.hierarchy.refresh()
+    ans = dg.parent.opstate.dg_hierarchy.fetch()
 
     fields = [
         ("people", "friends"),
@@ -73,13 +73,23 @@ def test_dg_hierarchy_first_level_child():
         assert ans[child] == parent
 
 
-def test_dg_hierarchy_second_level_children():
+def test_panorama_dg_hierarchy_second_level_children():
     dg = _device_group_hierarchy()
 
-    ans = dg.opstate.hierarchy.refresh()
+    ans = dg.parent.opstate.dg_hierarchy.fetch()
 
     for field in ("jack", "jill"):
         assert field in ans
         assert ans[field] == "friends"
         assert ans["friends"] == "people"
         assert ans["people"] is None
+
+
+def test_device_group_hierarchy_refresh():
+    dg = _device_group_hierarchy()
+
+    assert dg.opstate.dg_hierarchy.parent is None
+
+    dg.opstate.dg_hierarchy.refresh()
+
+    assert dg.opstate.dg_hierarchy.parent == "instruments"
