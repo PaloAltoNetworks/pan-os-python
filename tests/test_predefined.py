@@ -18,21 +18,25 @@ PREDEFINED_CONFIG = {
     ApplicationContainer: {
         "single": "refresh_application",
         "multiple": "refreshall_applications",
+        "refresher": "application",
         "var": "application_container_objects",
     },
     ApplicationObject: {
         "single": "refresh_application",
         "multiple": "refreshall_applications",
+        "refresher": "application",
         "var": "application_objects",
     },
     ServiceObject: {
         "single": "refresh_service",
         "multiple": "refreshall_services",
+        "refresher": "service",
         "var": "service_objects",
     },
     Tag: {
         "single": "refresh_tag",
         "multiple": "refreshall_tags",
+        "refresher": "tag",
         "var": "tag_objects",
     },
 }
@@ -99,6 +103,13 @@ PREDEFINED_TEST_DATA = (
 )
 
 
+def object_not_found():
+    elm = ET.Element("response", {"code": "7", "status": "success"})
+    ET.SubElement(elm, "result")
+
+    return elm
+
+
 @pytest.fixture(
     scope="function",
     params=[(x[0], x[2]) for x in PREDEFINED_TEST_DATA],
@@ -125,11 +136,13 @@ def _fw(*args):
     fw = Firewall("127.0.0.1", "admin", "admin", "secret")
     fw._version_info = (9999, 0, 0)
 
-    prefix = "<response><result>"
-    suffix = "</result></response>"
-    inner = "".join(x.element_str().decode("utf-8") for x in args)
-
-    fw.xapi.get = mock.Mock(return_value=ET.fromstring(prefix + inner + suffix,))
+    if len(args) == 0:
+        fw.xapi.get = mock.Mock(return_value=object_not_found())
+    else:
+        prefix = "<response><result>"
+        suffix = "</result></response>"
+        inner = "".join(x.element_str().decode("utf-8") for x in args)
+        fw.xapi.get = mock.Mock(return_value=ET.fromstring(prefix + inner + suffix,))
 
     return fw
 
@@ -187,3 +200,37 @@ def test_get_multiple_objects(predef_multiple):
         data = getattr(fw.predefined, conf["var"])
         assert x.uid in data
         assert data[x.uid].equal(x)
+
+
+def test_refresher_refresh_not_needed(predef_single):
+    xpath, obj = predef_single
+    conf = PREDEFINED_CONFIG[obj.__class__]
+    fw = _fw()
+    getattr(fw.predefined, conf["var"])[obj.uid] = obj
+
+    ans = getattr(fw.predefined, conf["refresher"])(obj.uid)
+
+    assert not fw.xapi.get.called
+    assert ans.equal(obj)
+
+
+def test_refresher_when_refresh_is_needed(predef_single):
+    xpath, obj = predef_single
+    conf = PREDEFINED_CONFIG[obj.__class__]
+    fw = _fw(obj)
+
+    ans = getattr(fw.predefined, conf["refresher"])(obj.uid)
+
+    assert fw.xapi.get.called == 1
+    assert ans.equal(obj)
+
+
+def test_refresher_object_not_found_returns_none(predef_single):
+    xpath, obj = predef_single
+    conf = PREDEFINED_CONFIG[obj.__class__]
+    fw = _fw()
+
+    ans = getattr(fw.predefined, conf["refresher"])("foobar")
+
+    assert fw.xapi.get.called == 1
+    assert ans is None
