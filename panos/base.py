@@ -312,8 +312,6 @@ class PanObject(object):
                 if p.__class__.__name__ == "Firewall" and p.parent is not None:
                     if p.parent.__class__.__name__ == "DeviceGroup":
                         root = Root.VSYS
-            if p.__class__.__name__ == "Predefined":
-                break
             p = p.parent
             if p is None:
                 break
