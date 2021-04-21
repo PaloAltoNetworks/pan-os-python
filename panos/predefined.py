@@ -49,18 +49,9 @@ class Predefined(object):
     )
 
     # xpath
-    PREDEFINED_ROOT_XPATH = "/config/predefined"
-    ENTRY = "/entry[@name='%s']"
-    SERVICE = "/service"
-    TAG = "/tag"
-    # apps and containers share a namespace so we need to search both
-    APPLICATION_CONTAINS_XPATH = '//*[contains(local-name(), "application")]'
-    ALL_APPLICATION_XPATH = PREDEFINED_ROOT_XPATH + APPLICATION_CONTAINS_XPATH
-    SINGLE_APPLICATION_XPATH = ALL_APPLICATION_XPATH + ENTRY
-    ALL_SERVICE_XPATH = PREDEFINED_ROOT_XPATH + SERVICE
-    SINGLE_SERVICE_XPATH = ALL_SERVICE_XPATH + ENTRY
-    ALL_TAG_XPATH = PREDEFINED_ROOT_XPATH + TAG
-    SINGLE_TAG_XPATH = ALL_TAG_XPATH + ENTRY
+    XPATH = "/config/predefined"
+    SINGLE_ENTRY_XPATH = "/entry[@name='{0}']"
+    ALL_ENTRIES_XPATH = "/entry"
 
     def __init__(self, device=None, *args, **kwargs):
         # Create a class logger
@@ -76,43 +67,53 @@ class Predefined(object):
     def _get_xml(self, xpath):
         """use the parent to get the xml given the xpath"""
 
-        err_msg = "Predefined object(s) does not exist with xpath: {0}".format(xpath)
-
         root = self.parent.xapi.get(xpath, retry_on_peer=False)
+        return root.find("result")
 
-        elm = root.find("result")
-        return elm
+    def _refresh(self, decisions, name=None):
+        x = decisions[0][0]()
+        x.parent = self
+        xpath = x.xpath_nosuffix()
+        if name is not None:
+            xpath += self.SINGLE_ENTRY_XPATH.format(name)
+        else:
+            xpath += self.ALL_ENTRIES_XPATH
 
-    def _parse_application_xml(self, xml):
-        """parse the xml into actual objects and store them in the dicts"""
-
-        for elm in xml:
-            if elm.find("functions") is not None:
-                # this is an ApplicationContainerObject
-                obj = objects.ApplicationContainer()
-                obj.refresh(xml=elm)
-                self.application_container_objects[obj.name] = obj
-            else:
-                # this is an ApplicationObject
-                obj = objects.ApplicationObject()
-                obj.refresh(xml=elm)
-                self.application_objects[obj.name] = obj
-
-    def _parse_service_xml(self, xml):
-        """parse the xml into actual objects and store them in the dicts"""
+        xml = self._get_xml(xpath)
 
         for elm in xml:
-            obj = objects.ServiceObject()
-            obj.refresh(xml=elm)
-            self.service_objects[obj.name] = obj
+            for cls, param, mandatory_xml_field in decisions:
+                if (
+                    mandatory_xml_field is None
+                    or elm.find(mandatory_xml_field) is not None
+                ):
+                    inst = cls()
+                    inst.refresh(xml=elm)
+                    getattr(self, param)[inst.uid] = inst
+                    break
 
-    def _parse_tag_xml(self, xml):
-        """parse the xml into actual objects and store them in the dicts"""
+    @property
+    def vsys(self):
+        return self.parent.vsys
 
-        for elm in xml:
-            obj = objects.Tag()
-            obj.refresh(xml=elm)
-            self.tag_objects[obj.name] = obj
+    def _refresh_application(self, name=None):
+        return self._refresh(
+            [
+                (
+                    objects.ApplicationContainer,
+                    "application_container_objects",
+                    "functions",
+                ),
+                (objects.ApplicationObject, "application_objects", None),
+            ],
+            name,
+        )
+
+    def _refresh_service(self, name=None):
+        return self._refresh([(objects.ServiceObject, "service_objects", None),], name,)
+
+    def _refresh_tag(self, name=None):
+        return self._refresh([(objects.Tag, "tag_objects", None),], name,)
 
     def refresh_application(self, name):
         """Refresh a Single Predefined Application
@@ -124,9 +125,7 @@ class Predefined(object):
             name (str): Name of the application to refresh
 
         """
-        xpath = self.SINGLE_APPLICATION_XPATH % name
-        xml = self._get_xml(xpath)
-        self._parse_application_xml(xml)
+        return self._refresh_application(name)
 
     def refresh_service(self, name):
         """Refresh a Single Predefined Service
@@ -137,9 +136,7 @@ class Predefined(object):
             name (str): Name of the service to refresh
 
         """
-        xpath = self.SINGLE_SERVICE_XPATH % name
-        xml = self._get_xml(xpath)
-        self._parse_service_xml(xml)
+        return self._refresh_service(name)
 
     def refresh_tag(self, name):
         """Refresh a Single Predefined Tag
@@ -150,9 +147,7 @@ class Predefined(object):
             name (str): Name of the tag to refresh
 
         """
-        xpath = self.SINGLE_TAG_XPATH % name
-        xml = self._get_xml(xpath)
-        self._parse_tag_xml(xml)
+        return self._refresh_tag(name)
 
     def refreshall_applications(self):
         """Refresh all Predefined Applications
@@ -164,9 +159,7 @@ class Predefined(object):
         longer than a normal api request.
 
         """
-        xpath = self.ALL_APPLICATION_XPATH + "/entry"
-        xml = self._get_xml(xpath)
-        self._parse_application_xml(xml)
+        return self._refresh_application()
 
     def refreshall_services(self):
         """Refresh all Predefined Services
@@ -174,9 +167,7 @@ class Predefined(object):
         This method refreshes all predefined services.
 
         """
-        xpath = self.ALL_SERVICE_XPATH + "/entry"
-        xml = self._get_xml(xpath)
-        self._parse_service_xml(xml)
+        return self._refresh_service()
 
     def refreshall_tags(self):
         """Refresh all Predefined Tags
@@ -184,9 +175,7 @@ class Predefined(object):
         This method refreshes all predefined tag objects
 
         """
-        xpath = self.ALL_TAG_XPATH + "/entry"
-        xml = self._get_xml(xpath)
-        self._parse_tag_xml(xml)
+        return self._refresh_tag()
 
     def refreshall(self):
         """Refresh all Predefined Objects

@@ -297,6 +297,10 @@ class PanObject(object):
                 # was asked for.
                 path.insert(0, p.xpath_root(root, vsys, label))
                 break
+            elif p.__class__.__name__ == "Predefined":
+                # Stop on predefined namespace.
+                path.insert(0, p.XPATH)
+                break
             elif not hasattr(p, "VSYS_LABEL") or p == self:
                 # Add on the xpath of this object, unless it is a
                 # device.Vsys, unless the device.Vsys is the object whose
@@ -308,6 +312,8 @@ class PanObject(object):
                 if p.__class__.__name__ == "Firewall" and p.parent is not None:
                     if p.parent.__class__.__name__ == "DeviceGroup":
                         root = Root.VSYS
+            if p.__class__.__name__ == "Predefined":
+                break
             p = p.parent
             if p is None:
                 break
@@ -2041,7 +2047,7 @@ class PanObject(object):
         try:
             device = self.nearest_pandevice()
             panos_version = device.get_device_version()
-        except (err.PanDeviceNotSet, err.PanApiKeyNotSet):
+        except (err.PanDeviceNotSet, err.PanApiKeyNotSet, AttributeError):
             panos_version = self._UNKNOWN_PANOS_VERSION
 
         return panos_version
@@ -2224,7 +2230,10 @@ class ParentAwareXpath(object):
         parent_settings = {}
         if parent is not None:
             parents = [parent.__class__.__name__, None]
-            parent_settings = parent._about_object()
+            try:
+                parent_settings = parent._about_object()
+            except AttributeError:
+                parent_settings = vars(parent)
 
         for p in parents:
             for parent_param in self.parent_params:
@@ -2622,7 +2631,11 @@ class VersionedPanObject(PanObject):
             if name == param.name:
                 return param.value
 
-        raise AttributeError(str(name))
+        raise AttributeError(
+            "'{0}' object has no attribute '{1}'".format(
+                self.__class__.__name__, str(name),
+            )
+        )
 
     def __setattr__(self, name, value):
         params = ()
