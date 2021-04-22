@@ -41,13 +41,6 @@ class Predefined(object):
 
     """
 
-    OBJECT_TYPES = (
-        objects.ApplicationObject,
-        objects.ApplicationContainer,
-        objects.ServiceObject,
-        objects.Tag,
-    )
-
     # xpath
     XPATH = "/config/predefined"
     SINGLE_ENTRY_XPATH = "/entry[@name='{0}']"
@@ -58,10 +51,12 @@ class Predefined(object):
         self._logger = getlogger(__name__ + "." + self.__class__.__name__)
 
         self.parent = device
+        self._initialize_params()
 
-        self.service_objects = {}
-        self.application_objects = {}
+    def _initialize_params(self):
         self.application_container_objects = {}
+        self.application_objects = {}
+        self.service_objects = {}
         self.tag_objects = {}
 
     def _get_xml(self, xpath):
@@ -189,15 +184,11 @@ class Predefined(object):
 
         """
         # first we clear all existing objects
-        self.application_objects = {}
-        self.application_container_objects = {}
-        self.service_objects = {}
-        self.tag_objects = {}
+        self._initialize_params()
 
         # now we call the refresh methods
-        self.refreshall_services()
-        self.refreshall_applications()
-        self.refreshall_tags()
+        for x in [x for x in dir(self) if x.startswith("refreshall_")]:
+            getattr(self, x)()
 
     def application(self, name, refresh_if_none=True, include_containers=True):
         """Get a Predefined Application
@@ -226,6 +217,16 @@ class Predefined(object):
 
         return obj
 
+    def _retrieve_predefined_object_from(
+        self, name, param, refresh_if_none, refresh_func
+    ):
+        if name in getattr(self, param):
+            return getattr(self, param)[name]
+
+        if refresh_if_none:
+            getattr(self, refresh_func)(name)
+            return getattr(self, param).get(name, None)
+
     def service(self, name, refresh_if_none=True):
         """Get a Predefined Service
 
@@ -239,14 +240,9 @@ class Predefined(object):
             Either a ServiceObject or None
 
         """
-        obj = self.service_objects.get(name, None)
-
-        if obj is None and refresh_if_none:
-            self.refresh_service(name)
-            # recursive call but with no refresh
-            obj = self.service(name, refresh_if_none=False)
-
-        return obj
+        return self._retrieve_predefined_object_from(
+            name, "service_objects", refresh_if_none, "refresh_service"
+        )
 
     def tag(self, name, refresh_if_none=True):
         """Get a Predefined Tag
@@ -261,14 +257,9 @@ class Predefined(object):
             Either a Tag or None
 
         """
-        obj = self.tag_objects.get(name, None)
-
-        if obj is None and refresh_if_none:
-            self.refresh_tag(name)
-            # recursive call but with no refresh
-            obj = self.tag(name, refresh_if_none=False)
-
-        return obj
+        return self._retrieve_predefined_object_from(
+            name, "tag_objects", refresh_if_none, "refresh_tag"
+        )
 
     def applications(self, names, refresh_if_none=True, include_containers=True):
         """Get a list of Predefined Applications
