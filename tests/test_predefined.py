@@ -234,3 +234,23 @@ def test_refresher_object_not_found_returns_none(predef_single):
 
     assert fw.xapi.get.called == 1
     assert ans is None
+
+
+def test_refreshall_invokes_all_refresh_methods():
+    fw = _fw()
+
+    for spec in PREDEFINED_CONFIG.values():
+        getattr(fw.predefined, spec["var"])["a"] = "a"
+
+    funcs = [x for x in dir(fw.predefined) if x.startswith("refreshall_")]
+    for x in funcs:
+        setattr(fw.predefined, x, mock.Mock())
+
+    ans = fw.predefined.refreshall()
+
+    assert ans is None
+    for x in funcs:
+        assert getattr(fw.predefined, x).called == 1
+
+    for spec in PREDEFINED_CONFIG.values():
+        assert len(getattr(fw.predefined, spec["var"])) == 0
