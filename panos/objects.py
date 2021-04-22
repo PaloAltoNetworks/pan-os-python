@@ -315,6 +315,9 @@ class ApplicationObject(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value="/application")
+        self._xpaths.add_profile(
+            value='//*[contains(local-name(), "application")]', parents=("Predefined",),
+        )
 
         # params
         params = []
@@ -581,6 +584,9 @@ class ApplicationContainer(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value="/application-container")
+        self._xpaths.add_profile(
+            value='//*[contains(local-name(), "application")]', parents=("Predefined",),
+        )
 
         # params
         params = []
