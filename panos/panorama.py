@@ -81,6 +81,9 @@ class DeviceGroup(VersionedPanObject):
 
         self._params = tuple(params)
 
+    def _setup_opstate(self):
+        self.opstate = DeviceGroupOpState(self)
+
     @property
     def vsys(self):
         return self.name
@@ -90,6 +93,68 @@ class DeviceGroup(VersionedPanObject):
 
     def xpath_vsys(self):
         return self.xpath()
+
+    def _setup_opstate(self):
+        self.opstate = DeviceGroupOpState(self)
+
+
+class DeviceGroupOpState(object):
+    """Operational state handling for device group classes."""
+
+    def __init__(self, obj):
+        self.dg_hierarchy = DeviceGroupHierarchy(obj)
+
+
+class DeviceGroupHierarchy(object):
+    """Operational state handling for device group hierarchy.
+
+    Args:
+        parent (str): This device group's parent.
+
+    """
+
+    def __init__(self, obj):
+        self.obj = obj
+        self.parent = None
+
+    def refresh(self):
+        """Refresh the ``parent`` from the state."""
+
+        dev = self.obj.panorama()
+        state = dev.opstate.dg_hierarchy.fetch()
+        self.parent = state[self.obj.uid]
+
+    def update(self):
+        """Change this device group's hierarchical parent.
+
+        **Modifies the live device**
+
+        This operation results in a job being submitted to the backend, which
+        this function will block until the move is completed.  The return value of
+        this function is what is returned from
+        :meth:`panos.base.PanDevice.syncjob()`.
+
+        Returns:
+            dict: Job result
+
+        """
+        dev = self.obj.panorama()
+        logger.debug(
+            '{0}: update hierarchical parent for "{1}": {2}'.format(
+                dev.id, self.obj.uid, self.parent
+            )
+        )
+
+        e = ET.Element("request")
+        em = ET.SubElement(e, "move-dg")
+        eme = ET.SubElement(em, "entry", {"name": self.obj.name})
+
+        if self.parent is not None:
+            ET.SubElement(eme, "new-parent-dg").text = self.parent
+
+        cmd = ET.tostring(e, encoding="utf-8")
+        resp = dev.op(cmd, cmd_xml=False)
+        return dev.syncjob(resp)
 
 
 class Template(VersionedPanObject):
@@ -748,6 +813,47 @@ class Panorama(base.PanDevice):
                     "expires": x.find("./expiry-time").text,
                 }
             )
+
+        return ans
+
+    def _setup_opstate(self):
+        self.opstate = PanoramaOpState(self)
+
+
+class PanoramaOpState(object):
+    """Panorama OP state handling."""
+
+    def __init__(self, obj):
+        self.dg_hierarchy = PanoramaDeviceGroupHierarchy(obj)
+
+
+class PanoramaDeviceGroupHierarchy(object):
+    """Operational state handling for device group hierarchy."""
+
+    def __init__(self, obj):
+        self.obj = obj
+        self.parent = None
+
+    def fetch(self):
+        """Returns a dict of device groups and their parents.
+
+        Keys in the dict are the device group's name, while the value is the
+        name of that device group's parent.  Top level device groups will have
+        a parent of ``None``.
+
+        Returns:
+            dict
+
+        """
+
+        resp = self.obj.op("show dg-hierarchy")
+        data = resp.find("./result/dg-hierarchy")
+
+        ans = {}
+        nodes = [(None, x) for x in data.findall("./dg")]
+        for parent, elm in iter(nodes):
+            ans[elm.attrib["name"]] = parent
+            nodes.extend((elm.attrib["name"], x) for x in elm.findall("./dg"))
 
         return ans
 
