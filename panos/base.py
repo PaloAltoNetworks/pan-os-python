@@ -115,6 +115,21 @@ class PanObject(object):
             # Store the value in the instance variable
             setattr(self, varname, varvalue)
 
+        self._setups()
+
+    def _setups(self):
+        """The various setup functions that will be called on object creation."""
+        funcs = [
+            "_setup",
+            "_setup_opstate",
+        ]
+
+        for func in funcs:
+            if hasattr(self, func):
+                f = getattr(self, func)
+                if callable(f):
+                    f()
+
     def __str__(self):
         return self.uid
 
@@ -2276,10 +2291,7 @@ class VersionedPanObject(PanObject):
         self._xpaths = ParentAwareXpath()
         self._stubs = VersionedStubs()
 
-        self._setup()
-
-        if hasattr(self, "_setup_opstate") and callable(self._setup_opstate):
-            self._setup_opstate()
+        self._setups()
 
         try:
             params = super(VersionedPanObject, self).__getattribute__("_params")
