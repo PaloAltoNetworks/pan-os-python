@@ -3908,6 +3908,11 @@ class PanDevice(PanObject):
         return self
 
     def show_system_info(self):
+        """Returns the data from "show system info".
+
+        Returns:
+            dict
+        """
         root = self.xapi.op(cmd="show system info", cmd_xml=True)
         pconf = PanConfig(root)
         system_info = pconf.python()
