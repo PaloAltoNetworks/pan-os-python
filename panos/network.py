@@ -1767,7 +1767,7 @@ class StaticRoute(VersionedPanObject):
         enable_path_monitor (bool): Enable Path Monitor
         failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
         preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
-
+        
     """
 
     SUFFIX = ENTRY
