@@ -28,7 +28,7 @@ REDIST_INTERFACE = "ethernet1/1"
 
 
 def main():
-    fw = Firewall(HOSTNAME, USERNAME, PASSWORD)
+    fw = Firewall(HOSTNAME, USERNAME, PASSWORD) 
 
     # find or create a virtual router
     vr = fw.find_or_create(VR_NAME, VirtualRouter, interface=VR_INTERFACES)
