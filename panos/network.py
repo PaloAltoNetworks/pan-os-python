@@ -4025,11 +4025,7 @@ class IkeGateway(VersionedPanObject):
         )
         params[-1].add_profile(
             "8.1.0",
-            values=(
-                "ip",
-                "dynamic",
-                "fqdn",
-            ),
+            values=("ip", "dynamic", "fqdn",),
             path="peer-address/{peer_ip_type}",
         )
         params.append(
@@ -4435,14 +4431,7 @@ class IpsecTunnel(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "mk_esp_encryption",
-                values=(
-                    "des",
-                    "3des",
-                    "aes128",
-                    "aes192",
-                    "aes256",
-                    "null",
-                ),
+                values=("des", "3des", "aes128", "aes192", "aes256", "null",),
                 path="{type}/{mk_protocol}/encryption/algorithm",
             )
         )
@@ -5281,8 +5270,6 @@ class DhcpRelayIpv6Address(VersionedPanObject):
 
         params = []
 
-        params.append(
-            VersionedParamPath("interface", path="interface"),
-        )
+        params.append(VersionedParamPath("interface", path="interface"),)
 
         self._params = tuple(params)
