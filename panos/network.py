@@ -164,9 +164,7 @@ class Zone(VersionedPanObject):
         )
         params.append(VersionedParamPath("device_include_acl", exclude=True,))
         params[-1].add_profile(
-            "10.0.0",
-            path="device-acl/include-list",
-            vartype="member",
+            "10.0.0", path="device-acl/include-list", vartype="member",
         )
         params.append(VersionedParamPath("device_exclude_acl", exclude=True,))
         params[-1].add_profile(
