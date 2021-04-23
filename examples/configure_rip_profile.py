@@ -1,3 +1,11 @@
+"""
+NOTE: Please update the hostname and auth credentials variables
+      before running.
+
+"""
+
+import os
+
 from panos.firewall import Firewall
 from panos.network import (
     RedistributionProfile,
@@ -9,9 +17,10 @@ from panos.network import (
     VirtualRouter,
 )
 
-HOSTNAME = "192.168.0.201"
-USERNAME = "drillops-admin"
-PASSWORD = "drillops"
+HOSTNAME = os.environ["PAN_HOSTNAME"]
+USERNAME = os.environ["PAN_USERNAME"]
+PASSWORD = os.environ["PAN_PASSWORD"]
+
 VR_NAME = "vr_1"
 REDIST_NAME = "redist_1"
 VR_INTERFACES = ["ethernet1/1"]
