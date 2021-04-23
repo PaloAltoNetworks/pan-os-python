@@ -153,15 +153,10 @@ class Zone(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "enable_packet_buffer_protection",
-                exclude=True,
-            )
+            VersionedParamPath("enable_packet_buffer_protection", exclude=True,)
         )
         params[-1].add_profile(
-            "8.0.0",
-            path="network/enable-packet-buffer-protection",
-            vartype="yesno",
+            "8.0.0", path="network/enable-packet-buffer-protection", vartype="yesno",
         )
         params.append(
             VersionedParamPath(
@@ -170,9 +165,7 @@ class Zone(VersionedPanObject):
             )
         )
         params[-1].add_profile(
-            "10.0.0",
-            path="enable-device-identification",
-            vartype="yesno",
+            "10.0.0", path="enable-device-identification", vartype="yesno",
         )
         params.append(
             VersionedParamPath(
@@ -192,9 +185,7 @@ class Zone(VersionedPanObject):
             )
         )
         params[-1].add_profile(
-            "10.0.0",
-            path="device-acl/exclude-acl",
-            vartype="member",
+            "10.0.0", path="device-acl/exclude-acl", vartype="member",
         )
 
         self._params = tuple(params)
@@ -1396,12 +1387,7 @@ class AggregateInterface(PhysicalInterface):
                 "mode",
                 path="{mode}",
                 default="layer3",
-                values=[
-                    "layer3",
-                    "layer2",
-                    "virtual-wire",
-                    "ha",
-                ],
+                values=["layer3", "layer2", "virtual-wire", "ha",],
             )
         )
         params.append(
@@ -1917,16 +1903,15 @@ class StaticRouteV6(VersionedPanObject):
 
 
 class PathMonitorDestination(VersionedPanObject):
-    """PathMonitorDestination Static Route
-
+    """PathMonitorDestination Static Route 
     Args:
-        name (str): Name of Path Monitor Destination
-        enable (bool): Enable Path Monitor Destination
+        name (str): Name of Path Monitor Destination 
+        enable (bool): Enable Path Monitor Destination 
         source (str): Source ip of interface
-        destination (str): Destination ip
+        destination (str): Destination ip 
         interval (int): Ping Interval (sec) (Default: 3)
         count (int): Ping count (Default: 5)
-
+       
     """
 
     SUFFIX = ENTRY
