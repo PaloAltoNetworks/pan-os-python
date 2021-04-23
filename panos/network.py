@@ -153,22 +153,48 @@ class Zone(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath("enable_packet_buffer_protection", exclude=True,)
+            VersionedParamPath(
+                "enable_packet_buffer_protection",
+                exclude=True,
+            )
         )
         params[-1].add_profile(
-            "8.0.0", path="network/enable-packet-buffer-protection", vartype="yesno",
+            "8.0.0",
+            path="network/enable-packet-buffer-protection",
+            vartype="yesno",
         )
-        params.append(VersionedParamPath("enable_device_identification", exclude=True,))
-        params[-1].add_profile(
-            "10.0.0", path="enable-device-identification", vartype="yesno",
+        params.append(
+            VersionedParamPath(
+                "enable_device_identification",
+                exclude=True,
+            )
         )
-        params.append(VersionedParamPath("device_include_acl", exclude=True,))
         params[-1].add_profile(
-            "10.0.0", path="device-acl/include-list", vartype="member",
+            "10.0.0",
+            path="enable-device-identification",
+            vartype="yesno",
         )
-        params.append(VersionedParamPath("device_exclude_acl", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "device_include_acl",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
-            "10.0.0", path="device-acl/exclude-acl", vartype="member",
+            "10.0.0",
+            path="device-acl/include-list",
+            vartype="member",
+        )
+        params.append(
+            VersionedParamPath(
+                "device_exclude_acl",
+                exclude=True,
+            )
+        )
+        params[-1].add_profile(
+            "10.0.0",
+            path="device-acl/exclude-acl",
+            vartype="member",
         )
 
         self._params = tuple(params)
@@ -1370,7 +1396,12 @@ class AggregateInterface(PhysicalInterface):
                 "mode",
                 path="{mode}",
                 default="layer3",
-                values=["layer3", "layer2", "virtual-wire", "ha",],
+                values=[
+                    "layer3",
+                    "layer2",
+                    "virtual-wire",
+                    "ha",
+                ],
             )
         )
         params.append(
@@ -1765,9 +1796,9 @@ class StaticRoute(VersionedPanObject):
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
         enable_path_monitor (bool): Enable Path Monitor
-        failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all'
         preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
-        
+
     """
 
     SUFFIX = ENTRY
@@ -1832,7 +1863,7 @@ class StaticRouteV6(VersionedPanObject):
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
         enable_path_monitor (bool): Enable Path Monitor
-        failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all'
         preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
 
     """
@@ -1886,16 +1917,16 @@ class StaticRouteV6(VersionedPanObject):
 
 
 class PathMonitorDestination(VersionedPanObject):
-    """PathMonitorDestination Static Route 
+    """PathMonitorDestination Static Route
 
     Args:
-        name (str): Name of Path Monitor Destination 
-        enable (bool): Enable Path Monitor Destination 
+        name (str): Name of Path Monitor Destination
+        enable (bool): Enable Path Monitor Destination
         source (str): Source ip of interface
-        destination (str): Destination ip 
+        destination (str): Destination ip
         interval (int): Ping Interval (sec) (Default: 3)
         count (int): Ping count (Default: 5)
-       
+
     """
 
     SUFFIX = ENTRY
@@ -2125,6 +2156,196 @@ class RedistributionProfileIPv6(RedistributionProfileBase):
         RedistributionProfileBase._setup(self)
 
 
+########################################################################################################
+########################################################################################################
+
+
+class Rip(VersionedPanObject):
+    """Rip
+
+    Add to a :class:`panos.network.VirtualRouter` instance.
+
+    Args:
+        enable (bool): Enable RIP
+        reject_default_route (bool): Reject default route
+        allow_redist_default_route (bool): Allow Redistribute Default Route
+        delete_intervals (int): Delete Intervals
+        expire_intervals (int): Expire Intervals
+        interval_seconds (int): Interval Seconds (sec)
+        update_intervals (int): Update Intervals
+    """
+
+    NAME = None
+    CHILDTYPES = (
+        "network.RipInterface",
+        "network.RipAuthProfile",
+        "network.RipExportRules",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/protocol/rip")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath("enable", path="enable", default=True, vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "reject_default_route",
+                default=True,
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "allow_redist_default_route",
+                path="allow-redist-default-route",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "delete_intervals", path="/timers/delete-intervals", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "expire_intervals", path="/timers/expire-intervals", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "interval_seconds", path="/timers/interval-seconds", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "update_intervals", path="/timers/update-intervals", vartype="int"
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RipInterface(VersionedPanObject):
+    """Rip Interface
+
+    Add to a :class:`panos.network.Rip` instance.
+
+    Args:
+        name (str): Interface name
+        enable (bool): Enable
+        advertise_default_route (bool): Advertise default route
+        auth_profile (str): Auth profile name
+        mode (str): Any of "normal", "passive", or "send-only"
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/interface")
+
+        params = []
+
+        params.append(VersionedParamPath("enable", path="enable", vartype="yesno"))
+        params.append(
+            VersionedParamPath(
+                "advertise_default_route",
+                path="default-route/advertise/metric",
+                vartype="int",
+            )
+        )
+        params.append(VersionedParamPath("auth_profile", path="authentication"))
+        params.append(
+            VersionedParamPath(
+                "mode", path="mode", values=["normal", "passive", "send-only"]
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RipAuthProfile(VersionedPanObject):
+    """Rip Authentication Profile
+
+    Args:
+        name (str): Name of Auth Profile
+        type (str): 'password' or 'md5'
+        password (str): The password if type is set to 'password'.
+            If type is set to 'md5', add a :class:`panos.network.RipAuthProfileMd5`
+
+    """
+
+    SUFFIX = ENTRY
+    CHILDTYPES = ("network.RipAuthProfileMd5",)
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/auth-profile")
+
+        params = []
+        params.append(VersionedParamPath("name"))
+        params.append(
+            VersionedParamPath("type", values=["password", "md5"], path="{type}")
+        )
+        params.append(
+            VersionedParamPath(
+                "password", condition={"type": "password"}, path="{type}"
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RipAuthProfileMd5(VersionedPanObject):
+    """Rip Authentication Profile
+
+    Args:
+        keyid (int): Identifier for key
+        key (str): The authentication key
+        preferred (bool): This key is preferred
+
+    """
+
+    SUFFIX = ENTRY
+    NAME = "keyid"
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/md5")
+
+        params = []
+
+        params.append(VersionedParamPath("key", vartype="encrypted"))
+        params.append(VersionedParamPath("preferred", vartype="yesno"))
+
+        self._params = tuple(params)
+
+
+class RipExportRules(VersionedPanObject):
+    """Rip Export Rules
+
+    Args:
+        name (str): IP subnet or :class:`panos.network.RedistributionProfile`
+        metric (int): Metric
+
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/export-rules")
+
+        params = []
+
+        params.append(VersionedParamPath("metric", vartype="int"))
+
+        self._params = tuple(params)
+
+
+########################################################################################################
+########################################################################################################
 class Ospf(VersionedPanObject):
     """OSPF Process
 
@@ -3810,7 +4031,11 @@ class IkeGateway(VersionedPanObject):
         )
         params[-1].add_profile(
             "8.1.0",
-            values=("ip", "dynamic", "fqdn",),
+            values=(
+                "ip",
+                "dynamic",
+                "fqdn",
+            ),
             path="peer-address/{peer_ip_type}",
         )
         params.append(
@@ -4216,7 +4441,14 @@ class IpsecTunnel(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "mk_esp_encryption",
-                values=("des", "3des", "aes128", "aes192", "aes256", "null",),
+                values=(
+                    "des",
+                    "3des",
+                    "aes128",
+                    "aes192",
+                    "aes256",
+                    "null",
+                ),
                 path="{type}/{mk_protocol}/encryption/algorithm",
             )
         )
@@ -5055,6 +5287,8 @@ class DhcpRelayIpv6Address(VersionedPanObject):
 
         params = []
 
-        params.append(VersionedParamPath("interface", path="interface"),)
+        params.append(
+            VersionedParamPath("interface", path="interface"),
+        )
 
         self._params = tuple(params)
