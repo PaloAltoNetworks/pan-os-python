@@ -158,32 +158,17 @@ class Zone(VersionedPanObject):
         params[-1].add_profile(
             "8.0.0", path="network/enable-packet-buffer-protection", vartype="yesno",
         )
-        params.append(
-            VersionedParamPath(
-                "enable_device_identification",
-                exclude=True,
-            )
-        )
+        params.append(VersionedParamPath("enable_device_identification", exclude=True,))
         params[-1].add_profile(
             "10.0.0", path="enable-device-identification", vartype="yesno",
         )
-        params.append(
-            VersionedParamPath(
-                "device_include_acl",
-                exclude=True,
-            )
-        )
+        params.append(VersionedParamPath("device_include_acl", exclude=True,))
         params[-1].add_profile(
             "10.0.0",
             path="device-acl/include-list",
             vartype="member",
         )
-        params.append(
-            VersionedParamPath(
-                "device_exclude_acl",
-                exclude=True,
-            )
-        )
+        params.append(VersionedParamPath("device_exclude_acl", exclude=True,))
         params[-1].add_profile(
             "10.0.0", path="device-acl/exclude-acl", vartype="member",
         )
@@ -1782,7 +1767,7 @@ class StaticRoute(VersionedPanObject):
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
         enable_path_monitor (bool): Enable Path Monitor
-        failure_condition (str): Path Monitor failure condition set 'any' or 'all'
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
         preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
 
     """
@@ -1849,7 +1834,7 @@ class StaticRouteV6(VersionedPanObject):
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
         enable_path_monitor (bool): Enable Path Monitor
-        failure_condition (str): Path Monitor failure condition set 'any' or 'all'
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
         preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
 
     """
@@ -1904,6 +1889,7 @@ class StaticRouteV6(VersionedPanObject):
 
 class PathMonitorDestination(VersionedPanObject):
     """PathMonitorDestination Static Route 
+
     Args:
         name (str): Name of Path Monitor Destination 
         enable (bool): Enable Path Monitor Destination 
