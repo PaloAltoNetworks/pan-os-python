@@ -2156,10 +2156,6 @@ class RedistributionProfileIPv6(RedistributionProfileBase):
         RedistributionProfileBase._setup(self)
 
 
-########################################################################################################
-########################################################################################################
-
-
 class Rip(VersionedPanObject):
     """Rip
 
@@ -2344,8 +2340,6 @@ class RipExportRules(VersionedPanObject):
         self._params = tuple(params)
 
 
-########################################################################################################
-########################################################################################################
 class Ospf(VersionedPanObject):
     """OSPF Process
 
