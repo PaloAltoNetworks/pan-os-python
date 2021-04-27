@@ -1765,9 +1765,9 @@ class StaticRoute(VersionedPanObject):
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
         enable_path_monitor (bool): Enable Path Monitor
-        failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all'
         preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
-        
+
     """
 
     SUFFIX = ENTRY
@@ -1832,7 +1832,7 @@ class StaticRouteV6(VersionedPanObject):
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
         enable_path_monitor (bool): Enable Path Monitor
-        failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all'
         preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
 
     """
@@ -1886,16 +1886,16 @@ class StaticRouteV6(VersionedPanObject):
 
 
 class PathMonitorDestination(VersionedPanObject):
-    """PathMonitorDestination Static Route 
+    """PathMonitorDestination Static Route
 
     Args:
-        name (str): Name of Path Monitor Destination 
-        enable (bool): Enable Path Monitor Destination 
+        name (str): Name of Path Monitor Destination
+        enable (bool): Enable Path Monitor Destination
         source (str): Source ip of interface
-        destination (str): Destination ip 
+        destination (str): Destination ip
         interval (int): Ping Interval (sec) (Default: 3)
         count (int): Ping count (Default: 5)
-       
+
     """
 
     SUFFIX = ENTRY
@@ -1947,6 +1947,7 @@ class VirtualRouter(VsysOperations):
         "network.RedistributionProfileIPv6",
         "network.Ospf",
         "network.Bgp",
+        "network.Rip",
     )
 
     def _setup(self):
@@ -2203,7 +2204,7 @@ class RipInterface(VersionedPanObject):
     Args:
         name (str): Interface name
         enable (bool): Enable
-        advertise_default_route (bool): Advertise default route
+        advertise_default_route_metric (int): default route metric, enables advertise_default_route
         auth_profile (str): Auth profile name
         mode (str): Any of "normal", "passive", or "send-only"
     """
@@ -2218,7 +2219,7 @@ class RipInterface(VersionedPanObject):
         params.append(VersionedParamPath("enable", path="enable", vartype="yesno"))
         params.append(
             VersionedParamPath(
-                "advertise_default_route",
+                "advertise_default_route_metric",
                 path="default-route/advertise/metric",
                 vartype="int",
             )
