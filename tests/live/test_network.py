@@ -676,8 +676,7 @@ class MakeVirtualRouter(testlib.FwFlow):
     WITH_RIP_INTERFACE = False
 
     def create_dependencies(self, fw, state):
-        #state.eths = testlib.get_available_interfaces(fw, 2)
-        state.eths = ['ethernet1/1', 'ethernet1/2']
+        state.eths = testlib.get_available_interfaces(fw, 2)
 
         state.eth_obj_v4 = network.EthernetInterface(
             state.eths[0], "layer3", testlib.random_ip("/24")
@@ -935,10 +934,10 @@ class TestRipAuthProfileMd5(MakeVirtualRouter):
     def test_05_add_second_profile_not_preferred(self, fw, state_map):
         state = self.sanity(fw, state_map)
 
-        o = network.RipAuthProfileMd5(keyid="1", key="secret2", preferred=False)
+        state.rip_auth_profile_md5 = network.RipAuthProfileMd5(keyid="1", key="secret2", preferred=False)
 
-        state.rip_auth_profile.add(o)
-        o.create()
+        state.rip_auth_profile.add(state.rip_auth_profile_md5)
+        state.rip_auth_profile_md5.create()
 
 
 class TestRipInterface(MakeVirtualRouter):
