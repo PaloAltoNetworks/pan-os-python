@@ -676,7 +676,8 @@ class MakeVirtualRouter(testlib.FwFlow):
     WITH_RIP_INTERFACE = False
 
     def create_dependencies(self, fw, state):
-        state.eths = testlib.get_available_interfaces(fw, 2)
+        #state.eths = testlib.get_available_interfaces(fw, 2)
+        state.eths = ['ethernet1/1', 'ethernet1/2']
 
         state.eth_obj_v4 = network.EthernetInterface(
             state.eths[0], "layer3", testlib.random_ip("/24")
@@ -759,15 +760,13 @@ class MakeVirtualRouter(testlib.FwFlow):
                 state.rip.add(state.rip_export_rules)
 
             if self.WITH_RIP_INTERFACE:
-                _auth_profile = (
-                    str(state.rip_auth_profile) if self.WITH_RIP_AUTH_PROFILE else None
-                )
+                auth_profile = str(state.rip_auth_profile) if self.WITH_RIP_AUTH_PROFILE else None
                 state.rip.add(
                     network.RipInterface(
                         name=state.eths[0],
                         enable=True,
                         advertise_default_route_metric=True,
-                        auth_profile=_auth_profile,
+                        auth_profile=auth_profile,
                         mode="passive",
                         metric=random.randint(1, 15),
                     )
