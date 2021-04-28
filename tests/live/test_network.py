@@ -1,7 +1,7 @@
 import random
 
-from panos import network
 from tests.live import testlib
+from panos import network
 
 
 class TestZoneBasic(testlib.FwFlow):

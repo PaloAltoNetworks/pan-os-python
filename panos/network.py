@@ -1895,7 +1895,7 @@ class PathMonitorDestination(VersionedPanObject):
         destination (str): Destination ip 
         interval (int): Ping Interval (sec) (Default: 3)
         count (int): Ping count (Default: 5)
-        
+       
     """
 
     SUFFIX = ENTRY
