@@ -423,6 +423,234 @@ class PasswordProfile(VersionedPanObject):
         self._params = tuple(params)
 
 
+class AuthenticationProfile(VersionedPanObject):
+    """Authentication profile object
+
+    A large number of params have prefixes:
+        * kb: kerberos
+        * ldap: ldap
+        * ld: local-database
+        * none: none
+        * rd: radius
+        * si: saml-idp
+        * tp: tacplus
+
+    Args:
+        allow_list (member/str): Allow users
+        lockout_time (int): amount of time use will be locked
+        failed_attempts (int): number of permitted failed attempts
+        method: none (default), kerberos, ldap, local-database, radius, saml-idp, tacplus
+        server_profile (string): login method server profile
+        kb_realm (string): Kerberos realm
+        ldap_login_attribute (string): Ldap login attribute
+        ldap_passwd_exp_days (string): Ldap password expiration days
+        checkgroup (bool): Radius checkgroup for tacplus or radius
+        si_attribute_name_access_domain (string): saml-idp attribute name access domain
+        si_attribute_name_admin_role (string): saml-idp attribute name admin role
+        si_attribute_name_usergroup (string): saml-idp attribute name usergroup
+        si_attribute_name_username (string): saml-idp attribute name usrname
+        si_enable_single_logout (bool): saml-idp enable single_logout
+        si_request_signing_certificate (string): saml-idp request signing certificate
+        mfa_factors (member): Multi factor auth factors
+        mfa_enable (bool): Multi factor auth enable
+        sso_kerberos_keytab (string): single-sign-on kerberos keytab
+        sso_service_principal (string): single-sign-on service principal
+        user_domain (string): user domain
+        username_modifier (string): username modifier
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/authentication-profile")
+
+        # params
+        params = []
+        params.append(
+            VersionedParamPath(
+                "allow_list", vartype="member", default=["all"], path="allow-list"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lockout_time", vartype="int", path="lockout/lockout-time"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "failed_attempts", vartype="int", path="locakout/failed-attempts"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "method",
+                default="none",
+                path="method/{method}",
+                values=(
+                    "kerberos",
+                    "ldap",
+                    "local-database",
+                    "none",
+                    "radius",
+                    "saml-idp",
+                    "tacplus",
+                ),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "server_profile",
+                condition={
+                    "method": ["kerberos", "ldap", "radius", "saml-idp", "tacplus"]
+                },
+                path="method/{method}/server-profile",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "kb_realm",
+                condition={"method": "kerberos"},
+                path="method/{method}/realm",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ldap_login_attribute",
+                condition={"method": "ldap"},
+                path="method/{method}/login-attribute",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ldap_passwd_exp_days",
+                condition={"method": "ldap"},
+                path="method/{method}/passwd-exp-days",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "checkgroup",
+                vartype="bool",
+                condition={"method": ["radius", "tacplus"]},
+                path="method/{method}/checkgroup",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "si_attribute_name_access_domain",
+                condition={"method": "saml-idp"},
+                path="method/{method}/attribute-name-access-domain",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "si_attribute_name_admin_role",
+                condition={"method": "saml-idp"},
+                path="method/{method}/attribute-name-admin-role",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "si_attribute_name_usergroup",
+                condition={"method": "saml-idp"},
+                path="method/{method}/attribute-name-usergroup",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "si_attribute_name_username",
+                condition={"method": "saml-idp"},
+                path="method/{method}/attribute-name-username",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "si_certificate_profile",
+                condition={"method": "saml-idp"},
+                path="method/{method}/certificate-profile",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "si_enable_single_logout",
+                vartype="bool",
+                condition={"method": "saml-idp"},
+                path="method/{method}/enable-single-logout",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "si_request_signing_certificate",
+                condition={"method": "saml-idp"},
+                path="method/{method}/request-signing-certificate",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mfa_factors", vartype="member", path="multi-factor-auth/factors"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mfa_enable", vartype="yesno", path="multi-factor-auth/mfa-enable"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "sso_kerberos_keytab", path="single-sign-on/kerberos-keytab"
+            )
+        )
+        params.append(VersionedParamPath("sso_realm", path="single-sign-on/realm"))
+        params.append(
+            VersionedParamPath(
+                "sso_service_principal", path="single-sign-on/service-principal"
+            )
+        )
+        params.append(
+            VersionedParamPath("user_domain", vartype="str", path="user-domain")
+        )
+        params.append(
+            VersionedParamPath(
+                "username_modifier", vartype="string", path="username-modifier"
+            )
+        )
+        self._params = tuple(params)
+
+
+class AuthenticationSequance(VersionedPanObject):
+    """AuthenticationSequance object
+    Args:
+        authentication_profiles (member): The authentication profiles
+        use_domain_find_profile (bool): Use domain find profile
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/authentication-sequence")
+
+        # params
+        params = []
+        params.append(
+            VersionedParamPath(
+                "authentication_profiles",
+                vartype="member",
+                path="authentication-profiles",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "use_domain_find_profile",
+                vartype="yesno",
+                path="use-domain-find-profile",
+            )
+        )
+        self._params = tuple(params)
+
+
 class Administrator(VersionedPanObject):
     """Administrator object
 
