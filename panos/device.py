@@ -629,8 +629,8 @@ class AuthenticationProfile(VersionedPanObject):
         self._params = tuple(params)
 
 
-class AuthenticationSequance(VersionedPanObject):
-    """AuthenticationSequance object.
+class AuthenticationSequence(VersionedPanObject):
+    """Authentication Sequence object.
 
     Note:  This is valid for PAN-OS 7.0+.
 
