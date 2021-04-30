@@ -57,6 +57,8 @@ class Firewall(PanDevice):
     NAME = "serial"
     DEFAULT_VSYS = "vsys1"
     CHILDTYPES = (
+        "device.AuthenticationProfile",
+        "device.AuthenticationSequence",
         "device.Vsys",
         "device.VsysResources",
         "device.SystemSettings",
