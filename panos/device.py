@@ -867,7 +867,7 @@ class SnmpServerProfile(VersionedPanObject):
 
     """
 
-    ROOT = Root.VSYS
+    ROOT = Root.PANORAMA_VSYS
     SUFFIX = ENTRY
     CHILDTYPES = (
         "device.SnmpV2cServer",
@@ -900,7 +900,7 @@ class SnmpV2cServer(VersionedPanObject):
 
     """
 
-    ROOT = Root.VSYS
+    ROOT = Root.PANORAMA_VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -929,7 +929,7 @@ class SnmpV3Server(VersionedPanObject):
 
     """
 
-    ROOT = Root.VSYS
+    ROOT = Root.PANORAMA_VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -976,7 +976,7 @@ class EmailServerProfile(VersionedPanObject):
 
     """
 
-    ROOT = Root.VSYS
+    ROOT = Root.PANORAMA_VSYS
     SUFFIX = ENTRY
     CHILDTYPES = ("device.EmailServer",)
 
@@ -1033,7 +1033,7 @@ class EmailServer(VersionedPanObject):
 
     """
 
-    ROOT = Root.VSYS
+    ROOT = Root.PANORAMA_VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -1076,7 +1076,7 @@ class SyslogServerProfile(VersionedPanObject):
 
     """
 
-    ROOT = Root.VSYS
+    ROOT = Root.PANORAMA_VSYS
     SUFFIX = ENTRY
     CHILDTYPES = ("device.SyslogServer",)
 
@@ -1136,7 +1136,7 @@ class SyslogServer(VersionedPanObject):
 
     """
 
-    ROOT = Root.VSYS
+    ROOT = Root.PANORAMA_VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -1227,7 +1227,7 @@ class HttpServerProfile(VersionedPanObject):
 
     """
 
-    ROOT = Root.VSYS
+    ROOT = Root.PANORAMA_VSYS
     SUFFIX = ENTRY
     CHILDTYPES = (
         "device.HttpServer",
@@ -1387,7 +1387,7 @@ class HttpServer(VersionedPanObject):
 
     """
 
-    ROOT = Root.VSYS
+    ROOT = Root.PANORAMA_VSYS
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -1435,6 +1435,7 @@ class HttpConfigHeader(ValueEntry):
     """
 
     LOCATION = "/format/config/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpConfigParam(ValueEntry):
@@ -1449,6 +1450,7 @@ class HttpConfigParam(ValueEntry):
     """
 
     LOCATION = "/format/config/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpSystemHeader(ValueEntry):
@@ -1463,6 +1465,7 @@ class HttpSystemHeader(ValueEntry):
     """
 
     LOCATION = "/format/system/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpSystemParam(ValueEntry):
@@ -1477,6 +1480,7 @@ class HttpSystemParam(ValueEntry):
     """
 
     LOCATION = "/format/system/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpThreatHeader(ValueEntry):
@@ -1491,6 +1495,7 @@ class HttpThreatHeader(ValueEntry):
     """
 
     LOCATION = "/format/threat/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpThreatParam(ValueEntry):
@@ -1505,6 +1510,7 @@ class HttpThreatParam(ValueEntry):
     """
 
     LOCATION = "/format/threat/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpTrafficHeader(ValueEntry):
@@ -1519,6 +1525,7 @@ class HttpTrafficHeader(ValueEntry):
     """
 
     LOCATION = "/format/traffic/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpTrafficParam(ValueEntry):
@@ -1533,6 +1540,7 @@ class HttpTrafficParam(ValueEntry):
     """
 
     LOCATION = "/format/traffic/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpHipMatchHeader(ValueEntry):
@@ -1547,6 +1555,7 @@ class HttpHipMatchHeader(ValueEntry):
     """
 
     LOCATION = "/format/hip-match/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpHipMatchParam(ValueEntry):
@@ -1561,6 +1570,7 @@ class HttpHipMatchParam(ValueEntry):
     """
 
     LOCATION = "/format/hip-match/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpUrlHeader(ValueEntry):
@@ -1575,6 +1585,7 @@ class HttpUrlHeader(ValueEntry):
     """
 
     LOCATION = "/format/url/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpUrlParam(ValueEntry):
@@ -1589,6 +1600,7 @@ class HttpUrlParam(ValueEntry):
     """
 
     LOCATION = "/format/url/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpDataHeader(ValueEntry):
@@ -1603,6 +1615,7 @@ class HttpDataHeader(ValueEntry):
     """
 
     LOCATION = "/format/data/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpDataParam(ValueEntry):
@@ -1617,6 +1630,7 @@ class HttpDataParam(ValueEntry):
     """
 
     LOCATION = "/format/data/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpWildfireHeader(ValueEntry):
@@ -1631,6 +1645,7 @@ class HttpWildfireHeader(ValueEntry):
     """
 
     LOCATION = "/format/wildfire/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpWildfireParam(ValueEntry):
@@ -1645,6 +1660,7 @@ class HttpWildfireParam(ValueEntry):
     """
 
     LOCATION = "/format/wildfire/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpTunnelHeader(ValueEntry):
@@ -1659,6 +1675,7 @@ class HttpTunnelHeader(ValueEntry):
     """
 
     LOCATION = "/format/tunnel/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpTunnelParam(ValueEntry):
@@ -1673,6 +1690,7 @@ class HttpTunnelParam(ValueEntry):
     """
 
     LOCATION = "/format/tunnel/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpUserIdHeader(ValueEntry):
@@ -1687,6 +1705,7 @@ class HttpUserIdHeader(ValueEntry):
     """
 
     LOCATION = "/format/userid/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpUserIdParam(ValueEntry):
@@ -1701,6 +1720,7 @@ class HttpUserIdParam(ValueEntry):
     """
 
     LOCATION = "/format/userid/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpGtpHeader(ValueEntry):
@@ -1715,6 +1735,7 @@ class HttpGtpHeader(ValueEntry):
     """
 
     LOCATION = "/format/gtp/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpGtpParam(ValueEntry):
@@ -1729,6 +1750,7 @@ class HttpGtpParam(ValueEntry):
     """
 
     LOCATION = "/format/gtp/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpAuthHeader(ValueEntry):
@@ -1743,6 +1765,7 @@ class HttpAuthHeader(ValueEntry):
     """
 
     LOCATION = "/format/auth/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpAuthParam(ValueEntry):
@@ -1757,6 +1780,7 @@ class HttpAuthParam(ValueEntry):
     """
 
     LOCATION = "/format/auth/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpSctpHeader(ValueEntry):
@@ -1771,6 +1795,7 @@ class HttpSctpHeader(ValueEntry):
     """
 
     LOCATION = "/format/sctp/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpSctpParam(ValueEntry):
@@ -1785,6 +1810,7 @@ class HttpSctpParam(ValueEntry):
     """
 
     LOCATION = "/format/sctp/params"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpIpTagHeader(ValueEntry):
@@ -1799,6 +1825,7 @@ class HttpIpTagHeader(ValueEntry):
     """
 
     LOCATION = "/format/iptag/headers"
+    ROOT = Root.PANORAMA_VSYS
 
 
 class HttpIpTagParam(ValueEntry):
@@ -1813,3 +1840,4 @@ class HttpIpTagParam(ValueEntry):
     """
 
     LOCATION = "/format/iptag/params"
+    ROOT = Root.PANORAMA_VSYS
