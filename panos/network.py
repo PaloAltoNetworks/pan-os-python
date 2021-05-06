@@ -1947,6 +1947,7 @@ class VirtualRouter(VsysOperations):
         "network.RedistributionProfileIPv6",
         "network.Ospf",
         "network.Bgp",
+        "network.Rip",
     )
 
     def _setup(self):
@@ -2123,6 +2124,190 @@ class RedistributionProfileIPv6(RedistributionProfileBase):
         self._xpaths.add_profile(value="/protocol/redist-profile-ipv6")
 
         RedistributionProfileBase._setup(self)
+
+
+class Rip(VersionedPanObject):
+    """Rip
+
+    Add to a :class:`panos.network.VirtualRouter` instance.
+
+    Args:
+        enable (bool): Enable RIP
+        reject_default_route (bool): Reject default route
+        allow_redist_default_route (bool): Allow Redistribute Default Route
+        delete_intervals (int): Delete Intervals
+        expire_intervals (int): Expire Intervals
+        interval_seconds (int): Interval Seconds (sec)
+        update_intervals (int): Update Intervals
+    """
+
+    NAME = None
+    CHILDTYPES = (
+        "network.RipInterface",
+        "network.RipAuthProfile",
+        "network.RipExportRules",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/protocol/rip")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath("enable", path="enable", default=True, vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "reject_default_route",
+                default=True,
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "allow_redist_default_route",
+                path="allow-redist-default-route",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "delete_intervals", path="/timers/delete-intervals", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "expire_intervals", path="/timers/expire-intervals", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "interval_seconds", path="/timers/interval-seconds", vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "update_intervals", path="/timers/update-intervals", vartype="int"
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RipInterface(VersionedPanObject):
+    """Rip Interface
+
+    Add to a :class:`panos.network.Rip` instance.
+
+    Args:
+        name (str): Interface name
+        enable (bool): Enable
+        advertise_default_route_metric (int): default route metric, enables advertise_default_route
+        auth_profile (str): Auth profile name
+        mode (str): Any of "normal", "passive", or "send-only"
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/interface")
+
+        params = []
+
+        params.append(VersionedParamPath("enable", path="enable", vartype="yesno"))
+        params.append(
+            VersionedParamPath(
+                "advertise_default_route_metric",
+                path="default-route/advertise/metric",
+                vartype="int",
+            )
+        )
+        params.append(VersionedParamPath("auth_profile", path="authentication"))
+        params.append(
+            VersionedParamPath(
+                "mode", path="mode", values=["normal", "passive", "send-only"]
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RipAuthProfile(VersionedPanObject):
+    """Rip Authentication Profile
+
+    Args:
+        name (str): Name of Auth Profile
+        type (str): 'password' or 'md5'
+        password (str): The password if type is set to 'password'.
+            If type is set to 'md5', add a :class:`panos.network.RipAuthProfileMd5`
+
+    """
+
+    SUFFIX = ENTRY
+    CHILDTYPES = ("network.RipAuthProfileMd5",)
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/auth-profile")
+
+        params = []
+        params.append(VersionedParamPath("name"))
+        params.append(
+            VersionedParamPath("type", values=["password", "md5"], path="{type}")
+        )
+        params.append(
+            VersionedParamPath(
+                "password", condition={"type": "password"}, path="{type}"
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RipAuthProfileMd5(VersionedPanObject):
+    """Rip Authentication Profile
+
+    Args:
+        keyid (int): Identifier for key
+        key (str): The authentication key
+        preferred (bool): This key is preferred
+
+    """
+
+    SUFFIX = ENTRY
+    NAME = "keyid"
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/md5")
+
+        params = []
+
+        params.append(VersionedParamPath("key", vartype="encrypted"))
+        params.append(VersionedParamPath("preferred", vartype="yesno"))
+
+        self._params = tuple(params)
+
+
+class RipExportRules(VersionedPanObject):
+    """Rip Export Rules
+
+    Args:
+        name (str): IP subnet or :class:`panos.network.RedistributionProfile`
+        metric (int): Metric
+
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/export-rules")
+
+        params = []
+
+        params.append(VersionedParamPath("metric", vartype="int"))
+
+        self._params = tuple(params)
 
 
 class Ospf(VersionedPanObject):
