@@ -40,7 +40,7 @@ from panos import isstring, string_or_list, updater, userid, yesno
 
 logger = panos.getlogger(__name__)
 
-Root = panos.enum("DEVICE", "VSYS", "MGTCONFIG")
+Root = panos.enum("DEVICE", "VSYS", "MGTCONFIG", "PANORAMA", "PANORAMA_VSYS")
 SELF = "/%s"
 ENTRY = "/entry[@name='%s']"
 MEMBER = "/member[text()='%s']"
@@ -310,6 +310,13 @@ class PanObject(object):
                 # Stop on the first pandevice encountered, unless the
                 # panos.PanDevice object is the object whose xpath
                 # was asked for.
+                # If the object whose xpath we are creating is directly
+                # attached to a Panorama and the root is PANORAMA
+                if root == Root.PANORAMA_VSYS:
+                    if p.__class__.__name__ == "Panorama":
+                        root = Root.PANORAMA
+                    else:
+                        root = Root.VSYS
                 path.insert(0, p.xpath_root(root, vsys, label))
                 break
             elif p.__class__.__name__ == "Predefined":
@@ -339,6 +346,8 @@ class PanObject(object):
                     # Hit a template, make sure that the appropriate /config/...
                     # xpath has been saved.
                     if not path[0].startswith("/config/"):
+                        if root == Root.PANORAMA_VSYS:
+                            root = Root.VSYS
                         path.insert(0, self.xpath_root(root, vsys, label))
                     vsys = p.vsys
                     root = p.ROOT
