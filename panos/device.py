@@ -1147,7 +1147,6 @@ class LdapServer(VersionedPanObject):
         self._params = tuple(params)
 
 
-
 class SyslogServerProfile(VersionedPanObject):
     """A syslog server profile.
 

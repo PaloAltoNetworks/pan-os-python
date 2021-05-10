@@ -27,5 +27,6 @@
     "pandevice",
     "pan-os-python",
     "refreshall"
-  ]
+  ],
+  "python.pythonPath": "/home/kevin/.pyenv/versions/dev-panos/envs/panos-featured/bin/python"
 }
