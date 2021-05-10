@@ -67,6 +67,7 @@ class Firewall(PanDevice):
         "device.Telemetry",
         "device.SnmpServerProfile",
         "device.EmailServerProfile",
+        "device.LdapServerProfile",
         "device.SyslogServerProfile",
         "device.HttpServerProfile",
         "ha.HighAvailability",

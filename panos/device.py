@@ -114,6 +114,7 @@ class Vsys(VersionedPanObject):
         "device.VsysResources",
         "device.SnmpServerProfile",
         "device.EmailServerProfile",
+        "device.LdapServerProfile",
         "device.SyslogServerProfile",
         "device.HttpServerProfile",
         "objects.AddressObject",
@@ -1050,6 +1051,101 @@ class EmailServer(VersionedPanObject):
         params.append(VersionedParamPath("email_gateway", path="gateway"))
 
         self._params = tuple(params)
+
+
+class LdapServerProfile(VersionedPanObject):
+    """An ldap server profile.
+
+    Args:
+        name (str): The name
+        ldap_type: Ldap profile type. Valid values are "other" (default),
+            "active-directory", "e-directory", or "sun".
+        base(str): Base DN
+        bind_dn (str): Bind DN
+        bind_password (str): Bind password
+        bind_timelimit (int): Bind timeout
+        timelimit (int): Search timeout
+        retry_interval (int): Retry interval
+        ssl (bool): Require ssl/ttls secured connection
+        verify_server_certificate (bool): Verify server certificate for ssl sessions
+
+    """
+
+    ROOT = Root.PANORAMA_VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = ("device.LdapServer",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/server-profile/ldap")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "ldap_type",
+                default="other",
+                path="ldap-type",
+                values=["other", "active-directory", "e-directory", "sun"],
+            )
+        )
+        params.append(VersionedParamPath("base", path="base"))
+        params.append(VersionedParamPath("bind_dn", path="bind-dn"))
+        params.append(VersionedParamPath("bind_password", path="bind-password"))
+        params.append(
+            VersionedParamPath(
+                "bind_timelimit", default="30", vartype="int", path="bind-timelimit"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "timelimit", default="30", vartype="int", path="timelimit"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "retry_interval", default="60", vartype="int", path="retry-interval"
+            )
+        )
+        params.append(VersionedParamPath("ssl", vartype="yesno", path="ssl"))
+        params.append(
+            VersionedParamPath(
+                "verify_server_certificate",
+                condition={"ssl": True},
+                vartype="yesno",
+                path="verify-server-certificate",
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class LdapServer(VersionedPanObject):
+    """An ldap server in a ldap server profile
+
+    Args:
+        name (str): The name
+        address (str): IP address or FQDN of ldap server to use
+        port (str): port number
+
+    """
+
+    ROOT = Root.PANORAMA_VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/server")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("address", path="address"))
+        params.append(VersionedParamPath("port", vartype="int", path="port"))
+
+        self._params = tuple(params)
+
 
 
 class SyslogServerProfile(VersionedPanObject):
