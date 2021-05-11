@@ -1082,8 +1082,12 @@ class PanoramaCommitAll(object):
                 ET.SubElement(body, "description").text = self.description
             if self.include_template:
                 ET.SubElement(body, "include-template").text = "yes"
+            elif self.include_template is False:
+                ET.SubElement(body, "include-template").text = "no"
             if self.force_template_values:
                 ET.SubElement(body, "force-template-values").text = "yes"
+            elif self.force_template_values is False:
+                ET.SubElement(body, "force-template-values").text = "no"
         elif self.style == self.STYLE_TEMPLATE:
             body = ET.Element("template")
             ET.SubElement(body, "name").text = self.name
@@ -1091,6 +1095,8 @@ class PanoramaCommitAll(object):
                 ET.SubElement(body, "description").text = self.description
             if self.force_template_values:
                 ET.SubElement(body, "force-template-values").text = "yes"
+            elif self.force_template_values is False:
+                ET.SubElement(body, "force-template-values").text = "no"
             if self.devices:
                 de = ET.SubElement(body, "device")
                 for x in self.devices:
@@ -1102,6 +1108,8 @@ class PanoramaCommitAll(object):
                 ET.SubElement(body, "description").text = self.description
             if self.force_template_values:
                 ET.SubElement(body, "force-template-values").text = "yes"
+            elif self.force_template_values is False:
+                ET.SubElement(body, "force-template-values").text = "no"
             if self.devices:
                 de = ET.SubElement(body, "device")
                 for x in self.devices:
