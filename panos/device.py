@@ -1056,11 +1056,13 @@ class EmailServer(VersionedPanObject):
 class LdapServerProfile(VersionedPanObject):
     """An ldap server profile.
 
+    Note: Valid for PAN-OS 7.0+.
+
     Args:
         name (str): The name
-        ldap_type: Ldap profile type. Valid values are "other" (default),
+        ldap_type (str): Ldap profile type. Valid values are "other" (default),
             "active-directory", "e-directory", or "sun".
-        base(str): Base DN
+        base (str): Base DN
         bind_dn (str): Bind DN
         bind_password (str): Bind password
         bind_timelimit (int): Bind timeout
@@ -1068,6 +1070,7 @@ class LdapServerProfile(VersionedPanObject):
         retry_interval (int): Retry interval
         ssl (bool): Require ssl/ttls secured connection
         verify_server_certificate (bool): Verify server certificate for ssl sessions
+        disabled (bool): Disabled or not
 
     """
 
@@ -1092,7 +1095,11 @@ class LdapServerProfile(VersionedPanObject):
         )
         params.append(VersionedParamPath("base", path="base"))
         params.append(VersionedParamPath("bind_dn", path="bind-dn"))
-        params.append(VersionedParamPath("bind_password", path="bind-password"))
+        params.append(
+            VersionedParamPath(
+                "bind_password", vartype="encrypted", path="bind-password"
+            )
+        )
         params.append(
             VersionedParamPath(
                 "bind_timelimit", default="30", vartype="int", path="bind-timelimit"
@@ -1116,6 +1123,9 @@ class LdapServerProfile(VersionedPanObject):
                 vartype="yesno",
                 path="verify-server-certificate",
             )
+        )
+        params.append(
+            VersionedParamPath("disabled", vartype="yesno", path="disabled",),
         )
 
         self._params = tuple(params)
