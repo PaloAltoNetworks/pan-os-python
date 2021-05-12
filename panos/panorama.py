@@ -381,6 +381,7 @@ class Panorama(base.PanDevice):
         "device.PasswordProfile",
         "device.SnmpServerProfile",
         "device.EmailServerProfile",
+        "device.LdapServerProfile",
         "device.SyslogServerProfile",
         "device.HttpServerProfile",
         "firewall.Firewall",

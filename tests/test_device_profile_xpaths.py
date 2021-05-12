@@ -14,6 +14,9 @@ from panos.device import SnmpV3Server
 from panos.device import EmailServerProfile
 from panos.device import EmailServer
 
+from panos.device import LdapServerProfile
+from panos.device import LdapServer
+
 from panos.device import SyslogServerProfile
 from panos.device import SyslogServer
 
@@ -58,6 +61,7 @@ from panos.panorama import Template
 OBJECTS = {
     SnmpServerProfile: [None, SnmpV2cServer, SnmpV3Server],
     EmailServerProfile: [None, EmailServer,],
+    LdapServerProfile: [None, LdapServer,],
     SyslogServerProfile: [None, SyslogServer,],
     HttpServerProfile: [
         None,
