@@ -1081,3 +1081,164 @@ class Region(VersionedPanObject):
         )
 
         self._params = tuple(params)
+
+
+class Edl(VersionedPanObject):
+    """External Dynamic List.
+
+    Args:
+        name (str): The name.
+        edl_type (str): The EDL type.
+        description (str): Description.
+        source (str): Source.
+        exceptions (list): (PAN-OS 8.0+) Exceptions.
+        certificate_profile (str): (PAN-OS 8.0+) Profile for authenticating client certificates.
+        username (str): (PAN-OS 8.0+) Username auth.
+        password (str): (PAN-OS 8.0+) Password auth.
+        expand_domain (bool): (PAN-OS 9.0+) Enable/disable expand domain (requires
+            `edl_type=domain`).
+        repeat (str): Retrieval interval.  Valid values are "five-minute", "hourly",
+            "daily", "weekly", or "monthly".
+        repeat_at (str): The time specification for the given repeat value.
+        repeat_day_of_week (str): For `repeat=daily`, the day of the week.
+        repeat_day_of_month (int): For `repeat=monthly`, the day of the month.
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/external-list")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "edl_type", default="ip", path="type", values=("ip", "domain", "url"),
+            ),
+        )
+        params[-1].add_profile(
+            "8.0.0",
+            path="type/{edl_type}",
+            values=("ip", "domain", "url", "predefined-ip"),
+        )
+        params[-1].add_profile(
+            "10.0.0",
+            path="type/{edl_type}",
+            values=("ip", "domain", "url", "predefined-ip", "predefined-url"),
+        )
+        params.append(VersionedParamPath("description", path="description",),)
+        params[-1].add_profile(
+            "8.0.0", path="type/{edl_type}/description",
+        )
+        params.append(VersionedParamPath("source", path="url",),)
+        params[-1].add_profile(
+            "8.0.0", path="type/{edl_type}/url",
+        )
+        params.append(VersionedParamPath("exceptions", exclude=True,),)
+        params[-1].add_profile(
+            "8.0.0", vartype="member", path="type/{edl_type}/exception-list",
+        )
+        params.append(VersionedParamPath("certificate_profile", exclude=True,))
+        params[-1].add_profile(
+            "8.0.0",
+            path="type/{edl_type}/certificate-profile",
+            condition={"edl_type": ["ip", "domain", "url"]},
+        )
+        params.append(VersionedParamPath("username", exclude=True,))
+        params[-1].add_profile(
+            "8.0.0",
+            path="type/{edl_type}/auth/username",
+            condition={"edl_type": ["ip", "domain", "url"]},
+        )
+        params.append(VersionedParamPath("password", exclude=True,))
+        params[-1].add_profile(
+            "8.0.0",
+            path="type/{edl_type}/auth/password",
+            vartype="encrypted",
+            condition={"edl_type": ["ip", "domain", "url"]},
+        )
+        params.append(VersionedParamPath("expand_domain", exclude=True,),)
+        params[-1].add_profile(
+            "9.0.0",
+            path="type/{edl_type}/expand-domain",
+            vartype="yesno",
+            condition={"edl_type": "domain"},
+        )
+        params.append(
+            VersionedParamPath(
+                "repeat",
+                path="recurring/{repeat}",
+                values=("five-minute", "hourly", "daily", "weekly", "monthly"),
+            ),
+        )
+        params[-1].add_profile(
+            "8.0.0",
+            path="type/{edl_type}/recurring/{repeat}",
+            values=("five-minute", "hourly", "daily", "weekly", "monthly"),
+            condition={"edl_type": ["ip", "domain", "url"]},
+        )
+        params.append(
+            VersionedParamPath(
+                "repeat_at",
+                path="recurring/{repeat}/at",
+                condition={"repeat": ["daily", "weekly", "monthly"]},
+            ),
+        )
+        params[-1].add_profile(
+            "8.0.0",
+            path="type/{edl_type}/recurring/{repeat}/at",
+            condition={
+                "edl_type": ["ip", "domain", "url"],
+                "repeat": ["daily", "weekly", "monthly"],
+            },
+        )
+        params.append(
+            VersionedParamPath(
+                "repeat_day_of_week",
+                path="recurring/{repeat}/day-of-week",
+                condition={"repeat": "weekly"},
+                values=(
+                    "sunday",
+                    "monday",
+                    "tuesday",
+                    "wednesday",
+                    "thursday",
+                    "friday",
+                    "saturday",
+                ),
+            ),
+        )
+        params[-1].add_profile(
+            "8.0.0",
+            path="type/{edl_type}/recurring/{repeat}/day-of-week",
+            values=(
+                "sunday",
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+            ),
+            condition={"edl_type": ["ip", "domain", "url"], "repeat": "weekly",},
+        )
+        params.append(
+            VersionedParamPath(
+                "repeat_day_of_month",
+                vartype="int",
+                path="recurring/{repeat}/day-of-month",
+                condition={"repeat": "monthly"},
+            ),
+        )
+        params[-1].add_profile(
+            "8.0.0",
+            vartype="int",
+            path="type/{edl_type}/recurring/{repeat}/day-of-month",
+            condition={"edl_type": ["ip", "domain", "url"], "repeat": "monthly",},
+        )
+
+        self._params = tuple(params)

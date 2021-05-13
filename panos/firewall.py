@@ -84,6 +84,7 @@ class Firewall(PanDevice):
         "objects.LogForwardingProfile",
         "objects.DynamicUserGroup",
         "objects.Region",
+        "objects.Edl",
         "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",
