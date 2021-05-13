@@ -66,6 +66,7 @@ class DeviceGroup(VersionedPanObject):
         "objects.CustomUrlCategory",
         "objects.LogForwardingProfile",
         "objects.Region",
+        "objects.Edl",
         "policies.PreRulebase",
         "policies.PostRulebase",
     )

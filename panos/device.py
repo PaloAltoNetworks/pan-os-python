@@ -130,6 +130,7 @@ class Vsys(VersionedPanObject):
         "objects.LogForwardingProfile",
         "objects.DynamicUserGroup",
         "objects.Region",
+        "objects.Edl",
         "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",
