@@ -62,6 +62,8 @@ class Firewall(PanDevice):
         "device.Vsys",
         "device.VsysResources",
         "device.SystemSettings",
+        "device.LogSettingsSystem",
+        "device.LogSettingsConfig",
         "device.PasswordProfile",
         "device.Administrator",
         "device.Telemetry",

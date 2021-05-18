@@ -371,6 +371,114 @@ class SystemSettings(VersionedPanObject):
         self._params = tuple(params)
 
 
+class LogSettingsSystem(VersionedPanObject):
+    """Firewall or Panorama device log settings system
+
+    Args:
+        name (string): The name
+        filter (string): Valid values are "All logs" (default) or create your own filter
+        description (string): Description
+        send_to_panorama (bool): Send to panorama
+        send_email (string): Send email profile
+        send_snmp (string): Send snmp profile
+        send_syslog (string): Send syslog profile
+        send_http (string): Send http profile
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/log-settings/system/match-list")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("filter", default="All Logs", path="filter"))
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        params.append(
+            VersionedParamPath(
+                "send_to_panorama", vartype="yesno", path="send-to-panorama"
+            )
+        )
+
+        params.append(
+            VersionedParamPath("send_email", vartype="member", path="send-email")
+        )
+
+        params.append(
+            VersionedParamPath("send_snmp", vartype="member", path="send-snmptrap")
+        )
+
+        params.append(
+            VersionedParamPath("send_syslog", vartype="member", path="send-syslog")
+        )
+
+        params.append(
+            VersionedParamPath("send_http", vartype="member", path="send-http")
+        )
+
+        self._params = tuple(params)
+
+
+class LogSettingsConfig(VersionedPanObject):
+    """Firewall or Panorama device log settings configuration
+
+    Args:
+        name (string): The name
+        filter (string): Valid values are "All logs" (default) or create your own filter
+        description (string): Description
+        send_to_panorama (bool): Send to panorama
+        send_email (string): Send email profile
+        send_snmp (string): Send snmp profile
+        send_syslog (string): Send syslog profile
+        send_http (string): Send http profile
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/log-settings/config/match-list")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("filter", default="All Logs", path="filter"))
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        params.append(
+            VersionedParamPath(
+                "send_to_panorama", vartype="yesno", path="send-to-panorama"
+            )
+        )
+
+        params.append(
+            VersionedParamPath("send_email", vartype="member", path="send-email")
+        )
+
+        params.append(
+            VersionedParamPath("send_snmp", vartype="member", path="send-snmptrap")
+        )
+
+        params.append(
+            VersionedParamPath("send_syslog", vartype="member", path="send-syslog")
+        )
+
+        params.append(
+            VersionedParamPath("send_http", vartype="member", path="send-http")
+        )
+
+        self._params = tuple(params)
+
+
 class PasswordProfile(VersionedPanObject):
     """Password profile object
 

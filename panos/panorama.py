@@ -177,6 +177,8 @@ class Template(VersionedPanObject):
     CHILDTYPES = (
         "device.Vsys",
         "device.SystemSettings",
+        "device.LogSettingsSystem",
+        "device.LogSettingsConfig",
         "device.PasswordProfile",
         "device.Administrator",
         "ha.HighAvailability",
@@ -258,6 +260,8 @@ class TemplateStack(VersionedPanObject):
     CHILDTYPES = (
         "device.Vsys",
         "device.SystemSettings",
+        "device.LogSettingsSystem",
+        "device.LogSettingsConfig",
         "device.PasswordProfile",
         "device.Administrator",
         "ha.HighAvailability",
