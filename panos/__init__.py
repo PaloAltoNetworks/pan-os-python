@@ -36,11 +36,12 @@ from distutils.version import LooseVersion  # Used by PanOSVersion class
 # Warn if running on end-of-life python
 if sys.version_info < (3, 6):
     import warnings
+
     warnings.warn(
-        "pan-os-python - Running on end-of-life python version ({0}). "
-        "This python version is not supported and might cause problems. "
-        "Please upgrade to Python 3.6 or higher.".format(sys.version.split(' ')[0]),
-        RuntimeWarning
+        "pan-os-python - Running on end-of-life Python version ({0}). "
+        "This Python version is not supported and might cause problems. "
+        "Please upgrade to Python 3.6 or higher.".format(sys.version.split(" ")[0]),
+        RuntimeWarning,
     )
 
 try:
