@@ -1051,11 +1051,8 @@ class EmailServer(VersionedPanObject):
         params.append(VersionedParamPath("to", path="to"))
         params.append(VersionedParamPath("also_to", path="and-also-to"))
         params.append(VersionedParamPath("email_gateway", path="gateway"))
-        params.append(
-            VersionedParamPath(
-                "protocol", path="protocol", default="SMTP", values=["SMTP", "TLS"]
-            )
-        )
+        params.append(VersionedParamPath("protocol", exclude=True, default="SMTP"))
+        params[-1].add_profile("10.0.0", path="protocol", values=["SMTP", "TLS"])
 
         self._params = tuple(params)
 
@@ -1132,7 +1129,11 @@ class LdapServerProfile(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath("disabled", vartype="yesno", path="disabled",),
+            VersionedParamPath(
+                "disabled",
+                vartype="yesno",
+                path="disabled",
+            ),
         )
 
         self._params = tuple(params)
@@ -1278,7 +1279,10 @@ class SyslogServer(VersionedPanObject):
                 "facility",
                 default="LOG_USER",
                 path="facility",
-                values=["LOG_USER",] + ["LOG_LOCAL{0}".format(x) for x in range(8)],
+                values=[
+                    "LOG_USER",
+                ]
+                + ["LOG_LOCAL{0}".format(x) for x in range(8)],
             )
         )
 
