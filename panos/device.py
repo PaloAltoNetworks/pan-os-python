@@ -1129,11 +1129,7 @@ class LdapServerProfile(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "disabled",
-                vartype="yesno",
-                path="disabled",
-            ),
+            VersionedParamPath("disabled", vartype="yesno", path="disabled",),
         )
 
         self._params = tuple(params)
@@ -1279,10 +1275,7 @@ class SyslogServer(VersionedPanObject):
                 "facility",
                 default="LOG_USER",
                 path="facility",
-                values=[
-                    "LOG_USER",
-                ]
-                + ["LOG_LOCAL{0}".format(x) for x in range(8)],
+                values=["LOG_USER",] + ["LOG_LOCAL{0}".format(x) for x in range(8)],
             )
         )
 
