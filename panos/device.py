@@ -1032,6 +1032,7 @@ class EmailServer(VersionedPanObject):
         to (str): To email address
         also_to (str): Additional destination email address
         email_gateway (str): IP address or FQDN of email gateway to use
+        protocol (str): SMTP for clear-text or TLS for encrypted
 
     """
 
@@ -1050,6 +1051,7 @@ class EmailServer(VersionedPanObject):
         params.append(VersionedParamPath("to", path="to"))
         params.append(VersionedParamPath("also_to", path="and-also-to"))
         params.append(VersionedParamPath("email_gateway", path="gateway"))
+        params.append(VersionedParamPath("protocol", path="protocol"))
 
         self._params = tuple(params)
 
@@ -1126,7 +1128,11 @@ class LdapServerProfile(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath("disabled", vartype="yesno", path="disabled",),
+            VersionedParamPath(
+                "disabled",
+                vartype="yesno",
+                path="disabled",
+            ),
         )
 
         self._params = tuple(params)
@@ -1272,7 +1278,10 @@ class SyslogServer(VersionedPanObject):
                 "facility",
                 default="LOG_USER",
                 path="facility",
-                values=["LOG_USER",] + ["LOG_LOCAL{0}".format(x) for x in range(8)],
+                values=[
+                    "LOG_USER",
+                ]
+                + ["LOG_LOCAL{0}".format(x) for x in range(8)],
             )
         )
 
