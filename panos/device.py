@@ -1032,6 +1032,7 @@ class EmailServer(VersionedPanObject):
         to (str): To email address
         also_to (str): Additional destination email address
         email_gateway (str): IP address or FQDN of email gateway to use
+        protocol (str): SMTP for clear-text or TLS for encrypted
 
     """
 
@@ -1050,6 +1051,8 @@ class EmailServer(VersionedPanObject):
         params.append(VersionedParamPath("to", path="to"))
         params.append(VersionedParamPath("also_to", path="and-also-to"))
         params.append(VersionedParamPath("email_gateway", path="gateway"))
+        params.append(VersionedParamPath("protocol", exclude=True, default="SMTP"))
+        params[-1].add_profile("10.0.0", path="protocol", values=["SMTP", "TLS"])
 
         self._params = tuple(params)
 
