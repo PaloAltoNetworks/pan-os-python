@@ -1032,7 +1032,14 @@ class EmailServer(VersionedPanObject):
         to (str): To email address
         also_to (str): Additional destination email address
         email_gateway (str): IP address or FQDN of email gateway to use
-        protocol (str): SMTP for clear-text or TLS for encrypted
+        protocol (str): (PAN-OS 10.0+) SMTP for clear-text or TLS for encrypted
+        port (int): (PAN-OS 10.0+) Port number
+        tls_version (str): (PAN-OS 10.0+) TLS handshake protocol version.
+        auth (str): (PAN-OS 10.0+) Authentication type.
+        certificate_profile (str): (PAN-OS 10.0+) Certificate profile for
+            validating server certificate.
+        username (str): (PAN-OS 10.0+) Authentication username.
+        password (str): (PAN-OS 10.0+) Authentication password.
 
     """
 
@@ -1053,6 +1060,20 @@ class EmailServer(VersionedPanObject):
         params.append(VersionedParamPath("email_gateway", path="gateway"))
         params.append(VersionedParamPath("protocol", exclude=True, default="SMTP"))
         params[-1].add_profile("10.0.0", path="protocol", values=["SMTP", "TLS"])
+        params.append(VersionedParamPath("port", default=25, exclude=True))
+        params[-1].add_profile("10.0.0", path="port", vartype="int")
+        params.append(VersionedParamPath("tls_version", exclude=True))
+        params[-1].add_profile("10.0.0", path="tls-version", values=("1.2", "1.1"))
+        params.append(VersionedParamPath("auth", exclude=True))
+        params[-1].add_profile("10.0.0", path="auth", values=("Auto", "Login", "Plain"))
+        params.append(
+            VersionedParamPath("certificate_profile", default="None", exclude=True)
+        )
+        params[-1].add_profile("10.0.0", path="certificate-profile")
+        params.append(VersionedParamPath("username", exclude=True))
+        params[-1].add_profile("10.0.0", path="username")
+        params.append(VersionedParamPath("password", exclude=True))
+        params[-1].add_profile("10.0.0", path="password", vartype="encrypted")
 
         self._params = tuple(params)
 
