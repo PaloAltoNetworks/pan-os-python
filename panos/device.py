@@ -374,15 +374,17 @@ class SystemSettings(VersionedPanObject):
 class LogSettingsSystem(VersionedPanObject):
     """Firewall or Panorama device log settings system
 
+    Note: This is valid for PANS-OS 8.0+.
+
     Args:
         name (string): The name
         filter (string): Valid values are "All logs" (default) or create your own filter
         description (string): Description
         send_to_panorama (bool): Send to panorama
-        send_email (string): Send email profile
-        send_snmp (string): Send snmp profile
-        send_syslog (string): Send syslog profile
-        send_http (string): Send http profile
+        send_email (list): Send email profile
+        send_snmp (list): Send snmp profile
+        send_syslog (list): Send syslog profile
+        send_http (list): Send http profile
 
     """
 
@@ -428,15 +430,17 @@ class LogSettingsSystem(VersionedPanObject):
 class LogSettingsConfig(VersionedPanObject):
     """Firewall or Panorama device log settings configuration
 
+    Note: This is valid for PANS-OS 8.0+.
+
     Args:
         name (string): The name
         filter (string): Valid values are "All logs" (default) or create your own filter
         description (string): Description
         send_to_panorama (bool): Send to panorama
-        send_email (string): Send email profile
-        send_snmp (string): Send snmp profile
-        send_syslog (string): Send syslog profile
-        send_http (string): Send http profile
+        send_email (list): Send email profile
+        send_snmp (list): Send snmp profile
+        send_syslog (list): Send syslog profile
+        send_http (list): Send http profile
 
     """
 
