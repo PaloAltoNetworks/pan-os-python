@@ -26,11 +26,23 @@ Documentation available at https://pan-os-python.readthedocs.io
 
 __author__ = "Palo Alto Networks"
 __email__ = "devrel@paloaltonetworks.com"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 
 import logging
+import sys
 from distutils.version import LooseVersion  # Used by PanOSVersion class
+
+# Warn if running on end-of-life python
+if sys.version_info < (3, 6):
+    import warnings
+
+    warnings.warn(
+        "pan-os-python - Running on end-of-life Python version ({0}). "
+        "This Python version is not supported and might cause problems. "
+        "Please upgrade to Python 3.6 or higher.".format(sys.version.split(" ")[0]),
+        RuntimeWarning,
+    )
 
 try:
     import pan
