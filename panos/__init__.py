@@ -26,7 +26,7 @@ Documentation available at https://pan-os-python.readthedocs.io
 
 __author__ = "Palo Alto Networks"
 __email__ = "devrel@paloaltonetworks.com"
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 
 import logging
