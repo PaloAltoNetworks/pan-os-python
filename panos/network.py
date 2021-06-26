@@ -1765,9 +1765,9 @@ class StaticRoute(VersionedPanObject):
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
         enable_path_monitor (bool): Enable Path Monitor
-        failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all'
         preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
-        
+
     """
 
     SUFFIX = ENTRY
@@ -1832,7 +1832,7 @@ class StaticRouteV6(VersionedPanObject):
         admin_dist (str): Administrative distance
         metric (int): Metric (Default: 10)
         enable_path_monitor (bool): Enable Path Monitor
-        failure_condition (str): Path Monitor failure condition set 'any' or 'all' 
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all'
         preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
 
     """
@@ -1886,16 +1886,16 @@ class StaticRouteV6(VersionedPanObject):
 
 
 class PathMonitorDestination(VersionedPanObject):
-    """PathMonitorDestination Static Route 
+    """PathMonitorDestination Static Route
 
     Args:
-        name (str): Name of Path Monitor Destination 
-        enable (bool): Enable Path Monitor Destination 
+        name (str): Name of Path Monitor Destination
+        enable (bool): Enable Path Monitor Destination
         source (str): Source ip of interface
-        destination (str): Destination ip 
+        destination (str): Destination ip
         interval (int): Ping Interval (sec) (Default: 3)
         count (int): Ping count (Default: 5)
-       
+
     """
 
     SUFFIX = ENTRY
@@ -2145,7 +2145,7 @@ class Rip(VersionedPanObject):
     CHILDTYPES = (
         "network.RipInterface",
         "network.RipAuthProfile",
-        "network.RipExportRules",
+        "network.RipExportRule",
     )
 
     def _setup(self):
@@ -2174,23 +2174,26 @@ class Rip(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "delete_intervals", path="/timers/delete-intervals", vartype="int"
+                "delete_intervals", path="timers/delete-intervals", vartype="int"
             )
         )
         params.append(
             VersionedParamPath(
-                "expire_intervals", path="/timers/expire-intervals", vartype="int"
+                "expire_intervals", path="timers/expire-intervals", vartype="int"
             )
         )
         params.append(
             VersionedParamPath(
-                "interval_seconds", path="/timers/interval-seconds", vartype="int"
+                "interval_seconds", path="timers/interval-seconds", vartype="int"
             )
         )
         params.append(
             VersionedParamPath(
-                "update_intervals", path="/timers/update-intervals", vartype="int"
+                "update_intervals", path="timers/update-intervals", vartype="int"
             )
+        )
+        params.append(
+            VersionedParamPath("global_bfd_profile", path="global-bfd/profile")
         )
 
         self._params = tuple(params)
@@ -2216,7 +2219,7 @@ class RipInterface(VersionedPanObject):
 
         params = []
 
-        params.append(VersionedParamPath("enable", path="enable", vartype="yesno"))
+        params.append(VersionedParamPath("enable", path="enable", vartype="yesno", default=True))
         params.append(
             VersionedParamPath(
                 "advertise_default_route_metric",
@@ -2239,9 +2242,9 @@ class RipAuthProfile(VersionedPanObject):
 
     Args:
         name (str): Name of Auth Profile
-        type (str): 'password' or 'md5'
-        password (str): The password if type is set to 'password'.
-            If type is set to 'md5', add a :class:`panos.network.RipAuthProfileMd5`
+        auth_type (str): 'password' or 'md5'
+        password (str): The password if auth_type is set to 'password'.
+            If auth_type is set to 'md5', add a :class:`panos.network.RipAuthProfileMd5`
 
     """
 
@@ -2254,11 +2257,11 @@ class RipAuthProfile(VersionedPanObject):
         params = []
         params.append(VersionedParamPath("name"))
         params.append(
-            VersionedParamPath("type", values=["password", "md5"], path="{type}")
+            VersionedParamPath("auth_type", values=["password", "md5"], path="{type}")
         )
         params.append(
             VersionedParamPath(
-                "password", condition={"type": "password"}, path="{type}"
+                "password", condition={"auth_type": "password"}, path="{type}", vartype="encrypted"
             )
         )
 
@@ -2289,7 +2292,7 @@ class RipAuthProfileMd5(VersionedPanObject):
         self._params = tuple(params)
 
 
-class RipExportRules(VersionedPanObject):
+class RipExportRule(VersionedPanObject):
     """Rip Export Rules
 
     Args:

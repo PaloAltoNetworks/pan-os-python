@@ -753,7 +753,7 @@ class MakeVirtualRouter(testlib.FwFlow):
                 state.rip.add(state.rip_auth_profile)
 
             if self.WITH_RIP_EXPORT_RULES and self.WITH_REDISTRIBUTION_PROFILE:
-                state.rip_export_rules = network.RipExportRules(
+                state.rip_export_rules = network.RipExportRule(
                     name=str(state.redist_profile), metric=random.randint(1, 15)
                 )
                 state.rip.add(state.rip_export_rules)
@@ -913,7 +913,7 @@ class TestRipAuthProfile(MakeVirtualRouter):
 
     def setup_state_obj(self, fw, state):
         state.obj = network.RipAuthProfile(
-            name=testlib.random_name(), type="password", password=testlib.random_name()
+            name=testlib.random_name(), auth_type="password", password=testlib.random_name()
         )
         state.rip.add(state.obj)
 
@@ -960,12 +960,12 @@ class TestRipInterface(MakeVirtualRouter):
         state.obj.mode = "passive"
 
 
-class TestRipExportRules(MakeVirtualRouter):
+class TestRipExportRule(MakeVirtualRouter):
     WITH_RIP = True
     WITH_REDISTRIBUTION_PROFILE = True
 
     def setup_state_obj(self, fw, state):
-        state.obj = network.RipExportRules(
+        state.obj = network.RipExportRule(
             name=str(state.redist_profile), metric=random.randint(1, 15)
         )
         state.rip.add(state.obj)
