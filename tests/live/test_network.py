@@ -764,10 +764,10 @@ class MakeVirtualRouter(testlib.FwFlow):
                     network.RipInterface(
                         name=state.eths[0],
                         enable=True,
-                        advertise_default_route_metric=True,
-                        auth_profile=auth_profile,
-                        mode="passive",
+                        advertise_default_route=True,
                         metric=random.randint(1, 15),
+                        auth_profile=auth_profile,
+                        mode="passive"
                     )
                 )
 
