@@ -27,6 +27,5 @@
     "pandevice",
     "pan-os-python",
     "refreshall"
-  ],
-  "python.pythonPath": "C:\\Users\\Mark\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\pan-os-python-aL9vMgph-py3.9\\Scripts\\python.exe"
+  ]
 }
