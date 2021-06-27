@@ -39,6 +39,7 @@ class HighAvailabilityInterface(PanObject):
 
     """
 
+    NAME = None
     HA_SYNC = False
 
     # TODO: Support encryption
