@@ -15,6 +15,7 @@ try:
     from unittest import mock
 except ImportError:
     import mock
+
 import unittest
 import xml.etree.ElementTree as ET
 
@@ -169,11 +170,11 @@ class TestElementStr_7_0(unittest.TestCase):
                 b"<netmask>255.255.255.0</netmask><port>ethernet1/6</port>",
                 b"<gateway>10.5.1.2</gateway><link-speed>1000</link-speed>",
                 b"<link-duplex>auto</link-duplex><monitor-hold-time>7",
-                b"</monitor-hold-time></ha1><ha1-backup /><ha2>",
+                b"</monitor-hold-time></ha1><ha2>",
                 b"<ip-address>10.6.1.1</ip-address><netmask>255.255.255.0",
                 b"</netmask><port>ethernet1/7</port><gateway>10.6.1.2</gateway>",
                 b"<link-speed>1000</link-speed><link-duplex>auto</link-duplex>",
-                b"</ha2><ha2-backup /><ha3 /></interface></high-availability>",
+                b"</ha2></interface></high-availability>",
             ]
         )
 

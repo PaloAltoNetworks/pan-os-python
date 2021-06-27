@@ -559,10 +559,5 @@ class HighAvailability(VersionedPanObject):
 
         # stubs
         self._stubs.add_profile(
-            "0.0.0",
-            "interface/ha1",
-            "interface/ha1-backup",
-            "interface/ha2",
-            "interface/ha2-backup",
-            "interface/ha3",
+            "0.0.0", "interface/ha1",
         )
