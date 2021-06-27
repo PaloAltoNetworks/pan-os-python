@@ -2174,22 +2174,22 @@ class Rip(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "delete_intervals", path="timers/delete-intervals", vartype="int"
+                "delete_intervals", path="timers/delete-intervals", vartype="int", default=120
             )
         )
         params.append(
             VersionedParamPath(
-                "expire_intervals", path="timers/expire-intervals", vartype="int"
+                "expire_intervals", path="timers/expire-intervals", vartype="int", default=180
             )
         )
         params.append(
             VersionedParamPath(
-                "interval_seconds", path="timers/interval-seconds", vartype="int"
+                "interval_seconds", path="timers/interval-seconds", vartype="int", default=1
             )
         )
         params.append(
             VersionedParamPath(
-                "update_intervals", path="timers/update-intervals", vartype="int"
+                "update_intervals", path="timers/update-intervals", vartype="int", default=30
             )
         )
         params.append(
