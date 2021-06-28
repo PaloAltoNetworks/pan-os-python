@@ -2207,7 +2207,10 @@ class RipInterface(VersionedPanObject):
     Args:
         name (str): Interface name
         enable (bool): Enable
-        advertise_default_route_metric (int): default route metric, enables advertise_default_route
+        advertise_default_route: Advertise default route
+                * advertise
+                * disable
+        metric (int): Default route metric. Requires {advertise_default_route: "advertise"}
         auth_profile (str): Auth profile name
         mode (str): Mode of RipInterface
                 * normal (default)
@@ -2225,15 +2228,28 @@ class RipInterface(VersionedPanObject):
         params.append(VersionedParamPath("enable", path="enable", vartype="yesno", default=True))
         params.append(
             VersionedParamPath(
-                "advertise_default_route_metric",
-                path="default-route/advertise/metric",
+                "advertise_default_route",
+                values=["advertise", "disable"],
+                default="disable",
+                path="default-route/{advertise_default_route}"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "metric",
+                path="default-route/{advertise_default_route}/metric",
                 vartype="int",
+                default=10,
+                condition={"advertise_default_route": "advertise"},
             )
         )
         params.append(VersionedParamPath("auth_profile", path="authentication"))
         params.append(
             VersionedParamPath(
-                "mode", path="mode", values=["normal", "passive", "send-only"], default="normal"
+                "mode",
+                path="mode",
+                values=["normal", "passive", "send-only"],
+                default="normal"
             )
         )
 

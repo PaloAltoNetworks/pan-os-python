@@ -735,7 +735,7 @@ class MakeVirtualRouter(testlib.FwFlow):
             if self.WITH_RIP_AUTH_PROFILE:
                 state.rip_auth_profile = network.RipAuthProfile(
                     testlib.random_name(),
-                    type="password",
+                    auth_type="password",
                     password=testlib.random_name(),
                 )
                 state.rip.add(state.rip_auth_profile)
@@ -764,7 +764,7 @@ class MakeVirtualRouter(testlib.FwFlow):
                     network.RipInterface(
                         name=state.eths[0],
                         enable=True,
-                        advertise_default_route=True,
+                        advertise_default_route="advertise",
                         metric=random.randint(1, 15),
                         auth_profile=auth_profile,
                         mode="passive"
@@ -955,7 +955,8 @@ class TestRipInterface(MakeVirtualRouter):
 
     def update_state_obj(self, fw, state):
         state.obj.enable = True
-        state.obj.advertise_default_route_metric = random.randint(1, 15)
+        state.obj.advertise_default_route = "advertise"
+        state.obj.metric = random.randint(1, 15)
         state.obj.auth_profile = None
         state.obj.mode = "passive"
 
