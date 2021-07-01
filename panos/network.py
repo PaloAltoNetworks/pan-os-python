@@ -153,48 +153,22 @@ class Zone(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "enable_packet_buffer_protection",
-                exclude=True,
-            )
+            VersionedParamPath("enable_packet_buffer_protection", exclude=True,)
         )
         params[-1].add_profile(
-            "8.0.0",
-            path="network/enable-packet-buffer-protection",
-            vartype="yesno",
+            "8.0.0", path="network/enable-packet-buffer-protection", vartype="yesno",
         )
-        params.append(
-            VersionedParamPath(
-                "enable_device_identification",
-                exclude=True,
-            )
-        )
+        params.append(VersionedParamPath("enable_device_identification", exclude=True,))
         params[-1].add_profile(
-            "10.0.0",
-            path="enable-device-identification",
-            vartype="yesno",
+            "10.0.0", path="enable-device-identification", vartype="yesno",
         )
-        params.append(
-            VersionedParamPath(
-                "device_include_acl",
-                exclude=True,
-            )
-        )
+        params.append(VersionedParamPath("device_include_acl", exclude=True,))
         params[-1].add_profile(
-            "10.0.0",
-            path="device-acl/include-list",
-            vartype="member",
+            "10.0.0", path="device-acl/include-list", vartype="member",
         )
-        params.append(
-            VersionedParamPath(
-                "device_exclude_acl",
-                exclude=True,
-            )
-        )
+        params.append(VersionedParamPath("device_exclude_acl", exclude=True,))
         params[-1].add_profile(
-            "10.0.0",
-            path="device-acl/exclude-acl",
-            vartype="member",
+            "10.0.0", path="device-acl/exclude-acl", vartype="member",
         )
 
         self._params = tuple(params)
@@ -1396,12 +1370,7 @@ class AggregateInterface(PhysicalInterface):
                 "mode",
                 path="{mode}",
                 default="layer3",
-                values=[
-                    "layer3",
-                    "layer2",
-                    "virtual-wire",
-                    "ha",
-                ],
+                values=["layer3", "layer2", "virtual-wire", "ha",],
             )
         )
         params.append(
@@ -2190,11 +2159,7 @@ class Rip(VersionedPanObject):
             VersionedParamPath("enable", path="enable", default=True, vartype="yesno")
         )
         params.append(
-            VersionedParamPath(
-                "reject_default_route",
-                default=True,
-                vartype="yesno",
-            )
+            VersionedParamPath("reject_default_route", default=True, vartype="yesno",)
         )
         params.append(
             VersionedParamPath(
@@ -4067,11 +4032,7 @@ class IkeGateway(VersionedPanObject):
         )
         params[-1].add_profile(
             "8.1.0",
-            values=(
-                "ip",
-                "dynamic",
-                "fqdn",
-            ),
+            values=("ip", "dynamic", "fqdn",),
             path="peer-address/{peer_ip_type}",
         )
         params.append(
@@ -4477,14 +4438,7 @@ class IpsecTunnel(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "mk_esp_encryption",
-                values=(
-                    "des",
-                    "3des",
-                    "aes128",
-                    "aes192",
-                    "aes256",
-                    "null",
-                ),
+                values=("des", "3des", "aes128", "aes192", "aes256", "null",),
                 path="{type}/{mk_protocol}/encryption/algorithm",
             )
         )
@@ -5323,8 +5277,6 @@ class DhcpRelayIpv6Address(VersionedPanObject):
 
         params = []
 
-        params.append(
-            VersionedParamPath("interface", path="interface"),
-        )
+        params.append(VersionedParamPath("interface", path="interface"),)
 
         self._params = tuple(params)
