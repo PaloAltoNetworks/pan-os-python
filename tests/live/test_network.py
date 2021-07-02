@@ -1,7 +1,7 @@
 import random
 
-from tests.live import testlib
 from panos import network
+from tests.live import testlib
 
 
 class TestZoneBasic(testlib.FwFlow):
@@ -669,6 +669,11 @@ class MakeVirtualRouter(testlib.FwFlow):
     WITH_BGP_PEER = False
     WITH_BGP_IMPORT_RULE = False
     WITH_BGP_EXPORT_RULE = False
+    WITH_RIP = False
+    WITH_RIP_AUTH_PROFILE = False
+    WITH_RIP_AUTH_PROFILE_MD5 = False
+    WITH_RIP_EXPORT_RULES = False
+    WITH_RIP_INTERFACE = False
 
     def create_dependencies(self, fw, state):
         state.eths = testlib.get_available_interfaces(fw, 2)
@@ -706,6 +711,69 @@ class MakeVirtualRouter(testlib.FwFlow):
             )
             state.vr.add(state.redist_profile)
             state.redist_profile.create()
+
+        if any(
+            (
+                self.WITH_RIP,
+                self.WITH_RIP_AUTH_PROFILE,
+                self.WITH_RIP_AUTH_PROFILE_MD5,
+                self.WITH_RIP_EXPORT_RULES,
+                self.WITH_RIP_INTERFACE,
+            )
+        ):
+            state.rip = network.Rip(
+                enable=True,
+                reject_default_route=False,
+                allow_redist_default_route=True,
+                delete_intervals=random.randint(1, 255),
+                expire_intervals=random.randint(1, 255),
+                interval_seconds=random.randint(1, 60),
+                update_intervals=random.randint(1, 255),
+            )
+            state.vr.add(state.rip)
+
+            if self.WITH_RIP_AUTH_PROFILE:
+                state.rip_auth_profile = network.RipAuthProfile(
+                    testlib.random_name(),
+                    auth_type="password",
+                    password=testlib.random_name(),
+                )
+                state.rip.add(state.rip_auth_profile)
+
+            if self.WITH_RIP_AUTH_PROFILE_MD5:
+                state.rip_auth_profile = network.RipAuthProfile(
+                    testlib.random_name(), type="md5"
+                )
+                state.md5 = network.RipAuthProfileMd5(
+                    keyid=random.randint(1, 255),
+                    key=testlib.random_name(),
+                    preferred=True,
+                )
+                state.rip_auth_profile.add(state.md5)
+                state.rip.add(state.rip_auth_profile)
+
+            if self.WITH_RIP_EXPORT_RULES and self.WITH_REDISTRIBUTION_PROFILE:
+                state.rip_export_rules = network.RipExportRule(
+                    name=str(state.redist_profile), metric=random.randint(1, 15)
+                )
+                state.rip.add(state.rip_export_rules)
+
+            if self.WITH_RIP_INTERFACE:
+                auth_profile = (
+                    str(state.rip_auth_profile) if self.WITH_RIP_AUTH_PROFILE else None
+                )
+                state.rip.add(
+                    network.RipInterface(
+                        name=state.eths[0],
+                        enable=True,
+                        advertise_default_route="advertise",
+                        metric=random.randint(1, 15),
+                        auth_profile=auth_profile,
+                        mode="passive",
+                    )
+                )
+
+            state.rip.create()
 
         if any(
             (
@@ -817,6 +885,101 @@ class MakeVirtualRouter(testlib.FwFlow):
             state.eth_obj_v4.delete_similar()
         except Exception:
             pass
+
+
+class TestRip(MakeVirtualRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.Rip(
+            enable=True,
+            reject_default_route=True,
+            allow_redist_default_route=True,
+            delete_intervals=random.randint(1, 255),
+            expire_intervals=random.randint(1, 255),
+            interval_seconds=random.randint(1, 60),
+            update_intervals=random.randint(1, 255),
+        )
+        state.vr.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = True
+        state.obj.reject_default_route = False
+        state.obj.allow_redist_default_route = True
+        state.obj.delete_intervals = random.randint(1, 255)
+        state.obj.expire_intervals = random.randint(1, 255)
+        state.obj.interval_seconds = random.randint(1, 60)
+        state.obj.update_intervals = random.randint(1, 255)
+
+
+class TestRipAuthProfile(MakeVirtualRouter):
+    WITH_RIP = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RipAuthProfile(
+            name=testlib.random_name(),
+            auth_type="password",
+            password=testlib.random_name(),
+        )
+        state.rip.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.password = testlib.random_name()
+
+
+class TestRipAuthProfileMd5(MakeVirtualRouter):
+    WITH_RIP_AUTH_PROFILE = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RipAuthProfileMd5(keyid="1", key="secret1", preferred=False)
+        state.rip_auth_profile.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.preferred = True
+
+    def test_05_add_second_profile_not_preferred(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+
+        state.rip_auth_profile_md5 = network.RipAuthProfileMd5(
+            keyid="1", key="secret2", preferred=False
+        )
+
+        state.rip_auth_profile.add(state.rip_auth_profile_md5)
+        state.rip_auth_profile_md5.create()
+
+
+class TestRipInterface(MakeVirtualRouter):
+    WITH_RIP = True
+    WITH_RIP_AUTH_PROFILE = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RipInterface(
+            name=state.eths[0],
+            enable=True,
+            auth_profile=str(state.rip_auth_profile),
+            mode="normal",
+        )
+        state.rip.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = True
+        state.obj.advertise_default_route = "advertise"
+        state.obj.metric = random.randint(1, 15)
+        state.obj.auth_profile = None
+        state.obj.mode = "passive"
+
+
+class TestRipExportRule(MakeVirtualRouter):
+    WITH_RIP = True
+    WITH_REDISTRIBUTION_PROFILE = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RipExportRule(
+            name=str(state.redist_profile), metric=random.randint(1, 15)
+        )
+        state.rip.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.new_path_type = str(state.redist_profile)
+        state.obj.metric = random.randint(1, 15)
 
 
 class TestRedistributionProfile(MakeVirtualRouter):
