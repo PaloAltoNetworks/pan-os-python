@@ -230,7 +230,7 @@ class Vlan(VsysOperations):
             VersionedParamPath("interface", vartype="member", path="interface")
         )
         params.append(
-            VersionedParamPath("virtual_interface", path="/virtual-interface/interface")
+            VersionedParamPath("virtual_interface", path="virtual-interface/interface")
         )
 
         self._params = tuple(params)

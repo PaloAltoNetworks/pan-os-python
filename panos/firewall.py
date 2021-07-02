@@ -77,9 +77,11 @@ class Firewall(PanDevice):
         "objects.AddressGroup",
         "objects.ServiceObject",
         "objects.ServiceGroup",
+        "objects.Tag",
         "objects.ApplicationObject",
         "objects.ApplicationGroup",
         "objects.ApplicationFilter",
+        "objects.ApplicationContainer",
         "objects.ScheduleObject",
         "objects.SecurityProfileGroup",
         "objects.CustomUrlCategory",
@@ -102,6 +104,8 @@ class Firewall(PanDevice):
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
         "network.GreTunnel",
+        "network.Dhcp",
+        "network.Zone",
     )
 
     def __init__(
