@@ -119,6 +119,8 @@ class SecurityRule(VersionedPanObject):
         target (list): Apply this policy to the listed firewalls only
             (applies to panorama/device groups only)
         uuid (str): (PAN-OS 9.0+) The UUID for this rule.
+        source_hips (list): (PAN-OS 10.0+) Source HIPs.
+        destination_hips (list): (PAN-OS 10.0+) Destination HIPs.
 
     """
 
@@ -222,6 +224,12 @@ class SecurityRule(VersionedPanObject):
 
         params.append(VersionedParamPath("uuid", exclude=True))
         params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
+        params.append(VersionedParamPath("source_hips", default=["any",], exclude=True))
+        params[-1].add_profile("10.0.0", vartype="member", path="source-hip")
+        params.append(
+            VersionedParamPath("destination_hips", default=["any",], exclude=True)
+        )
+        params[-1].add_profile("10.0.0", vartype="member", path="destination-hip")
 
         self._params = tuple(params)
 
