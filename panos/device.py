@@ -225,6 +225,7 @@ class NTPServer(PanObject):
     # TODO: Add authentication
     # TODO: Add PAN-OS pre-7.0 support
 
+    NAME = None
     XPATH = "/ntp-servers/primary-ntp-server"
 
     def __init__(self, *args, **kwargs):
@@ -805,6 +806,8 @@ class Administrator(VersionedPanObject):
         role_profile (str): The role based profile
         password_hash (encrypted str): The encrypted password
         password_profile (str): The password profile for this user
+        vsys_device (list): The vsys list (excluded)
+        vsys_read_only_device (list): The read-only device list (excluded)
 
     """
 

@@ -283,7 +283,10 @@ class ApplicationObject(VersionedPanObject):
         technology (str): Application technology
         risk (int): Risk (1-5) of the application
         default_type (str): Default identification type of the application
-        default_value (list): Values for the default type
+        default_port (list): Default ports
+        default_ip_protocol (str): Default IP protocol
+        default_icmp_type (int): Default ICMP type
+        default_icmp_code (int): Default ICMP code
         parent_app (str): Parent Application for which this app falls under
         timeout (int): Default timeout
         tcp_timeout (int): TCP timeout
@@ -574,6 +577,7 @@ class ApplicationContainer(VersionedPanObject):
     Palo Alto groups predefined applications together.
 
     Args:
+        name (str): The name
         applications (list): List of memeber applications
 
     """
@@ -655,6 +659,7 @@ class CustomUrlCategory(VersionedPanObject):
         name (str): The name
         url_value (list): Values to include in custom URL category object
         description (str): Description of this object
+        type (str): The type
 
     """
 

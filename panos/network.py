@@ -180,6 +180,7 @@ class StaticMac(VersionedPanObject):
     Can be added to a :class:`panos.network.Vlan` object
 
     Args:
+        mac (str): The MAC address
         interface (str): Name of an interface
 
     """
@@ -203,8 +204,9 @@ class Vlan(VsysOperations):
     """Vlan
 
     Args:
+        name (str): The name
         interface (list): List of interface names
-        virtual-interface (VlanInterface): The layer3 vlan interface for this vlan
+        virtual_interface (VlanInterface): The layer3 vlan interface for this vlan
 
     """
 
@@ -243,12 +245,14 @@ class IPv6Address(VersionedPanObject):
     that supports IPv6.
 
     Args:
-        enabled-on-interface (bool): Enabled IPv6 on the interface this
+        address (str): The IPv6 address
+        enable_on_interface (bool): Enabled IPv6 on the interface this
             object was added to
         prefix (bool): Use interface ID as host portion
         anycast (bool): Enable anycast
         advertise_enabled (bool): Enabled router advertisements
         valid_lifetime (int): Valid lifetime
+        preferred_lifetime (int): Preferred lifetime
         onlink_flag (bool):
         auto_config_flag (bool):
 
@@ -851,6 +855,7 @@ class Layer3Subinterface(Subinterface):
     """Ethernet or Aggregate Subinterface in Layer 3 mode.
 
     Args:
+        name (str): The name
         tag (int): Tag for the interface, aka vlan id
         ip (tuple): Interface IPv4 addresses
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
@@ -957,6 +962,7 @@ class Layer2Subinterface(Subinterface):
     """Ethernet or Aggregate Subinterface in Layer 2 mode.
 
     Args:
+        name (str): The name
         tag (int): Tag for the interface, aka vlan id
         lldp_enabled (bool): Enable LLDP
         lldp_profile (str): Reference to an lldp profile
@@ -1336,8 +1342,8 @@ class AggregateInterface(PhysicalInterface):
         dhcp_default_route_metric (int): Layer3: Metric for the DHCP default route
         lacp_enable (bool): Enables LACP
         lacp_passive_pre_negotiation (bool): Enable LACP passive pre-negotiation, off by default
-        lacp_rate (str): Set LACP transmission-rate to 'fast' or 'slow'
         lacp_mode (str): Set LACP mode to 'active' or 'passive'
+        lacp_rate (str): Set LACP transmission-rate to 'fast' or 'slow'
 
     """
 
@@ -1513,6 +1519,7 @@ class VlanInterface(Interface):
     """Vlan interface
 
     Args:
+        name (str): Interface name
         ip (tuple): Interface IPv4 addresses
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
@@ -1646,6 +1653,7 @@ class LoopbackInterface(Interface):
     """Loopback interface
 
     Args:
+        name (str): The name
         ip (tuple): Interface IPv4 addresses
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
@@ -1708,6 +1716,7 @@ class TunnelInterface(Interface):
     """Tunnel interface
 
     Args:
+        name (str): The name
         ip (tuple): Interface IPv4 addresses
         ipv6_enabled (bool): IPv6 Enabled (requires IPv6Address child object)
         management_profile (ManagementProfile): Interface Management Profile
@@ -2139,6 +2148,8 @@ class Rip(VersionedPanObject):
         expire_intervals (int): Expire Intervals
         interval_seconds (int): Interval Seconds (sec)
         update_intervals (int): Update Intervals
+        global_bfd_profile (str): Global BFD profile
+
     """
 
     NAME = None
@@ -2284,7 +2295,6 @@ class RipAuthProfile(VersionedPanObject):
         self._xpaths.add_profile(value="/auth-profile")
 
         params = []
-        params.append(VersionedParamPath("name"))
         params.append(
             VersionedParamPath(
                 "auth_type", values=["password", "md5"], path="{auth_type}"
@@ -2873,7 +2883,7 @@ class BgpOutboundRouteFilter(VersionedPanObject):
 
     Args:
         enable (bool): enable prefix-based outbound route filtering.
-        max_recieved_entries (int): maximum of ORF prefixes to receive.
+        max_received_entries (int): maximum of ORF prefixes to receive.
         cisco_prefix_mode (bool): ORF vendor-compatible mode
 
     """
@@ -3052,10 +3062,7 @@ class BgpPeer(VersionedPanObject):
         peering_type (str):
             * unspecified
             * bilateral
-        # aggregated_confed_as_path (bool): this peer understands aggregated confederation AS path
         max_prefixes (int): maximum of prefixes to receive from peer
-        # max_orf_entries (int): maximum of ORF entries accepted from peer
-        # soft_reset_with_stored_info (bool): soft reset with stored info
         bfd_profile (str): BFD configuration
             * Inherit-vr-global-setting
             * None
@@ -3186,6 +3193,12 @@ class BgpPeer(VersionedPanObject):
         params.append(
             VersionedParamPath("peering_type", values=("unspecified", "bilateral"))
         )
+
+        """
+        aggregated_confed_as_path (bool): this peer understands aggregated confederation AS path
+        max_orf_entries (int): maximum of ORF entries accepted from peer
+        soft_reset_with_stored_info (bool): soft reset with stored info
+        """
         # params.append(VersionedParamPath(
         #     'aggregated_confed_as_path', vartype='yesno'))
         params.append(VersionedParamPath("max_prefixes"))
@@ -3281,9 +3294,25 @@ class BgpPolicyFilter(VersionedPanObject):
 class BgpPolicyNonExistFilter(BgpPolicyFilter):
     """BGP Policy Non-Exist Filter
 
-    ** Most of the arguments are derived from the BgpPolicyFilter class
-
     Args:
+        name (str): Name of filter
+        enable (bool): Enable rule.
+        match_afi (str): Address Family Identifier
+            * ip
+            * ipv6
+        match_safi (str): Subsequent Address Family Identifier
+            * ip
+            * ipv6
+        match_route_table (str): Route table to match rule
+            * unicast
+            * multicast
+            * both
+        match_nexthop (list): Next-hop attributes
+        match_from_peer (list): Filter by peer that sent this route
+        match_med (int): Multi-Exit Discriminator
+        match_as_path_regex (str): AS-path regular expression
+        match_community_regex (str): Community AS-path regular expression
+        match_extended_community_regex (str): Extended Community AS-path regular expression
 
     """
 
@@ -3299,9 +3328,25 @@ class BgpPolicyNonExistFilter(BgpPolicyFilter):
 class BgpPolicyAdvertiseFilter(BgpPolicyFilter):
     """BGP Policy Advertise Filter
 
-    ** Most of the arguments are derived from the BgpPolicyFilter class
-
     Args:
+        name (str): Name of filter
+        enable (bool): Enable rule.
+        match_afi (str): Address Family Identifier
+            * ip
+            * ipv6
+        match_safi (str): Subsequent Address Family Identifier
+            * ip
+            * ipv6
+        match_route_table (str): Route table to match rule
+            * unicast
+            * multicast
+            * both
+        match_nexthop (list): Next-hop attributes
+        match_from_peer (list): Filter by peer that sent this route
+        match_med (int): Multi-Exit Discriminator
+        match_as_path_regex (str): AS-path regular expression
+        match_community_regex (str): Community AS-path regular expression
+        match_extended_community_regex (str): Extended Community AS-path regular expression
 
     """
 
@@ -3317,9 +3362,25 @@ class BgpPolicyAdvertiseFilter(BgpPolicyFilter):
 class BgpPolicySuppressFilter(BgpPolicyFilter):
     """BGP Policy Suppress Filter
 
-    ** Most of the arguments are derived from the BgpPolicyFilter class
-
     Args:
+        name (str): Name of filter
+        enable (bool): Enable rule.
+        match_afi (str): Address Family Identifier
+            * ip
+            * ipv6
+        match_safi (str): Subsequent Address Family Identifier
+            * ip
+            * ipv6
+        match_route_table (str): Route table to match rule
+            * unicast
+            * multicast
+            * both
+        match_nexthop (list): Next-hop attributes
+        match_from_peer (list): Filter by peer that sent this route
+        match_med (int): Multi-Exit Discriminator
+        match_as_path_regex (str): AS-path regular expression
+        match_community_regex (str): Community AS-path regular expression
+        match_extended_community_regex (str): Extended Community AS-path regular expression
 
     """
 
@@ -3367,8 +3428,8 @@ class BgpPolicyRule(BgpPolicyFilter):
         * BgpPolicyExportRule
 
     Args:
+        name (str): The name
         enable (bool): Enable rule.
-        used_by (list): Peer-groups that use this rule.
         match_afi (str): Address Family Identifier
             * ip
             * ipv6
@@ -3385,6 +3446,8 @@ class BgpPolicyRule(BgpPolicyFilter):
         match_as_path_regex (str): AS-path regular expression
         match_community_regex (str): AS-path regular expression
         match_extended_community_regex (str): AS-path regular expression
+        used_by (list): Peer-groups that use this rule.
+        action (str): The action
         action_local_preference (int): New local preference value
         action_med (int): New MED value
         action_nexthop (str): Nexthop address
@@ -3415,7 +3478,7 @@ class BgpPolicyRule(BgpPolicyFilter):
             * regex
             * 32-bit value
             * AS:VAL
-        action_extended_community (str): Extended community update options
+        action_extended_community_type (str): Extended community update options
             * none (string, not to be confused with the Python type None)
             * remove-all
             * remove-regex
@@ -3554,11 +3617,64 @@ class BgpPolicyRule(BgpPolicyFilter):
 class BgpPolicyImportRule(BgpPolicyRule):
     """BGP Policy Import Rule
 
-    ** Most of the arguments are derived from the BgpPolicyRule class
-       See the arguments listed there for the full list shared between
-       the BgpPolicyImportRule and BgpPolicyExportRule classes
-
     Args:
+        name (str): The name
+        enable (bool): Enable rule.
+        match_afi (str): Address Family Identifier
+            * ip
+            * ipv6
+        match_safi (str): Subsequent Address Family Identifier
+            * ip
+            * ipv6
+        match_route_table (str): Route table to match rule
+            * unicast
+            * multicast
+            * both
+        match_nexthop (list): Next-hop attributes
+        match_from_peer (list): Filter by peer that sent this route
+        match_med (int): Multi-Exit Discriminator
+        match_as_path_regex (str): AS-path regular expression
+        match_community_regex (str): AS-path regular expression
+        match_extended_community_regex (str): AS-path regular expression
+        used_by (list): Peer-groups that use this rule.
+        action (str): The action
+        action_local_preference (int): New local preference value
+        action_med (int): New MED value
+        action_nexthop (str): Nexthop address
+        action_origin (str): New route origin
+            * igp
+            * egp
+            * incomplete
+        action_as_path_limit (int): Add AS path limit attribute if it does not exist
+        action_as_path_type (str): AS path update options
+            * none (string, not to be confused with the Python type None)
+            * remove
+            * prepend
+            * remove-and-prepend
+        action_as_path_prepend_times (int): Prepend local AS for specified number of times
+            * only valid when action_as_path_type is 'prepend' or 'remove-and-prepend'
+        action_community_type (str): Community update options
+            * none (string, not to be confused with the Python type None)
+            * remove-all
+            * remove-regex
+            * append
+            * overwrite
+        action_community_argument (str): Argument to the action community value if needed
+            * None
+            * local-as
+            * no-advertise
+            * no-export
+            * nopeer
+            * regex
+            * 32-bit value
+            * AS:VAL
+        action_extended_community_type (str): Extended community update options
+            * none (string, not to be confused with the Python type None)
+            * remove-all
+            * remove-regex
+            * append
+            * overwrite
+        action_extended_community_argument (str): Argument to the action extended community value if needed
         action_dampening (str): Route flap dampening profile
         action_weight (int): New weight value
 
@@ -3596,11 +3712,64 @@ class BgpPolicyImportRule(BgpPolicyRule):
 class BgpPolicyExportRule(BgpPolicyRule):
     """BGP Policy Export Rule
 
-    ** Most of the arguments are derived from the BgpPolicyRule class
-       See the arguments listed there for the full list shared between
-       the BgpPolicyImportRule and BgpPolicyExportRule classes
-
     Args:
+        name (str): The name
+        enable (bool): Enable rule.
+        match_afi (str): Address Family Identifier
+            * ip
+            * ipv6
+        match_safi (str): Subsequent Address Family Identifier
+            * ip
+            * ipv6
+        match_route_table (str): Route table to match rule
+            * unicast
+            * multicast
+            * both
+        match_nexthop (list): Next-hop attributes
+        match_from_peer (list): Filter by peer that sent this route
+        match_med (int): Multi-Exit Discriminator
+        match_as_path_regex (str): AS-path regular expression
+        match_community_regex (str): AS-path regular expression
+        match_extended_community_regex (str): AS-path regular expression
+        used_by (list): Peer-groups that use this rule.
+        action (str): The action
+        action_local_preference (int): New local preference value
+        action_med (int): New MED value
+        action_nexthop (str): Nexthop address
+        action_origin (str): New route origin
+            * igp
+            * egp
+            * incomplete
+        action_as_path_limit (int): Add AS path limit attribute if it does not exist
+        action_as_path_type (str): AS path update options
+            * none (string, not to be confused with the Python type None)
+            * remove
+            * prepend
+            * remove-and-prepend
+        action_as_path_prepend_times (int): Prepend local AS for specified number of times
+            * only valid when action_as_path_type is 'prepend' or 'remove-and-prepend'
+        action_community_type (str): Community update options
+            * none (string, not to be confused with the Python type None)
+            * remove-all
+            * remove-regex
+            * append
+            * overwrite
+        action_community_argument (str): Argument to the action community value if needed
+            * None
+            * local-as
+            * no-advertise
+            * no-export
+            * nopeer
+            * regex
+            * 32-bit value
+            * AS:VAL
+        action_extended_community_type (str): Extended community update options
+            * none (string, not to be confused with the Python type None)
+            * remove-all
+            * remove-regex
+            * append
+            * overwrite
+        action_extended_community_argument (str): Argument to the action extended community value if needed
 
     """
 
@@ -3889,6 +4058,7 @@ class ManagementProfile(VersionedPanObject):
     * TunnelInterface
 
     Args:
+        name (str): The name
         ping (bool): Enable ping
         telnet (bool): Enable telnet
         ssh (bool): Enable ssh
@@ -3972,7 +4142,7 @@ class IkeGateway(VersionedPanObject):
         cert_permit_payload_mismatch (bool): Permit peer identification and
             certificate payload identification mismatch.
         cert_profile: Local certificate name
-        cert_enable_strict_validation (bool): Enable strict valication of
+        cert_enable_strict_validation (bool): Enable strict validation of
             peer's extended key use
         enable_passive_mode (bool): Enable passive mode (responder only)
         enable_nat_traversal (bool): Enable NAT traversal
@@ -3989,7 +4159,7 @@ class IkeGateway(VersionedPanObject):
         ikev1_send_commit_bit (bool): Send commit bit
         ikev1_initial_contact (bool): send initial contact
         ikev2_crypto_profile: (7.0+) IKE SE crypto profile name
-        ikev2_cookie_valication (bool): (7.0+) require cookie
+        ikev2_cookie_validation (bool): (7.0+) require cookie
         ikev2_send_peer_id (bool): (7.0+) send peer ID
         enable_liveness_check (bool): (7.0+) enable sending empty information
             liveness check message
@@ -4640,7 +4810,7 @@ class IpsecTunnelIpv4ProxyId(VersionedPanObject):
         local: IP subnet or IP address represents local network
         remote: IP subnet or IP address represents remote network
         any_protocol (bool): Any protocol
-        number_proto (int): Numbered Protocol: protocol number (1-254)
+        number_protocol (int): Numbered Protocol: protocol number (1-254)
         tcp_local_port (int): Protocol TCP: local port
         tcp_remote_port (int): Protocol TCP: remote port
         udp_local_port (int): Protocol UDP: local port
@@ -4703,8 +4873,8 @@ class IpsecTunnelIpv6ProxyId(VersionedPanObject):
         name: The proxy ID
         local: IP subnet or IP address represents local network
         remote: IP subnet or IP address represents remote network
-        any_proto (bool): Any protocol
-        number_proto (int): Numbered Protocol: protocol number (1-254)
+        any_protocol (bool): Any protocol
+        number_protocol (int): Numbered Protocol: protocol number (1-254)
         tcp_local_port (int): Protocol TCP: local port
         tcp_remote_port (int): Protocol TCP: remote port
         udp_local_port (int): Protocol UDP: local port
@@ -5229,6 +5399,7 @@ class DhcpRelay(VersionedPanObject):
     """DHCP relay config.
 
     Args:
+        name (str): The (interface) name
         enabled (bool): Enabled.
         servers (list): Relay server IP addresses.
         ipv6_enabled (bool): Enable DHCPv6 relay.

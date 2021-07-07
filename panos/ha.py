@@ -39,6 +39,7 @@ class HighAvailabilityInterface(PanObject):
 
     """
 
+    NAME = None
     HA_SYNC = False
 
     # TODO: Support encryption
@@ -189,12 +190,13 @@ class HA1(HighAvailabilityInterface):
     """HA1 interface
 
     Args:
-        ip-address (str): IP of the interface
+        ip_address (str): IP of the interface
         netmask (str): Netmask of the interface
         port (str): Interface to use for this HA interface (eg. ethernet1/5)
         gateway (str): Default gateway of the interface
         link_speed (str): Link speed
         link_duplex (str): Link duplex
+        monitor_hold_time (int): Monitor hold time
 
     """
 
@@ -210,7 +212,7 @@ class HA1Backup(HighAvailabilityInterface):
     """HA1 Backup interface
 
     Args:
-        ip-address (str): IP of the interface
+        ip_address (str): IP of the interface
         netmask (str): Netmask of the interface
         port (str): Interface to use for this HA interface (eg. ethernet1/5)
         gateway (str): Default gateway of the interface
@@ -226,7 +228,7 @@ class HA2(HighAvailabilityInterface):
     """HA2 interface
 
     Args:
-        ip-address (str): IP of the interface
+        ip_address (str): IP of the interface
         netmask (str): Netmask of the interface
         port (str): Interface to use for this HA interface (eg. ethernet1/5)
         gateway (str): Default gateway of the interface
@@ -242,7 +244,7 @@ class HA2Backup(HighAvailabilityInterface):
     """HA2 Backup interface
 
     Args:
-        ip-address (str): IP of the interface
+        ip_address (str): IP of the interface
         netmask (str): Netmask of the interface
         port (str): Interface to use for this HA interface (eg. ethernet1/5)
         gateway (str): Default gateway of the interface
