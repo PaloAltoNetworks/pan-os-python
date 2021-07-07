@@ -186,6 +186,18 @@ def versions():
             val = (val[0], 1, 0)
 
 
+def docstring_params(obj):
+    docstring = obj.__doc__
+    if "\n    Args:\n" in obj.__doc__:
+        docstring = docstring.split("\n    Args:")[1]
+
+    return [
+        x.split(":")[0].split("(")[0].strip()
+        for x in docstring.split("\n")
+        if x.startswith(" "*8) and not x.startswith(" "*9)
+    ]
+
+
 # -- Tests --
 
 
@@ -194,10 +206,7 @@ def test_versioned_object_params_are_only_defined_once(versioned_object):
     count = {}
     obj = inst(versioned_object)
 
-    if not hasattr(obj, "_params"):
-        pytest.skip("Object does not have _params")
-
-    for x in obj._params:
+    for x in getattr(obj, "_params", []):
         count.setdefault(x.name, 0)
         count[x.name] = count[x.name] + 1
 
@@ -211,11 +220,7 @@ def test_classic_object_params_are_only_defined_once(classic_object):
     count = {}
     obj = inst(classic_object)
 
-    listing = obj.variables()
-    if len(listing) == 0:
-        pytest.skip("No variables present")
-
-    for x in listing:
+    for x in obj.variables():
         count.setdefault(x.variable, 0)
         count[x.variable] = count[x.variable] + 1
 
@@ -228,20 +233,20 @@ def test_classic_object_params_are_only_defined_once(classic_object):
 def test_versioned_object_has_args_in_docstring(versioned_object):
     obj = inst(versioned_object)
 
-    if not hasattr(obj, "_params"):
-        pytest.skip("Object doesn't have params")
-
-    assert "    Args:\n" in obj.__doc__
+    if hasattr(obj, "_params"):
+        assert "    Args:\n" in obj.__doc__
+    else:
+        assert "    Args:\n" not in obj.__doc__
 
 
 def test_classic_object_has_args_in_docstring(classic_object):
     obj = inst(classic_object)
     listing = obj.variables()
 
-    if len(listing) == 0:
-        pytest.skip("No variables present")
-
-    assert "    Args:\n" in obj.__doc__, "`Args:` is missing from the class docstring"
+    if len(obj.variables()) > 0:
+        assert "    Args:\n" in obj.__doc__, "`Args:` is missing from the class docstring"
+    else:
+        assert "    Args:\n" not in obj.__doc__
 
 
 def test_firewall_object_childtypes(panobj):
@@ -368,3 +373,31 @@ def test_xpaths_have_slash_prefix(versioned_object):
                     obj.__class__.__name__,
                     "{0}.{1}.{2}".format(*version_tuple),
                 )
+
+
+def test_classic_object_param_documentation(classic_object):
+    obj = inst(classic_object)
+
+    actual_params = [x.variable for x in obj.variables()]
+    docstring_listing = docstring_params(obj)
+
+    if getattr(obj, "NAME", None) is not None:
+        assert docstring_listing
+        assert docstring_listing[0] == obj.NAME, "Unique identifier {0} is not documented".format(obj.NAME)
+        docstring_listing = docstring_listing[1:]
+
+    assert actual_params == docstring_listing, "Actual params don't match documented params"
+
+
+def test_versioned_object_param_documentation(versioned_object):
+    obj = inst(versioned_object)
+
+    actual_params = [x.name for x in getattr(obj, "_params", [])]
+    docstring_listing = docstring_params(obj)
+
+    if getattr(obj, "NAME", None) is not None:
+        assert docstring_listing
+        assert docstring_listing[0] == obj.NAME, "Unique identifier {0} is not documented".format(obj.NAME)
+        docstring_listing = docstring_listing[1:]
+
+    assert actual_params == docstring_listing, "Actual params don't match documented params"

@@ -37,6 +37,7 @@ class Rulebase(VersionedPanObject):
 
     """
 
+    NAME = None
     ROOT = Root.VSYS
     CHILDTYPES = (
         "policies.NatRule",
@@ -107,6 +108,10 @@ class SecurityRule(VersionedPanObject):
         disable_server_response_inspection (bool): Disable server response
             inspection
         group (str): Security Profile Group
+        negate_target (bool): Target all but the listed target firewalls
+            (applies to panorama/device groups only)
+        target (list): Apply this policy to the listed firewalls only
+            (applies to panorama/device groups only)
         virus (str): Antivirus Security Profile
         spyware (str): Anti-Spyware Security Profile
         vulnerability (str): Vulnerability Protection Security Profile
@@ -114,10 +119,6 @@ class SecurityRule(VersionedPanObject):
         file_blocking (str): File Blocking Security Profile
         wildfire_analysis (str): Wildfire Analysis Security Profile
         data_filtering (str): Data Filtering Security Profile
-        negate_target (bool): Target all but the listed target firewalls
-            (applies to panorama/device groups only)
-        target (list): Apply this policy to the listed firewalls only
-            (applies to panorama/device groups only)
         uuid (str): (PAN-OS 9.0+) The UUID for this rule.
         source_devices (list): (PAN-OS 10.0+) Host devices subject to the
             policy.
@@ -608,7 +609,7 @@ class PolicyBasedForwarding(VersionedPanObject):
         tags (str/list): List of tags
         from_type (str): Source from type.  Valid values are 'zone' (default)
             or 'interface'.
-        from_values (str/list): The source values for the given type.
+        from_value (str/list): The source values for the given type.
         source_addresses (str/list): List of source IP addresses.
         source_users (str/list): List of source users.
         negate_source (bool): Set to negate the source.
@@ -635,6 +636,7 @@ class PolicyBasedForwarding(VersionedPanObject):
             symmetric return.
         symmetric_return_addresses (str/list): List of symmetric return
             addresses.
+        active_active_device_binding (str): Active/Active device binding.
         target (list): Apply this policy to the listed firewalls only
             (applies to panorama/device groups only)
         negate_target (bool): Target all but the listed target firewalls
