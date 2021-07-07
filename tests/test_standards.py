@@ -194,7 +194,7 @@ def docstring_params(obj):
     return [
         x.split(":")[0].split("(")[0].strip()
         for x in docstring.split("\n")
-        if x.startswith(" "*8) and not x.startswith(" "*9)
+        if x.startswith(" " * 8) and not x.startswith(" " * 9)
     ]
 
 
@@ -244,7 +244,9 @@ def test_classic_object_has_args_in_docstring(classic_object):
     listing = obj.variables()
 
     if len(obj.variables()) > 0:
-        assert "    Args:\n" in obj.__doc__, "`Args:` is missing from the class docstring"
+        assert (
+            "    Args:\n" in obj.__doc__
+        ), "`Args:` is missing from the class docstring"
     else:
         assert "    Args:\n" not in obj.__doc__
 
@@ -383,10 +385,14 @@ def test_classic_object_param_documentation(classic_object):
 
     if getattr(obj, "NAME", None) is not None:
         assert docstring_listing
-        assert docstring_listing[0] == obj.NAME, "Unique identifier {0} is not documented".format(obj.NAME)
+        assert (
+            docstring_listing[0] == obj.NAME
+        ), "Unique identifier {0} is not documented".format(obj.NAME)
         docstring_listing = docstring_listing[1:]
 
-    assert actual_params == docstring_listing, "Actual params don't match documented params"
+    assert (
+        actual_params == docstring_listing
+    ), "Actual params don't match documented params"
 
 
 def test_versioned_object_param_documentation(versioned_object):
@@ -397,7 +403,11 @@ def test_versioned_object_param_documentation(versioned_object):
 
     if getattr(obj, "NAME", None) is not None:
         assert docstring_listing
-        assert docstring_listing[0] == obj.NAME, "Unique identifier {0} is not documented".format(obj.NAME)
+        assert (
+            docstring_listing[0] == obj.NAME
+        ), "Unique identifier {0} is not documented".format(obj.NAME)
         docstring_listing = docstring_listing[1:]
 
-    assert actual_params == docstring_listing, "Actual params don't match documented params"
+    assert (
+        actual_params == docstring_listing
+    ), "Actual params don't match documented params"
