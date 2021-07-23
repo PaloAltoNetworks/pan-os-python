@@ -414,6 +414,41 @@ class UserId(object):
             self.unregister(ip, tags)
         self.batch_end()
 
+    def audit_registered_ip_for_tag(self, tag, ip_addresses):
+        """Synchronize the current registered-ip tag to tag only the specificied IP addresses.
+
+        Sets the registered-ip list for a single tag on the device. Regardless
+        of the current state of the registered-ip tag list when this method is
+        called, at the end of the method the list for the specified tag will
+        contain only the ip addresses passed in the argument. The current state
+        of the list is retrieved to reduce the number of operations needed. If
+        the list for this tag is currently in the requested state, no API call
+        is made after retrieving the list.
+
+        **Support:** PAN-OS 6.0 and higher
+
+        Warning: This will clear any batch without it being sent, and can't be
+            used as part of a batch.
+
+        Args:
+            tag (string): Tag to audit
+            ip_addresses(list): List of IP addresses that should have the tag
+
+        """
+        device_list = self.get_registered_ip(tags=tag, prefix=self.prefix)
+        self.batch_start()
+        registered_ips = device_list.keys()
+        tag = self.prefix + tag
+        for ip in registered_ips:
+            if ip not in ip_addresses:
+                # The IP is not requested, unregister it for this tag
+                self.unregister(ip, tag)
+        for ip in ip_addresses:
+            if ip not in registered_ips:
+                # The IP is requested, register it with this tag
+                self.register(ip, tag)
+        self.batch_end()
+
     def audit_registered_ip(self, ip_tags_pairs):
         """Synchronize the current registered-ip tag list to this exact set of ip-tags
 
