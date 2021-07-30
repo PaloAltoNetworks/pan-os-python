@@ -659,7 +659,7 @@ class CustomUrlCategory(VersionedPanObject):
         name (str): The name
         url_value (list): Values to include in custom URL category object
         description (str): Description of this object
-        type (str): The type
+        type (str): (PAN-OS 9.0+) The type
 
     """
 
@@ -675,7 +675,8 @@ class CustomUrlCategory(VersionedPanObject):
 
         params.append(VersionedParamPath("url_value", path="list", vartype="member"))
         params.append(VersionedParamPath("description", path="description"))
-        params.append(VersionedParamPath("type"))
+        params.append(VersionedParamPath("type", exclude=True))
+        params[-1].add_profile("9.0.0", path="type")
 
         self._params = tuple(params)
 
