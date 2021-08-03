@@ -124,6 +124,7 @@ class SecurityRule(VersionedPanObject):
             policy.
         destination_devices (list): (PAN-OS 10.0+) Destination devices
             subject to the policy.
+        group_tag (str): (PAN-OS 9.0+) The group tag.
 
     """
 
@@ -235,6 +236,8 @@ class SecurityRule(VersionedPanObject):
             VersionedParamPath("destination_devices", default=["any",], exclude=True)
         )
         params[-1].add_profile("10.0.0", vartype="member", path="destination-hip")
+        params.append(VersionedParamPath("group_tag", exclude=True))
+        params[-1].add_profile("9.0.0", path="group-tag")
 
         self._params = tuple(params)
 
@@ -307,6 +310,7 @@ class NatRule(VersionedPanObject):
         destination_dynamic_translated_distribution (str): (PAN-OS 8.1+) Dynamic
             destination translated distribution.
         uuid (str): (PAN-OS 9.0+) The UUID for this rule.
+        group_tag (str): (PAN-OS 9.0+) The group tag.
 
     """
 
@@ -593,6 +597,8 @@ class NatRule(VersionedPanObject):
         )
         params.append(VersionedParamPath("uuid", exclude=True))
         params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
+        params.append(VersionedParamPath("group_tag", exclude=True))
+        params[-1].add_profile("9.0.0", path="group-tag")
 
         self._params = tuple(params)
 
@@ -642,6 +648,7 @@ class PolicyBasedForwarding(VersionedPanObject):
         negate_target (bool): Target all but the listed target firewalls
             (applies to panorama/device groups only)
         uuid (str): (PAN-OS 9.0+) The UUID for this rule.
+        group_tag (str): (PAN-OS 9.0+) The group tag.
 
     """
 
@@ -783,6 +790,8 @@ class PolicyBasedForwarding(VersionedPanObject):
         )
         params.append(VersionedParamPath("uuid", exclude=True))
         params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
+        params.append(VersionedParamPath("group_tag", exclude=True))
+        params[-1].add_profile("9.0.0", path="group-tag")
 
         self._params = tuple(params)
 
