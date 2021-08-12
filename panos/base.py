@@ -2094,11 +2094,6 @@ class PanObject(object):
         from panos.panorama import Template
         from panos.panorama import TemplateStack
 
-        ans = {
-            "configurations": [],
-            "valid": False,
-        }
-
         classes = panos.object_classes()
         configs = [
             [self.__class__,],
