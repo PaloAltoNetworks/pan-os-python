@@ -2078,6 +2078,103 @@ class PanObject(object):
 
         return panos_version
 
+    def hierarchy_info(self):
+        """This function returns hierarchical information about this object.
+
+        All objects in pan-os-python can be added as children to other objects,
+        so this function details what configurations are valid for this
+        particular object.
+
+        Returns:
+            dict:  Hierarchy information about this object.
+        """
+        from panos.firewall import Firewall
+        from panos.panorama import DeviceGroup
+        from panos.panorama import Panorama
+        from panos.panorama import Template
+        from panos.panorama import TemplateStack
+
+        ans = {
+            "configurations": [],
+            "valid": False,
+        }
+
+        classes = panos.object_classes()
+        configs = [
+            [self.__class__,],
+        ]
+        updated_configs = []
+
+        # Find all possible config trees.
+        while True:
+            for num, chain in enumerate(configs):
+                parents = panos.parents_for(chain[-1], classes)
+                if parents:
+                    configs.pop(num)
+                    for p in parents:
+                        configs.append(
+                            chain + [p,]
+                        )
+                    break
+            else:
+                break
+
+        # Because Firewall objects can be children of Panorama objects,
+        # we need to do another pass to check for multi-PanDevice configs
+        # because Panorama is not strictly necessary.
+        for num in range(len(configs)):
+            chain = configs[num]
+            if Firewall in chain and Panorama in chain:
+                configs.append(chain[: chain.index(Firewall) + 1])
+
+        # Remove dupes.
+        updated_configs = []
+        for chain in configs:
+            if chain not in updated_configs:
+                updated_configs.append(chain)
+        configs = updated_configs
+
+        # Remove any DeviceGroup > Firewall hierarchies.
+        updated_configs = []
+        for chain in configs:
+            fw_index = -1
+            dg_index = -1
+            for num, x in enumerate(chain):
+                if x == Firewall:
+                    fw_index = num
+                elif x == DeviceGroup:
+                    dg_index = num
+            if fw_index == -1 or dg_index == -1 or fw_index + 1 != dg_index:
+                updated_configs.append(chain)
+        configs = updated_configs
+
+        # Remove Template / TemplateStack hierarchies if there is a DeviceGroup
+        # hierarchy.
+        for chain in configs:
+            if DeviceGroup in chain:
+                configs = [
+                    x for x in configs if Template not in x and TemplateStack not in x
+                ]
+                break
+
+        # Get the current config tree.
+        cur_tree = []
+        p = self
+        while p is not None:
+            cur_tree.append(p)
+            p = p.parent
+
+        # Reverse the trees to match reality.
+        for x in configs:
+            x.reverse()
+        cur_tree.reverse()
+
+        return {
+            "configurations": configs,
+            "current": cur_tree,
+            "valid": cur_tree in configs,
+        }
+
 
 class VersioningSupport(object):
     """A class that supports getting version specific values of something.

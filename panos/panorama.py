@@ -176,6 +176,7 @@ class Template(VersionedPanObject):
     SUFFIX = ENTRY
     CHILDTYPES = (
         "device.Vsys",
+        "device.VsysResources",
         "device.SystemSettings",
         "device.LogSettingsSystem",
         "device.LogSettingsConfig",
@@ -197,6 +198,11 @@ class Template(VersionedPanObject):
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
         "network.GreTunnel",
+        "network.Zone",
+        "network.IpsecTunnelIpv4ProxyId",
+        "network.IpsecTunnelIpv6ProxyId",
+        "network.Layer2Subinterface",
+        "network.Layer3Subinterface",
         "panorama.TemplateVariable",
     )
 
@@ -280,6 +286,11 @@ class TemplateStack(VersionedPanObject):
         "network.IpsecCryptoProfile",
         "network.IkeCryptoProfile",
         "network.GreTunnel",
+        "network.Zone",
+        "network.IpsecTunnelIpv4ProxyId",
+        "network.IpsecTunnelIpv6ProxyId",
+        "network.Layer2Subinterface",
+        "network.Layer3Subinterface",
         "panorama.TemplateVariable",
     )
 
@@ -392,11 +403,28 @@ class Panorama(base.PanDevice):
         "device.HttpServerProfile",
         "device.CertificateProfile",
         "device.SslDecrypt",
+        "objects.AddressObject",
+        "objects.AddressGroup",
+        "objects.ServiceObject",
+        "objects.ServiceGroup",
+        "objects.Tag",
+        "objects.ApplicationObject",
+        "objects.ApplicationGroup",
+        "objects.ApplicationFilter",
+        "objects.ApplicationContainer",
+        "objects.ScheduleObject",
+        "objects.SecurityProfileGroup",
+        "objects.CustomUrlCategory",
+        "objects.LogForwardingProfile",
+        "objects.DynamicUserGroup",
+        "objects.Region",
+        "objects.Edl",
         "firewall.Firewall",
         "panorama.DeviceGroup",
         "panorama.Template",
         "panorama.TemplateStack",
         "plugins.CloudServicesPlugin",
+        "policies.Rulebase",
     )
 
     def __init__(

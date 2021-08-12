@@ -99,6 +99,8 @@ class Firewall(PanDevice):
         "network.LoopbackInterface",
         "network.TunnelInterface",
         "network.VlanInterface",
+        "network.Layer2Subinterface",
+        "network.Layer3Subinterface",
         "network.Vlan",
         "network.VirtualRouter",
         "network.ManagementProfile",

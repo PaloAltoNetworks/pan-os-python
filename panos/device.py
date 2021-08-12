@@ -148,6 +148,8 @@ class Vsys(VersionedPanObject):
         "network.Vlan",
         "network.VirtualRouter",
         "network.VirtualWire",
+        "network.Layer2Subinterface",
+        "network.Layer3Subinterface",
         "network.Zone",
     )
 
