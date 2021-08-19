@@ -31,6 +31,7 @@ __version__ = "1.4.0"
 
 import logging
 import sys
+import xml.etree.ElementTree as ET
 from distutils.version import LooseVersion  # Used by PanOSVersion class
 
 # Warn if running on end-of-life python
@@ -376,6 +377,72 @@ def yesno(value):
         False: "no",
     }
     return convert[value]
+
+
+def string_to_xml(value, quote='"'):
+    """Converts a string to XML.
+
+    Args:
+        value (str): The string to convert to XML.
+        quote (str): The character to act as the quoting character.
+
+    Returns:
+        string: The string as XML.
+    """
+
+    if not value.strip():
+        return
+
+    tokens = value.strip().split()
+    if tokens[0].startswith(quote):
+        raise ValueError("First param cannot start with the quote character")
+    elif tokens[0].endswith(quote):
+        raise ValueError("First param cannot end with the quote character")
+
+    root = None
+    graft_point = None
+
+    ti = 0
+    while ti < len(tokens):
+        token = tokens[ti]
+
+        if token.startswith(quote):
+            raise ValueError("Prefix quoted param encountered at index {0}".format(ti))
+        elif token.endswith(quote):
+            raise ValueError("Suffix quoted param encountered at index {0}".format(ti))
+
+        elm = None
+        if ti + 1 < len(tokens):
+            next_token = tokens[ti + 1]
+            if next_token.startswith(quote):
+                for tp in range(ti + 1, len(tokens)):
+                    if tokens[tp].endswith(quote):
+                        break
+                else:
+                    raise ValueError(
+                        "Quote started at index {0} but never ended".format(ti + 1)
+                    )
+                elm = ET.Element(token)
+                val = " ".join(tokens[ti + 1 : tp + 1])[len(quote) : -len(quote)]
+                elm.text = val
+                ti = tp + 1
+
+        if elm is None:
+            elm = ET.Element(token)
+            ti += 1
+
+        if root is None:
+            root = elm
+        else:
+            if graft_point is None:
+                root.append(elm)
+            else:
+                graft_point.append(elm)
+
+            if not elm.text:
+                graft_point = elm
+
+    return ET.tostring(root, encoding="utf-8")
 
 
 def node_color(module):

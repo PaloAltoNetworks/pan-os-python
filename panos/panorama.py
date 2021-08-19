@@ -419,8 +419,12 @@ class Panorama(base.PanDevice):
         cmd_xml=True,
         extra_qs=None,
         retry_on_peer=False,
+        quote='"',
     ):
         """Perform operational command on this Panorama
+
+        Operational commands are most any command that is not a debug or config
+        command. These include many 'show' commands such as ``show system info``.
 
         Args:
             cmd (str): The operational command to execute
@@ -429,6 +433,7 @@ class Panorama(base.PanDevice):
             cmd_xml (bool): True: cmd is not XML, False: cmd is XML (Default: True)
             extra_qs: Extra parameters for API call
             retry_on_peer (bool): Try on active Firewall first, then try on passive Firewall
+            quote (str): The quote character when the supplied `cmd` is a string and `cmd_xml=True`
 
         Returns:
             xml.etree.ElementTree: The result of the operational command. May also return a string of XML if xml=True
@@ -442,6 +447,7 @@ class Panorama(base.PanDevice):
             cmd_xml=cmd_xml,
             extra_qs=extra_qs,
             retry_on_peer=retry_on_peer,
+            quote=quote,
         )
 
     def xpath_vsys(self):

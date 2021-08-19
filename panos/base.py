@@ -3791,6 +3791,7 @@ class PanDevice(PanObject):
         cmd_xml=True,
         extra_qs=None,
         retry_on_peer=False,
+        quote='"',
     ):
         """Perform operational command on this device
 
@@ -3807,6 +3808,9 @@ class PanDevice(PanObject):
             # The string "ethernet1/1" must be in quotes because it is not a keyword
             fw.op('show interface "ethernet1/1"')
 
+            # Using an alternative quote character to get DHCP info on ethernet1/1
+            fw.op('show dhcp client state `ethernet1/1`', quote='`')
+
         Args:
             cmd (str): The operational command to execute
             vsys (str): Vsys id.
@@ -3814,14 +3818,16 @@ class PanDevice(PanObject):
             cmd_xml (bool): True: cmd is not XML, False: cmd is XML (Default: True)
             extra_qs: Extra parameters for API call
             retry_on_peer (bool): Try on active Firewall first, then try on passive Firewall
+            quote (str): The quote character when the supplied `cmd` is a string and `cmd_xml=True`
 
         Returns:
             xml.etree.ElementTree: The result of the operational command. May also return a string of XML if xml=True
 
         """
-        element = self.xapi.op(
-            cmd, vsys, cmd_xml, extra_qs, retry_on_peer=retry_on_peer
-        )
+        if cmd_xml:
+            cmd = panos.string_to_xml(cmd, quote)
+
+        element = self.xapi.op(cmd, vsys, False, extra_qs, retry_on_peer=retry_on_peer)
         if xml:
             return ET.tostring(element, encoding="utf-8")
         else:
