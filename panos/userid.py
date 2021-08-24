@@ -223,7 +223,7 @@ class UserId(object):
             ET.SubElement(logout, "entry", {"name": user[0], "ip": user[1]})
         self.send(root)
 
-    def register(self, ip, tags):
+    def register(self, ip, tags, timeout=None):
         """Register an ip tag for a Dynamic Address Group
 
         This method can be batched with batch_start() and batch_end().
@@ -231,8 +231,12 @@ class UserId(object):
         Args:
             ip (:obj:`list` or :obj:`str`): IP address(es) to tag
             tags (:obj:`list` or :obj:`str`): The tag(s) for the IP address
+            timeout (int): (Optional) The timeout for the given tags.
 
         """
+        if timeout is not None:
+            timeout = int(timeout)
+
         root, payload = self._create_uidmessage()
         register = payload.find("register")
         if register is None:
@@ -247,8 +251,12 @@ class UserId(object):
             if tagelement is None:
                 entry = ET.SubElement(register, "entry", {"ip": c_ip})
                 tagelement = ET.SubElement(entry, "tag")
+            # Now add in the tags with the specified timeout.
+            props = {}
+            if timeout is not None:
+            	props["timeout"] = "{0}".format(timeout)
             for tag in tags:
-                member = ET.SubElement(tagelement, "member")
+                member = ET.SubElement(tagelement, "member", props)
                 member.text = tag
         self.send(root)
 
