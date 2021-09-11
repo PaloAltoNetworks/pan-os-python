@@ -123,7 +123,7 @@ class DeviceGroupHierarchy(object):
 
         dev = self.obj.panorama()
         state = dev.opstate.dg_hierarchy.fetch()
-        self.parent = state[self.obj.uid]
+        self.parent = state.get(self.obj.uid)
 
     def update(self):
         """Change this device group's hierarchical parent.
