@@ -43,6 +43,7 @@ class Rulebase(VersionedPanObject):
         "policies.NatRule",
         "policies.PolicyBasedForwarding",
         "policies.SecurityRule",
+        "policies.DecryptionRule",
     )
 
     def _setup(self):
@@ -792,6 +793,155 @@ class PolicyBasedForwarding(VersionedPanObject):
         params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
         params.append(VersionedParamPath("group_tag", exclude=True))
         params[-1].add_profile("9.0.0", path="group-tag")
+
+        self._params = tuple(params)
+
+    def _setup_opstate(self):
+        self.opstate = RuleOpState(self)
+
+
+class DecryptionRule(VersionedPanObject):
+    """Decryption rule.
+
+    PAN-OS 7.0+
+
+    Args:
+        name (str): The name
+        description (str): The descripton
+        uuid (str): (PAN-OS 9.0+) The UUID for this rule.
+        source_zones (list): The source zones.
+        source_addresses (list): The source addresses.
+        negate_source (bool): Negate the source addresses.
+        source_users (list): The source users.
+        source_hip (list): (PAN-OS 10.0+) The source HIP info.
+        destination_zones (list): The destination zones.
+        destination_addresses (list): The destination addresses.
+        negate_destination (bool): Negate the destination addresses.
+        destination_hip (list): The destination HIP info.
+        tags (list): The administrative tags.
+        disabled (bool): If the rule is disabled or not.
+        services (list): Services.
+        url_categories (list): URL categories.
+        action (str): The action.  Valid values are "no-decrypt" (default),
+            "decrypt", or "decrypt-and-forward" (PAN-OS 8.1+).
+        decryption_type (str): The decryption type.  Valid values are
+            "ssl-forward-proxy", "ssh-proxy", or "ssl-inbound-inspection".
+        ssl_certificate (str): The SSL cert.
+        decryption_profile (str): The decryption profile.
+        forwarding_profile (str): (PAN-OS 8.1+) The forwarding profile.
+        group_tag (str): (PAN-OS 9.0+) The group tag.
+        log_successful_tls_handshakes (bool): (PAN-OS 10.0+) Log successful TLS
+            handshakes.
+        log_failed_tls_handshakes (bool): (PAN-OS 10.0+) Log failed TLS handshakes.
+        log_setting (str): (PAN-OS 10.0+) Log setting.
+
+    """
+
+    SUFFIX = ENTRY
+    ROOT = Root.VSYS
+    HIT_COUNT_STYLE = "decryption"
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/pbf/rules")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(VersionedParamPath("uuid", exclude=True))
+        params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
+        params.append(
+            VersionedParamPath("source_zones", vartype="member", path="from",)
+        )
+        params.append(
+            VersionedParamPath("source_addresses", vartype="member", path="source",)
+        )
+        params.append(
+            VersionedParamPath("negate_source", vartype="yesno", path="negate-source",)
+        )
+        params.append(
+            VersionedParamPath("source_users", vartype="member", path="source-user",)
+        )
+        params.append(VersionedParamPath("source_hip", exclude=True,))
+        params[-1].add_profile(
+            "10.0.0", path="source-hip", vartype="member",
+        )
+        params.append(
+            VersionedParamPath("destination_zones", vartype="member", path="to",)
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_addresses", vartype="member", path="destination",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "negate_destination", vartype="yesno", path="negate-destination",
+            )
+        )
+        params.append(VersionedParamPath("destination_hip", exclude=True,))
+        params[-1].add_profile(
+            "10.0.0", path="destination-hip", vartype="member",
+        )
+        params.append(VersionedParamPath("tags", vartype="member", path="tag",))
+        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled",))
+        params.append(
+            VersionedParamPath("services", vartype="service", path="service",)
+        )
+        params.append(
+            VersionedParamPath("url_categories", vartype="member", path="category",)
+        )
+        params.append(
+            VersionedParamPath(
+                "action",
+                default="no-decrypt",
+                path="action",
+                values=("decrypt", "no-decrypt"),
+            )
+        )
+        params[-1].add_profile(
+            "8.1.0",
+            path="action",
+            values=("decrypt", "no-decrypt", "decrypt-and-forward"),
+        )
+        params.append(
+            VersionedParamPath(
+                "decryption_type",
+                path="type",
+                values=("ssl-forward-proxy", "ssh-proxy", "ssl-inbound-inspection",),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ssl_certificate",
+                path="{decryption_type}",
+                condition={"decryption_type": "ssl-inbound-inspection",},
+            )
+        )
+        params.append(VersionedParamPath("decryption_profile", path="profile",))
+        params.append(VersionedParamPath("forwarding_profile", exclude=True,))
+        params[-1].add_profile(
+            "8.1.0", path="forwarding-profile",
+        )
+        params.append(VersionedParamPath("group_tag", exclude=True,))
+        params[-1].add_profile(
+            "9.0.0", path="group-tag",
+        )
+        params.append(
+            VersionedParamPath("log_successful_tls_handshakes", exclude=True,)
+        )
+        params[-1].add_profile(
+            "10.0.0", path="log-success", vartype="yesno",
+        )
+        params.append(VersionedParamPath("log_failed_tls_handshakes", exclude=True,))
+        params[-1].add_profile(
+            "10.0.0", path="log-fail", vartype="yesno",
+        )
+        params.append(VersionedParamPath("log_setting", exclude=True,))
+        params[-1].add_profile(
+            "10.0.0", path="log-setting",
+        )
 
         self._params = tuple(params)
 
