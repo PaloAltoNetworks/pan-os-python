@@ -908,14 +908,14 @@ class DecryptionRule(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "decryption_type",
-                path="type",
+                path="type/{decryption_type}",
                 values=("ssl-forward-proxy", "ssh-proxy", "ssl-inbound-inspection",),
             )
         )
         params.append(
             VersionedParamPath(
                 "ssl_certificate",
-                path="{decryption_type}",
+                path="type/{decryption_type}",
                 condition={"decryption_type": "ssl-inbound-inspection",},
             )
         )
