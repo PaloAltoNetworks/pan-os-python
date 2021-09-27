@@ -886,9 +886,7 @@ class DecryptionRule(VersionedPanObject):
         )
         params.append(VersionedParamPath("tags", vartype="member", path="tag",))
         params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled",))
-        params.append(
-            VersionedParamPath("services", vartype="member", path="service",)
-        )
+        params.append(VersionedParamPath("services", vartype="member", path="service",))
         params.append(
             VersionedParamPath("url_categories", vartype="member", path="category",)
         )
