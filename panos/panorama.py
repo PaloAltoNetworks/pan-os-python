@@ -389,6 +389,7 @@ class Panorama(base.PanDevice):
         "device.LdapServerProfile",
         "device.SyslogServerProfile",
         "device.HttpServerProfile",
+        "device.CertificateProfile",
         "firewall.Firewall",
         "panorama.DeviceGroup",
         "panorama.Template",

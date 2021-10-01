@@ -119,6 +119,7 @@ class Vsys(VersionedPanObject):
         "device.HttpServerProfile",
         "device.LogSettingsSystem",
         "device.LogSettingsConfig",
+        "device.CertificateProfile",
         "objects.AddressObject",
         "objects.AddressGroup",
         "objects.ServiceObject",
@@ -2090,3 +2091,109 @@ class HttpIpTagParam(ValueEntry):
 
     LOCATION = "/format/iptag/params"
     ROOT = Root.PANORAMA_VSYS
+
+
+class CertificateProfile(VersionedPanObject):
+    """Certificate profile object.
+
+    Args:
+        name (str): The name
+        username_field (str): The username field.  Valid values are "subject",
+            "subject-alt", or "none".
+        username_field_value (str): The value for the given `username_field`.
+        domain (str): The domain.
+        use_crl (bool): Use CRL.
+        use_ocsp (bool): Use OCSP.
+        crl_receive_timeout (int): CRL receive timeout (sec).
+        ocsp_receive_timeout (int): OCSP receive timeout (sec).
+        certificate_status_timeout (int): Certificate status timeout (sec).
+        block_unknown_certificate (bool): Block session if certificate status
+            is unknown.
+        block_certificate_timeout (bool): Block if a session certificate status
+            can't be retrieved within timeout.
+        block_unauthenticated_certificate (bool): (PAN-OS 7.1) Block session if the
+            certificate was not issued to the authenticating device.
+        block_expired_certificate (bool): (PAN-OS 8.1) Block session if the certificate
+            is expired.
+        ocsp_exclude_nonce (bool): (PAN-OS 9.0) Whether to exclude nonce extension for
+            OCSP requests.
+    """
+
+    # TODO(shinmog): So, in the Panorama debug it seems like /config/shared is
+    # also a valid XPATH, but not sure how to structure the object tree to allow
+    # users to choose between /config/panorama and /config/shared right now.
+    ROOT = Root.PANORAMA_VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/certificate-profile")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "username_field",
+                path="username-field/{username_field}",
+                values=("subject", "subject-alt"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "username_field_value", path="username-field/{username_field}",
+            )
+        )
+        params.append(VersionedParamPath("domain", path="domain",))
+        params.append(VersionedParamPath("use_crl", path="use-crl",))
+        params.append(VersionedParamPath("use_ocsp", path="use-ocsp",))
+        params.append(
+            VersionedParamPath(
+                "crl_receive_timeout",
+                default=5,
+                vartype="int",
+                path="crl-receive-timeout",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ocsp_receive_timeout",
+                default=5,
+                vartype="int",
+                path="ocsp-receive-timeout",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "certificate_status_timeout",
+                default=5,
+                vartype="int",
+                path="cert-status-timeout",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "block_unknown_certificate", vartype="yesno", path="block-unknown-cert",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "block_certificate_timeout", vartype="yesno", path="block-timeout-cert",
+            )
+        )
+        params.append(
+            VersionedParamPath("block_unauthenticated_certificate", exclude=True,)
+        )
+        params[-1].add_profile(
+            "7.1.0", vartype="yesno", path="block-unauthenticated-cert",
+        )
+        params.append(VersionedParamPath("block_expired_certificate", exclude=True,))
+        params[-1].add_profile(
+            "8.1.0", vartype="yesno", path="block-expired-cert",
+        )
+        params.append(VersionedParamPath("ocsp_exclude_nonce", exclude=True,))
+        params[-1].add_profile(
+            "9.0.0", path="ocsp-exclude-nonce", vartype="yesno",
+        )
+
+        self._params = tuple(params)
