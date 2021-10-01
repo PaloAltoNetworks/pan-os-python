@@ -14,23 +14,65 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: true
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        os: [windows-latest]
+        python-version: [3.7, 3.8, 3.9]
+    defaults:
+      run:
+        shell: bash
+    runs-on: ${{ matrix.os }}
+    env:
+      POETRY_VERSION: 1.0.10
     steps:
       - uses: actions/checkout@v2
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Poetry
-        uses: Gr1N/setup-poetry@v4
+      - name: Cache poetry installation
+        uses: actions/cache@v2
         with:
-          poetry-version: 1.0.10
+          path: |
+            ~/.local/bin/poetry
+            ~/.local/share/pypoetry
+            C:\Users\runneradmin\AppData\Roaming\Python\Scripts\
+            C:\Users\runneradmin\AppData\Roaming\pypoetry\
+          key:
+            ${{ runner.os }}-poetry-install-${{ matrix.python-version }}-${{
+            env.POETRY_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: ${{ env.POETRY_VERSION }}
+
+      # - name: Install Poetry
+      #   uses: Gr1N/setup-poetry@v7
+      #   with:
+      #     poetry-version: ${{ env.POETRY_VERSION }}
+
+      # - run:
+      #     echo "/c/Users/runneradmin/AppData/Roaming/Python/Scripts" >>
+      #     $GITHUB_PATH
+
+      # - run:
+      #     echo "C:\Users\runneradmin\AppData\Roaming\Python\Scripts\bin" >>
+      #     $GITHUB_PATH
+
+      - run: |
+          echo $PATH
+          echo "----"
+          ls "C:\Users\runneradmin\AppData\Roaming\Python\Scripts"
+          echo "----"
+          ls "C:\Users\runneradmin\AppData\Roaming\Python\Scripts/bin"
+          echo "----"
+          echo "cabbage!"
+
+      - run: poetry self -V
 
       - name: Get poetry cache directory
         id: poetry-cache
@@ -47,33 +89,43 @@ jobs:
             ${{ runner.os }}-poetry-${{ matrix.python-version }}-
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --no-interaction --no-root
 
       - name: Test with pytest
         run: poetry run make test
 
   format:
     name: Check Code Format
+    env:
+      POETRY_VERSION: 1.0.10
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.7
 
-      - name: Install Poetry
-        uses: Gr1N/setup-poetry@v4
+      - name: Cache poetry installation
+        uses: actions/cache@v2
         with:
-          poetry-version: 1.0.10
+          path: |
+            ~/.local/
+            C:\Users\runneradmin\AppData\Roaming\Python\Scripts\
+          key: ${{ runner.os }}-poetry-install-${{ env.POETRY_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: ${{ env.POETRY_VERSION }}
 
       - name: Get poetry cache directory
         id: poetry-cache
         run: echo "::set-output name=dir::$(poetry config cache-dir)"
 
       - name: Cache poetry dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ steps.poetry-cache.outputs.dir }}
           key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
@@ -81,7 +133,7 @@ jobs:
             ${{ runner.os }}-poetry-3.7-
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --no-interaction --no-root
 
       - name: Check formatting with black and isort
         run: poetry run make check-format
@@ -90,27 +142,37 @@ jobs:
     name: Release
     if: github.event_name == 'push' && github.ref != 'refs/heads/develop'
     needs: [test, format]
+    env:
+      POETRY_VERSION: 1.0.10
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.7
 
-      - name: Install Poetry
-        uses: Gr1N/setup-poetry@v4
+      - name: Cache poetry installation
+        uses: actions/cache@v2
         with:
-          poetry-version: 1.0.10
+          path: |
+            ~/.local/
+            C:\Users\runneradmin\AppData\Roaming\Python\Scripts\
+          key: ${{ runner.os }}-poetry-install-${{ env.POETRY_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: ${{ env.POETRY_VERSION }}
 
       - name: Get poetry cache directory
         id: poetry-cache
         run: echo "::set-output name=dir::$(poetry config cache-dir)"
 
       - name: Cache poetry dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ steps.poetry-cache.outputs.dir }}
           key: ${{ runner.os }}-poetry-3.7-${{ hashFiles('**/poetry.lock') }}
@@ -118,7 +180,7 @@ jobs:
             ${{ runner.os }}-poetry-3.7-
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --no-interaction --no-root
 
       - name: Create release and publish
         id: release
