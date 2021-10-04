@@ -2124,6 +2124,7 @@ class CertificateProfile(VersionedPanObject):
     # users to choose between /config/panorama and /config/shared right now.
     ROOT = Root.PANORAMA_VSYS
     SUFFIX = ENTRY
+    CHILDTYPES = ("device.CertificateProfileCaCertificate",)
 
     def _setup(self):
         # xpaths
@@ -2194,6 +2195,39 @@ class CertificateProfile(VersionedPanObject):
         params.append(VersionedParamPath("ocsp_exclude_nonce", exclude=True,))
         params[-1].add_profile(
             "9.0.0", path="ocsp-exclude-nonce", vartype="yesno",
+        )
+
+        self._params = tuple(params)
+
+
+class CertificateProfileCaCertificate(VersionedPanObject):
+    """CA certificate for a certificate profile.
+
+    Args:
+        name (str): The name.
+        default_ocsp_url (str): Default URL for OCSP verification.
+        ocsp_verify_certificate (str): Certificate to verify signature in OCSP response.
+        template_name (str): (PAN-OS 9.0+) Template name / OID for the certificate.
+
+    """
+
+    ROOT = Root.PANORAMA_VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/CA")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("default_ocsp_url", path="default-ocsp-url",))
+        params.append(
+            VersionedParamPath("ocsp_verify_certificate", path="ocsp-verify-cert",)
+        )
+        params.append(VersionedParamPath("template_name", exclude=True,))
+        params[-1].add_profile(
+            "9.0.0", path="template-name",
         )
 
         self._params = tuple(params)
