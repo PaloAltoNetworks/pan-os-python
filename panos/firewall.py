@@ -73,6 +73,7 @@ class Firewall(PanDevice):
         "device.SyslogServerProfile",
         "device.HttpServerProfile",
         "device.CertificateProfile",
+        "device.SslDecrypt",
         "ha.HighAvailability",
         "objects.AddressObject",
         "objects.AddressGroup",
