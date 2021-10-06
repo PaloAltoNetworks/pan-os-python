@@ -120,6 +120,7 @@ class Vsys(VersionedPanObject):
         "device.LogSettingsSystem",
         "device.LogSettingsConfig",
         "device.CertificateProfile",
+        "device.SslDecrypt",
         "objects.AddressObject",
         "objects.AddressGroup",
         "objects.ServiceObject",
@@ -2229,5 +2230,104 @@ class CertificateProfileCaCertificate(VersionedPanObject):
         params[-1].add_profile(
             "9.0.0", path="template-name",
         )
+
+        self._params = tuple(params)
+
+
+class SslDecrypt(VersionedPanObject):
+    """SSL decrypt configuration for certificates.
+
+    Note: PAN-OS 8.0+
+
+    Args:
+        forward_trust_certificate_rsa (str): RSA CA certificate for trusted sites.
+        forward_trust_certificate_ecdsa (str): ECDSA CA certificate for trusted sites.
+        forward_untrust_certificate_rsa (str): RSA CA certificate for untrusted sites.
+        forward_untrust_certificate_ecdsa (str): ECDSA CA certificate for untrusted sites.
+        root_ca_excludes (list): List of predefined root CAs to not trust.
+        trusted_root_cas (list): List of trusted root CAs.
+        disabled_predefined_exclude_certificates (list): Disabled predefined SSL exclude
+            certificates.
+    """
+
+    NAME = None
+    ROOT = Root.VSYS
+    CHILDTYPES = ("device.SslDecryptExcludeCert",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/ssl-decrypt")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "forward_trust_certificate_rsa", path="forward-trust-certificate/rsa",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "forward_trust_certificate_ecdsa",
+                path="forward-trust-certificate/ecdsa",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "forward_untrust_certificate_rsa",
+                path="forward-untrust-certificate/rsa",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "forward_untrust_certificate_ecdsa",
+                path="forward-untrust-certificate/ecdsa",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "root_ca_excludes", vartype="member", path="root-ca-exclude-list",
+            )
+        )
+        # Only option present on Panorama.
+        params.append(
+            VersionedParamPath(
+                "trusted_root_cas", vartype="member", path="trusted-root-CA",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "disabled_predefined_exclude_certificates",
+                vartype="member",
+                path="disabled-ssl-exclude-cert-from-predefined",
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class SslDecryptExcludeCert(VersionedPanObject):
+    """SSL decryption exclusion object.
+
+    Note: PAN-OS 8.0+
+
+    Args:
+        name (str): The name.
+        description (str): Description.
+        exclude (bool): Exclude boolean.
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/ssl-exclude-cert")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("description", path="description",))
+        params.append(VersionedParamPath("exclude", vartype="yesno", path="exclude",))
 
         self._params = tuple(params)
