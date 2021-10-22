@@ -223,7 +223,7 @@ class UserId(object):
             ET.SubElement(logout, "entry", {"name": user[0], "ip": user[1]})
         self.send(root)
 
-    def register(self, ip, tags, timeout=60):
+    def register(self, ip, tags, timeout=None):
         """Register an ip tag for a Dynamic Address Group
 
         This method can be batched with batch_start() and batch_end().
@@ -248,7 +248,7 @@ class UserId(object):
             if tagelement is None:
                 entry = ET.SubElement(register, "entry", {"ip": c_ip})
                 if timeout:
-                    entry.set("timeout", int(timeout))
+                    entry.set("timeout", str(timeout))
                 tagelement = ET.SubElement(entry, "tag")
             for tag in tags:
                 member = ET.SubElement(tagelement, "member")
@@ -417,7 +417,7 @@ class UserId(object):
             self.unregister(ip, tags)
         self.batch_end()
 
-    def audit_registered_ip_for_tag(self, tag, ip_addresses, timeout=60):
+    def audit_registered_ip_for_tag(self, tag, ip_addresses, timeout=None):
         """Synchronize the current registered-ip tag to tag only the specificied IP addresses.
 
         Sets the registered-ip list for a single tag on the device. Regardless
@@ -453,7 +453,7 @@ class UserId(object):
                 self.register(ip, tag, timeout)
         self.batch_end()
 
-    def audit_registered_ip(self, ip_tags_pairs, timeout=60):
+    def audit_registered_ip(self, ip_tags_pairs, timeout=None):
         """Synchronize the current registered-ip tag list to this exact set of ip-tags
 
         Sets the registered-ip tag list on the device.
