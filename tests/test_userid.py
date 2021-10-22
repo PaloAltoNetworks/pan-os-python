@@ -15,6 +15,7 @@ try:
     from unittest import mock
 except ImportError:
     import mock
+
 import sys
 import unittest
 
@@ -67,8 +68,18 @@ class TestUserId(unittest.TestCase):
         )
         fw.xapi
         fw.userid.batch_start()
-        fw.userid.tag_user("user1", ["tag1",])
-        fw.userid.tag_user("user2", ["tag1",])
+        fw.userid.tag_user(
+            "user1",
+            [
+                "tag1",
+            ],
+        )
+        fw.userid.tag_user(
+            "user2",
+            [
+                "tag1",
+            ],
+        )
 
     def test_batch_untag_user(self):
         fw = panos.firewall.Firewall(
@@ -76,8 +87,63 @@ class TestUserId(unittest.TestCase):
         )
         fw.xapi
         fw.userid.batch_start()
-        fw.userid.untag_user("user1", ["tag1",])
-        fw.userid.untag_user("user2", ["tag1",])
+        fw.userid.untag_user(
+            "user1",
+            [
+                "tag1",
+            ],
+        )
+        fw.userid.untag_user(
+            "user2",
+            [
+                "tag1",
+            ],
+        )
+
+    def test_register(self):
+        fw = panos.firewall.Firewall(
+            "fw1", "user", "passwd", "authkey", serial="Serial", vsys="vsys2"
+        )
+        fw.xapi
+        fw.userid.batch_start()
+        fw.userid.register("172.16.172.16", "example-tag", 60)
+        fw.userid.register(
+            ["172.16.172.172", "172.16.16.172"],
+            [
+                "user2",
+                "tag1",
+            ],
+        )
+
+    def test_audit_registered_ip_for_tag(self):
+        fw = panos.firewall.Firewall(
+            "fw1", "user", "passwd", "authkey", serial="Serial", vsys="vsys2"
+        )
+        fw.xapi
+        fw.userid.batch_start()
+        fw.userid.audit_registered_ip_for_tag("172.16.172.16", "example-tag", 60)
+        fw.userid.audit_registered_ip_for_tag(
+            ["172.16.172.172", "172.16.16.172"],
+            [
+                "user2",
+                "tag1",
+            ],
+        )
+
+    def test_audit_registered_ip(self):
+        fw = panos.firewall.Firewall(
+            "fw1", "user", "passwd", "authkey", serial="Serial", vsys="vsys2"
+        )
+        fw.xapi
+        fw.userid.batch_start()
+        fw.userid.audit_registered_ip("172.16.172.16", "example-tag", 60)
+        fw.userid.audit_registered_ip(
+            ["172.16.172.172", "172.16.16.172"],
+            [
+                "user2",
+                "tag1",
+            ],
+        )
 
 
 if __name__ == "__main__":
