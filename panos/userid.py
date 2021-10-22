@@ -248,7 +248,7 @@ class UserId(object):
             if tagelement is None:
                 entry = ET.SubElement(register, "entry", {"ip": c_ip})
                 if timeout:
-                    entry.set("timeout", str(timeout))
+                    entry.set("timeout", int(timeout))
                 tagelement = ET.SubElement(entry, "tag")
             for tag in tags:
                 member = ET.SubElement(tagelement, "member")
