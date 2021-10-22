@@ -106,7 +106,7 @@ class TestUserId(unittest.TestCase):
         )
         fw.xapi
         fw.userid.batch_start()
-        fw.userid.register("172.16.172.16", "example-tag", timeout=60)
+        fw.userid.register("172.16.172.16", "example-tag", 15)
         fw.userid.register(
             ["172.16.172.172", "172.16.16.172"],
             [
@@ -121,7 +121,7 @@ class TestUserId(unittest.TestCase):
         )
         fw.xapi
         fw.userid.batch_start()
-        fw.userid.audit_registered_ip_for_tag("172.16.172.16", "example-tag", timeout=60)
+        fw.userid.audit_registered_ip_for_tag("172.16.172.16", "example-tag", 15)
         fw.userid.audit_registered_ip_for_tag(
             ["172.16.172.172", "172.16.16.172"],
             [
@@ -136,7 +136,7 @@ class TestUserId(unittest.TestCase):
         )
         fw.xapi
         fw.userid.batch_start()
-        fw.userid.audit_registered_ip("172.16.172.16", "example-tag", timeout=60)
+        fw.userid.audit_registered_ip("172.16.172.16", "example-tag", 15)
         fw.userid.audit_registered_ip(
             ["172.16.172.172", "172.16.16.172"],
             [
