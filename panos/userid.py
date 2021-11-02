@@ -560,7 +560,7 @@ class UserId(object):
             return
 
         """
-        example returned XML:
+        Example returned XML:
 
         9.1:
         <response status="success"><result><![CDATA[\nmalicious_users \ncn=contractors,cn=users,dc=nam,dc=local \ntemp_contractors_dynamic_group \nspecial_project \nrisky_users \ncn=employees,cn=users,dc=nam,dc=local \nhigh_risk_users \n\nTotal: 7\n* : Custom Group\n\n]]></result></response>
@@ -761,7 +761,8 @@ class UserId(object):
             if entry.attrib["user"] == user:
                 break
         else:
-            entry = ET.SubElement(ru, "entry", {"user": user,})
+            entry = ET.SubElement(uu, "entry", {"user": user,})
+
         # Do tag removal.
         te = entry.find("./tag")
         if tags is not None:
