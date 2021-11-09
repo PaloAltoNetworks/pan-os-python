@@ -247,13 +247,13 @@ class UserId(object):
             tagelement = register.find("./entry[@ip='%s']/tag" % c_ip)
             if tagelement is None:
                 entry = ET.SubElement(register, "entry", {"ip": c_ip})
-                if timeout:
-                    if timeout == "0":
-                        timeout = None
-                    entry.set("timeout", timeout)
+                if timeout is not None:
+                    entry.set("timeout", int(timeout))
                 tagelement = ET.SubElement(entry, "tag")
             for tag in tags:
                 member = ET.SubElement(tagelement, "member")
+                if timeout:
+                    member.set("timeout", str(timeout))
                 member.text = tag
         self.send(root)
 
@@ -562,7 +562,7 @@ class UserId(object):
             return
 
         """
-        example returned XML:
+        Example returned XML:
 
         9.1:
         <response status="success"><result><![CDATA[\nmalicious_users \ncn=contractors,cn=users,dc=nam,dc=local \ntemp_contractors_dynamic_group \nspecial_project \nrisky_users \ncn=employees,cn=users,dc=nam,dc=local \nhigh_risk_users \n\nTotal: 7\n* : Custom Group\n\n]]></result></response>
@@ -720,13 +720,7 @@ class UserId(object):
                 te = entry.find("./tag")
                 break
         else:
-            entry = ET.SubElement(
-                ru,
-                "entry",
-                {
-                    "user": user,
-                },
-            )
+            entry = ET.SubElement(ru, "entry", {"user": user,})
             te = ET.SubElement(entry, "tag")
 
         # Now add in the tags with the specified timeout.
@@ -769,13 +763,7 @@ class UserId(object):
             if entry.attrib["user"] == user:
                 break
         else:
-            entry = ET.SubElement(
-                uu,
-                "entry",
-                {
-                    "user": user,
-                },
-            )
+            entry = ET.SubElement(uu, "entry", {"user": user,})
 
         # Do tag removal.
         te = entry.find("./tag")
