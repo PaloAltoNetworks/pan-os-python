@@ -224,14 +224,14 @@ class UserId(object):
         self.send(root)
 
     def register(self, ip, tags, timeout=None):
-        """Register an ip tag for a Dynamic Address Group
+        """Register an ip tag for a Dynamic Address Group.
 
         This method can be batched with batch_start() and batch_end().
 
         Args:
             ip (:obj:`list` or :obj:`str`): IP address(es) to tag
             tags (:obj:`list` or :obj:`str`): The tag(s) for the IP address
-            timeout (:obj:`str`): The optional timeout value in minutes
+            timeout (:obj:`str`): The optional timeout value in seconds.
 
         """
         root, payload = self._create_uidmessage()
