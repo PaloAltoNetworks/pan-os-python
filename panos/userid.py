@@ -231,7 +231,7 @@ class UserId(object):
         Args:
             ip (:obj:`list` or :obj:`str`): IP address(es) to tag
             tags (:obj:`list` or :obj:`str`): The tag(s) for the IP address
-            timeout (:obj:`str`): The optional timeout value in seconds. (Max is 2,592,000 sec (30 days))
+            timeout (string): The optional timeout value in seconds. (Max is 2,592,000 sec (30 days))
 
         """
         root, payload = self._create_uidmessage()
