@@ -247,13 +247,12 @@ class UserId(object):
             tagelement = register.find("./entry[@ip='%s']/tag" % c_ip)
             if tagelement is None:
                 entry = ET.SubElement(register, "entry", {"ip": c_ip})
-                if timeout is not None:
-                    entry.set("timeout", int(timeout))
                 tagelement = ET.SubElement(entry, "tag")
             for tag in tags:
                 member = ET.SubElement(tagelement, "member")
-                if timeout:
-                    member.set("timeout", str(timeout))
+                if timeout is None:
+                    timeout = "0"
+                member.set("timeout", str(timeout))
                 member.text = tag
         self.send(root)
 
