@@ -250,9 +250,8 @@ class UserId(object):
                 tagelement = ET.SubElement(entry, "tag")
             for tag in tags:
                 member = ET.SubElement(tagelement, "member")
-                if timeout is None:
-                    timeout = "0"
-                member.set("timeout", str(timeout))
+                if timeout is not None:
+                    member.set("timeout", str(timeout))
                 member.text = tag
         self.send(root)
 
