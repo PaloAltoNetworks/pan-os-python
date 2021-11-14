@@ -563,7 +563,7 @@ class ApplicationFilter(VersionedPanObject):
         params.append(
             VersionedParamPath("pervasive", path="pervasive", vartype="yesno")
         )
-        params.append(VersionedParamPath("tag", path="tag", vartype="member"))
+        params.append(VersionedParamPath("tag", path="tagging/tag", vartype="member"))
 
         self._params = tuple(params)
 
