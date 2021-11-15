@@ -436,7 +436,7 @@ class UserId(object):
         Args:
             tag (string): Tag to audit
             ip_addresses(list): List of IP addresses that should have the tag
-            timeout (string): The optional timeout value in minutes.
+            timeout (string): The optional timeout value in seconds.
 
         """
         device_list = self.get_registered_ip(tags=tag, prefix=self.prefix)
@@ -470,7 +470,7 @@ class UserId(object):
 
         Args:
             ip_tags_pairs (dict): dictionary where keys are ip addresses and values or tuples of tags
-            timeout (string): The optional timeout value in minutes.
+            timeout (string): The optional timeout value in seconds.
 
         """
         device_list = self.get_registered_ip()
