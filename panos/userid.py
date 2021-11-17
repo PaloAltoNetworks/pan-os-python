@@ -223,14 +223,15 @@ class UserId(object):
             ET.SubElement(logout, "entry", {"name": user[0], "ip": user[1]})
         self.send(root)
 
-    def register(self, ip, tags):
-        """Register an ip tag for a Dynamic Address Group
+    def register(self, ip, tags, timeout=None):
+        """Register an ip tag for a Dynamic Address Group.
 
         This method can be batched with batch_start() and batch_end().
 
         Args:
             ip (:obj:`list` or :obj:`str`): IP address(es) to tag
             tags (:obj:`list` or :obj:`str`): The tag(s) for the IP address
+            timeout (string): The optional timeout value in seconds. (Max is 2,592,000 sec (30 days))
 
         """
         root, payload = self._create_uidmessage()
@@ -249,6 +250,8 @@ class UserId(object):
                 tagelement = ET.SubElement(entry, "tag")
             for tag in tags:
                 member = ET.SubElement(tagelement, "member")
+                if timeout is not None:
+                    member.set("timeout", str(timeout))
                 member.text = tag
         self.send(root)
 
@@ -414,7 +417,7 @@ class UserId(object):
             self.unregister(ip, tags)
         self.batch_end()
 
-    def audit_registered_ip_for_tag(self, tag, ip_addresses):
+    def audit_registered_ip_for_tag(self, tag, ip_addresses, timeout=None):
         """Synchronize the current registered-ip tag to tag only the specificied IP addresses.
 
         Sets the registered-ip list for a single tag on the device. Regardless
@@ -433,6 +436,7 @@ class UserId(object):
         Args:
             tag (string): Tag to audit
             ip_addresses(list): List of IP addresses that should have the tag
+            timeout (string): The optional timeout value in seconds.
 
         """
         device_list = self.get_registered_ip(tags=tag, prefix=self.prefix)
@@ -446,10 +450,10 @@ class UserId(object):
         for ip in ip_addresses:
             if ip not in registered_ips:
                 # The IP is requested, register it with this tag
-                self.register(ip, tag)
+                self.register(ip, tag, timeout)
         self.batch_end()
 
-    def audit_registered_ip(self, ip_tags_pairs):
+    def audit_registered_ip(self, ip_tags_pairs, timeout=None):
         """Synchronize the current registered-ip tag list to this exact set of ip-tags
 
         Sets the registered-ip tag list on the device.
@@ -466,6 +470,7 @@ class UserId(object):
 
         Args:
             ip_tags_pairs (dict): dictionary where keys are ip addresses and values or tuples of tags
+            timeout (string): The optional timeout value in seconds.
 
         """
         device_list = self.get_registered_ip()
@@ -491,7 +496,7 @@ class UserId(object):
         requested_list = {ip: tags for ip, tags in requested_list.items() if tags}
         # Handle registrations
         for ip, tags in requested_list.items():
-            self.register(ip, tags)
+            self.register(ip, tags, timeout)
         self.batch_end()
 
     def set_group(self, group, users):
