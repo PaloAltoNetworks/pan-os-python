@@ -121,6 +121,8 @@ class Vsys(VersionedPanObject):
         "device.LogSettingsConfig",
         "device.CertificateProfile",
         "device.SslDecrypt",
+        "device.LocalUserDatabaseUser",
+        "device.LocalUserDatabaseGroup",
         "objects.AddressObject",
         "objects.AddressGroup",
         "objects.ServiceObject",
@@ -2329,5 +2331,78 @@ class SslDecryptExcludeCert(VersionedPanObject):
 
         params.append(VersionedParamPath("description", path="description",))
         params.append(VersionedParamPath("exclude", vartype="yesno", path="exclude",))
+
+        self._params = tuple(params)
+
+
+class LocalUserDatabaseUser(VersionedPanObject):
+    """A Local User Database User.
+
+    Args:
+        name (str): Name.
+        password_hash (str): The password hash.
+        disabled (bool): Set to True if the user is disabled.
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/local-user-database/user")
+        self._xpaths.add_profile(
+            value="{0}/local-user-database/user".format(self._TEMPLATE_VSYS_XPATH),
+            parents=("Template",),
+        )
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath("password_hash", vartype="encrypted", path="phash",)
+        )
+        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled",))
+
+        self._params = tuple(params)
+
+    def change_password(self, new_password):
+        """Update the password.
+
+        **Modifies the live device**
+
+        Args:
+            new_password (str): The new password for this user.
+
+        """
+        dev = self.nearest_pandevice()
+        self.password_hash = dev.request_password_hash(new_password)
+        self.update("password_hash")
+
+
+class LocalUserDatabaseGroup(VersionedPanObject):
+    """A Local User Database group.
+
+    Args:
+        name (str): Name.
+        users (list): The local users in this group.
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/local-user-database/user-group")
+        self._xpaths.add_profile(
+            value="{0}/local-user-database/user".format(self._TEMPLATE_VSYS_XPATH),
+            parents=("Template",),
+        )
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("users", vartype="member", path="user",))
 
         self._params = tuple(params)

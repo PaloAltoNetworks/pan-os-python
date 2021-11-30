@@ -74,6 +74,8 @@ class Firewall(PanDevice):
         "device.HttpServerProfile",
         "device.CertificateProfile",
         "device.SslDecrypt",
+        "device.LocalUserDatabaseUser",
+        "device.LocalUserDatabaseGroup",
         "ha.HighAvailability",
         "objects.AddressObject",
         "objects.AddressGroup",
