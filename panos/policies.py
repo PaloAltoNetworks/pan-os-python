@@ -44,6 +44,7 @@ class Rulebase(VersionedPanObject):
         "policies.PolicyBasedForwarding",
         "policies.SecurityRule",
         "policies.DecryptionRule",
+        "policies.AuthenticationRule",
     )
 
     def _setup(self):
@@ -939,6 +940,157 @@ class DecryptionRule(VersionedPanObject):
         params.append(VersionedParamPath("log_setting", exclude=True,))
         params[-1].add_profile(
             "10.0.0", path="log-setting",
+        )
+
+        self._params = tuple(params)
+
+    def _setup_opstate(self):
+        self.opstate = RuleOpState(self)
+
+
+class AuthenticationRule(VersionedPanObject):
+    """Authentication Rule
+
+        Both the naming convention and the order of the parameters tries to closly
+        match what is presented in the GUI.
+
+        There are groupings of parameters that give hints to the sections that
+        they contribute towards:
+
+            * source_translation_<etc>
+            * source_translation_fallback_<etc>
+            * source_translation_static_<etc>
+            * destination_translation_<etc>
+
+        Args:
+            name (str): Name of the rule
+            description (str): The description
+            source (list): Source addresses
+            destination (list): Destination addresses
+
+
+            nat_type (str): Type of NAT
+            fromzone (list): From zones
+            tozone (list): To zones
+            to_interface (str): Egress interface from route lookup
+            service (str): The service
+            source (list): Source addresses
+            destination (list): Destination addresses
+            source_translation_type (str): Type of source address translation
+            source_translation_address_type (str): Address type for Dynamic IP
+                And Port or Dynamic IP source translation types
+            source_translation_interface (str): Interface of the source address
+                translation for Dynamic IP and Port source translation types
+            source_translation_ip_address (str): IP address of the source address
+                translation for Dynamic IP and Port source translation types
+            source_translation_translated_addresses (list): Translated addresses
+                of the source address translation for Dynamic IP And Port or
+                Dynamic IP source translation types
+            source_translation_fallback_type (str): Type of fallback for Dynamic IP
+                source translation types
+            source_translation_fallback_translated_addresses (list): Addresses for
+                translated address types of fallback source translation
+            source_translation_fallback_interface (str): The interface for the
+                fallback source translation
+            source_translation_fallback_ip_type (str): The type of the IP address
+                for the fallback source translation IP address
+            source_translation_fallback_ip_address (str): The IP address of the
+                fallback source translation
+            source_translation_static_translated_address (str): The IP address
+                for the static source translation
+            source_translation_static_bi_directional (bool): Allow reverse
+                translation from translated address to original address
+            destination_translated_address (str): Translated destination IP
+                address
+            destination_translated_port (int): Translated destination port number
+            ha_binding (str): Device binding configuration in HA Active-Active mode
+            disabled (bool): Disable this rule
+            negate_target (bool): Target all but the listed target firewalls
+                (applies to panorama/device groups only)
+            target (list): Apply this policy to the listed firewalls only
+                (applies to panorama/device groups only)
+            tag (list): Administrative tags
+            destination_dynamic_translated_address (str): (PAN-OS 8.1+) Dynamic
+                destination translated address.
+            destination_dynamic_translated_port (int): (PAN-OS 8.1+) Dynamic
+                destination translated port.
+            destination_dynamic_translated_distribution (str): (PAN-OS 8.1+) Dynamic
+                destination translated distribution.
+            uuid (str): (PAN-OS 9.0+) The UUID for this rule.
+            group_tag (str): (PAN-OS 9.0+) The group tag.
+
+        """
+
+    SUFFIX = ENTRY
+    ROOT = Root.VSYS
+    HIT_COUNT_STYLE = "authentication"
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/authentication/rules")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(VersionedParamPath("uuid", exclude=True))
+        params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
+        params.append(
+            VersionedParamPath("source_zones", vartype="member", path="from",)
+        )
+        params.append(
+            VersionedParamPath(
+                "source", default=["any", ], vartype="member", path="source"
+            )
+        )
+        params.append(
+            VersionedParamPath("negate_source", vartype="yesno", path="negate-source",)
+        )
+        params.append(
+            VersionedParamPath("destination_zones", vartype="member", path="to", )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination", default=["any", ], vartype="member", path="destination"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "negate_destination", vartype="yesno", path="negate-destination",
+            )
+        )
+        params.append(VersionedParamPath("tag", vartype="member", path="tag", ))
+        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled", ))
+        params.append(VersionedParamPath("service", vartype="member", path="service", ))
+        params.append(VersionedParamPath("source_hip", exclude=True, ))
+        params[-1].add_profile(
+            "10.0.0", path="source-hip", vartype="member",
+        )
+        params.append(
+            VersionedParamPath("source_users", vartype="member", path="source-user")
+        )
+        params.append(
+            VersionedParamPath("url_categories", vartype="member", path="category", )
+        )
+        params.append(VersionedParamPath("group_tag", exclude=True, ))
+        params[-1].add_profile(
+            "9.0.0", path="group-tag",
+        )
+        params.append(
+            VersionedParamPath("authentication_enforcement", path="authentication-enforcement",)
+        )
+        params.append(
+            VersionedParamPath("timeout", path="timeout",)
+        )
+        params.append(
+            VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath("target", path="target/devices", vartype="entry")
+        )
+        params.append(VersionedParamPath("log_setting", path="log-setting"))
+        params.append(
+            VersionedParamPath("log_authentication_timeout", path="log-authentication-timeout", vartype="yesno")
         )
 
         self._params = tuple(params)
