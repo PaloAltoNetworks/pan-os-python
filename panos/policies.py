@@ -954,70 +954,31 @@ class AuthenticationRule(VersionedPanObject):
         Both the naming convention and the order of the parameters tries to closly
         match what is presented in the GUI.
 
-        There are groupings of parameters that give hints to the sections that
-        they contribute towards:
-
-            * source_translation_<etc>
-            * source_translation_fallback_<etc>
-            * source_translation_static_<etc>
-            * destination_translation_<etc>
-
         Args:
             name (str): Name of the rule
             description (str): The description
-            source (list): Source addresses
-            destination (list): Destination addresses
-
-
-            nat_type (str): Type of NAT
-            fromzone (list): From zones
-            tozone (list): To zones
-            to_interface (str): Egress interface from route lookup
-            service (str): The service
-            source (list): Source addresses
-            destination (list): Destination addresses
-            source_translation_type (str): Type of source address translation
-            source_translation_address_type (str): Address type for Dynamic IP
-                And Port or Dynamic IP source translation types
-            source_translation_interface (str): Interface of the source address
-                translation for Dynamic IP and Port source translation types
-            source_translation_ip_address (str): IP address of the source address
-                translation for Dynamic IP and Port source translation types
-            source_translation_translated_addresses (list): Translated addresses
-                of the source address translation for Dynamic IP And Port or
-                Dynamic IP source translation types
-            source_translation_fallback_type (str): Type of fallback for Dynamic IP
-                source translation types
-            source_translation_fallback_translated_addresses (list): Addresses for
-                translated address types of fallback source translation
-            source_translation_fallback_interface (str): The interface for the
-                fallback source translation
-            source_translation_fallback_ip_type (str): The type of the IP address
-                for the fallback source translation IP address
-            source_translation_fallback_ip_address (str): The IP address of the
-                fallback source translation
-            source_translation_static_translated_address (str): The IP address
-                for the static source translation
-            source_translation_static_bi_directional (bool): Allow reverse
-                translation from translated address to original address
-            destination_translated_address (str): Translated destination IP
-                address
-            destination_translated_port (int): Translated destination port number
-            ha_binding (str): Device binding configuration in HA Active-Active mode
+            uuid (str): (PAN-OS 9.0+) The UUID for this rule.
+            source_zones (list): The source zones.
+            source_addresses (list): The source addresses.
+            negate_source (bool): Negate the source addresses.
+            destination_zones (list): The destination zones.
+            destination_addresses (list): The destination addresses.
+            negate_destination (bool): Negate the destination addresses.
+            tag (list): Administrative tags
             disabled (bool): Disable this rule
+            service (str): The service
+            source_hip (list): (PAN-OS 10.0+) The source HIP info.
+            source_users (list): The source users.
+            url_categories (list): URL categories.
+            group_tag (str): (PAN-OS 9.0+) The group tag.
+            authentication_enforcement (str): The authentication enforcement object.
+            timeout (str): The authentication timeout.
             negate_target (bool): Target all but the listed target firewalls
                 (applies to panorama/device groups only)
             target (list): Apply this policy to the listed firewalls only
                 (applies to panorama/device groups only)
-            tag (list): Administrative tags
-            destination_dynamic_translated_address (str): (PAN-OS 8.1+) Dynamic
-                destination translated address.
-            destination_dynamic_translated_port (int): (PAN-OS 8.1+) Dynamic
-                destination translated port.
-            destination_dynamic_translated_distribution (str): (PAN-OS 8.1+) Dynamic
-                destination translated distribution.
-            uuid (str): (PAN-OS 9.0+) The UUID for this rule.
-            group_tag (str): (PAN-OS 9.0+) The group tag.
+            log_setting (str): (PAN-OS 10.0+) Log setting.
+            log_authentication_timeout (bool): Whether the rules logs authentication timeouts or not.
 
         """
 
