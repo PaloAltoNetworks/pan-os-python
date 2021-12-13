@@ -396,6 +396,7 @@ class Panorama(base.PanDevice):
         "panorama.DeviceGroup",
         "panorama.Template",
         "panorama.TemplateStack",
+        "prisma_access.CloudServicesPlugin"
     )
 
     def __init__(

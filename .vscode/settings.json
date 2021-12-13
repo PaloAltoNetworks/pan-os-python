@@ -11,12 +11,14 @@
   "python.testing.pytestArgs": ["--no-cov"],
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": false,
-  "python.linting.banditEnabled": true,
-  "python.linting.banditArgs": ["-r", "--ini .bandit"],
-  "python.linting.flake8Enabled": true,
+  "python.linting.banditArgs": [
+    "-r",
+    "--ini .bandit"
+  ],
   "python.linting.flake8CategorySeverity.E": "Warning",
   "python.linting.mypyEnabled": false,
-  "python.formatting.provider": "black",
+  "python.formatting.provider": "autopep8",
+  "python.formatting.autopep8Args": ["--ignore","E402"],
   "editor.formatOnSave": true,
   "restructuredtext.confPath": "${workspaceFolder}/docs",
   "cSpell.words": [
@@ -27,5 +29,6 @@
     "pandevice",
     "pan-os-python",
     "refreshall"
-  ]
+  ],
+  "python.linting.lintOnSave": false
 }
