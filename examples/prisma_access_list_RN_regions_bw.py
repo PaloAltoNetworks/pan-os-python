@@ -11,7 +11,7 @@
 # MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
 # ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# ACTION OF CONTRACT, NEGLIGENCE OR OTpHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 # Author: Bastien Migette <bmigette@paloaltonetworks.com>
@@ -24,19 +24,27 @@ This script is an example on how to retrieve list of prisma access
 remote networks locations and bandwidth allocation and print it.
 
 """
-
 __author__ = "bmigette"
+
 
 import logging
 import os
 import sys
 
+
+#This is needed to import module from parent folder
 curpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(curpath, os.pardir)]
 
-from panos.base import PanDevice
-from panos.panorama import Panorama
+
 from panos.plugins import CloudServicesPlugin, RemoteNetwork, RemoteNetworks, AggBandwidth, Region
+from panos.panorama import Panorama
+from panos.base import PanDevice
+
+
+curpath = os.path.dirname(os.path.abspath(__file__))
+sys.path[:0] = [os.path.join(curpath, os.pardir)]
+
 
 HOSTNAME = os.environ["PAN_HOSTNAME"]
 USERNAME = os.environ["PAN_USERNAME"]
@@ -44,9 +52,9 @@ PASSWORD = os.environ["PAN_PASSWORD"]
 
 
 def main():
-    #Setting logging to debug the PanOS SDK
+    # Setting logging to debug the PanOS SDK
     logging_format = "%(levelname)s:%(name)s:%(message)s"
-    #logging.basicConfig(format=logging_format, level=logging.DEBUG - 2) #Use this to be even more verbose
+    # logging.basicConfig(format=logging_format, level=logging.DEBUG - 2) #Use this to be even more verbose
     logging.basicConfig(format=logging_format, level=logging.DEBUG)
     # First, let's create the panorama  object that we want to modify.
     pan = Panorama(HOSTNAME, USERNAME, PASSWORD)
@@ -57,7 +65,7 @@ def main():
     rn = csp.findall(RemoteNetworks)
     rnes = rn[0].findall(RemoteNetwork)
     agg_bw = rn[0].findall(AggBandwidth)
-    
+
     regions = agg_bw[0].findall(Region)
     ### Print XML Dump of Prisma Config ###
     print(csp.element_str())
@@ -74,7 +82,8 @@ def main():
     print(" -- Regions --")
     print(regions)
     for region in regions:
-        print(f"Region:  {region}, allocated_bw: {region.allocated_bw}, spns: {region.spn_name_list}")
+        print(
+            f"Region:  {region}, allocated_bw: {region.allocated_bw}, spns: {region.spn_name_list}")
 
 
 if __name__ == "__main__":

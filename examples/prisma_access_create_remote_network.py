@@ -25,20 +25,26 @@ along with needed IPSEC Tunnel and IKEv2 Gateway.
 To use the script, you need to replace the variables below with desired values.
 
 """
-
 __author__ = "bmigette"
+
 
 import logging
 import os
 import sys
 
+
+#This is needed to import module from parent folder
 curpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(curpath, os.pardir)]
 
-from panos.panorama import Panorama
-from panos.plugins import CloudServicesPlugin, RemoteNetwork, RemoteNetworks, Bgp, AggBandwidth, Region
-from panos.network import IkeGateway, IpsecTunnel
 from panos.panorama import Template
+from panos.network import IkeGateway, IpsecTunnel
+from panos.plugins import CloudServicesPlugin, RemoteNetwork, RemoteNetworks, Bgp, AggBandwidth, Region
+from panos.panorama import Panorama
+
+
+
+
 
 HOSTNAME = os.environ["PAN_HOSTNAME"]
 USERNAME = os.environ["PAN_USERNAME"]
@@ -55,8 +61,11 @@ IPSEC_CRYPTO = "Generic-IPSEC-Crypto-Default"
 TEMPLATE = "Remote_Network_Template"
 
 REMOTE_NETWORK_NAME = "panos-sdk-rn"
-REMOTE_NETWORK_REGION = "eu-central-1" # This is the Region that you put in the RN. A compute region can have multiple Regions
-REMOTE_NETWORK_COMPUTEREGION = "europe-central" # This is the Compute Region, used to get SPN list. You can use Panorama CLI to get available options
+# This is the Region that you put in the RN. A compute region can have multiple Regions
+REMOTE_NETWORK_REGION = "eu-central-1"
+# This is the Compute Region, used to get SPN list. You can use Panorama CLI to get available options
+REMOTE_NETWORK_COMPUTEREGION = "europe-central"
+
 
 def get_region_spn(remote_networks, region):
     """This function will return first SPN from a given region name. 
@@ -70,15 +79,16 @@ def get_region_spn(remote_networks, region):
     Returns:
         str: spn name
     """
-    agg_bw = remote_networks.findall(AggBandwidth)    
+    agg_bw = remote_networks.findall(AggBandwidth)
     region_obj = agg_bw[0].find(region)
     print(f"SPN for region {region}: {region_obj.spn_name_list[0]}")
-    return region_obj.spn_name_list[0] 
+    return region_obj.spn_name_list[0]
+
 
 def main():
-    #Setting logging to debug the PanOS SDK
+    # Setting logging to debug the PanOS SDK
     logging_format = "%(levelname)s:%(name)s:%(message)s"
-    #logging.basicConfig(format=logging_format, level=logging.DEBUG - 2) #Use this to be even more verbose
+    # logging.basicConfig(format=logging_format, level=logging.DEBUG - 2) #Use this to be even more verbose
     logging.basicConfig(format=logging_format, level=logging.DEBUG)
     # 1 - let's create the panorama  object that we want to modify.
     pan = Panorama(HOSTNAME, USERNAME, PASSWORD)
@@ -91,9 +101,9 @@ def main():
     rn_template.refresh()
     # 3 - Getting the remote_networks object
     remote_networks = csp.findall(RemoteNetworks)[0]
-    
+
     # 4 - Creating IKEv2 GW and IPSEC Tunnels
-    ## 4.1 - IKEv2 GW
+    # 4.1 - IKEv2 GW
     gw = IkeGateway()
     gw.name = IKE_GW
     gw.version = "ikev2"
@@ -107,7 +117,7 @@ def main():
     gw.enable_liveness_check = True
     rn_template.add(gw).create()
 
-    ## 4.2 - IPSEC Tunnel
+    # 4.2 - IPSEC Tunnel
     ipsec_tun = IpsecTunnel()
     ipsec_tun.name = IPSEC_TUNNEL_NAME
     ipsec_tun.ak_ike_gateway = IKE_GW
@@ -118,7 +128,7 @@ def main():
     # 5 - Creating Remote Network
     rn = RemoteNetwork()
     rn.name = REMOTE_NETWORK_NAME
-    rn.subnets = [ "10.11.12.0/24" ]
+    rn.subnets = ["10.11.12.0/24"]
     rn.region = REMOTE_NETWORK_REGION
     rn.spn_name = get_region_spn(remote_networks, REMOTE_NETWORK_COMPUTEREGION)
     rn.ipsec_tunnel = IPSEC_TUNNEL_NAME
@@ -131,7 +141,8 @@ def main():
     remote_networks.add(rn).create()
     # 6 - Commit + Push
     # pan.commit_all(devicegroup="Remote_Network_Device_Group") #commit + push
-    pan.commit() # commit only
+    pan.commit()  # commit only
+
 
 if __name__ == "__main__":
     main()
