@@ -1002,8 +1002,8 @@ class PanObject(object):
                 import panos.panorama
             elif module_name == "policies":
                 import panos.policies
-            elif module_name == "prisma_access":
-                import panos.prisma_access
+            elif module_name == "plugins":
+                import panos.plugins
             child = getattr(getattr(panos, module_name), class_name)()
 
             # Versioned objects need a PanDevice to get the version from, so
