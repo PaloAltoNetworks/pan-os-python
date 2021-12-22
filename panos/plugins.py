@@ -28,8 +28,6 @@ from panos.base import ENTRY, MEMBER, PanObject, Root
 from panos.base import VarPath as Var
 from panos.base import VersionedPanObject, VersionedParamPath, VsysOperations
 
-# TODO: Verify defaults
-
 
 class CloudServicesPlugin(VersionedPanObject):
     """Prisma Access configuration base object
@@ -469,7 +467,7 @@ class RoutingPreference(VersionedPanObject):
 
         params.append(
             VersionedParamPath("default", vartype="exist",
-                               path="default", version="9.1.0")
+                               path="default", default=True, version="9.1.0")
         )
         params.append(
             VersionedParamPath("hot_potato_routing", vartype="exist",
