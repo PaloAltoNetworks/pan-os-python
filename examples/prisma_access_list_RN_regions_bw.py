@@ -32,12 +32,18 @@ import os
 import sys
 
 
-#This is needed to import module from parent folder
+# This is needed to import module from parent folder
 curpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(curpath, os.pardir)]
 
 
-from panos.plugins import CloudServicesPlugin, RemoteNetwork, RemoteNetworks, AggBandwidth, Region
+from panos.plugins import (
+    CloudServicesPlugin,
+    RemoteNetwork,
+    RemoteNetworks,
+    AggBandwidth,
+    Region,
+)
 from panos.panorama import Panorama
 from panos.base import PanDevice
 
@@ -74,8 +80,12 @@ def main():
     ### Print Remote networks name ###
     print(" -- Remote Networks --")
     for rne in rnes:
-        print(f"{rne.name} - spn: {rne.spn_name}, region: {rne.region}, tunnel {rne.ipsec_tunnel}, subnets: {rne.subnets}")
-        print(f"{rne.name} - secondary_wan: {rne.secondary_wan_enabled}, secondary ipsec tunnel: {rne.secondary_ipsec_tunnel}")
+        print(
+            f"{rne.name} - spn: {rne.spn_name}, region: {rne.region}, tunnel {rne.ipsec_tunnel}, subnets: {rne.subnets}"
+        )
+        print(
+            f"{rne.name} - secondary_wan: {rne.secondary_wan_enabled}, secondary ipsec tunnel: {rne.secondary_ipsec_tunnel}"
+        )
 
     ### Print Regions BW ###
     print(f"Agg BW Enabled: {agg_bw[0].enabled}")
@@ -83,7 +93,8 @@ def main():
     print(regions)
     for region in regions:
         print(
-            f"Region:  {region}, allocated_bw: {region.allocated_bw}, spns: {region.spn_name_list}")
+            f"Region:  {region}, allocated_bw: {region.allocated_bw}, spns: {region.spn_name_list}"
+        )
 
 
 if __name__ == "__main__":

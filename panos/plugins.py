@@ -17,16 +17,9 @@
 
 """Prisma Access module contains objects that exist in the 'Plugins/Cloud Services' tab in the Panorama GUI"""
 
-import logging
-import re
-import xml.etree.ElementTree as ET
 
-import panos
 import panos.errors as err
-from panos import device, getlogger, string_or_list
-from panos.base import ENTRY, MEMBER, PanObject, Root
-from panos.base import VarPath as Var
-from panos.base import VersionedPanObject, VersionedParamPath, VsysOperations
+from panos.base import ENTRY, Root, VersionedPanObject, VersionedParamPath
 
 
 class CloudServicesPlugin(VersionedPanObject):
@@ -42,7 +35,6 @@ class CloudServicesPlugin(VersionedPanObject):
     CHILDTYPES = (
         "plugins.RemoteNetworks",
         "plugins.RoutingPreference",
-
     )
 
     def _setup(self):
@@ -53,8 +45,12 @@ class CloudServicesPlugin(VersionedPanObject):
         params = []
 
         params.append(
-            VersionedParamPath("all_traffic_to_dc", vartype="yesno",
-                               path="traffic-steering/All-Traffic-To-DC", version="9.1.0")
+            VersionedParamPath(
+                "all_traffic_to_dc",
+                vartype="yesno",
+                path="traffic-steering/All-Traffic-To-DC",
+                version="9.1.0",
+            )
         )
 
         self._params = tuple(params)
@@ -66,24 +62,23 @@ class AggBandwidth(VersionedPanObject):
     Args:
         enabled(bool): Whether Aggregated BW mode is enabled or not
     """
+
     # TODO: Add support for QoS Here ?
     ROOT = Root.DEVICE
     SUFFIX = None
-    CHILDTYPES = (
-        "plugins.Region",
-    )
+    CHILDTYPES = ("plugins.Region",)
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(
-            value="/agg-bandwidth")
+        self._xpaths.add_profile(value="/agg-bandwidth")
 
         # params
         params = []
 
         params.append(
-            VersionedParamPath("enabled", vartype="yesno",
-                               path="enabled", version="9.1.0")
+            VersionedParamPath(
+                "enabled", vartype="yesno", path="enabled", version="9.1.0"
+            )
         )
 
         self._params = tuple(params)
@@ -96,26 +91,26 @@ class Region(VersionedPanObject):
         allocated_bw(int): Allocated BW in Mbps
         spn_name_list(list/str): Names of the SPN for the region
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
-    CHILDTYPES = (
-
-    )
+    CHILDTYPES = ()
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(
-            value="/region")
+        self._xpaths.add_profile(value="/region")
 
         # params
         params = []
         params.append(
             VersionedParamPath(
-                "allocated_bw", vartype="int", path="allocated-bw", version="9.1.0")
+                "allocated_bw", vartype="int", path="allocated-bw", version="9.1.0"
+            )
         )
         params.append(
             VersionedParamPath(
-                "spn_name_list", path="spn-name-list", vartype="member", version="9.1.0")
+                "spn_name_list", path="spn-name-list", vartype="member", version="9.1.0"
+            )
         )
         self._params = tuple(params)
 
@@ -137,33 +132,35 @@ class RemoteNetworks(VersionedPanObject):
         "plugins.RemoteNetwork",
         "plugins.AggBandwidth",
         "plugins.DnsServers",
-        "plugins.UdpQueries"
+        "plugins.UdpQueries",
     )
     # TODO Add support for inbound remote network later
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(
-            value="/remote-networks")
+        self._xpaths.add_profile(value="/remote-networks")
 
         # params
         params = []
 
         params.append(
-            VersionedParamPath("overlapped_subnets", vartype="yesno",
-                               path="overlapped-subnets", version="9.1.0")
+            VersionedParamPath(
+                "overlapped_subnets",
+                vartype="yesno",
+                path="overlapped-subnets",
+                version="9.1.0",
+            )
+        )
+        params.append(
+            VersionedParamPath("template_stack", path="template-stack", version="9.1.0")
+        )
+        params.append(
+            VersionedParamPath("device_group", path="device-group", version="9.1.0")
         )
         params.append(
             VersionedParamPath(
-                "template_stack", path="template-stack", version="9.1.0")
-        )
-        params.append(
-            VersionedParamPath(
-                "device_group", path="device-group", version="9.1.0")
-        )
-        params.append(
-            VersionedParamPath("trusted_zones", vartype="member",
-                               path="trusted-zones", version="9.1.0")
+                "trusted_zones", vartype="member", path="trusted-zones", version="9.1.0"
+            )
         )
 
         self._params = tuple(params)
@@ -176,6 +173,7 @@ class InternalDnsMatch(VersionedPanObject):
         domain_list(list/str): Internal Domains names
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
     CHILDTYPES = (
@@ -185,17 +183,16 @@ class InternalDnsMatch(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(
-            value="/internal-dns-match")
+        self._xpaths.add_profile(value="/internal-dns-match")
 
         # params
         params = []
 
         params.append(
-            VersionedParamPath("domain_list", vartype="member",
-                               path="domain-list", version="9.1.0")
+            VersionedParamPath(
+                "domain_list", vartype="member", path="domain-list", version="9.1.0"
+            )
         )
-
 
         self._params = tuple(params)
 
@@ -206,39 +203,44 @@ class DNSServerBase(VersionedPanObject):
     Args:
         dns_server(str): IP of DNS Server
         use-cloud-default(bool): Use cloud default DNS
-        same_as_internal(bool): Use same DNS server as Internal 
-
+        same_as_internal(bool): Use same DNS server as Internal
     """
+
     ROOT = Root.DEVICE
 
     def __init__(self, *args, **kwargs):
         if type(self) == DNSServerBase:
-            raise err.PanDeviceError(
-                "Do not instantiate class. Please use a subclass.")
+            raise err.PanDeviceError("Do not instantiate class. Please use a subclass.")
         super(DNSServerBase, self).__init__(*args, **kwargs)
 
     def add_dns_params(self, same_as_internal):
         params = []
 
         params.append(
-            VersionedParamPath(
-                "dns_server", path="dns-server", version="9.1.0")
+            VersionedParamPath("dns_server", path="dns-server", version="9.1.0")
         )
         params.append(
-            VersionedParamPath("use-cloud-default", vartype="exist",
-                               path="use_cloud_default", version="9.1.0")
+            VersionedParamPath(
+                "use-cloud-default",
+                vartype="exist",
+                path="use_cloud_default",
+                version="9.1.0",
+            )
         )
         if same_as_internal:
             params.append(
                 VersionedParamPath(
-                    "same_as_internal", vartype="exist", path="same-as-internal", version="9.1.0")
+                    "same_as_internal",
+                    vartype="exist",
+                    path="same-as-internal",
+                    version="9.1.0",
+                )
             )
         self._params = tuple(params)
 
 
 class PrimaryInternalDNSServer(DNSServerBase):
-    """A primary Internal DNS Server for remote networks
-    """
+    """A primary Internal DNS Server for remote networks"""
 
     def _setup(self):
         # xpaths
@@ -247,8 +249,7 @@ class PrimaryInternalDNSServer(DNSServerBase):
 
 
 class SecondaryInternalDNSServer(DNSServerBase):
-    """A Secondary Internal DNS Server for remote networks
-    """
+    """A Secondary Internal DNS Server for remote networks"""
 
     def _setup(self):
         # xpaths
@@ -257,8 +258,7 @@ class SecondaryInternalDNSServer(DNSServerBase):
 
 
 class PrimaryPublicDNSServer(DNSServerBase):
-    """A primary Public DNS Server for remote networks
-    """
+    """A primary Public DNS Server for remote networks"""
 
     def _setup(self):
         # xpaths
@@ -267,8 +267,7 @@ class PrimaryPublicDNSServer(DNSServerBase):
 
 
 class SecondaryPublicDNSServer(DNSServerBase):
-    """A secondary Internal DNS Server for remote networks
-    """
+    """A secondary Internal DNS Server for remote networks"""
 
     def _setup(self):
         # xpaths
@@ -283,6 +282,7 @@ class DnsServers(VersionedPanObject):  # TODO : shoud it be sth else ?
         name: (unused, and may be omitted)
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
     CHILDTYPES = (
@@ -293,8 +293,7 @@ class DnsServers(VersionedPanObject):  # TODO : shoud it be sth else ?
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(
-            value="/dns-servers")
+        self._xpaths.add_profile(value="/dns-servers")
 
         # params
         params = []
@@ -310,25 +309,33 @@ class UdpQueries(VersionedPanObject):
         attempts(int): Number of attempts
 
     """
-    ROOT = Root.DEVICE
-    CHILDTYPES = (
 
-    )
+    ROOT = Root.DEVICE
+    CHILDTYPES = ()
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(
-            value="/udp-queries")
+        self._xpaths.add_profile(value="/udp-queries")
 
         # params
         params = []
         params.append(
-            VersionedParamPath("interval", vartype="int",
-                               path="retries/interval", default=2, version="9.1.0")
+            VersionedParamPath(
+                "interval",
+                vartype="int",
+                path="retries/interval",
+                default=2,
+                version="9.1.0",
+            )
         )
         params.append(
-            VersionedParamPath("attempts", vartype="int",
-                               path="retries/attempts", default=5, version="9.1.0")
+            VersionedParamPath(
+                "attempts",
+                vartype="int",
+                path="retries/attempts",
+                default=5,
+                version="9.1.0",
+            )
         )
         self._params = tuple(params)
 
@@ -339,61 +346,75 @@ class Bgp(VersionedPanObject):  # TODO : shoud it be protcol-bgp ?
     Args:
         enable(bool): Whether BGP is enabled or not.
         originate_default_route(bool): Originate default route
-        summarize_mobile_user_routes(bool): Summarize mobile users routes or not 
+        summarize_mobile_user_routes(bool): Summarize mobile users routes or not
         do_not_export_routes(bool): Do not export routes
         peer_as(int): Peer AS
         peer_ip_address(str): Peer IP Address
         local_ip_address(str): Local IP Address
         secret(str): BGP Password
-
     """
+
     ROOT = Root.DEVICE
     SUFFIX = None
-    CHILDTYPES = (
-
-    )
+    CHILDTYPES = ()
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(
-            value="/protocol/bgp")
+        self._xpaths.add_profile(value="/protocol/bgp")
 
         # params
         params = []
 
         params.append(
-            VersionedParamPath("enable", vartype="yesno",
-                               path="enable", version="9.1.0")
+            VersionedParamPath(
+                "enable", vartype="yesno", path="enable", version="9.1.0"
+            )
         )
 
         params.append(
-            VersionedParamPath("originate_default_route", vartype="yesno",
-                               path="originate-default-route", version="9.1.0")
+            VersionedParamPath(
+                "originate_default_route",
+                vartype="yesno",
+                path="originate-default-route",
+                version="9.1.0",
+            )
         )
         params.append(
-            VersionedParamPath("summarize_mobile_user_routes", vartype="yesno",
-                               path="summarize-mobile-user-routes", version="9.1.0")
+            VersionedParamPath(
+                "summarize_mobile_user_routes",
+                vartype="yesno",
+                path="summarize-mobile-user-routes",
+                version="9.1.0",
+            )
         )
         params.append(
-            VersionedParamPath("do_not_export_routes", vartype="yesno",
-                               path="do-not-export-routes", version="9.1.0")
+            VersionedParamPath(
+                "do_not_export_routes",
+                vartype="yesno",
+                path="do-not-export-routes",
+                version="9.1.0",
+            )
         )
 
         params.append(
-            VersionedParamPath("peer_as", vartype="int",
-                               path="peer-as", version="9.1.0")
+            VersionedParamPath(
+                "peer_as", vartype="int", path="peer-as", version="9.1.0"
+            )
         )
         params.append(
-            VersionedParamPath("peer_ip_address",
-                               path="peer-ip-address", version="9.1.0")
+            VersionedParamPath(
+                "peer_ip_address", path="peer-ip-address", version="9.1.0"
+            )
         )
         params.append(
-            VersionedParamPath("local_ip_address",
-                               path="local-ip-address", version="9.1.0")
+            VersionedParamPath(
+                "local_ip_address", path="local-ip-address", version="9.1.0"
+            )
         )
         params.append(
-            VersionedParamPath("secret", vartype="encrypted",
-                               path="secret", version="9.1.0")
+            VersionedParamPath(
+                "secret", vartype="encrypted", path="secret", version="9.1.0"
+            )
         )
 
         self._params = tuple(params)
@@ -410,35 +431,40 @@ class BgpPeer(VersionedPanObject):
         secret(str): BGP Password
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = None
-    CHILDTYPES = (
-
-    )
+    CHILDTYPES = ()
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(
-            value="/bgp-peer")
+        self._xpaths.add_profile(value="/bgp-peer")
 
         # params
         params = []
 
         params.append(
-            VersionedParamPath("same_as_primary", vartype="yesno",
-                               path="same-as-primary", version="9.1.0")
+            VersionedParamPath(
+                "same_as_primary",
+                vartype="yesno",
+                path="same-as-primary",
+                version="9.1.0",
+            )
         )
         params.append(
-            VersionedParamPath("peer_ip_address",
-                               path="peer-ip-address", version="9.1.0")
+            VersionedParamPath(
+                "peer_ip_address", path="peer-ip-address", version="9.1.0"
+            )
         )
         params.append(
-            VersionedParamPath("local_ip_address",
-                               path="local-ip-address", version="9.1.0")
+            VersionedParamPath(
+                "local_ip_address", path="local-ip-address", version="9.1.0"
+            )
         )
         params.append(
-            VersionedParamPath("secret", vartype="encrypted",
-                               path="secret", version="9.1.0")
+            VersionedParamPath(
+                "secret", vartype="encrypted", path="secret", version="9.1.0"
+            )
         )
         self._params = tuple(params)
 
@@ -451,29 +477,35 @@ class RoutingPreference(VersionedPanObject):
         hot_potato_routing(bool): Hot Potato Routing Mode
 
     """
+
     ROOT = Root.DEVICE
     SUFFIX = None
-    CHILDTYPES = (
-
-    )
+    CHILDTYPES = ()
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(
-            value="/routing-preference")
+        self._xpaths.add_profile(value="/routing-preference")
 
         # params
         params = []
 
         params.append(
-            VersionedParamPath("default", vartype="exist",
-                               path="default", default=True, version="9.1.0")
+            VersionedParamPath(
+                "default",
+                vartype="exist",
+                path="default",
+                default=True,
+                version="9.1.0",
+            )
         )
         params.append(
-            VersionedParamPath("hot_potato_routing", vartype="exist",
-                               path="Hot-Potato-Routing", version="9.1.0")
+            VersionedParamPath(
+                "hot_potato_routing",
+                vartype="exist",
+                path="Hot-Potato-Routing",
+                version="9.1.0",
+            )
         )
-        
         self._params = tuple(params)
 
 
@@ -484,12 +516,11 @@ class Link(VersionedPanObject):
         ipsec_tunnel(str): IPSEC Tunnel Name
 
     """
+
     # NAME = None #Not needed, default value
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "plugins.Bgp",
-    )
+    CHILDTYPES = ("plugins.Bgp",)
 
     def _setup(self):
         # xpaths
@@ -499,8 +530,7 @@ class Link(VersionedPanObject):
         params = []
 
         params.append(
-            VersionedParamPath(
-                "ipsec_tunnel", path="ipsec-tunnel", version="9.1.0")
+            VersionedParamPath("ipsec_tunnel", path="ipsec-tunnel", version="9.1.0")
         )
 
         # TODO QOS HERE
@@ -520,6 +550,7 @@ class RemoteNetwork(VersionedPanObject):
         spn_name(str): SPN Name of the remote network
         inbound_flow_over_pa_backbone(bool): inbound flow over pa backbone
     """
+
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
     CHILDTYPES = (
@@ -530,45 +561,52 @@ class RemoteNetwork(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(
-            value="/onboarding")
+        self._xpaths.add_profile(value="/onboarding")
 
         # params
         params = []
 
         params.append(
-            VersionedParamPath("subnets", vartype="member",
-                               path="subnets", version="9.1.0")
+            VersionedParamPath(
+                "subnets", vartype="member", path="subnets", version="9.1.0"
+            )
+        )
+        params.append(VersionedParamPath("region", path="region", version="9.1.0"))
+        params.append(
+            VersionedParamPath("license_type", path="license-type", version="9.1.0")
         )
         params.append(
-            VersionedParamPath("region", path="region", version="9.1.0")
+            VersionedParamPath("ipsec_tunnel", path="ipsec-tunnel", version="9.1.0")
         )
         params.append(
             VersionedParamPath(
-                "license_type", path="license-type", version="9.1.0")
+                "secondary_wan_enabled",
+                vartype="yesno",
+                path="secondary-wan-enabled",
+                version="9.1.0",
+            )
         )
         params.append(
             VersionedParamPath(
-                "ipsec_tunnel", path="ipsec-tunnel", version="9.1.0")
+                "ecmp_load_balancing",
+                path="ecmp-load-balancing",
+                version="9.1.0",
+                values=("enabled-with-symmetric-return", "disabled"),
+            )
         )
         params.append(
-            VersionedParamPath("secondary_wan_enabled", vartype="yesno",
-                               path="secondary-wan-enabled", version="9.1.0")
+            VersionedParamPath(
+                "secondary_ipsec_tunnel", path="secondary-ipsec-tunnel", version="9.1.0"
+            )
         )
+        params.append(VersionedParamPath("spn_name", path="spn-name", version="9.1.0"))
         params.append(
-            VersionedParamPath("ecmp_load_balancing", path="ecmp-load-balancing",
-                               version="9.1.0",  values=("enabled-with-symmetric-return", "disabled"))
-        )
-        params.append(
-            VersionedParamPath("secondary_ipsec_tunnel",
-                               path="secondary-ipsec-tunnel", version="9.1.0")
-        )
-        params.append(
-            VersionedParamPath("spn_name", path="spn-name", version="9.1.0")
-        )
-        params.append(
-            VersionedParamPath("inbound_flow_over_pa_backbone", vartype="yesno",
-                               path="inbound-flow-over-pa-backbone", version="9.1.0")
+            VersionedParamPath(
+                "inbound_flow_over_pa_backbone",
+                vartype="yesno",
+                path="inbound-flow-over-pa-backbone",
+                version="9.1.0",
+            )
         )
 
         # TODO Add QoS Support

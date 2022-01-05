@@ -33,17 +33,20 @@ import os
 import sys
 
 
-#This is needed to import module from parent folder
+# This is needed to import module from parent folder
 curpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(curpath, os.pardir)]
 
 from panos.panorama import Template
 from panos.network import IkeGateway, IpsecTunnel
-from panos.plugins import CloudServicesPlugin, RemoteNetwork, RemoteNetworks, Bgp, AggBandwidth, Region
+from panos.plugins import (
+    CloudServicesPlugin,
+    RemoteNetwork,
+    RemoteNetworks,
+    Bgp,
+    AggBandwidth,
+)
 from panos.panorama import Panorama
-
-
-
 
 
 HOSTNAME = os.environ["PAN_HOSTNAME"]
@@ -68,7 +71,7 @@ REMOTE_NETWORK_COMPUTEREGION = "europe-central"
 
 
 def get_region_spn(remote_networks, region):
-    """This function will return first SPN from a given region name. 
+    """This function will return first SPN from a given region name.
     You should implement some logic here to get the correct SPN.
     The script will break if the region has no SPN / BW allocated
 
