@@ -16,6 +16,7 @@ from panos import objects
 from panos import panorama
 from panos import policies
 from panos import predefined
+from panos import plugins
 
 
 # Versioning constants.
@@ -36,6 +37,7 @@ OMIT_OBJECTS = [
     network.PhysicalInterface,
     network.RedistributionProfileBase,
     network.Subinterface,
+    plugins.DNSServerBase,
 ]
 # Pull in the classes to omit.
 for pkg in (panos, errors, base):
@@ -52,7 +54,7 @@ NAMED_OBJECTS = []
 UNNAMED_OBJECTS = []
 VERSIONED_PAN_OBJECTS = []
 CLASSIC_PAN_OBJECTS = []
-for pkg in (device, firewall, ha, network, objects, panorama, policies, predefined):
+for pkg in (device, firewall, ha, network, objects, panorama, policies, predefined, plugins):
     for name, cls in inspect.getmembers(pkg, inspect.isclass):
         if not cls.__module__.startswith("panos"):
             continue
@@ -253,7 +255,7 @@ def test_classic_object_has_args_in_docstring(classic_object):
 
 def test_firewall_object_childtypes(panobj):
     # Skip Panorama objects.
-    if panobj.__module__ == "panos.panorama":
+    if panobj.__module__ in ("panos.panorama", "panos.plugins"):
         pytest.skip("Skipping panorama specific classes for firewall test")
 
     cts = childtype_string(panobj)
