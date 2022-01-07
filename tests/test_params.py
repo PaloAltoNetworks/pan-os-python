@@ -7,6 +7,8 @@ from panos.firewall import Firewall
 
 
 class FakeObject(VersionedPanObject):
+    """Fake object for testing."""
+
     SUFFIX = ENTRY
     ROOT = Root.VSYS
 
