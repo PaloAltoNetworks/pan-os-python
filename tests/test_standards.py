@@ -54,6 +54,8 @@ NAMED_OBJECTS = []
 UNNAMED_OBJECTS = []
 VERSIONED_PAN_OBJECTS = []
 CLASSIC_PAN_OBJECTS = []
+PANORAMA_OBJECTS = ["plugins.CloudServicesPlugin"]
+
 for pkg in (device, firewall, ha, network, objects, panorama, policies, predefined, plugins):
     for name, cls in inspect.getmembers(pkg, inspect.isclass):
         if not cls.__module__.startswith("panos"):
@@ -255,10 +257,13 @@ def test_classic_object_has_args_in_docstring(classic_object):
 
 def test_firewall_object_childtypes(panobj):
     # Skip Panorama objects.
-    if panobj.__module__ in ("panos.panorama", "panos.plugins"):
+    if panobj.__module__ == "panos.panorama":
         pytest.skip("Skipping panorama specific classes for firewall test")
 
     cts = childtype_string(panobj)
+    
+    if cts in PANORAMA_OBJECTS:
+        pytest.skip("Skipping Panoroama-only objects")
 
     found = cts in firewall.Firewall.CHILDTYPES
     if not found:
