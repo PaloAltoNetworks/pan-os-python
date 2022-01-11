@@ -951,36 +951,36 @@ class DecryptionRule(VersionedPanObject):
 class AuthenticationRule(VersionedPanObject):
     """Authentication Rule
 
-        Both the naming convention and the order of the parameters tries to closly
-        match what is presented in the GUI.
+    Both the naming convention and the order of the parameters tries to closly
+    match what is presented in the GUI.
 
-        Args:
-            name (str): Name of the rule
-            description (str): The description
-            uuid (str): (PAN-OS 9.0+) The UUID for this rule.
-            source_zones (list): The source zones.
-            source_addresses (list): The source addresses.
-            negate_source (bool): Negate the source addresses.
-            destination_zones (list): The destination zones.
-            destination_addresses (list): The destination addresses.
-            negate_destination (bool): Negate the destination addresses.
-            tag (list): Administrative tags
-            disabled (bool): Disable this rule
-            service (str): The service
-            source_hip (list): (PAN-OS 10.0+) The source HIP info.
-            source_users (list): The source users.
-            url_categories (list): URL categories.
-            group_tag (str): (PAN-OS 9.0+) The group tag.
-            authentication_enforcement (str): The authentication enforcement object.
-            timeout (str): The authentication timeout.
-            negate_target (bool): Target all but the listed target firewalls
-                (applies to panorama/device groups only)
-            target (list): Apply this policy to the listed firewalls only
-                (applies to panorama/device groups only)
-            log_setting (str): (PAN-OS 10.0+) Log setting.
-            log_authentication_timeout (bool): Whether the rules logs authentication timeouts or not.
+    Args:
+        name (str): The name
+        description (str): The description
+        uuid (str): (PAN-OS 9.0+) The UUID for this rule.
+        source_zones (list): The source zones.
+        source_addresses (list): The source addresses.
+        negate_source (bool): Negate the source addresses.
+        destination_zones (list): The destination zones.
+        destination_addresses (list): The destination addresses.
+        negate_destination (bool): Negate the destination addresses.
+        tag (list): Administrative tags
+        disabled (bool): Disable this rule
+        service (str): The service
+        source_hip (list): (PAN-OS 10.0+) The source HIP info.
+        source_users (list): The source users.
+        url_categories (list): URL categories.
+        group_tag (str): (PAN-OS 9.0+) The group tag.
+        authentication_enforcement (str): The authentication enforcement object.
+        timeout (str): The authentication timeout.
+        negate_target (bool): Target all but the listed target firewalls,
+            (applies to panorama/device groups only)
+        target (list): Apply this policy to the listed firewalls only,
+            (applies to panorama/device groups only)
+        log_setting (str): (PAN-OS 10.0+) Log setting.
+        log_authentication_timeout (bool): Whether the rules logs authentication timeouts or not.
 
-        """
+    """
 
     SUFFIX = ENTRY
     ROOT = Root.VSYS
@@ -1001,7 +1001,7 @@ class AuthenticationRule(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "source", default=["any", ], vartype="member", path="source"
+                "source_addresses", default=["any", ], vartype="member", path="source"
             )
         )
         params.append(
@@ -1012,7 +1012,7 @@ class AuthenticationRule(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "destination", default=["any", ], vartype="member", path="destination"
+                "destination_addresses", default=["any", ], vartype="member", path="destination"
             )
         )
         params.append(
