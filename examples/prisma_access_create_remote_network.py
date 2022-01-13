@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2021, Palo Alto Networks
+# Copyright (c) 2022, Palo Alto Networks
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -25,20 +25,16 @@ along with needed IPSEC Tunnel and IKEv2 Gateway.
 To use the script, you need to replace the variables below with desired values.
 
 """
-__author__ = "bmigette"
-
-
 import logging
 import os
 import sys
-
 
 # This is needed to import module from parent folder
 curpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(curpath, os.pardir)]
 
-from panos.panorama import Template
-from panos.network import IkeGateway, IpsecTunnel
+
+from panos.panorama import Panorama
 from panos.plugins import (
     CloudServicesPlugin,
     RemoteNetwork,
@@ -46,7 +42,10 @@ from panos.plugins import (
     Bgp,
     AggBandwidth,
 )
-from panos.panorama import Panorama
+from panos.network import IkeGateway, IpsecTunnel
+from panos.panorama import Template
+
+__author__ = "bmigette"
 
 
 HOSTNAME = os.environ["PAN_HOSTNAME"]
@@ -107,38 +106,39 @@ def main():
 
     # 4 - Creating IKEv2 GW and IPSEC Tunnels
     # 4.1 - IKEv2 GW
-    gw = IkeGateway()
-    gw.name = IKE_GW
-    gw.version = "ikev2"
-    gw.peer_ip_type = "ip"
-    gw.peer_ip_value = IPSEC_PEER
-    gw.peer_id_type = "ipaddr"
-    gw.peer_id_value = IPSEC_PEER
-    gw.auth_type = "pre-shared-key"
-    gw.pre_shared_key = IKE_PSK
-    gw.ikev2_crypto_profile = IKE_CRYPTO
-    gw.enable_liveness_check = True
+    gw = IkeGateway(
+        name=IKE_GW,
+        version="ikev2",
+        peer_ip_type="ip",
+        peer_ip_value=IPSEC_PEER,
+        peer_id_type="ipaddr",
+        peer_id_value=IPSEC_PEER,
+        auth_type="pre-shared-key",
+        pre_shared_key=IKE_PSK,
+        ikev2_crypto_profile=IKE_CRYPTO,
+        enable_liveness_check=True,
+    )
     rn_template.add(gw).create()
 
     # 4.2 - IPSEC Tunnel
-    ipsec_tun = IpsecTunnel()
-    ipsec_tun.name = IPSEC_TUNNEL_NAME
-    ipsec_tun.ak_ike_gateway = IKE_GW
-    ipsec_tun.ak_ipsec_crypto_profile = IPSEC_CRYPTO
-    ipsec_tun.mk_remote_address = IPSEC_PEER
+    ipsec_tun = IpsecTunnel(
+        name=IPSEC_TUNNEL_NAME,
+        ak_ike_gateway=IKE_GW,
+        ak_ipsec_crypto_profile=IPSEC_CRYPTO,
+        mk_remote_address=IPSEC_PEER,
+    )
+
     rn_template.add(ipsec_tun).create()
 
     # 5 - Creating Remote Network
-    rn = RemoteNetwork()
-    rn.name = REMOTE_NETWORK_NAME
-    rn.subnets = ["10.11.12.0/24"]
-    rn.region = REMOTE_NETWORK_REGION
-    rn.spn_name = get_region_spn(remote_networks, REMOTE_NETWORK_COMPUTEREGION)
-    rn.ipsec_tunnel = IPSEC_TUNNEL_NAME
-    bgp = Bgp()
-    bgp.enable = True
-    bgp.peer_as = BGP_PEER_AS
-    bgp.peer_ip_address = BGP_PEER
+    rn = RemoteNetwork(
+        name=REMOTE_NETWORK_NAME,
+        static_routes=["10.11.12.0/24"],
+        region=REMOTE_NETWORK_REGION,
+        spn_name=get_region_spn(remote_networks, REMOTE_NETWORK_COMPUTEREGION),
+        ipsec_tunnel=IPSEC_TUNNEL_NAME,
+    )
+    bgp = Bgp(enable=True, peer_as=BGP_PEER_AS, peer_ip_address=BGP_PEER)
 
     rn.add(bgp)
     remote_networks.add(rn).create()
