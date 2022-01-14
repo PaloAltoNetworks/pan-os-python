@@ -55,6 +55,7 @@ UNNAMED_OBJECTS = []
 VERSIONED_PAN_OBJECTS = []
 CLASSIC_PAN_OBJECTS = []
 PANORAMA_OBJECTS = ["plugins.CloudServicesPlugin"]
+POLICY_RULES = []
 
 for pkg in (
     device,
@@ -91,6 +92,17 @@ for pkg in (
                     UNNAMED_OBJECTS.append(cls)
             elif cls not in NAMED_OBJECTS:
                 NAMED_OBJECTS.append(cls)
+
+# Find rule classes in the policies package.
+for name, cls in inspect.getmembers(policies, inspect.isclass):
+    if cls.__module__ != "panos.policies":
+        continue
+    if name in ["Rulebase", "PreRulebase", "PostRulebase"]:
+        continue
+    mro = inspect.getmro(cls)
+    if base.VersionedPanObject not in inspect.getmro(cls):
+        continue
+    POLICY_RULES.append(cls)
 
 
 # -- Fixtures --
@@ -170,6 +182,19 @@ def classic_object(request):
     ],
 )
 def panobj(request):
+    return request.param
+
+
+# Rules in the policies package.
+@pytest.fixture(
+    scope="function",
+    params=[x for x in POLICY_RULES],
+    ids=[
+        "{0}_{1}".format(x.__module__.replace(".", "_"), x.__name__)
+        for x in POLICY_RULES
+    ],
+)
+def policy_rule(request):
     return request.param
 
 
@@ -428,3 +453,10 @@ def test_versioned_object_param_documentation(versioned_object):
     assert (
         actual_params == docstring_listing
     ), "Actual params don't match documented params"
+
+
+def test_policy_rule_is_in_all_rulebase_childtypes(policy_rule):
+    cts = childtype_string(policy_rule)
+
+    for cls in [policies.Rulebase, policies.PreRulebase, policies.PostRulebase]:
+        assert cts in cls.CHILDTYPES
