@@ -6,7 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
-.vscode/
+#vscode file containing some env variables
+launch.json
 
 # Distribution / packaging
 .Python
