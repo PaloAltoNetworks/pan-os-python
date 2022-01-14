@@ -373,9 +373,7 @@ class BgpPeer(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "same_as_primary",
-                vartype="yesno",
-                path="same-as-primary",
+                "same_as_primary", vartype="yesno", path="same-as-primary",
             )
         )
         params.append(VersionedParamPath("peer_ip_address", path="peer-ip-address"))

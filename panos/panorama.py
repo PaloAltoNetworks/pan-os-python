@@ -396,7 +396,7 @@ class Panorama(base.PanDevice):
         "panorama.DeviceGroup",
         "panorama.Template",
         "panorama.TemplateStack",
-        "plugins.CloudServicesPlugin"
+        "plugins.CloudServicesPlugin",
     )
 
     def __init__(
