@@ -154,7 +154,12 @@ class SecurityRule(VersionedPanObject):
         for var_name, path in any_defaults:
             params.append(
                 VersionedParamPath(
-                    var_name, default=["any",], vartype="member", path=path
+                    var_name,
+                    default=[
+                        "any",
+                    ],
+                    vartype="member",
+                    path=path,
                 )
             )
 
@@ -168,7 +173,12 @@ class SecurityRule(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "category", default=["any",], vartype="member", path="category"
+                "category",
+                default=[
+                    "any",
+                ],
+                vartype="member",
+                path="category",
             )
         )
         params.append(VersionedParamPath("action", path="action"))
@@ -231,11 +241,23 @@ class SecurityRule(VersionedPanObject):
         params.append(VersionedParamPath("uuid", exclude=True))
         params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
         params.append(
-            VersionedParamPath("source_devices", default=["any",], exclude=True)
+            VersionedParamPath(
+                "source_devices",
+                default=[
+                    "any",
+                ],
+                exclude=True,
+            )
         )
         params[-1].add_profile("10.0.0", vartype="member", path="source-hip")
         params.append(
-            VersionedParamPath("destination_devices", default=["any",], exclude=True)
+            VersionedParamPath(
+                "destination_devices",
+                default=[
+                    "any",
+                ],
+                exclude=True,
+            )
         )
         params[-1].add_profile("10.0.0", vartype="member", path="destination-hip")
         params.append(VersionedParamPath("group_tag", exclude=True))
@@ -338,7 +360,12 @@ class NatRule(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "fromzone", default=["any",], vartype="member", path="from"
+                "fromzone",
+                default=[
+                    "any",
+                ],
+                vartype="member",
+                path="from",
             )
         )
         params.append(VersionedParamPath("tozone", vartype="member", path="to"))
@@ -346,12 +373,22 @@ class NatRule(VersionedPanObject):
         params.append(VersionedParamPath("service", default="any", path="service"))
         params.append(
             VersionedParamPath(
-                "source", default=["any",], vartype="member", path="source"
+                "source",
+                default=[
+                    "any",
+                ],
+                vartype="member",
+                path="source",
             )
         )
         params.append(
             VersionedParamPath(
-                "destination", default=["any",], vartype="member", path="destination"
+                "destination",
+                default=[
+                    "any",
+                ],
+                vartype="member",
+                path="destination",
             )
         )
         params.append(
@@ -853,43 +890,103 @@ class DecryptionRule(VersionedPanObject):
         params.append(VersionedParamPath("uuid", exclude=True))
         params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
         params.append(
-            VersionedParamPath("source_zones", vartype="member", path="from",)
-        )
-        params.append(
-            VersionedParamPath("source_addresses", vartype="member", path="source",)
-        )
-        params.append(
-            VersionedParamPath("negate_source", vartype="yesno", path="negate-source",)
-        )
-        params.append(
-            VersionedParamPath("source_users", vartype="member", path="source-user",)
-        )
-        params.append(VersionedParamPath("source_hip", exclude=True,))
-        params[-1].add_profile(
-            "10.0.0", path="source-hip", vartype="member",
-        )
-        params.append(
-            VersionedParamPath("destination_zones", vartype="member", path="to",)
-        )
-        params.append(
             VersionedParamPath(
-                "destination_addresses", vartype="member", path="destination",
+                "source_zones",
+                vartype="member",
+                path="from",
             )
         )
         params.append(
             VersionedParamPath(
-                "negate_destination", vartype="yesno", path="negate-destination",
+                "source_addresses",
+                vartype="member",
+                path="source",
             )
         )
-        params.append(VersionedParamPath("destination_hip", exclude=True,))
-        params[-1].add_profile(
-            "10.0.0", path="destination-hip", vartype="member",
-        )
-        params.append(VersionedParamPath("tags", vartype="member", path="tag",))
-        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled",))
-        params.append(VersionedParamPath("services", vartype="member", path="service",))
         params.append(
-            VersionedParamPath("url_categories", vartype="member", path="category",)
+            VersionedParamPath(
+                "negate_source",
+                vartype="yesno",
+                path="negate-source",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_users",
+                vartype="member",
+                path="source-user",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_hip",
+                exclude=True,
+            )
+        )
+        params[-1].add_profile(
+            "10.0.0",
+            path="source-hip",
+            vartype="member",
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_zones",
+                vartype="member",
+                path="to",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_addresses",
+                vartype="member",
+                path="destination",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "negate_destination",
+                vartype="yesno",
+                path="negate-destination",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_hip",
+                exclude=True,
+            )
+        )
+        params[-1].add_profile(
+            "10.0.0",
+            path="destination-hip",
+            vartype="member",
+        )
+        params.append(
+            VersionedParamPath(
+                "tags",
+                vartype="member",
+                path="tag",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "disabled",
+                vartype="yesno",
+                path="disabled",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "services",
+                vartype="member",
+                path="service",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "url_categories",
+                vartype="member",
+                path="category",
+            )
         )
         params.append(
             VersionedParamPath(
@@ -908,38 +1005,79 @@ class DecryptionRule(VersionedPanObject):
             VersionedParamPath(
                 "decryption_type",
                 path="type/{decryption_type}",
-                values=("ssl-forward-proxy", "ssh-proxy", "ssl-inbound-inspection",),
+                values=(
+                    "ssl-forward-proxy",
+                    "ssh-proxy",
+                    "ssl-inbound-inspection",
+                ),
             )
         )
         params.append(
             VersionedParamPath(
                 "ssl_certificate",
                 path="type/{decryption_type}",
-                condition={"decryption_type": "ssl-inbound-inspection",},
+                condition={
+                    "decryption_type": "ssl-inbound-inspection",
+                },
             )
         )
-        params.append(VersionedParamPath("decryption_profile", path="profile",))
-        params.append(VersionedParamPath("forwarding_profile", exclude=True,))
-        params[-1].add_profile(
-            "8.1.0", path="forwarding-profile",
-        )
-        params.append(VersionedParamPath("group_tag", exclude=True,))
-        params[-1].add_profile(
-            "9.0.0", path="group-tag",
+        params.append(
+            VersionedParamPath(
+                "decryption_profile",
+                path="profile",
+            )
         )
         params.append(
-            VersionedParamPath("log_successful_tls_handshakes", exclude=True,)
+            VersionedParamPath(
+                "forwarding_profile",
+                exclude=True,
+            )
         )
         params[-1].add_profile(
-            "10.0.0", path="log-success", vartype="yesno",
+            "8.1.0",
+            path="forwarding-profile",
         )
-        params.append(VersionedParamPath("log_failed_tls_handshakes", exclude=True,))
-        params[-1].add_profile(
-            "10.0.0", path="log-fail", vartype="yesno",
+        params.append(
+            VersionedParamPath(
+                "group_tag",
+                exclude=True,
+            )
         )
-        params.append(VersionedParamPath("log_setting", exclude=True,))
         params[-1].add_profile(
-            "10.0.0", path="log-setting",
+            "9.0.0",
+            path="group-tag",
+        )
+        params.append(
+            VersionedParamPath(
+                "log_successful_tls_handshakes",
+                exclude=True,
+            )
+        )
+        params[-1].add_profile(
+            "10.0.0",
+            path="log-success",
+            vartype="yesno",
+        )
+        params.append(
+            VersionedParamPath(
+                "log_failed_tls_handshakes",
+                exclude=True,
+            )
+        )
+        params[-1].add_profile(
+            "10.0.0",
+            path="log-fail",
+            vartype="yesno",
+        )
+        params.append(
+            VersionedParamPath(
+                "log_setting",
+                exclude=True,
+            )
+        )
+        params[-1].add_profile(
+            "10.0.0",
+            path="log-setting",
         )
 
         self._params = tuple(params)
@@ -997,51 +1135,116 @@ class AuthenticationRule(VersionedPanObject):
         params.append(VersionedParamPath("uuid", exclude=True))
         params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
         params.append(
-            VersionedParamPath("source_zones", vartype="member", path="from",)
-        )
-        params.append(
             VersionedParamPath(
-                "source_addresses", default=["any", ], vartype="member", path="source"
-            )
-        )
-        params.append(
-            VersionedParamPath("negate_source", vartype="yesno", path="negate-source",)
-        )
-        params.append(
-            VersionedParamPath("destination_zones", vartype="member", path="to", )
-        )
-        params.append(
-            VersionedParamPath(
-                "destination_addresses", default=["any", ], vartype="member", path="destination"
+                "source_zones",
+                vartype="member",
+                path="from",
             )
         )
         params.append(
             VersionedParamPath(
-                "negate_destination", vartype="yesno", path="negate-destination",
+                "source_addresses",
+                default=[
+                    "any",
+                ],
+                vartype="member",
+                path="source",
             )
         )
-        params.append(VersionedParamPath("tag", vartype="member", path="tag", ))
-        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled", ))
-        params.append(VersionedParamPath("service", vartype="member", path="service", ))
-        params.append(VersionedParamPath("source_hip", exclude=True, ))
+        params.append(
+            VersionedParamPath(
+                "negate_source",
+                vartype="yesno",
+                path="negate-source",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_zones",
+                vartype="member",
+                path="to",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_addresses",
+                default=[
+                    "any",
+                ],
+                vartype="member",
+                path="destination",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "negate_destination",
+                vartype="yesno",
+                path="negate-destination",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "tag",
+                vartype="member",
+                path="tag",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "disabled",
+                vartype="yesno",
+                path="disabled",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "service",
+                vartype="member",
+                path="service",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_hip",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
-            "10.0.0", path="source-hip", vartype="member",
+            "10.0.0",
+            path="source-hip",
+            vartype="member",
         )
         params.append(
             VersionedParamPath("source_users", vartype="member", path="source-user")
         )
         params.append(
-            VersionedParamPath("url_categories", vartype="member", path="category", )
+            VersionedParamPath(
+                "url_categories",
+                vartype="member",
+                path="category",
+            )
         )
-        params.append(VersionedParamPath("group_tag", exclude=True, ))
+        params.append(
+            VersionedParamPath(
+                "group_tag",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
-            "9.0.0", path="group-tag",
+            "9.0.0",
+            path="group-tag",
         )
         params.append(
-            VersionedParamPath("authentication_enforcement", path="authentication-enforcement",)
+            VersionedParamPath(
+                "authentication_enforcement",
+                path="authentication-enforcement",
+            )
         )
         params.append(
-            VersionedParamPath("timeout", path="timeout",)
+            VersionedParamPath(
+                "timeout",
+                path="timeout",
+            )
         )
         params.append(
             VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
@@ -1051,7 +1254,11 @@ class AuthenticationRule(VersionedPanObject):
         )
         params.append(VersionedParamPath("log_setting", path="log-setting"))
         params.append(
-            VersionedParamPath("log_authentication_timeout", path="log-authentication-timeout", vartype="yesno")
+            VersionedParamPath(
+                "log_authentication_timeout",
+                path="log-authentication-timeout",
+                vartype="yesno",
+            )
         )
 
         self._params = tuple(params)
@@ -1193,7 +1400,10 @@ class HitCount(OpStateObject):
     def refresh(self, elm=None):
         if elm is None and self.obj is not None:
             self.obj.parent.opstate.hit_count.refresh(
-                self.obj.HIT_COUNT_STYLE, [self.name,],
+                self.obj.HIT_COUNT_STYLE,
+                [
+                    self.name,
+                ],
             )
         else:
             self._refresh_xml(elm)
@@ -1285,7 +1495,8 @@ class RuleAuditComment(object):
         ET.SubElement(sub, "xpath").text = self.obj.xpath()
 
         ans = self.obj.nearest_pandevice().op(
-            ET.tostring(cmd, encoding="utf-8"), cmd_xml=False,
+            ET.tostring(cmd, encoding="utf-8"),
+            cmd_xml=False,
         )
 
         resp = ans.find("./result/entry/comment")
@@ -1305,7 +1516,8 @@ class RuleAuditComment(object):
         ET.SubElement(sub, "comment").text = comment
 
         self.obj.nearest_pandevice().op(
-            ET.tostring(cmd, encoding="utf-8"), cmd_xml=False,
+            ET.tostring(cmd, encoding="utf-8"),
+            cmd_xml=False,
         )
 
 
