@@ -17,11 +17,11 @@
 # Author: Bastien Migette <bmigette@paloaltonetworks.com>
 
 """
-prisma_access_list_RN_regions_bw.py
+prisma_access_show_jobs_status.py
 ==========
 
 This script is an example on how to retrieve list of prisma access 
-remote networks locations and bandwidth allocation and print it.
+jobs (commit and push), and how to get details of a specific job
 
 """
 __author__ = "bmigette"
