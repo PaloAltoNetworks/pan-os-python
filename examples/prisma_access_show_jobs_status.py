@@ -38,13 +38,7 @@ sys.path[:0] = [os.path.join(curpath, os.pardir)]
 
 from panos.base import PanDevice
 from panos.panorama import Panorama
-from panos.plugins import (
-    AggBandwidth,
-    CloudServicesPlugin,
-    Region,
-    RemoteNetwork,
-    RemoteNetworks,
-)
+from panos.plugins import CloudServicesPlugin
 
 curpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(curpath, os.pardir)]
@@ -58,41 +52,38 @@ PASSWORD = os.environ["PAN_PASSWORD"]
 def main():
     # Setting logging to debug the PanOS SDK
     logging_format = "%(levelname)s:%(name)s:%(message)s"
-    # logging.basicConfig(format=logging_format, level=logging.DEBUG - 2) #Use this to be even more verbose
+    # logging.basicConfig(
+    #    format=logging_format, level=logging.DEBUG - 2
+    # )  # Use this to be even more verbose
     logging.basicConfig(format=logging_format, level=logging.DEBUG)
     # First, let's create the panorama  object that we want to modify.
     pan = Panorama(HOSTNAME, USERNAME, PASSWORD)
     csp = pan.add(CloudServicesPlugin())
 
-    csp.refresh()
+    csp.opstate.jobs.refresh()
 
-    rn = csp.findall(RemoteNetworks)
-    rnes = rn[0].findall(RemoteNetwork)
-    agg_bw = rn[0].findall(AggBandwidth)
+    # get only failed for mobile-users
+    # csp.opstate.jobs.refresh(servicetype='mobile-users',  success=False, pending=False)
+    # get only failed for mobile-users and remote networks
+    # csp.opstate.jobs.refresh(servicetype=['mobile-users', 'remote-networks'],  success=False, pending=False)
 
-    regions = agg_bw[0].findall(Region)
-    ### Print XML Dump of Prisma Config ###
-    print(csp.element_str())
-    print(csp.about())
+    ### Print jobs ###
+    svcs = [
+        "mobile-users",
+        "remote-networks",
+        "clean-pipe",
+        "service-connection",
+    ]
+    for svc in svcs:
+        print(f" -- {svc} Jobs --")
+        print(csp.opstate.jobs.status[svc])
 
-    ### Print Remote networks name ###
-    print(" -- Remote Networks --")
-    for rne in rnes:
-        print(
-            f"{rne.name} - spn: {rne.spn_name}, region: {rne.region}, tunnel {rne.ipsec_tunnel}, subnets: {rne.static_routes}"
-        )
-        print(
-            f"{rne.name} - secondary_wan: {rne.secondary_wan_enabled}, secondary ipsec tunnel: {rne.secondary_ipsec_tunnel}"
-        )
+    ### Showing a job details ###
+    failed_job_id = csp.opstate.jobs.status["mobile-users"]["failed"][-1]
+    failed_details = csp.opstate.jobsdetails.refresh(failed_job_id, "mobile-users")
 
-    ### Print Regions BW ###
-    print(f"Agg BW Enabled: {agg_bw[0].enabled}")
-    print(" -- Regions --")
-    print(regions)
-    for region in regions:
-        print(
-            f"Region:  {region}, allocated_bw: {region.allocated_bw}, spns: {region.spn_name_list}"
-        )
+    print(f"Details for job {failed_job_id}: {failed_details}")
+    print(csp.opstate.jobsdetails.details)
 
 
 if __name__ == "__main__":
