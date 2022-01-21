@@ -132,7 +132,7 @@ def main():
     # 5 - Creating Remote Network
     rn = RemoteNetwork(
         name=REMOTE_NETWORK_NAME,
-        static_routes=["10.11.12.0/24"],
+        subnets=["10.11.12.0/24"],
         region=REMOTE_NETWORK_REGION,
         spn_name=get_region_spn(remote_networks, REMOTE_NETWORK_COMPUTEREGION),
         ipsec_tunnel=IPSEC_TUNNEL_NAME,

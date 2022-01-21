@@ -79,7 +79,7 @@ def main():
     print(" -- Remote Networks --")
     for rne in rnes:
         print(
-            f"{rne.name} - spn: {rne.spn_name}, region: {rne.region}, tunnel {rne.ipsec_tunnel}, subnets: {rne.static_routes}"
+            f"{rne.name} - spn: {rne.spn_name}, region: {rne.region}, tunnel {rne.ipsec_tunnel}, subnets: {rne.subnets}"
         )
         print(
             f"{rne.name} - secondary_wan: {rne.secondary_wan_enabled}, secondary ipsec tunnel: {rne.secondary_ipsec_tunnel}"

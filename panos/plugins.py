@@ -31,7 +31,7 @@ class CloudServicesPlugin(VersionedPanObject):
 
     Args:
         all_traffic_to_dc(bool): Send All Traffic to DC Option
-
+        multi_tenant_enable(bool): Multi Tenants enabled or not
     """
 
     ROOT = Root.DEVICE
@@ -40,6 +40,8 @@ class CloudServicesPlugin(VersionedPanObject):
     CHILDTYPES = (
         "plugins.RemoteNetworks",
         "plugins.RoutingPreference",
+        "plugins.AccessDomain",
+        "plugins.Tenants",
     )
 
     def _setup(self):
@@ -54,6 +56,13 @@ class CloudServicesPlugin(VersionedPanObject):
                 "all_traffic_to_dc",
                 vartype="yesno",
                 path="traffic-steering/All-Traffic-To-DC",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multi_tenant_enable",
+                vartype="yesno",
+                path="multi-tenant-enable",
             )
         )
 
@@ -153,6 +162,109 @@ class CloudServicesJobsStatus(object):
                 self.status[svc]["pending"] = self._get_jobs("pending-jobs", svc)
 
         return self.status
+
+
+class AccessDomain(VersionedPanObject):
+    """Prisma Access Multi Tenant Access Domain Configuration
+    Args:
+        name(str): Tenant Name
+        device_groups(list): Device Group Names
+        templates(list): Template and Templates Stack Names
+    """
+
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+    CHILDTYPES = ()
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/multi-tenant/access-domain")
+
+        # params
+        params = []
+        params.append(
+            VersionedParamPath(
+                "device_groups",
+                vartype="member",
+                path="device-groups",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "templates",
+                vartype="member",
+                path="templates",
+            )
+        )
+        self._params = tuple(params)
+
+
+class Tenants(VersionedPanObject):
+    """Prisma Access Multi Tenants/Tenant Configuration
+    Args:
+        name(str): Tenant Name
+        access_domain(str): Access Domain Name
+        bandwidth(int): Bandwitdh allocated to tenant
+        bandwidth_adem(int): Adem Bandwitdh allocated to tenant
+        bandwidth_cleanpipe(int): CleanPipe Bandwitdh allocated to tenant
+        users(int): Numbers of mobile users for the tenant
+        adem_users(int): Numbers of adem users for the tenant
+    """
+
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+    CHILDTYPES = ("plugins.RemoteNetworks",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/multi-tenant/tenants")
+
+        # params
+        params = []
+        params.append(
+            VersionedParamPath(
+                "access_domain",
+                path="access-domain",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "bandwidth",
+                vartype="int",
+                path="bandwidth",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bandwidth_adem",
+                vartype="int",
+                path="bandwidth-adem",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bandwidth_cleanpipe",
+                vartype="int",
+                path="bandwidth-clean-pipe",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "users",
+                vartype="int",
+                path="users",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "adem_users",
+                vartype="int",
+                path="adem-users",
+            )
+        )
+
+        self._params = tuple(params)
 
 
 class CloudServicesJobsStatusDetails(object):
@@ -621,7 +733,7 @@ class RemoteNetwork(VersionedPanObject):
 
     Args:
         name(str): Remote Network Name
-        static_routes(list/str): Static Routes
+        subnets(list/str): Static Routes
         region(str): Remote Network Region Name
         license_type(str): License Type
         ipsec_tunnel(str): IPSEC tunnel Name
@@ -648,7 +760,7 @@ class RemoteNetwork(VersionedPanObject):
         params = []
 
         params.append(
-            VersionedParamPath("static_routes", vartype="member", path="subnets")
+            VersionedParamPath("subnets", vartype="member", path="subnets")
         )
         params.append(VersionedParamPath("region", path="region"))
         params.append(VersionedParamPath("license_type", path="license-type"))
