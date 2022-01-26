@@ -843,7 +843,7 @@ class DecryptionRule(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value="/pbf/rules")
+        self._xpaths.add_profile(value="/decryption/rules")
 
         # params
         params = []
