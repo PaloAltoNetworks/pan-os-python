@@ -609,7 +609,7 @@ class NatRule(VersionedPanObject):
 
 
 class ApplicationOverride(VersionedPanObject):
-    """Security Rule
+    """ApplicationOverride
 
     Args:
         name (str): Name of the rule
