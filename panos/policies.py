@@ -838,7 +838,6 @@ class DecryptionRule(VersionedPanObject):
             (applies to panorama/device groups only)
         target (list): Apply this policy to the listed firewalls only
             (applies to panorama/device groups only)
-
     """
 
     SUFFIX = ENTRY
@@ -852,12 +851,6 @@ class DecryptionRule(VersionedPanObject):
         # params
         params = []
 
-        params.append(
-            VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
-        )
-        params.append(
-            VersionedParamPath("target", path="target/devices", vartype="entry")
-        )
         params.append(VersionedParamPath("description", path="description"))
         params.append(VersionedParamPath("uuid", exclude=True))
         params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
@@ -949,6 +942,12 @@ class DecryptionRule(VersionedPanObject):
         params.append(VersionedParamPath("log_setting", exclude=True,))
         params[-1].add_profile(
             "10.0.0", path="log-setting",
+        )
+        params.append(
+            VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath("target", path="target/devices", vartype="entry")
         )
 
         self._params = tuple(params)
