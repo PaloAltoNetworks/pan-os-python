@@ -686,6 +686,8 @@ class PanObject(object):
         )
         device.set_config_changed()
         path, value, var_path = self._get_param_specific_info(variable)
+        if var_path.vartype == "attrib":
+            raise NotImplementedError("Cannot update 'attrib' style params")
         xpath = "{0}/{1}".format(self.xpath(), path)
 
         if value is None:
@@ -2477,6 +2479,11 @@ class VersionedPanObject(PanObject):
         self.xml_merge(ans, itertools.chain(*iterchain))
 
         # Now that the whole element is built, mixin an attrib vartypes.
+        #
+        # We do this here instead of in xml_merge() because attributes are considered
+        # part of the identity in that function, and I'm not sure we want to manage
+        # a list of what attributes are considered part of an element's identity and
+        # what should be mixed in.
         for p in paths:
             if p.vartype != "attrib":
                 continue
@@ -2486,24 +2493,31 @@ class VersionedPanObject(PanObject):
             if attrib_value is None or p.exclude:
                 continue
             e = ans
-            find_path = [
-                ".",
-            ]
             for ap in attrib_path:
                 if not ap:
                     continue
+                finder = None
+                tag = None
+                attribs = {}
                 if ap.startswith("entry "):
                     junk, var_to_use = ap.split()
                     sol_value = panos.string_or_list(settings[var_to_use])[0]
-                    find_path.append("entry[@name='{0}']".format(sol_val))
+                    finder = "entry[@name='{0}']".format(sol_value)
+                    tag = "entry"
+                    attribs["name"] = sol_value
                 elif ap == "entry[@name='localhost.localdomain']":
-                    find_path.append(ap)
+                    finder = ap
+                    tag = "entry"
+                    attribs["name"] = "localhost.localdomain"
                 else:
-                    find_path.append(ap.format(**settings))
-            if len(find_path) > 1:
-                e = e.find("/".join(find_path))
-            if e is not None:
-                e.attrib[attrib_name] = attrib_value
+                    finder = ap.format(**settings)
+                    tag = finder
+                e2 = e.find("./{0}".format(finder))
+                if e2 is None:
+                    e = ET.SubElement(e, tag, attribs)
+                else:
+                    e = e2
+            e.attrib[attrib_name] = attrib_value
 
         return ans
 
@@ -2844,6 +2858,8 @@ class VarPath(object):
         elif self.vartype == "none":
             # There is no variable, so don't try to populate it
             pass
+        elif self.vartype == "attrib":
+            raise ValueError("attrib not yet supported for classic objects")
         else:
             elm.text = str(value)
 
@@ -2947,10 +2963,13 @@ class ParamPath(object):
                 return None
 
         e = elm
+        attr = None
         # Build the element
         tokens = self.path.split("/")
         if self.vartype == "exist":
             del tokens[-1]
+        elif self.vartype == "attrib":
+            attr = tokens.pop()
         for token in tokens:
             if not token:
                 continue
@@ -2967,7 +2986,7 @@ class ParamPath(object):
             e.append(child)
             e = child
 
-        self._set_inner_xml_tag_text(e, value, comparable)
+        self._set_inner_xml_tag_text(e, value, comparable, attr)
 
         return elm
 
@@ -3015,10 +3034,13 @@ class ParamPath(object):
                 # thus not needed
                 return None
 
+        attr = None
         e = xml
         tokens = self.path.split("/")
         if self.vartype == "exist":
             del tokens[-1]
+        elif self.vartype == "attrib":
+            attr = tokens.pop()
         for p in tokens:
             # Skip this path part if there is no path part
             if not p:
@@ -3065,15 +3087,16 @@ class ParamPath(object):
             e = ans
 
         # Pull the value, properly formatted, from this last element
-        self.parse_value_from_xml_last_tag(e, settings)
+        self.parse_value_from_xml_last_tag(e, settings, attr)
 
-    def _set_inner_xml_tag_text(self, elm, value, comparable=False):
+    def _set_inner_xml_tag_text(self, elm, value, comparable=False, attr=None):
         """Sets the final elm's .text as appropriate given the vartype.
 
         Args:
             elm (xml.etree.ElementTree.Element): The element whose .text to set.
             value (various): The value to put in the .text, conforming to the vartype of this parameter.
             comparable (bool): Make updates for element string comparisons.  For encrypted fields, if the text should be set to a password hash (True) or left as a basestring (False).  For entry and member vartypes, sort the entries (True) or leave them as-is (False).
+            attr (str): For `vartype="attrib"`, the attribute name.
 
         """
         # Format the element text appropriately
@@ -3104,10 +3127,12 @@ class ParamPath(object):
             elm.text = str(int(value))
         elif self.vartype == "encrypted" and comparable:
             elm.text = self._sha1_hash(str(value))
+        elif self.vartype == "attrib":
+            elm.attrib[attr] = value
         else:
             elm.text = str(value)
 
-    def parse_value_from_xml_last_tag(self, elm, settings):
+    def parse_value_from_xml_last_tag(self, elm, settings, attr):
         """Actually do the parsing for this parameter.
 
         The value parsed is saved into the ``settings`` dict.
@@ -3117,6 +3142,7 @@ class ParamPath(object):
                 document passed in to ``parse_xml()`` that contains the actual
                 value to parse out for this parameter.
             settings (dict): The dict where the parsed value will be saved.
+            attr (str): For `vartype="attrib"`, the attribute name.
 
         Raises:
             ValueError: If a param is in an incorrect format.
@@ -3145,6 +3171,8 @@ class ParamPath(object):
             pass
         elif self.vartype == "int":
             settings[self.param] = int(elm.text)
+        elif self.vartype == "attrib":
+            settings[self.param] = elm.attrib.get(attr, None)
         else:
             settings[self.param] = elm.text
 
