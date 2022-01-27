@@ -482,6 +482,7 @@ def object_classes():
     from panos import network
     from panos import objects
     from panos import panorama
+    from panos import plugins
     from panos import policies
     from panos import predefined
 
