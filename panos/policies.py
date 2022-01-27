@@ -642,7 +642,7 @@ class ApplicationOverride(VersionedPanObject):
 
         # params
         params = []
-        
+
         any_defaults = (
             ("fromzone", "from"),
             ("tozone", "to"),
@@ -660,7 +660,7 @@ class ApplicationOverride(VersionedPanObject):
         )
         params.append(
             VersionedParamPath("target", path="target/devices", vartype="entry")
-        )        
+        )
         params.append(VersionedParamPath("description", path="description"))
         params.append(VersionedParamPath("tag", path="tag", vartype="member"))
         params.append(
@@ -674,10 +674,10 @@ class ApplicationOverride(VersionedPanObject):
         params.append(VersionedParamPath("disabled", path="disabled", vartype="yesno"))
         params.append(VersionedParamPath("port", path="port"))
         params.append(VersionedParamPath("protocol", path="protocol"))
-        params.append(VersionedParamPath("application", path="application"))        
+        params.append(VersionedParamPath("application", path="application"))
         params.append(VersionedParamPath("group_tag", exclude=True))
         params[-1].add_profile("9.0.0", path="group-tag")
-        
+
         self._params = tuple(params)
 
     def _setup_opstate(self):
