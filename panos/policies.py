@@ -838,6 +838,7 @@ class DecryptionRule(VersionedPanObject):
             (applies to panorama/device groups only)
         target (list): Apply this policy to the listed firewalls only
             (applies to panorama/device groups only)
+
     """
 
     SUFFIX = ENTRY
