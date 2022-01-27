@@ -628,6 +628,8 @@ class ApplicationOverride(VersionedPanObject):
             (applies to panorama/device groups only)
         target (list): Apply this policy to the listed firewalls only
             (applies to panorama/device groups only)
+        port (str): Destination port
+        protocol (str): Protocol used 
         group_tag (str): (PAN-OS 9.0+) The group tag.
 
     """
@@ -655,12 +657,7 @@ class ApplicationOverride(VersionedPanObject):
                     var_name, default=["any",], vartype="member", path=path
                 )
             )
-        params.append(
-            VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
-        )
-        params.append(
-            VersionedParamPath("target", path="target/devices", vartype="entry")
-        )
+        params.append(VersionedParamPath("application", path="application"))
         params.append(VersionedParamPath("description", path="description"))
         params.append(VersionedParamPath("tag", path="tag", vartype="member"))
         params.append(
@@ -672,9 +669,14 @@ class ApplicationOverride(VersionedPanObject):
             )
         )
         params.append(VersionedParamPath("disabled", path="disabled", vartype="yesno"))
+        params.append(
+            VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath("target", path="target/devices", vartype="entry")
+        )
         params.append(VersionedParamPath("port", path="port"))
         params.append(VersionedParamPath("protocol", path="protocol"))
-        params.append(VersionedParamPath("application", path="application"))
         params.append(VersionedParamPath("group_tag", exclude=True))
         params[-1].add_profile("9.0.0", path="group-tag")
 
