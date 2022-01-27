@@ -201,8 +201,25 @@ class Firewall(PanDevice):
         cmd_xml=True,
         extra_qs=None,
         retry_on_peer=False,
+        quote='"',
     ):
         """Perform operational command on this Firewall
+
+        Operational commands are most any command that is not a debug or config
+        command. These include many 'show' commands such as ``show system info``.
+
+        When passing the cmd as a command string (not XML) you must include any
+        non-keyword strings in the command inside double quotes (``"``). Here's some
+        examples::
+
+            # The string "facebook-base" must be in quotes because it is not a keyword
+            fw.op('clear session all filter application "facebook-base"')
+
+            # The string "ethernet1/1" must be in quotes because it is not a keyword
+            fw.op('show interface "ethernet1/1"')
+
+            # Using an alternative quote character to get DHCP info on ethernet1/1
+            fw.op('show dhcp client state `ethernet1/1`', quote='`')
 
         Args:
             cmd (str): The operational command to execute
@@ -211,6 +228,7 @@ class Firewall(PanDevice):
             cmd_xml (bool): True: cmd is not XML, False: cmd is XML (Default: True)
             extra_qs: Extra parameters for API call
             retry_on_peer (bool): Try on active Firewall first, then try on passive Firewall
+            quote (str): The quote character when the supplied `cmd` is a string and `cmd_xml=True`
 
         Returns:
             xml.etree.ElementTree: The result of the operational command. May also return a string of XML if xml=True
