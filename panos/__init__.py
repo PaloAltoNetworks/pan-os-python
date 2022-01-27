@@ -31,6 +31,7 @@ __version__ = "1.6.0"
 
 import logging
 import sys
+import xml.etree.ElementTree as ET
 from distutils.version import LooseVersion  # Used by PanOSVersion class
 
 # Warn if running on end-of-life python
@@ -378,6 +379,72 @@ def yesno(value):
     return convert[value]
 
 
+def string_to_xml(value, quote='"'):
+    """Converts a string to XML.
+
+    Args:
+        value (str): The string to convert to XML.
+        quote (str): The character to act as the quoting character.
+
+    Returns:
+        string: The string as XML.
+    """
+
+    if not value.strip():
+        return
+
+    tokens = value.strip().split()
+    if tokens[0].startswith(quote):
+        raise ValueError("First param cannot start with the quote character")
+    elif tokens[0].endswith(quote):
+        raise ValueError("First param cannot end with the quote character")
+
+    root = None
+    graft_point = None
+
+    ti = 0
+    while ti < len(tokens):
+        token = tokens[ti]
+
+        if token.startswith(quote):
+            raise ValueError("Prefix quoted param encountered at index {0}".format(ti))
+        elif token.endswith(quote):
+            raise ValueError("Suffix quoted param encountered at index {0}".format(ti))
+
+        elm = None
+        if ti + 1 < len(tokens):
+            next_token = tokens[ti + 1]
+            if next_token.startswith(quote):
+                for tp in range(ti + 1, len(tokens)):
+                    if tokens[tp].endswith(quote):
+                        break
+                else:
+                    raise ValueError(
+                        "Quote started at index {0} but never ended".format(ti + 1)
+                    )
+                elm = ET.Element(token)
+                val = " ".join(tokens[ti + 1 : tp + 1])[len(quote) : -len(quote)]
+                elm.text = val
+                ti = tp + 1
+
+        if elm is None:
+            elm = ET.Element(token)
+            ti += 1
+
+        if root is None:
+            root = elm
+        else:
+            if graft_point is None:
+                root.append(elm)
+            else:
+                graft_point.append(elm)
+
+            if not elm.text:
+                graft_point = elm
+
+    return ET.tostring(root, encoding="utf-8")
+
+
 def node_color(module):
     nodecolor = {
         "device": "lightpink",
@@ -392,3 +459,54 @@ def node_color(module):
         return nodecolor[module]
     except KeyError:
         return ""
+
+
+def object_classes():
+    import inspect
+    from panos import errors
+    from panos import base
+
+    current_module = sys.modules[__name__]
+
+    omits = []
+    for pkg in (current_module, errors, base):
+        for name, the_cls in inspect.getmembers(pkg, inspect.isclass):
+            if not the_cls.__module__.startswith("panos"):
+                continue
+            if the_cls not in omits:
+                omits.append(the_cls)
+
+    from panos import device
+    from panos import firewall
+    from panos import ha
+    from panos import network
+    from panos import objects
+    from panos import panorama
+    from panos import plugins
+    from panos import policies
+    from panos import predefined
+
+    classes = {}
+    for pkg in (device, firewall, ha, network, objects, panorama, policies, predefined):
+        for name, the_cls in inspect.getmembers(pkg, inspect.isclass):
+            if not the_cls.__module__.startswith("panos"):
+                continue
+            if the_cls in omits:
+                continue
+            if getattr(the_cls, "IS_BASE_CLASS", False):
+                continue
+            classes[childtype_name(the_cls)] = the_cls
+
+    return classes
+
+
+def childtype_name(cls):
+    return "{0}.{1}".format(cls.__module__.split(".")[1], cls.__name__)
+
+
+def parents_for(cls, classes):
+    return [
+        x
+        for ctn, x in classes.items()
+        if childtype_name(cls) in getattr(x, "CHILDTYPES", [])
+    ]
