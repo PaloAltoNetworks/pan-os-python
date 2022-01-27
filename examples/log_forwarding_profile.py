@@ -66,7 +66,6 @@ def main():
     # At this point, we've added SecurityRule objects to the Firewall
     # for each rule that doesn't have the right log forwarding profile.
 
-
     # Now, trigger a commit
     # In this case, we'll wait for the commit to finish and trigger an exception
     # if the commit finished with any errors.
