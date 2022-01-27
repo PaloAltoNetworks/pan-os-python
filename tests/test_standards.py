@@ -451,7 +451,7 @@ def test_versioned_object_param_documentation(versioned_object):
 
 
 def test_policy_rule_is_in_all_rulebase_childtypes(policy_rule):
-    cts = childtype_string(policy_rule)
+    cts = panos.childtype_name(policy_rule)
 
     for cls in [policies.Rulebase, policies.PreRulebase, policies.PostRulebase]:
         assert cts in cls.CHILDTYPES
