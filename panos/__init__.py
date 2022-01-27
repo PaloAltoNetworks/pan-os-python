@@ -459,3 +459,54 @@ def node_color(module):
         return nodecolor[module]
     except KeyError:
         return ""
+
+
+def object_classes():
+    import inspect
+    from panos import errors
+    from panos import base
+
+    current_module = sys.modules[__name__]
+
+    omits = []
+    for pkg in (current_module, errors, base):
+        for name, the_cls in inspect.getmembers(pkg, inspect.isclass):
+            if not the_cls.__module__.startswith("panos"):
+                continue
+            if the_cls not in omits:
+                omits.append(the_cls)
+
+    from panos import device
+    from panos import firewall
+    from panos import ha
+    from panos import network
+    from panos import objects
+    from panos import panorama
+    from panos import plugins
+    from panos import policies
+    from panos import predefined
+
+    classes = {}
+    for pkg in (device, firewall, ha, network, objects, panorama, policies, predefined):
+        for name, the_cls in inspect.getmembers(pkg, inspect.isclass):
+            if not the_cls.__module__.startswith("panos"):
+                continue
+            if the_cls in omits:
+                continue
+            if getattr(the_cls, "IS_BASE_CLASS", False):
+                continue
+            classes[childtype_name(the_cls)] = the_cls
+
+    return classes
+
+
+def childtype_name(cls):
+    return "{0}.{1}".format(cls.__module__.split(".")[1], cls.__name__)
+
+
+def parents_for(cls, classes):
+    return [
+        x
+        for ctn, x in classes.items()
+        if childtype_name(cls) in getattr(x, "CHILDTYPES", [])
+    ]

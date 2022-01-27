@@ -208,11 +208,6 @@ def inst(cls):
     return cls()
 
 
-def childtype_string(cls):
-    """Get this class as a string suitable for a PanObject.CHILDTYPES entry."""
-    return "{0}.{1}".format(cls.__module__.split(".")[1], cls.__name__)
-
-
 def versions():
     val = MIN_PANOS_VERSION
     while True:
@@ -295,7 +290,7 @@ def test_firewall_object_childtypes(panobj):
     if panobj.__module__ == "panos.panorama":
         pytest.skip("Skipping panorama specific classes for firewall test")
 
-    cts = childtype_string(panobj)
+    cts = panos.childtype_name(panobj)
 
     if cts in PANORAMA_OBJECTS:
         pytest.skip("Skipping Panoroama-only objects")
@@ -315,7 +310,7 @@ def test_object_with_vsys_root_is_in_vsys_childtypes(panobj):
     if panobj.__module__ == "panos.panorama":
         pytest.skip("Skipping panorama specific classes for firewall test")
 
-    cts = childtype_string(panobj)
+    cts = panos.childtype_name(panobj)
 
     if panobj.ROOT != base.Root.VSYS:
         pytest.skip("Not a vsys object")
@@ -331,7 +326,7 @@ def test_object_with_vsys_root_is_in_firewall_childtypes(panobj):
     if panobj.__module__ == "panos.panorama":
         pytest.skip("Skipping panorama specific classes for firewall test")
 
-    cts = childtype_string(panobj)
+    cts = panos.childtype_name(panobj)
 
     if panobj.ROOT != base.Root.VSYS:
         pytest.skip("Not a vsys object")
@@ -347,7 +342,7 @@ def test_object_with_non_vsys_root_is_not_in_vsys_childtypes(panobj):
     if panobj.__module__ == "panos.panorama":
         pytest.skip("Skipping panorama specific classes for firewall test")
 
-    cts = childtype_string(panobj)
+    cts = panos.childtype_name(panobj)
 
     if hasattr(panobj, "ALWAYS_IMPORT"):
         pytest.skip("Skipping importable object")
@@ -363,7 +358,7 @@ def test_vsys_importable_childtypes(panobj):
     if panobj.__module__ == "panos.panorama":
         pytest.skip("Skipping panorama specific classes for firewall test")
 
-    cts = childtype_string(panobj)
+    cts = panos.childtype_name(panobj)
 
     if not hasattr(panobj, "ALWAYS_IMPORT"):
         pytest.skip("Skipping standard object")
@@ -456,7 +451,43 @@ def test_versioned_object_param_documentation(versioned_object):
 
 
 def test_policy_rule_is_in_all_rulebase_childtypes(policy_rule):
-    cts = childtype_string(policy_rule)
+    cts = panos.childtype_name(policy_rule)
 
     for cls in [policies.Rulebase, policies.PreRulebase, policies.PostRulebase]:
         assert cts in cls.CHILDTYPES
+
+
+def test_parent_aware_children_show_in_parent_childtypes(versioned_object):
+    obj = inst(versioned_object)
+
+    classes = set([])
+    for combo in obj._xpaths.settings:
+        cls_str = combo[0]
+        if cls_str is None:
+            continue
+
+        cls = None
+        for x in (
+            device,
+            firewall,
+            ha,
+            network,
+            objects,
+            panorama,
+            policies,
+            predefined,
+        ):
+            if hasattr(x, cls_str):
+                cls = getattr(x, cls_str)
+                break
+        else:
+            assert False, "Could not find class {0}".format(cls_str)
+
+        if cls is not None:
+            classes.add(cls)
+
+    msg = "Child {0} has parent {1}, but does not show in parent's CHILDTYPES"
+    for cls in classes:
+        assert panos.childtype_name(versioned_object) in cls.CHILDTYPES, msg.format(
+            versioned_object, cls
+        )
