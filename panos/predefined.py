@@ -45,6 +45,12 @@ class Predefined(object):
     XPATH = "/config/predefined"
     SINGLE_ENTRY_XPATH = "/entry[@name='{0}']"
     ALL_ENTRIES_XPATH = "/entry"
+    CHILDTYPES = (
+        "objects.ApplicationContainer",
+        "objects.ApplicationObject",
+        "objects.ServiceObject",
+        "objects.Tag",
+    )
 
     def __init__(self, device=None, *args, **kwargs):
         # Create a class logger

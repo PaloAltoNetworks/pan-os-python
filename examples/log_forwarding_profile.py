@@ -57,24 +57,14 @@ def main():
     # missing the log forwarding profile
     for rule in rules:
         if rule.log_setting != LOG_PROFILE:
-            print(f"Found rule to configure: {rule.name}")
-            rulebase.add(SecurityRule(rule.name, log_setting=LOG_PROFILE))
+            print(f"{rule.name}")
+            rule.log_setting = LOG_PROFILE
+            rule.log_start = 0
+            rule.log_end = 1
+            rule.apply()
 
     # At this point, we've added SecurityRule objects to the Firewall
     # for each rule that doesn't have the right log forwarding profile.
-    # The next step is to push all that configuration to the live device
-    # at once using the 'create_similar()' method.
-
-    # This takes the first SecurityRule to change and calls 'create_similar()'.
-    # When 'create_similar()' is called, all the SecurityRules are pushed
-    # to the firewall at once. The method is additive, so the existing security
-    # rules will not change, except for the 'log_setting' parameter which
-    # contains the log forwarding profile name.
-    if len(rulebase.children) == 0:
-        print("No changes needed")
-        return
-
-    rulebase.children[0].create_similar()
 
     # Now, trigger a commit
     # In this case, we'll wait for the commit to finish and trigger an exception
