@@ -183,6 +183,8 @@ class Template(VersionedPanObject):
         "device.PasswordProfile",
         "device.Administrator",
         "device.SslDecrypt",
+        "device.LocalUserDatabaseUser",
+        "device.LocalUserDatabaseGroup",
         "ha.HighAvailability",
         "network.EthernetInterface",
         "network.AggregateInterface",
