@@ -44,6 +44,7 @@ class Rulebase(VersionedPanObject):
         "policies.PolicyBasedForwarding",
         "policies.SecurityRule",
         "policies.DecryptionRule",
+        "policies.ApplicationOverride",
     )
 
     def _setup(self):
@@ -598,6 +599,84 @@ class NatRule(VersionedPanObject):
         )
         params.append(VersionedParamPath("uuid", exclude=True))
         params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
+        params.append(VersionedParamPath("group_tag", exclude=True))
+        params[-1].add_profile("9.0.0", path="group-tag")
+
+        self._params = tuple(params)
+
+    def _setup_opstate(self):
+        self.opstate = RuleOpState(self)
+
+
+class ApplicationOverride(VersionedPanObject):
+    """ApplicationOverride
+
+    Args:
+        name (str): Name of the rule
+        fromzone (list): From zones
+        tozone (list): To zones
+        source (list): Source addresses
+        destination (list): Destination addresses
+        application (str): Applications
+        description (str): Description of this rule
+        tag (list): Administrative tags
+        negate_source (bool): Match on the reverse of the 'source' attribute
+        negate_destination (bool): Match on the reverse of the 'destination'
+            attribute
+        disabled (bool): Disable this rule
+        negate_target (bool): Target all but the listed target firewalls
+            (applies to panorama/device groups only)
+        target (list): Apply this policy to the listed firewalls only
+            (applies to panorama/device groups only)
+        port (str): Destination port
+        protocol (str): Protocol used 
+        group_tag (str): (PAN-OS 9.0+) The group tag.
+
+    """
+
+    SUFFIX = ENTRY
+    ROOT = Root.VSYS
+    HIT_COUNT_STYLE = "application-override"
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/application-override/rules")
+
+        # params
+        params = []
+
+        any_defaults = (
+            ("fromzone", "from"),
+            ("tozone", "to"),
+            ("source", "source"),
+            ("destination", "destination"),
+        )
+        for var_name, path in any_defaults:
+            params.append(
+                VersionedParamPath(
+                    var_name, default=["any",], vartype="member", path=path
+                )
+            )
+        params.append(VersionedParamPath("application", path="application"))
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(VersionedParamPath("tag", path="tag", vartype="member"))
+        params.append(
+            VersionedParamPath("negate_source", path="negate-source", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath(
+                "negate_destination", path="negate-destination", vartype="yesno"
+            )
+        )
+        params.append(VersionedParamPath("disabled", path="disabled", vartype="yesno"))
+        params.append(
+            VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath("target", path="target/devices", vartype="entry")
+        )
+        params.append(VersionedParamPath("port", path="port"))
+        params.append(VersionedParamPath("protocol", path="protocol"))
         params.append(VersionedParamPath("group_tag", exclude=True))
         params[-1].add_profile("9.0.0", path="group-tag")
 
