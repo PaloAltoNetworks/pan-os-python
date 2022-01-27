@@ -834,6 +834,10 @@ class DecryptionRule(VersionedPanObject):
             handshakes.
         log_failed_tls_handshakes (bool): (PAN-OS 10.0+) Log failed TLS handshakes.
         log_setting (str): (PAN-OS 10.0+) Log setting.
+        negate_target (bool): Target all but the listed target firewalls
+            (applies to panorama/device groups only)
+        target (list): Apply this policy to the listed firewalls only
+            (applies to panorama/device groups only)
 
     """
 
@@ -843,7 +847,7 @@ class DecryptionRule(VersionedPanObject):
 
     def _setup(self):
         # xpaths
-        self._xpaths.add_profile(value="/pbf/rules")
+        self._xpaths.add_profile(value="/decryption/rules")
 
         # params
         params = []
@@ -939,6 +943,12 @@ class DecryptionRule(VersionedPanObject):
         params.append(VersionedParamPath("log_setting", exclude=True,))
         params[-1].add_profile(
             "10.0.0", path="log-setting",
+        )
+        params.append(
+            VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath("target", path="target/devices", vartype="entry")
         )
 
         self._params = tuple(params)
