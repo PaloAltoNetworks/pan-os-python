@@ -74,7 +74,7 @@ tests = ["coverage", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.i
 
 [[package]]
 name = "babel"
-version = "2.8.0"
+version = "2.9.1"
 description = "Internationalization utilities"
 category = "dev"
 optional = false
@@ -181,6 +181,14 @@ python-versions = ">=2.6"
 [package.extras]
 docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2)", "pytest-flake8", "pytest-black-multipy"]
+
+[[package]]
+name = "contextlib2"
+version = "0.6.0.post1"
+description = "Backports and enhancements for the contextlib module"
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "coverage"
@@ -668,6 +676,9 @@ optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [package.dependencies]
+configparser = {version = ">=3.5", markers = "python_version < \"3\""}
+contextlib2 = {version = "*", markers = "python_version < \"3\""}
+pathlib2 = {version = "*", markers = "python_version < \"3\""}
 zipp = ">=0.5"
 
 [package.extras]
@@ -799,6 +810,7 @@ optional = false
 python-versions = "*"
 
 [package.dependencies]
+scandir = {version = "*", markers = "python_version < \"3.5\""}
 six = "*"
 
 [[package]]
@@ -1009,6 +1021,14 @@ security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)"]
 socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
 
 [[package]]
+name = "ruamel.ordereddict"
+version = "0.4.15"
+description = "a version of dict that keeps keys in insertion resp. sorted order"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "ruamel.yaml"
 version = "0.16.5"
 description = "ruamel.yaml is a YAML parser/emitter that supports roundtrip preservation of comments, seq/map flow style, and map key order"
@@ -1017,6 +1037,7 @@ optional = false
 python-versions = "*"
 
 [package.dependencies]
+"ruamel.ordereddict" = {version = "*", markers = "platform_python_implementation == \"CPython\" and python_version <= \"2.7\""}
 "ruamel.yaml.clib" = {version = ">=0.1.2", markers = "platform_python_implementation == \"CPython\" and python_version < \"3.8\""}
 
 [package.extras]
@@ -1027,6 +1048,14 @@ jinja2 = ["ruamel.yaml.jinja2 (>=0.2)"]
 name = "ruamel.yaml.clib"
 version = "0.2.0"
 description = "C version of reader, parser and emitter for ruamel.yaml derived from libyaml"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "scandir"
+version = "1.10.0"
+description = "scandir, a better directory iterator and faster os.walk()"
 category = "dev"
 optional = false
 python-versions = "*"
@@ -1216,6 +1245,8 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [package.dependencies]
+enum34 = {version = ">=1.1,<2.0", markers = "python_version >= \"2.7\" and python_version < \"2.8\""}
+functools32 = {version = ">=3.2.3,<4.0.0", markers = "python_version >= \"2.7\" and python_version < \"2.8\""}
 typing = {version = ">=3.6,<4.0", markers = "python_version >= \"2.7\" and python_version < \"2.8\" or python_version >= \"3.4\" and python_version < \"3.5\""}
 
 [[package]]
@@ -1249,6 +1280,9 @@ description = "Backported and Experimental Type Hints for Python 3.5+"
 category = "dev"
 optional = false
 python-versions = "*"
+
+[package.dependencies]
+typing = {version = ">=3.7.4", markers = "python_version < \"3.5\""}
 
 [[package]]
 name = "urllib3"
@@ -1364,8 +1398,8 @@ attrs = [
     {file = "attrs-19.3.0.tar.gz", hash = "sha256:f7b7ce16570fe9965acd6d30101a28f62fb4a7f9e926b3bbc9b61f8b04247e72"},
 ]
 babel = [
-    {file = "Babel-2.8.0-py2.py3-none-any.whl", hash = "sha256:d670ea0b10f8b723672d3a6abeb87b565b244da220d76b4dba1b66269ec152d4"},
-    {file = "Babel-2.8.0.tar.gz", hash = "sha256:1aac2ae2d0d8ea368fa90906567f5c08463d98ade155c0c4bfedd6a0f7160e38"},
+    {file = "Babel-2.9.1-py2.py3-none-any.whl", hash = "sha256:ab49e12b91d937cd11f0b67cb259a57ab4ad2b59ac7a3b41d6c06c0ac5b0def9"},
+    {file = "Babel-2.9.1.tar.gz", hash = "sha256:bc0c176f9f6a994582230df350aa6e05ba2ebe4b3ac317eab29d9be5d2768da0"},
 ]
 "backports.functools-lru-cache" = [
     {file = "backports.functools_lru_cache-1.6.1-py2.py3-none-any.whl", hash = "sha256:0bada4c2f8a43d533e4ecb7a12214d9420e66eb206d54bf2d682581ca4b80848"},
@@ -1401,6 +1435,10 @@ colorama = [
 configparser = [
     {file = "configparser-4.0.2-py2.py3-none-any.whl", hash = "sha256:254c1d9c79f60c45dfde850850883d5aaa7f19a23f13561243a050d5a7c3fe4c"},
     {file = "configparser-4.0.2.tar.gz", hash = "sha256:c7d282687a5308319bf3d2e7706e575c635b0a470342641c93bea0ea3b5331df"},
+]
+contextlib2 = [
+    {file = "contextlib2-0.6.0.post1-py2.py3-none-any.whl", hash = "sha256:3355078a159fbb44ee60ea80abd0d87b80b78c248643b49aa6d94673b413609b"},
+    {file = "contextlib2-0.6.0.post1.tar.gz", hash = "sha256:01f490098c18b19d2bd5bb5dc445b2054d2fa97f09a4280ba2c5f3c394c8162e"},
 ]
 coverage = [
     {file = "coverage-5.0.3-cp27-cp27m-macosx_10_12_x86_64.whl", hash = "sha256:cc1109f54a14d940b8512ee9f1c3975c181bbb200306c6d8b87d93376538782f"},
@@ -1813,6 +1851,13 @@ requests = [
     {file = "requests-2.25.1-py2.py3-none-any.whl", hash = "sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e"},
     {file = "requests-2.25.1.tar.gz", hash = "sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804"},
 ]
+"ruamel.ordereddict" = [
+    {file = "ruamel.ordereddict-0.4.15-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:c282d5ed0dc5877c5c50b57c781fc6ab19cccd59d19bd6cd5c55a692648b9b51"},
+    {file = "ruamel.ordereddict-0.4.15-cp27-cp27m-win32.whl", hash = "sha256:16cb20a801cf4127119eca62a44d00294e7dad3bf10501d07758e02347da395d"},
+    {file = "ruamel.ordereddict-0.4.15-cp27-cp27m-win_amd64.whl", hash = "sha256:a1fba26731a03aca7c42f55eaa8633cff7208e8f7ad8dd4a2420190b9ae6c3c7"},
+    {file = "ruamel.ordereddict-0.4.15-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:33d06dc63374274f49eb1616e8c2f2e387a8da6dd59880285d69ab939d33cf98"},
+    {file = "ruamel.ordereddict-0.4.15.tar.gz", hash = "sha256:d7d9cf8b11e7662deb460260cf062980cd84b87a1d0457132060ab9d44e0a5f4"},
+]
 "ruamel.yaml" = [
     {file = "ruamel.yaml-0.16.5-py2.py3-none-any.whl", hash = "sha256:0db639b1b2742dae666c6fc009b8d1931ef15c9276ef31c0673cc6dcf766cf40"},
     {file = "ruamel.yaml-0.16.5.tar.gz", hash = "sha256:412a6f5cfdc0525dee6a27c08f5415c7fd832a7afcb7a0ed7319628aed23d408"},
@@ -1837,6 +1882,19 @@ requests = [
     {file = "ruamel.yaml.clib-0.2.0-cp37-cp37m-win_amd64.whl", hash = "sha256:b1b7fcee6aedcdc7e62c3a73f238b3d080c7ba6650cd808bce8d7761ec484070"},
     {file = "ruamel.yaml.clib-0.2.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:be018933c2f4ee7de55e7bd7d0d801b3dfb09d21dad0cce8a97995fd3e44be30"},
     {file = "ruamel.yaml.clib-0.2.0.tar.gz", hash = "sha256:b66832ea8077d9b3f6e311c4a53d06273db5dc2db6e8a908550f3c14d67e718c"},
+]
+scandir = [
+    {file = "scandir-1.10.0-cp27-cp27m-win32.whl", hash = "sha256:92c85ac42f41ffdc35b6da57ed991575bdbe69db895507af88b9f499b701c188"},
+    {file = "scandir-1.10.0-cp27-cp27m-win_amd64.whl", hash = "sha256:cb925555f43060a1745d0a321cca94bcea927c50114b623d73179189a4e100ac"},
+    {file = "scandir-1.10.0-cp34-cp34m-win32.whl", hash = "sha256:2c712840c2e2ee8dfaf36034080108d30060d759c7b73a01a52251cc8989f11f"},
+    {file = "scandir-1.10.0-cp34-cp34m-win_amd64.whl", hash = "sha256:2586c94e907d99617887daed6c1d102b5ca28f1085f90446554abf1faf73123e"},
+    {file = "scandir-1.10.0-cp35-cp35m-win32.whl", hash = "sha256:2b8e3888b11abb2217a32af0766bc06b65cc4a928d8727828ee68af5a967fa6f"},
+    {file = "scandir-1.10.0-cp35-cp35m-win_amd64.whl", hash = "sha256:8c5922863e44ffc00c5c693190648daa6d15e7c1207ed02d6f46a8dcc2869d32"},
+    {file = "scandir-1.10.0-cp36-cp36m-win32.whl", hash = "sha256:2ae41f43797ca0c11591c0c35f2f5875fa99f8797cb1a1fd440497ec0ae4b022"},
+    {file = "scandir-1.10.0-cp36-cp36m-win_amd64.whl", hash = "sha256:7d2d7a06a252764061a020407b997dd036f7bd6a175a5ba2b345f0a357f0b3f4"},
+    {file = "scandir-1.10.0-cp37-cp37m-win32.whl", hash = "sha256:67f15b6f83e6507fdc6fca22fedf6ef8b334b399ca27c6b568cbfaa82a364173"},
+    {file = "scandir-1.10.0-cp37-cp37m-win_amd64.whl", hash = "sha256:b24086f2375c4a094a6b51e78b4cf7ca16c721dcee2eddd7aa6494b42d6d519d"},
+    {file = "scandir-1.10.0.tar.gz", hash = "sha256:4d4631f6062e658e9007ab3149a9b914f3548cb38bfb021c64f39a025ce578ae"},
 ]
 shellingham = [
     {file = "shellingham-1.3.1-py2.py3-none-any.whl", hash = "sha256:77d37a4fd287c1e663006f7ecf1b9deca9ad492d0082587bd813c44eb49e4e62"},
