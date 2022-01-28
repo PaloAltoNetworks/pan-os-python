@@ -18,6 +18,7 @@ API Reference
    module-network
    module-objects
    module-panorama
+   module-plugins
    module-policies
    module-predefined
    module-updater
