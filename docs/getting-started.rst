@@ -32,6 +32,7 @@ You can also be more specific about which modules you want to import::
     from panos import objects
     from panos import network
     from panos import device
+    from panos import plugins
 
 Or, even *more* specific by importing a specific class::
 

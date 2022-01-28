@@ -59,3 +59,8 @@ Policies
 
 .. graphviz:: _diagrams/panos.policies.dot
 
+Plugins
+-------
+
+.. graphviz:: _diagrams/panos.plugins.dot
+

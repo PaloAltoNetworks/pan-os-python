@@ -29,6 +29,7 @@ tree_exists = [
     "ha",
     "network",
     "panorama",
+    "plugins",
     "policies",
 ]
 
