@@ -96,19 +96,21 @@ Informational Methods
 
 These methods provide information about an object in the configuration tree.
 
-+----------------------------------------------+-----------------------------------------------------------+
-|                    Method                    |                        Description                        |
-+==============================================+===========================================================+
-| :py:meth:`~panos.base.PanObject.about`       | Return all the params set on this object and their values |
-+----------------------------------------------+-----------------------------------------------------------+
-| :py:meth:`~panos.base.PanObject.equal`       | Test if two objects are equal and return a boolean        |
-+----------------------------------------------+-----------------------------------------------------------+
-| :py:meth:`~panos.base.PanObject.xpath`       | Return the XPath of this object                           |
-+----------------------------------------------+-----------------------------------------------------------+
-| :py:meth:`~panos.base.PanObject.element`     | Return the XML of this object as an ElementTree           |
-+----------------------------------------------+-----------------------------------------------------------+
-| :py:meth:`~panos.base.PanObject.element_str` | Return the XML of this object as a string                 |
-+----------------------------------------------+-----------------------------------------------------------+
++-------------------------------------------------+-----------------------------------------------------------+
+|                    Method                       |                        Description                        |
++=================================================+===========================================================+
+| :py:meth:`~panos.base.PanObject.about`          | Return all the params set on this object and their values |
++-------------------------------------------------+-----------------------------------------------------------+
+| :py:meth:`~panos.base.PanObject.equal`          | Test if two objects are equal and return a boolean        |
++-------------------------------------------------+-----------------------------------------------------------+
+| :py:meth:`~panos.base.PanObject.xpath`          | Return the XPath of this object                           |
++-------------------------------------------------+-----------------------------------------------------------+
+| :py:meth:`~panos.base.PanObject.element`        | Return the XML of this object as an ElementTree           |
++-------------------------------------------------+-----------------------------------------------------------+
+| :py:meth:`~panos.base.PanObject.element_str`    | Return the XML of this object as a string                 |
++-------------------------------------------------+-----------------------------------------------------------+
+| :py:meth:`~panos.base.PanObject.hierarchy_info` | Return hierarchical information about this object         |
++-------------------------------------------------+-----------------------------------------------------------+
 
 Device Methods
 --------------
