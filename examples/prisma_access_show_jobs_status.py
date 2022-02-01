@@ -76,7 +76,7 @@ def main():
     ]
     for svc in svcs:
         print(f" -- {svc} Jobs --")
-        print(csp.opstate.jobs.status[svc])
+        print(csp.opstate.jobs.status)
 
     ### Showing a job details ###
     failed_job_id = csp.opstate.jobs.status["mobile-users"]["failed"][-1]

@@ -76,17 +76,18 @@ class CloudServicesPluginOpState(object):
     """Operational state handling for Cloud Services plugin."""
 
     def __init__(self, obj):
-        self.obj = obj
         self.jobs = CloudServicesJobsStatus(obj)
         self.jobsdetails = CloudServicesJobsStatusDetails(obj)
 
 
 class CloudServicesJobsStatus(object):
-    """Operational state handling for rulebase hit counts."""
+    """Operational state handling for Cloud Services Plugins jobs."""
 
     def __init__(self, obj):
         self.obj = obj
-        self.status = {}
+        self.status = {
+            "jobs": {},
+        }
 
     def _get_jobs(self, jobtype, svc):
         """Get job ids for CloudServices
@@ -119,13 +120,21 @@ class CloudServicesJobsStatus(object):
             cmd_xml=False,
         )
         logger.debug("%s jobs for %s: %s", jobtype, svc, ET.tostring(res))
-        status = res.find("result").find("result").find("status").text
-        if status != "pass":
-            raise err.PanDeviceError(f"Status for {jobtype} - {svc}: {status}")
-        return [x.text for x in res.find("result").find("result").findall("msg")]
+        status = res.find("./result/result/status")
+        if status is None or (status is not None and status.text != "pass"):
+            raise err.PanDeviceError("Status not present: {0}".format(ET.tostring(res)))
+        for job_id in res.findall("./result/result/msg"):
+            self.status["jobs"][job_id.text] = {
+                "status": jobtype.replace("-jobs", ""),
+                "service_type": svc,
+            }
+        return [x.text for x in res.findall("./result/result/msg")]
 
     def refresh(self, service_type=None, failed=True, success=True, pending=True):
-        """Retrieves the prisma commit jobs status
+        """Retrieves the prisma commit jobs status.
+        The data will also be stored in self.status, indexed both by job type and job id:
+        -To get by job id: self.status['jobs'][job_id] -> Will be a dict with service_type and status (either failed, success, or pending)
+        -To get by job status: self.status['pending-jobs'] -> Will return list of pending jobs
 
         Args:
             service_type (str/list): Service type of jobs to refresh. Can be a string or list with values:
@@ -174,7 +183,6 @@ class AccessDomain(VersionedPanObject):
 
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
-    CHILDTYPES = ()
 
     def _setup(self):
         # xpaths
@@ -268,7 +276,7 @@ class Tenants(VersionedPanObject):
 
 
 class CloudServicesJobsStatusDetails(object):
-    """Operational state handling for rulebase hit counts."""
+    """Operational state handling for Cloud Services Plugin detailed job status."""
 
     def __init__(self, obj):
         self.obj = obj
@@ -332,11 +340,9 @@ class CloudServicesJobsStatusDetails(object):
         dev = self.obj.nearest_pandevice()
         res = dev.op(XML, cmd_xml=False)
         logger.debug("Details for job %s: %s", job_id, ET.tostring(res))
-        status = res.find("result").find("result").find("status").text
-        if status != "pass":
-            raise err.PanDeviceError(
-                f"Status for job {job_id} - {service_type}: {status}"
-            )
+        status = res.find("./result/result/status")
+        if status is None or (status is not None and status.text != "pass"):
+            raise err.PanDeviceError("Status not present: {0}".format(ET.tostring(res)))
         self.details[job_id] = self._parse_response(res)
         return self.details[job_id]
 
@@ -377,7 +383,6 @@ class Region(VersionedPanObject):
 
     ROOT = Root.DEVICE
     SUFFIX = ENTRY
-    CHILDTYPES = ()
 
     def _setup(self):
         # xpaths
@@ -593,7 +598,6 @@ class Bgp(VersionedPanObject):  # TODO : shoud it be protcol-bgp ?
 
     ROOT = Root.DEVICE
     SUFFIX = None
-    CHILDTYPES = ()
     NAME = None
 
     def _setup(self):
@@ -647,7 +651,6 @@ class BgpPeer(VersionedPanObject):
     ROOT = Root.DEVICE
     NAME = None
     SUFFIX = None
-    CHILDTYPES = ()
 
     def _setup(self):
         # xpaths
@@ -681,7 +684,6 @@ class RoutingPreference(VersionedPanObject):
     ROOT = Root.DEVICE
     NAME = None
     SUFFIX = None
-    CHILDTYPES = ()
 
     def _setup(self):
         # xpaths
@@ -759,9 +761,7 @@ class RemoteNetwork(VersionedPanObject):
         # params
         params = []
 
-        params.append(
-            VersionedParamPath("subnets", vartype="member", path="subnets")
-        )
+        params.append(VersionedParamPath("subnets", vartype="member", path="subnets"))
         params.append(VersionedParamPath("region", path="region"))
         params.append(VersionedParamPath("license_type", path="license-type"))
         params.append(VersionedParamPath("ipsec_tunnel", path="ipsec-tunnel"))
