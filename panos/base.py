@@ -686,6 +686,8 @@ class PanObject(object):
         )
         device.set_config_changed()
         path, value, var_path = self._get_param_specific_info(variable)
+        if var_path.vartype == "attrib":
+            raise NotImplementedError("Cannot update 'attrib' style params")
         xpath = "{0}/{1}".format(self.xpath(), path)
 
         if value is None:
@@ -1625,7 +1627,13 @@ class PanObject(object):
             if var_type == "list":
                 if var is None:
                     update_needed = True
-                    setattr(obj, reference_var, [self,])
+                    setattr(
+                        obj,
+                        reference_var,
+                        [
+                            self,
+                        ],
+                    )
                     if update:
                         obj.update(reference_var)
                 elif not isinstance(var, list):
@@ -2076,6 +2084,100 @@ class PanObject(object):
 
         return panos_version
 
+    def hierarchy_info(self):
+        """This function returns hierarchical information about this object.
+
+        All objects in pan-os-python can be added as children to other objects,
+        so this function details what configurations are valid for this
+        particular object.
+
+        Returns:
+            dict:  Hierarchy information about this object.
+        """
+        from panos.firewall import Firewall
+        from panos.panorama import DeviceGroup, Panorama, Template, TemplateStack
+
+        classes = panos.object_classes()
+        configs = [
+            [
+                self.__class__,
+            ],
+        ]
+        updated_configs = []
+
+        # Find all possible config trees.
+        while True:
+            for num, chain in enumerate(configs):
+                parents = panos.parents_for(chain[-1], classes)
+                if parents:
+                    configs.pop(num)
+                    for p in parents:
+                        configs.append(
+                            chain
+                            + [
+                                p,
+                            ]
+                        )
+                    break
+            else:
+                break
+
+        # Because Firewall objects can be children of Panorama objects,
+        # we need to do another pass to check for multi-PanDevice configs
+        # because Panorama is not strictly necessary.
+        for num in range(len(configs)):
+            chain = configs[num]
+            if Firewall in chain and Panorama in chain:
+                configs.append(chain[: chain.index(Firewall) + 1])
+
+        # Remove dupes.
+        updated_configs = []
+        for chain in configs:
+            if chain not in updated_configs:
+                updated_configs.append(chain)
+        configs = updated_configs
+
+        # Remove any DeviceGroup > Firewall hierarchies.
+        updated_configs = []
+        for chain in configs:
+            fw_index = -1
+            dg_index = -1
+            for num, x in enumerate(chain):
+                if x == Firewall:
+                    fw_index = num
+                elif x == DeviceGroup:
+                    dg_index = num
+            if fw_index == -1 or dg_index == -1 or fw_index + 1 != dg_index:
+                updated_configs.append(chain)
+        configs = updated_configs
+
+        # Remove Template / TemplateStack hierarchies if there is a DeviceGroup
+        # hierarchy.
+        for chain in configs:
+            if DeviceGroup in chain:
+                configs = [
+                    x for x in configs if Template not in x and TemplateStack not in x
+                ]
+                break
+
+        # Get the current config tree.
+        cur_tree = []
+        p = self
+        while p is not None:
+            cur_tree.append(p)
+            p = p.parent
+
+        # Reverse the trees to match reality.
+        for x in configs:
+            x.reverse()
+        cur_tree.reverse()
+
+        return {
+            "configurations": configs,
+            "current": cur_tree,
+            "valid": cur_tree in configs,
+        }
+
 
 class VersioningSupport(object):
     """A class that supports getting version specific values of something.
@@ -2477,6 +2579,11 @@ class VersionedPanObject(PanObject):
         self.xml_merge(ans, itertools.chain(*iterchain))
 
         # Now that the whole element is built, mixin an attrib vartypes.
+        #
+        # We do this here instead of in xml_merge() because attributes are considered
+        # part of the identity in that function, and I'm not sure we want to manage
+        # a list of what attributes are considered part of an element's identity and
+        # what should be mixed in.
         for p in paths:
             if p.vartype != "attrib":
                 continue
@@ -2486,24 +2593,31 @@ class VersionedPanObject(PanObject):
             if attrib_value is None or p.exclude:
                 continue
             e = ans
-            find_path = [
-                ".",
-            ]
             for ap in attrib_path:
                 if not ap:
                     continue
+                finder = None
+                tag = None
+                attribs = {}
                 if ap.startswith("entry "):
                     junk, var_to_use = ap.split()
                     sol_value = panos.string_or_list(settings[var_to_use])[0]
-                    find_path.append("entry[@name='{0}']".format(sol_val))
+                    finder = "entry[@name='{0}']".format(sol_value)
+                    tag = "entry"
+                    attribs["name"] = sol_value
                 elif ap == "entry[@name='localhost.localdomain']":
-                    find_path.append(ap)
+                    finder = ap
+                    tag = "entry"
+                    attribs["name"] = "localhost.localdomain"
                 else:
-                    find_path.append(ap.format(**settings))
-            if len(find_path) > 1:
-                e = e.find("/".join(find_path))
-            if e is not None:
-                e.attrib[attrib_name] = attrib_value
+                    finder = ap.format(**settings)
+                    tag = finder
+                e2 = e.find("./{0}".format(finder))
+                if e2 is None:
+                    e = ET.SubElement(e, tag, attribs)
+                else:
+                    e = e2
+            e.attrib[attrib_name] = attrib_value
 
         return ans
 
@@ -2654,7 +2768,8 @@ class VersionedPanObject(PanObject):
 
         raise AttributeError(
             "'{0}' object has no attribute '{1}'".format(
-                self.__class__.__name__, str(name),
+                self.__class__.__name__,
+                str(name),
             )
         )
 
@@ -2739,9 +2854,7 @@ class VersionedParamPath(VersioningSupport):
 
 
 class ValueEntry(VersionedPanObject):
-    """Base class for objects that only have a value element.
-
-    """
+    """Base class for objects that only have a value element."""
 
     ROOT = Root.VSYS
     SUFFIX = ENTRY
@@ -2844,6 +2957,8 @@ class VarPath(object):
         elif self.vartype == "none":
             # There is no variable, so don't try to populate it
             pass
+        elif self.vartype == "attrib":
+            raise ValueError("attrib not yet supported for classic objects")
         else:
             elm.text = str(value)
 
@@ -2947,10 +3062,13 @@ class ParamPath(object):
                 return None
 
         e = elm
+        attr = None
         # Build the element
         tokens = self.path.split("/")
         if self.vartype == "exist":
             del tokens[-1]
+        elif self.vartype == "attrib":
+            attr = tokens.pop()
         for token in tokens:
             if not token:
                 continue
@@ -2967,7 +3085,7 @@ class ParamPath(object):
             e.append(child)
             e = child
 
-        self._set_inner_xml_tag_text(e, value, comparable)
+        self._set_inner_xml_tag_text(e, value, comparable, attr)
 
         return elm
 
@@ -3015,10 +3133,13 @@ class ParamPath(object):
                 # thus not needed
                 return None
 
+        attr = None
         e = xml
         tokens = self.path.split("/")
         if self.vartype == "exist":
             del tokens[-1]
+        elif self.vartype == "attrib":
+            attr = tokens.pop()
         for p in tokens:
             # Skip this path part if there is no path part
             if not p:
@@ -3065,15 +3186,16 @@ class ParamPath(object):
             e = ans
 
         # Pull the value, properly formatted, from this last element
-        self.parse_value_from_xml_last_tag(e, settings)
+        self.parse_value_from_xml_last_tag(e, settings, attr)
 
-    def _set_inner_xml_tag_text(self, elm, value, comparable=False):
+    def _set_inner_xml_tag_text(self, elm, value, comparable=False, attr=None):
         """Sets the final elm's .text as appropriate given the vartype.
 
         Args:
             elm (xml.etree.ElementTree.Element): The element whose .text to set.
             value (various): The value to put in the .text, conforming to the vartype of this parameter.
             comparable (bool): Make updates for element string comparisons.  For encrypted fields, if the text should be set to a password hash (True) or left as a basestring (False).  For entry and member vartypes, sort the entries (True) or leave them as-is (False).
+            attr (str): For `vartype="attrib"`, the attribute name.
 
         """
         # Format the element text appropriately
@@ -3104,10 +3226,12 @@ class ParamPath(object):
             elm.text = str(int(value))
         elif self.vartype == "encrypted" and comparable:
             elm.text = self._sha1_hash(str(value))
+        elif self.vartype == "attrib":
+            elm.attrib[attr] = value
         else:
             elm.text = str(value)
 
-    def parse_value_from_xml_last_tag(self, elm, settings):
+    def parse_value_from_xml_last_tag(self, elm, settings, attr):
         """Actually do the parsing for this parameter.
 
         The value parsed is saved into the ``settings`` dict.
@@ -3117,6 +3241,7 @@ class ParamPath(object):
                 document passed in to ``parse_xml()`` that contains the actual
                 value to parse out for this parameter.
             settings (dict): The dict where the parsed value will be saved.
+            attr (str): For `vartype="attrib"`, the attribute name.
 
         Raises:
             ValueError: If a param is in an incorrect format.
@@ -3145,6 +3270,8 @@ class ParamPath(object):
             pass
         elif self.vartype == "int":
             settings[self.param] = int(elm.text)
+        elif self.vartype == "attrib":
+            settings[self.param] = elm.attrib.get(attr, None)
         else:
             settings[self.param] = elm.text
 
@@ -3507,7 +3634,12 @@ class PanDevice(PanObject):
 
     @classmethod
     def create_from_device(
-        cls, hostname, api_username=None, api_password=None, api_key=None, port=443,
+        cls,
+        hostname,
+        api_username=None,
+        api_password=None,
+        api_key=None,
+        port=443,
     ):
         """Factory method to create a :class:`panos.firewall.Firewall`
         or :class:`panos.panorama.Panorama` object from a live device
@@ -3529,18 +3661,33 @@ class PanDevice(PanObject):
         # Create generic PanDevice to connect and get information
         from panos import firewall, panorama
 
-        device = PanDevice(hostname, api_username, api_password, api_key, port,)
+        device = PanDevice(
+            hostname,
+            api_username,
+            api_password,
+            api_key,
+            port,
+        )
         system_info = device.refresh_system_info()
         version = system_info[0]
         model = system_info[1]
         if model == "Panorama" or model.startswith("M-"):
             instance = panorama.Panorama(
-                hostname, api_username, api_password, device.api_key, port,
+                hostname,
+                api_username,
+                api_password,
+                device.api_key,
+                port,
             )
         else:
             serial = system_info[2]
             instance = firewall.Firewall(
-                hostname, api_username, api_password, device.api_key, serial, port,
+                hostname,
+                api_username,
+                api_password,
+                device.api_key,
+                serial,
+                port,
             )
         instance._set_version_and_version_info(version)
         return instance
@@ -3688,10 +3835,16 @@ class PanDevice(PanObject):
 
         def classify_exception(self, e):
             if str(e) == "Invalid credentials.":
-                return err.PanInvalidCredentials(str(e), pan_device=self.pan_device,)
+                return err.PanInvalidCredentials(
+                    str(e),
+                    pan_device=self.pan_device,
+                )
             elif str(e).startswith("URLError:"):
                 if str(e).endswith("timed out"):
-                    return err.PanConnectionTimeout(str(e), pan_device=self.pan_device,)
+                    return err.PanConnectionTimeout(
+                        str(e),
+                        pan_device=self.pan_device,
+                    )
                 else:
                     # This could be that we have an old version of OpenSSL
                     # that doesn't support TLSv1.1, so check for that and give
@@ -3793,6 +3946,7 @@ class PanDevice(PanObject):
         cmd_xml=True,
         extra_qs=None,
         retry_on_peer=False,
+        quote='"',
     ):
         """Perform operational command on this device
 
@@ -3809,6 +3963,9 @@ class PanDevice(PanObject):
             # The string "ethernet1/1" must be in quotes because it is not a keyword
             fw.op('show interface "ethernet1/1"')
 
+            # Using an alternative quote character to get DHCP info on ethernet1/1
+            fw.op('show dhcp client state `ethernet1/1`', quote='`')
+
         Args:
             cmd (str): The operational command to execute
             vsys (str): Vsys id.
@@ -3816,14 +3973,16 @@ class PanDevice(PanObject):
             cmd_xml (bool): True: cmd is not XML, False: cmd is XML (Default: True)
             extra_qs: Extra parameters for API call
             retry_on_peer (bool): Try on active Firewall first, then try on passive Firewall
+            quote (str): The quote character when the supplied `cmd` is a string and `cmd_xml=True`
 
         Returns:
             xml.etree.ElementTree: The result of the operational command. May also return a string of XML if xml=True
 
         """
-        element = self.xapi.op(
-            cmd, vsys, cmd_xml, extra_qs, retry_on_peer=retry_on_peer
-        )
+        if cmd_xml:
+            cmd = panos.string_to_xml(cmd, quote)
+
+        element = self.xapi.op(cmd, vsys, False, extra_qs, retry_on_peer=retry_on_peer)
         if xml:
             return ET.tostring(element, encoding="utf-8")
         else:
@@ -4604,7 +4763,12 @@ class PanDevice(PanObject):
         logger.debug(
             self.id
             + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s"
-            % (str(commit_all), str(sync), str(sync_all), cmd,)
+            % (
+                str(commit_all),
+                str(sync),
+                str(sync_all),
+                cmd,
+            )
         )
         if commit_all:
             action = "all"

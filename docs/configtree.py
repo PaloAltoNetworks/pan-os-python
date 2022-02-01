@@ -42,6 +42,7 @@ nodestyle = {
     "objects": "fillcolor=lemonchiffon",
     "policies": "fillcolor=lightsalmon",
     "panorama": "fillcolor=darkseagreen2",
+    "plugins": "fillcolor=wheat",
 }
 
 
