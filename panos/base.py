@@ -71,6 +71,7 @@ class PanObject(object):
     HA_SYNC = True
     TEMPLATE_NATIVE = False
     _UNKNOWN_PANOS_VERSION = (sys.maxsize, 0, 0)
+    OPSTATES = {}
 
     def __init__(self, *args, **kwargs):
         # Set the 'name' variable
@@ -129,6 +130,9 @@ class PanObject(object):
                 f = getattr(self, func)
                 if callable(f):
                     f()
+
+    def _setup_opstate(self):
+        self.opstate = OpStateContainer(self, self.OPSTATES)
 
     def __str__(self):
         return self.uid
@@ -3518,6 +3522,60 @@ class VsysOperations(VersionedPanObject):
             parent.extend(instances)
 
         return instances
+
+
+class OpStateContainer(object):
+    """Container for all opstate namespaces.
+
+    The name "opstate" is short for "operational state" and acts as a container
+    for non-configuration functionality to exist.
+
+    """
+
+    def __init__(self, obj, config):
+        for namespace, cls in config.items():
+            setattr(self, namespace, cls(obj))
+
+    def about(self):
+        """Returns information about this object's opstate namespaces.
+
+        Returns:
+            dict: Keys are the opstate's namespace, values are the classes.
+
+        """
+        return vars(self)
+
+
+class OpState(object):
+    """Parent class for all opstate namespaces."""
+
+    def __init__(self, obj, *args, **kwargs):
+        self.obj = obj
+        self._setup(*args, **kwargs)
+
+    def _setup(self, *args, **kwargs):
+        """Called during __init__."""
+        pass
+
+    def _str(self, elm, field):
+        if elm is not None:
+            val = elm.find("./{0}".format(field))
+            if val is not None:
+                return val.text
+
+    def _int(self, elm, field):
+        val = self._str(elm, field)
+        if val is not None:
+            return int(val)
+
+    def _datetime(self, elm, field, fmt):
+        val = self._str(elm, field)
+        if val is not None:
+            try:
+                return datetime.datetime.strptime(val, fmt)
+            except ValueError:
+                pass
+            return val
 
 
 class PanDevice(PanObject):

@@ -121,7 +121,7 @@ def test_rulebase_hit_count_refresh_for_single_attached_security_rule():
         rule_creation_timestamp=1599752499,
         rule_modification_timestamp=1599752499,
     )
-    expected = HitCount(name=name, elm=elm)
+    expected = HitCount(None, name=name, elm=elm)
 
     fw, rb = _hit_count_fw_setup(elm)
     o = SecurityRule(name)
@@ -145,7 +145,7 @@ def test_rulebase_hit_count_refresh_for_multiple_attached_security_rules():
         rule_creation_timestamp=1599752499,
         rule_modification_timestamp=1599752499,
     )
-    e1 = HitCount(name=n1, elm=elm1)
+    e1 = HitCount(None, name=n1, elm=elm1)
 
     n2 = "bar"
     elm2 = _hit_count_elm(
@@ -154,7 +154,7 @@ def test_rulebase_hit_count_refresh_for_multiple_attached_security_rules():
         rule_creation_timestamp=1234,
         rule_modification_timestamp=5678,
     )
-    e2 = HitCount(name=n2, elm=elm2)
+    e2 = HitCount(None, name=n2, elm=elm2)
 
     fw, rb = _hit_count_fw_setup(elm1, elm2)
     o1 = SecurityRule(n1)
@@ -185,7 +185,7 @@ def test_rulebase_hit_count_refresh_for_all_rules_updates_attached_rule():
         rule_creation_timestamp=1599752499,
         rule_modification_timestamp=1599752499,
     )
-    e1 = HitCount(name=n1, elm=elm1)
+    e1 = HitCount(None, name=n1, elm=elm1)
 
     n2 = "interzone-default"
     elm2 = _hit_count_elm(
@@ -194,7 +194,7 @@ def test_rulebase_hit_count_refresh_for_all_rules_updates_attached_rule():
         rule_creation_timestamp=1599752499,
         rule_modification_timestamp=1599752499,
     )
-    e2 = HitCount(name=n2, elm=elm2)
+    e2 = HitCount(None, name=n2, elm=elm2)
 
     name = "bar"
     elm3 = _hit_count_elm(
@@ -203,7 +203,7 @@ def test_rulebase_hit_count_refresh_for_all_rules_updates_attached_rule():
         rule_creation_timestamp=1234,
         rule_modification_timestamp=5678,
     )
-    expected = HitCount(name=name, elm=elm3)
+    expected = HitCount(None, name=name, elm=elm3)
 
     fw, rb = _hit_count_fw_setup(elm1, elm2, elm3)
     o = SecurityRule(name)
@@ -234,7 +234,7 @@ def test_security_rule_hit_count_refresh():
         rule_creation_timestamp=24,
         rule_modification_timestamp=25,
     )
-    expected = HitCount(name=name, elm=elm)
+    expected = HitCount(None, name=name, elm=elm)
 
     fw, rb = _hit_count_fw_setup(elm)
     o = SecurityRule(name)

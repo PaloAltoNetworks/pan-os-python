@@ -492,3 +492,17 @@ def test_parent_aware_children_show_in_parent_childtypes(versioned_object):
         assert panos.childtype_name(versioned_object) in cls.CHILDTYPES, msg.format(
             versioned_object, cls
         )
+
+
+def test_opstates_is_a_dict(panobj):
+    assert isinstance(getattr(panobj, "OPSTATES", {}), dict)
+
+
+def test_opstates_inherit_from_opstate(panobj):
+    for name, cls in panobj.OPSTATES.items():
+        mro = inspect.getmro(cls)
+        assert (
+            base.OpState in mro
+        ), "base.OpState is not in the {0}.opstate.{1} mro".format(
+            panobj.__name__, name
+        )
