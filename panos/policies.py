@@ -1252,6 +1252,7 @@ class DecryptionRule(VersionedPanObject):
 
         self._params = tuple(params)
 
+
 class AuthenticationRule(VersionedPanObject):
     """Authentication Rule
 
@@ -1309,18 +1310,21 @@ class AuthenticationRule(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "source_addresses", default=["any", ], vartype="member", path="source"
+                "source_addresses", default=["any",], vartype="member", path="source"
             )
         )
         params.append(
             VersionedParamPath("negate_source", vartype="yesno", path="negate-source",)
         )
         params.append(
-            VersionedParamPath("destination_zones", vartype="member", path="to", )
+            VersionedParamPath("destination_zones", vartype="member", path="to",)
         )
         params.append(
             VersionedParamPath(
-                "destination_addresses", default=["any", ], vartype="member", path="destination"
+                "destination_addresses",
+                default=["any",],
+                vartype="member",
+                path="destination",
             )
         )
         params.append(
@@ -1328,10 +1332,10 @@ class AuthenticationRule(VersionedPanObject):
                 "negate_destination", vartype="yesno", path="negate-destination",
             )
         )
-        params.append(VersionedParamPath("tag", vartype="member", path="tag", ))
-        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled", ))
-        params.append(VersionedParamPath("service", vartype="member", path="service", ))
-        params.append(VersionedParamPath("source_hip", exclude=True, ))
+        params.append(VersionedParamPath("tag", vartype="member", path="tag",))
+        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled",))
+        params.append(VersionedParamPath("service", vartype="member", path="service",))
+        params.append(VersionedParamPath("source_hip", exclude=True,))
         params[-1].add_profile(
             "10.0.0", path="source-hip", vartype="member",
         )
@@ -1339,18 +1343,18 @@ class AuthenticationRule(VersionedPanObject):
             VersionedParamPath("source_users", vartype="member", path="source-user")
         )
         params.append(
-            VersionedParamPath("url_categories", vartype="member", path="category", )
+            VersionedParamPath("url_categories", vartype="member", path="category",)
         )
-        params.append(VersionedParamPath("group_tag", exclude=True, ))
+        params.append(VersionedParamPath("group_tag", exclude=True,))
         params[-1].add_profile(
             "9.0.0", path="group-tag",
         )
         params.append(
-            VersionedParamPath("authentication_enforcement", path="authentication-enforcement",)
+            VersionedParamPath(
+                "authentication_enforcement", path="authentication-enforcement",
+            )
         )
-        params.append(
-            VersionedParamPath("timeout", path="timeout",)
-        )
+        params.append(VersionedParamPath("timeout", path="timeout",))
         params.append(
             VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
         )
@@ -1359,7 +1363,11 @@ class AuthenticationRule(VersionedPanObject):
         )
         params.append(VersionedParamPath("log_setting", path="log-setting"))
         params.append(
-            VersionedParamPath("log_authentication_timeout", path="log-authentication-timeout", vartype="yesno")
+            VersionedParamPath(
+                "log_authentication_timeout",
+                path="log-authentication-timeout",
+                vartype="yesno",
+            )
         )
 
         self._params = tuple(params)
