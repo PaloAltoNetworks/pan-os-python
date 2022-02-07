@@ -168,6 +168,7 @@ class Rulebase(VersionedPanObject):
         "policies.SecurityRule",
         "policies.DecryptionRule",
         "policies.ApplicationOverride",
+        "policies.AuthenticationRule",
     )
 
     def _setup(self):
@@ -842,7 +843,7 @@ class ApplicationOverride(VersionedPanObject):
         target (list): Apply this policy to the listed firewalls only
             (applies to panorama/device groups only)
         port (str): Destination port
-        protocol (str): Protocol used 
+        protocol (str): Protocol used
         group_tag (str): (PAN-OS 9.0+) The group tag.
 
     """
@@ -1247,6 +1248,126 @@ class DecryptionRule(VersionedPanObject):
         )
         params.append(
             VersionedParamPath("target", path="target/devices", vartype="entry")
+        )
+
+        self._params = tuple(params)
+
+
+class AuthenticationRule(VersionedPanObject):
+    """Authentication Rule
+
+    Both the naming convention and the order of the parameters tries to closly
+    match what is presented in the GUI.
+
+    Args:
+        name (str): The name
+        description (str): The description
+        uuid (str): (PAN-OS 9.0+) The UUID for this rule.
+        source_zones (list): The source zones.
+        source_addresses (list): The source addresses.
+        negate_source (bool): Negate the source addresses.
+        destination_zones (list): The destination zones.
+        destination_addresses (list): The destination addresses.
+        negate_destination (bool): Negate the destination addresses.
+        tag (list): Administrative tags
+        disabled (bool): Disable this rule
+        service (str): The service
+        source_hip (list): (PAN-OS 10.0+) The source HIP info.
+        source_users (list): The source users.
+        url_categories (list): URL categories.
+        group_tag (str): (PAN-OS 9.0+) The group tag.
+        authentication_enforcement (str): The authentication enforcement object.
+        timeout (str): The authentication timeout.
+        negate_target (bool): Target all but the listed target firewalls,
+            (applies to panorama/device groups only)
+        target (list): Apply this policy to the listed firewalls only,
+            (applies to panorama/device groups only)
+        log_setting (str): (PAN-OS 10.0+) Log setting.
+        log_authentication_timeout (bool): Whether the rules logs authentication timeouts or not.
+
+    """
+
+    SUFFIX = ENTRY
+    ROOT = Root.VSYS
+    HIT_COUNT_STYLE = "authentication"
+    OPSTATES = {
+        "audit_comment": RuleAuditComment,
+        "hit_count": HitCount,
+    }
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/authentication/rules")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(VersionedParamPath("uuid", exclude=True))
+        params[-1].add_profile("9.0.0", vartype="attrib", path="uuid")
+        params.append(
+            VersionedParamPath("source_zones", vartype="member", path="from",)
+        )
+        params.append(
+            VersionedParamPath(
+                "source_addresses", default=["any",], vartype="member", path="source"
+            )
+        )
+        params.append(
+            VersionedParamPath("negate_source", vartype="yesno", path="negate-source",)
+        )
+        params.append(
+            VersionedParamPath("destination_zones", vartype="member", path="to",)
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_addresses",
+                default=["any",],
+                vartype="member",
+                path="destination",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "negate_destination", vartype="yesno", path="negate-destination",
+            )
+        )
+        params.append(VersionedParamPath("tag", vartype="member", path="tag",))
+        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled",))
+        params.append(VersionedParamPath("service", vartype="member", path="service",))
+        params.append(VersionedParamPath("source_hip", exclude=True,))
+        params[-1].add_profile(
+            "10.0.0", path="source-hip", vartype="member",
+        )
+        params.append(
+            VersionedParamPath("source_users", vartype="member", path="source-user")
+        )
+        params.append(
+            VersionedParamPath("url_categories", vartype="member", path="category",)
+        )
+        params.append(VersionedParamPath("group_tag", exclude=True,))
+        params[-1].add_profile(
+            "9.0.0", path="group-tag",
+        )
+        params.append(
+            VersionedParamPath(
+                "authentication_enforcement", path="authentication-enforcement",
+            )
+        )
+        params.append(VersionedParamPath("timeout", path="timeout",))
+        params.append(
+            VersionedParamPath("negate_target", path="target/negate", vartype="yesno")
+        )
+        params.append(
+            VersionedParamPath("target", path="target/devices", vartype="entry")
+        )
+        params.append(VersionedParamPath("log_setting", path="log-setting"))
+        params.append(
+            VersionedParamPath(
+                "log_authentication_timeout",
+                path="log-authentication-timeout",
+                vartype="yesno",
+            )
         )
 
         self._params = tuple(params)
