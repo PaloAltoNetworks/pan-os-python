@@ -21,66 +21,12 @@ import xml.etree.ElementTree as ET
 
 import panos.errors as err
 from panos import getlogger
-from panos.base import ENTRY, Root, VersionedPanObject, VersionedParamPath
+from panos.base import ENTRY, OpState, Root, VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
 
-class CloudServicesPlugin(VersionedPanObject):
-    """Prisma Access configuration base object
-
-    Args:
-        all_traffic_to_dc(bool): Send All Traffic to DC Option
-        multi_tenant_enable(bool): Multi Tenants enabled or not
-    """
-
-    ROOT = Root.DEVICE
-    SUFFIX = None
-    NAME = None
-    CHILDTYPES = (
-        "plugins.RemoteNetworks",
-        "plugins.RoutingPreference",
-        "plugins.AccessDomain",
-        "plugins.Tenants",
-    )
-
-    def _setup(self):
-        # xpaths
-        self._xpaths.add_profile(value="/plugins/cloud_services")
-
-        # params
-        params = []
-
-        params.append(
-            VersionedParamPath(
-                "all_traffic_to_dc",
-                vartype="yesno",
-                path="traffic-steering/All-Traffic-To-DC",
-            )
-        )
-        params.append(
-            VersionedParamPath(
-                "multi_tenant_enable",
-                vartype="yesno",
-                path="multi-tenant-enable",
-            )
-        )
-
-        self._params = tuple(params)
-
-    def _setup_opstate(self):
-        self.opstate = CloudServicesPluginOpState(self)
-
-
-class CloudServicesPluginOpState(object):
-    """Operational state handling for Cloud Services plugin."""
-
-    def __init__(self, obj):
-        self.jobs = CloudServicesJobsStatus(obj)
-        self.jobsdetails = CloudServicesJobsStatusDetails(obj)
-
-
-class CloudServicesJobsStatus(object):
+class CloudServicesJobsStatus(OpState):
     """Operational state handling for Cloud Services Plugins jobs."""
 
     def __init__(self, obj):
@@ -171,6 +117,125 @@ class CloudServicesJobsStatus(object):
                 self.status[svc]["pending"] = self._get_jobs("pending-jobs", svc)
 
         return self.status
+
+
+class CloudServicesJobsStatusDetails(OpState):
+    """Operational state handling for Cloud Services Plugin detailed job status."""
+
+    def __init__(self, obj):
+        self.obj = obj
+        self.details = {}
+
+    def _parse_response(self, xmlresponse):
+        """Parse XML response from API
+
+        Args:
+            xmlresponse (Element): XML Element from API call.
+        """
+
+        response = (
+            xmlresponse.find("result").find("result").find("msg").find("response")
+        )
+
+        r = {
+            "status": response.find("status").text,
+            "percentage_completion": response.find("percentageCompletion").text,
+            "error_code": response.find("errorCode").text,
+        }
+        for nodetype in response.find("InstanceSummary"):
+            node = nodetype.find("overview")
+            nodetypename = nodetype.tag.lower().replace("-", "_")
+            r[nodetypename] = {
+                "total_instances": node.find("TotalInstances").text,
+                "provisioning_in_progress": node.find("ProvisioningInProgress").text,
+                "provisioning_failed": node.find("ProvisioningFailed").text,
+                "provisioning_complete": node.find("ProvisioningComplete").text,
+            }
+        return r
+
+    def refresh(self, job_id, service_type):
+        """Retrieves a prisma commit jobs details
+
+        Args:
+            job_id (int): the job ID to get details from
+            service_type (str/list): Service type of jobs to refresh. Can be a string or list with values:
+                mobile-users, remote-networks, clean-pipe, service-connection.
+        Returns:
+            dict:  A dict with the details of job 'job_id'. See _parse_response for structure of the output dict.
+                Note: for mobile-users, the details will contains both gpgateways and gpportals entries,
+                for remote-networks it will have remote_networks, and for service-connection, it will have service_connection
+
+        """
+
+        XML = f"""
+        <request>
+            <plugins>
+                <cloud_services>
+                    <prisma-access>
+                        <job-status>
+                            <jobid>{job_id}</jobid>
+                            <servicetype>{service_type}</servicetype>
+                        </job-status>
+                    </prisma-access>
+                </cloud_services>
+            </plugins>
+        </request>
+        """
+        dev = self.obj.nearest_pandevice()
+        res = dev.op(XML, cmd_xml=False)
+        logger.debug("Details for job %s: %s", job_id, ET.tostring(res))
+        status = res.find("./result/result/status")
+        if status is None or (status is not None and status.text != "pass"):
+            raise err.PanDeviceError("Status not present: {0}".format(ET.tostring(res)))
+        self.details[job_id] = self._parse_response(res)
+        return self.details[job_id]
+
+
+class CloudServicesPlugin(VersionedPanObject):
+    """Prisma Access configuration base object
+
+    Args:
+        all_traffic_to_dc(bool): Send All Traffic to DC Option
+        multi_tenant_enable(bool): Multi Tenants enabled or not
+    """
+
+    ROOT = Root.DEVICE
+    SUFFIX = None
+    NAME = None
+    OPSTATES = {
+        "jobs": CloudServicesJobsStatus,
+        "jobs_details": CloudServicesJobsStatusDetails,
+    }
+    CHILDTYPES = (
+        "plugins.RemoteNetworks",
+        "plugins.RoutingPreference",
+        "plugins.AccessDomain",
+        "plugins.Tenants",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/plugins/cloud_services")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "all_traffic_to_dc",
+                vartype="yesno",
+                path="traffic-steering/All-Traffic-To-DC",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multi_tenant_enable",
+                vartype="yesno",
+                path="multi-tenant-enable",
+            )
+        )
+
+        self._params = tuple(params)
 
 
 class AccessDomain(VersionedPanObject):
@@ -273,78 +338,6 @@ class Tenants(VersionedPanObject):
         )
 
         self._params = tuple(params)
-
-
-class CloudServicesJobsStatusDetails(object):
-    """Operational state handling for Cloud Services Plugin detailed job status."""
-
-    def __init__(self, obj):
-        self.obj = obj
-        self.details = {}
-
-    def _parse_response(self, xmlresponse):
-        """Parse XML response from API
-
-        Args:
-            xmlresponse (Element): XML Element from API call.
-        """
-
-        response = (
-            xmlresponse.find("result").find("result").find("msg").find("response")
-        )
-
-        r = {
-            "status": response.find("status").text,
-            "percentage_completion": response.find("percentageCompletion").text,
-            "error_code": response.find("errorCode").text,
-        }
-        for nodetype in response.find("InstanceSummary"):
-            node = nodetype.find("overview")
-            nodetypename = nodetype.tag.lower().replace("-", "_")
-            r[nodetypename] = {
-                "total_instances": node.find("TotalInstances").text,
-                "provisioning_in_progress": node.find("ProvisioningInProgress").text,
-                "provisioning_failed": node.find("ProvisioningFailed").text,
-                "provisioning_complete": node.find("ProvisioningComplete").text,
-            }
-        return r
-
-    def refresh(self, job_id, service_type):
-        """Retrieves a prisma commit jobs details
-
-        Args:
-            job_id (int): the job ID to get details from
-            service_type (str/list): Service type of jobs to refresh. Can be a string or list with values:
-                mobile-users, remote-networks, clean-pipe, service-connection.
-        Returns:
-            dict:  A dict with the details of job 'job_id'. See _parse_response for structure of the output dict.
-                Note: for mobile-users, the details will contains both gpgateways and gpportals entries,
-                for remote-networks it will have remote_networks, and for service-connection, it will have service_connection
-
-        """
-
-        XML = f"""
-        <request>
-            <plugins>
-                <cloud_services>
-                    <prisma-access>
-                        <job-status>
-                            <jobid>{job_id}</jobid>
-                            <servicetype>{service_type}</servicetype>
-                        </job-status>
-                    </prisma-access>
-                </cloud_services>
-            </plugins>
-        </request>
-        """
-        dev = self.obj.nearest_pandevice()
-        res = dev.op(XML, cmd_xml=False)
-        logger.debug("Details for job %s: %s", job_id, ET.tostring(res))
-        status = res.find("./result/result/status")
-        if status is None or (status is not None and status.text != "pass"):
-            raise err.PanDeviceError("Status not present: {0}".format(ET.tostring(res)))
-        self.details[job_id] = self._parse_response(res)
-        return self.details[job_id]
 
 
 class AggBandwidth(VersionedPanObject):
