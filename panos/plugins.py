@@ -61,26 +61,22 @@ class CloudServicesJobsStatus(OpState):
         </request>
         """
         dev = self.obj.nearest_pandevice()
-        res = dev.op(
-            XML.format(jobtype=jobtype, svc=svc),
-            cmd_xml=False,
-        )
+        res = dev.op(XML.format(jobtype=jobtype, svc=svc), cmd_xml=False,)
         logger.debug("%s jobs for %s: %s", jobtype, svc, ET.tostring(res))
         status = res.find("./result/result/status")
         if status is None or (status is not None and status.text != "pass"):
             raise err.PanDeviceError("Status not present: {0}".format(ET.tostring(res)))
-        for job_id in res.findall("./result/result/msg"):
-            self.status["jobs"][job_id.text] = {
-                "status": jobtype.replace("-jobs", ""),
-                "service_type": svc,
-            }
+        # for job_id in res.findall("./result/result/msg"):
+        #     self.status["jobs"][job_id.text] = {
+        #         "status": jobtype.replace("-jobs", ""),
+        #         "service_type": svc,
+        #     }
         return [x.text for x in res.findall("./result/result/msg")]
 
     def refresh(self, service_type=None, failed=True, success=True, pending=True):
         """Retrieves the prisma commit jobs status.
-        The data will also be stored in self.status, indexed both by job type and job id:
-        -To get by job id: self.status['jobs'][job_id] -> Will be a dict with service_type and status (either failed, success, or pending)
-        -To get by job status: self.status['pending-jobs'] -> Will return list of pending jobs
+        The data will also be stored in self.status, indexed by job type:
+        To get by job status: self.status['pending-jobs'] -> Will return list of pending jobs
 
         Args:
             service_type (str/list): Service type of jobs to refresh. Can be a string or list with values:
@@ -229,9 +225,7 @@ class CloudServicesPlugin(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "multi_tenant_enable",
-                vartype="yesno",
-                path="multi-tenant-enable",
+                "multi_tenant_enable", vartype="yesno", path="multi-tenant-enable",
             )
         )
 
@@ -256,18 +250,10 @@ class AccessDomain(VersionedPanObject):
         # params
         params = []
         params.append(
-            VersionedParamPath(
-                "device_groups",
-                vartype="member",
-                path="device-groups",
-            )
+            VersionedParamPath("device_groups", vartype="member", path="device-groups",)
         )
         params.append(
-            VersionedParamPath(
-                "templates",
-                vartype="member",
-                path="templates",
-            )
+            VersionedParamPath("templates", vartype="member", path="templates",)
         )
         self._params = tuple(params)
 
@@ -294,47 +280,20 @@ class Tenants(VersionedPanObject):
 
         # params
         params = []
-        params.append(
-            VersionedParamPath(
-                "access_domain",
-                path="access-domain",
-            )
-        )
+        params.append(VersionedParamPath("access_domain", path="access-domain",))
 
+        params.append(VersionedParamPath("bandwidth", vartype="int", path="bandwidth",))
         params.append(
-            VersionedParamPath(
-                "bandwidth",
-                vartype="int",
-                path="bandwidth",
-            )
+            VersionedParamPath("bandwidth_adem", vartype="int", path="bandwidth-adem",)
         )
         params.append(
             VersionedParamPath(
-                "bandwidth_adem",
-                vartype="int",
-                path="bandwidth-adem",
+                "bandwidth_cleanpipe", vartype="int", path="bandwidth-clean-pipe",
             )
         )
+        params.append(VersionedParamPath("users", vartype="int", path="users",))
         params.append(
-            VersionedParamPath(
-                "bandwidth_cleanpipe",
-                vartype="int",
-                path="bandwidth-clean-pipe",
-            )
-        )
-        params.append(
-            VersionedParamPath(
-                "users",
-                vartype="int",
-                path="users",
-            )
-        )
-        params.append(
-            VersionedParamPath(
-                "adem_users",
-                vartype="int",
-                path="adem-users",
-            )
+            VersionedParamPath("adem_users", vartype="int", path="adem-users",)
         )
 
         self._params = tuple(params)
@@ -654,9 +613,7 @@ class BgpPeer(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "same_as_primary",
-                vartype="yesno",
-                path="same-as-primary",
+                "same_as_primary", vartype="yesno", path="same-as-primary",
             )
         )
         params.append(VersionedParamPath("peer_ip_address", path="peer-ip-address"))

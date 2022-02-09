@@ -1,24 +1,23 @@
-import inspect
-
 import pytest
+
+import inspect
 
 # Packages with classes to omit checks for.
 import panos
+from panos import base
+from panos import errors
 
 # Packages with classes to verify.
-from panos import (
-    base,
-    device,
-    errors,
-    firewall,
-    ha,
-    network,
-    objects,
-    panorama,
-    plugins,
-    policies,
-    predefined,
-)
+from panos import device
+from panos import firewall
+from panos import ha
+from panos import network
+from panos import objects
+from panos import panorama
+from panos import policies
+from panos import predefined
+from panos import plugins
+
 
 # Versioning constants.
 #
