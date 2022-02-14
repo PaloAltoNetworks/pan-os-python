@@ -30,7 +30,7 @@ pan-python = "^0.16.0"
 
 [tool.poetry.dev-dependencies]
 pytest = {version = "^5.3.2", python = "^3.5"}
-black = {version = "^19.10b0", python = "^3.6"}
+black = {version = "^22.1.0", python = ">=3.6.2"}
 flake8-eradicate = {version = "^0.2.4", python = "^3.6"}
 flake8-bugbear = {version = "^20.1.2", python = "^3.6"}
 flake8 = "^3.7.9"
