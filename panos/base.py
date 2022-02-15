@@ -4584,12 +4584,19 @@ class PanDevice(PanObject):
         return result1, result2
 
     def show_highavailability_state(self):
+        from panos.panorama import Panorama
+
         ha_state = self.op("show high-availability state")
         enabled = ha_state.findtext("result/enabled")
+        p = self
         if enabled is None or enabled == "no":
             return "disabled", None
         else:
-            return ha_state.findtext("result/group/local-info/state"), ha_state
+            if isinstance(p, Panorama):
+                xpath = "result/local-info/state"
+            else:
+                xpath = "result/group/local-info/state"
+            return ha_state.findtext(xpath), ha_state
 
     def refresh_ha_active(self):
         """Refresh which device is active using the live device

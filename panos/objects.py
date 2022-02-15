@@ -484,6 +484,32 @@ class ApplicationGroup(VersionedPanObject):
         self._params = tuple(params)
 
 
+class ApplicationTag(VersionedPanObject):
+    """ApplicationTag Object
+
+    Applies an administrative tag to a predefined application
+
+    Args:
+        name (str): Name of predefined application
+        tags (list): Administrative tags
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/application-tag")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("tags", path="tag", vartype="member"))
+
+        self._params = tuple(params)
+
+
 class ApplicationFilter(VersionedPanObject):
     """ApplicationFilter Object
 
