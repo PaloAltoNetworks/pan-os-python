@@ -1490,9 +1490,9 @@ class AggregateInterface(PhysicalInterface):
         params.append(
             VersionedParamPath(
                 "lacp_passive_pre_negotiation",
-                condition={"mode": ["layer3", "layer2", "ha"], "lacp_enable": True},
+                condition={"mode": ["layer3", "layer2"], "lacp_enable": True},
                 vartype="yesno",
-                path="{mode}/lacp/passive-pre-negotiation",
+                path="{mode}/lacp/high-availability/passive-pre-negotiation",
             )
         )
         params.append(

@@ -26,87 +26,14 @@ import pan.commit
 import panos
 import panos.errors as err
 from panos import base, firewall, getlogger, policies, yesno
-from panos.base import ENTRY, MEMBER, PanObject, Root
+from panos.base import ENTRY, MEMBER, OpState, PanObject, Root
 from panos.base import VarPath as Var
 from panos.base import VersionedPanObject, VersionedParamPath
 
 logger = getlogger(__name__)
 
 
-class DeviceGroup(VersionedPanObject):
-    """Panorama Device-group
-
-    This class and the :class:`panos.panorama.Panorama` classes are the only objects that can
-    have a :class:`panos.firewall.Firewall` child object. In addition to a Firewall, a
-    DeviceGroup can have the same children objects as a :class:`panos.firewall.Firewall`
-    or :class:`panos.device.Vsys`.
-
-    See also :ref:`classtree`
-
-    Args:
-        name (str): Name of the device-group
-        tag (list): Tags as strings
-
-    """
-
-    ROOT = Root.DEVICE
-    SUFFIX = ENTRY
-    VSYS_LABEL = "device-group"
-    CHILDTYPES = (
-        "firewall.Firewall",
-        "objects.AddressObject",
-        "objects.AddressGroup",
-        "objects.ServiceObject",
-        "objects.ServiceGroup",
-        "objects.ApplicationObject",
-        "objects.ApplicationGroup",
-        "objects.ApplicationFilter",
-        "objects.ScheduleObject",
-        "objects.SecurityProfileGroup",
-        "objects.CustomUrlCategory",
-        "objects.LogForwardingProfile",
-        "objects.Region",
-        "objects.Edl",
-        "policies.PreRulebase",
-        "policies.PostRulebase",
-    )
-
-    def _setup(self):
-        # xpaths
-        self._xpaths.add_profile(value="/device-group")
-
-        # params
-        params = []
-
-        params.append(VersionedParamPath("tag", vartype="entry"))
-
-        self._params = tuple(params)
-
-    def _setup_opstate(self):
-        self.opstate = DeviceGroupOpState(self)
-
-    @property
-    def vsys(self):
-        return self.name
-
-    def devicegroup(self):
-        return self
-
-    def xpath_vsys(self):
-        return self.xpath()
-
-    def _setup_opstate(self):
-        self.opstate = DeviceGroupOpState(self)
-
-
-class DeviceGroupOpState(object):
-    """Operational state handling for device group classes."""
-
-    def __init__(self, obj):
-        self.dg_hierarchy = DeviceGroupHierarchy(obj)
-
-
-class DeviceGroupHierarchy(object):
+class DeviceGroupHierarchy(OpState):
     """Operational state handling for device group hierarchy.
 
     Args:
@@ -114,8 +41,7 @@ class DeviceGroupHierarchy(object):
 
     """
 
-    def __init__(self, obj):
-        self.obj = obj
+    def _setup(self):
         self.parent = None
 
     def refresh(self):
@@ -156,6 +82,70 @@ class DeviceGroupHierarchy(object):
         cmd = ET.tostring(e, encoding="utf-8")
         resp = dev.op(cmd, cmd_xml=False)
         return dev.syncjob(resp)
+
+
+class DeviceGroup(VersionedPanObject):
+    """Panorama Device-group
+
+    This class and the :class:`panos.panorama.Panorama` classes are the only objects that can
+    have a :class:`panos.firewall.Firewall` child object. In addition to a Firewall, a
+    DeviceGroup can have the same children objects as a :class:`panos.firewall.Firewall`
+    or :class:`panos.device.Vsys`.
+
+    See also :ref:`classtree`
+
+    Args:
+        name (str): Name of the device-group
+        tag (list): Tags as strings
+
+    """
+
+    ROOT = Root.DEVICE
+    SUFFIX = ENTRY
+    VSYS_LABEL = "device-group"
+    CHILDTYPES = (
+        "firewall.Firewall",
+        "objects.AddressObject",
+        "objects.AddressGroup",
+        "objects.ServiceObject",
+        "objects.ServiceGroup",
+        "objects.ApplicationObject",
+        "objects.ApplicationGroup",
+        "objects.ApplicationTag",
+        "objects.ApplicationFilter",
+        "objects.ScheduleObject",
+        "objects.SecurityProfileGroup",
+        "objects.CustomUrlCategory",
+        "objects.LogForwardingProfile",
+        "objects.Region",
+        "objects.Edl",
+        "policies.PreRulebase",
+        "policies.PostRulebase",
+    )
+    OPSTATES = {
+        "dg_hierarchy": DeviceGroupHierarchy,
+    }
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/device-group")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("tag", vartype="entry"))
+
+        self._params = tuple(params)
+
+    @property
+    def vsys(self):
+        return self.name
+
+    def devicegroup(self):
+        return self
+
+    def xpath_vsys(self):
+        return self.xpath()
 
 
 class Template(VersionedPanObject):
@@ -375,6 +365,33 @@ class TemplateVariable(VersionedPanObject):
         self._params = tuple(params)
 
 
+class PanoramaDeviceGroupHierarchy(OpState):
+    """Operational state handling for device group hierarchy."""
+
+    def fetch(self):
+        """Returns a dict of device groups and their parents.
+
+        Keys in the dict are the device group's name, while the value is the
+        name of that device group's parent.  Top level device groups will have
+        a parent of ``None``.
+
+        Returns:
+            dict
+
+        """
+
+        resp = self.obj.op("show dg-hierarchy")
+        data = resp.find("./result/dg-hierarchy")
+
+        ans = {}
+        nodes = [(None, x) for x in data.findall("./dg")]
+        for parent, elm in iter(nodes):
+            ans[elm.attrib["name"]] = parent
+            nodes.extend((elm.attrib["name"], x) for x in elm.findall("./dg"))
+
+        return ans
+
+
 class Panorama(base.PanDevice):
     """Panorama device
 
@@ -412,6 +429,7 @@ class Panorama(base.PanDevice):
         "objects.Tag",
         "objects.ApplicationObject",
         "objects.ApplicationGroup",
+        "objects.ApplicationTag",
         "objects.ApplicationFilter",
         "objects.ApplicationContainer",
         "objects.ScheduleObject",
@@ -428,6 +446,9 @@ class Panorama(base.PanDevice):
         "plugins.CloudServicesPlugin",
         "policies.Rulebase",
     )
+    OPSTATES = {
+        "dg_hierarchy": PanoramaDeviceGroupHierarchy,
+    }
 
     def __init__(
         self,
@@ -859,47 +880,6 @@ class Panorama(base.PanDevice):
                     "expires": x.find("./expiry-time").text,
                 }
             )
-
-        return ans
-
-    def _setup_opstate(self):
-        self.opstate = PanoramaOpState(self)
-
-
-class PanoramaOpState(object):
-    """Panorama OP state handling."""
-
-    def __init__(self, obj):
-        self.dg_hierarchy = PanoramaDeviceGroupHierarchy(obj)
-
-
-class PanoramaDeviceGroupHierarchy(object):
-    """Operational state handling for device group hierarchy."""
-
-    def __init__(self, obj):
-        self.obj = obj
-        self.parent = None
-
-    def fetch(self):
-        """Returns a dict of device groups and their parents.
-
-        Keys in the dict are the device group's name, while the value is the
-        name of that device group's parent.  Top level device groups will have
-        a parent of ``None``.
-
-        Returns:
-            dict
-
-        """
-
-        resp = self.obj.op("show dg-hierarchy")
-        data = resp.find("./result/dg-hierarchy")
-
-        ans = {}
-        nodes = [(None, x) for x in data.findall("./dg")]
-        for parent, elm in iter(nodes):
-            ans[elm.attrib["name"]] = parent
-            nodes.extend((elm.attrib["name"], x) for x in elm.findall("./dg"))
 
         return ans
 

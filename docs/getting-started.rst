@@ -32,6 +32,7 @@ You can also be more specific about which modules you want to import::
     from panos import objects
     from panos import network
     from panos import device
+    from panos import plugins
 
 Or, even *more* specific by importing a specific class::
 
@@ -106,6 +107,31 @@ double quoted arguments as text after removing the quotes. For example:
 
 The command's XML is then sent to the firewall.
 
+**Discovering an operational command's syntax**
+
+If you are trying to execute an operational command and the auto-formatting that
+pan-os-python performs doesn't seem to be working, SSH to your PAN-OS appliance and
+enable debugging to see how PAN-OS is formatting the command.  Let's take the CLI
+command ``show arp all`` as an example.  Let's SSH to PAN-OS and see what we get back::
+
+    > debug cli on
+    > show arp all
+
+    <request cmd="op" cookie="2801768344648204" uid="1000"><operations><show><arp><entry name='all'/></arp></show></operations></request>
+
+When taking debug CLI output and turning it into an operational command string, you'll
+want to take all the XML inside of the ``<operations>`` tag.  Thus, our command to XML
+conversion looks like this:
+
+* ``show arp all`` -> ``<show><arp><entry name='all'/></arp></show>``
+
+Operational commands that have an ``<entry>`` tag with an attribute (here,
+``name='all'``) is not a format that pan-os-python can convert to on your behalf.
+Thus, you will have to send in the XML yourself and instruct pan-os-python that the
+``cmd`` argument does not need to be turned into XML::
+
+    ans = fw.op("<show><arp><entry name='all'/></arp></show>", cmd_xml=False)
+
 **Parse the result**
 
 You can parse an ElementTree using the `python ElementTree library`_.
@@ -158,6 +184,74 @@ relative path to get packets out for every subinterface. In this example there
 are no subinterfaces, so it returns one list item.
 
 .. _python ElementTree library: https://docs.python.org/3/library/xml.etree.elementtree.html
+
+The ``opstate`` namespace
+-------------------------
+
+All pan-os-python objects have a special ``opstate`` namespace.  ``opstate`` is short
+for "operational state" and is meant to be a central place that objects can have
+non-configuration utility that the object may need.  For example, the Panorama object
+has an ``opstate`` for handling device group hierarchies and security rules have an
+``opstate`` for handling audit comments.  An object may also have an empty ``opstate``
+if nothing is applicable or nothing has been implemented yet.
+
+In order to find out which opstates are available, you can use ``.opstate.about()``
+to see what is available for this specific object::
+
+    >>> from panos.policies import SecurityRule
+    >>> rule = SecurityRule("my rule name")
+    >>> rule.opstate.about()
+    {'audit_comment': <panos.policies.RuleAuditComment at 0x1024d2210>,
+     'hit_count': <panos.policies.HitCount at 0x1024d2590>}
+
+Since the full class path is provided in the output, you can use that to refer to the
+documentation for further information on how a particular ``opstate`` namespace works.
+
+**Using opstate namespaces**
+
+Since the ``opstate`` namespaces are always initialized, they are always ready to be
+used.
+
+Here's a firewall example where we want to create a new security rule and then configure
+an "initial config" audit comment::
+
+    from panos.firewall import Firewall
+    from panos.policies import Rulebase, SecurityRule
+
+    fw = Firewall(.......)
+
+    base = Rulebase()
+    fw.add(base)
+
+    rule = SecurityRule("Int to Ext", .......)
+    base.add(rule)
+
+    rule.create()
+    rule.opstate.audit_comment.update("initial config")
+
+Here's another example using Panorama where we want to change an existing rule's
+description then configure an audit comment saying as much::
+
+    from panos.panorama import Panorama, DeviceGroup
+    from panos.policies import PreRulebase, SecurityRule
+
+    pano = Panorama(.........)
+
+    dg = DeviceGroup("myDg")
+    pano.add(dg)
+
+    base = PreRulebase()
+    dg.add(base)
+
+    rule = SecurityRule("Int to Ext")
+    base.add(rule)
+    rule.refresh()
+
+    # Update the rule description
+    rule.description = "My new description"
+
+    rule.apply()
+    rule.opstate.audit_comment.update("ID 12345 updating rule description")
 
 Configure your device
 ---------------------

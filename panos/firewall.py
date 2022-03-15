@@ -84,6 +84,7 @@ class Firewall(PanDevice):
         "objects.Tag",
         "objects.ApplicationObject",
         "objects.ApplicationGroup",
+        "objects.ApplicationTag",
         "objects.ApplicationFilter",
         "objects.ApplicationContainer",
         "objects.ScheduleObject",
