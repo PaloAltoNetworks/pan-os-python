@@ -36,7 +36,14 @@ from pan.config import PanConfig
 
 import panos
 import panos.errors as err
-from panos import isstring, string_or_list, updater, userid, yesno
+from panos import (
+    chunk_instances_for_delete_similar,
+    isstring,
+    string_or_list,
+    updater,
+    userid,
+    yesno,
+)
 
 logger = panos.getlogger(__name__)
 
@@ -1957,14 +1964,28 @@ class PanObject(object):
         self._perform_vsys_dict_import_delete(dev, vsys_dict)
 
         # Now perform the bulk delete.
+        joiner = ""
+        prefix = ""
         xpath = self.xpath_nosuffix()
         if self.SUFFIX == ENTRY:
-            entries = " or ".join("@name='{0}'".format(x.uid) for x in instances)
-            xpath += "/entry[{0}]".format(entries)
+            joiner = "@name='{0}'"
+            prefix = "entry"
         elif self.SUFFIX == MEMBER:
-            members = " or ".join("text()='{0}'".format(x.uid) for x in instances)
-            xpath += "/member[{0}]".format(members)
-        dev.xapi.delete(xpath, retry_on_peer=self.HA_SYNC)
+            joiner = "text()='{0}'"
+            prefix = "member"
+
+        # After some testing, PAN-OS seems to be able to handle a DELETE API call
+        # with up to 25k characters in around 3.3sec while not under stress, but
+        # this can balloon up to 15sec with PAN-OS under load.  So we'll need to
+        # break delete calls into chunks that will complete within 30sec instead
+        # of trying to specify everything all at once.
+        for chunk in chunk_instances_for_delete_similar(instances):
+            dev.xapi.delete(
+                "{0}/{1}[{2}]".format(
+                    xpath, prefix, " or ".join(joiner.format(x.uid) for x in chunk),
+                ),
+                retry_on_peer=self.HA_SYNC,
+            )
 
         # Remove each object from self, just like delete().
         for x in instances:
