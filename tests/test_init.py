@@ -12,6 +12,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+import random
 import unittest
 
 import panos
@@ -264,6 +265,58 @@ class TestStringToXml(unittest.TestCase):
         for x in self.quotes():
             with self.assertRaises(ValueError):
                 panos.string_to_xml("this also {0}fails".format(x), x)
+
+
+class SomeClass(object):
+    def __init__(self, uid):
+        self.uid = uid
+
+
+class TestChunkInstancesForDeleteSimilar(unittest.TestCase):
+    def get_list(self, length=10, count=1):
+        chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        return [
+            SomeClass("".join(random.choice(chars) for x in range(length)))
+            for y in range(count)
+        ]
+
+    def test_one_chunk_basic(self):
+        items = self.get_list(count=5)
+        chunks = panos.chunk_instances_for_delete_similar(items)
+
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(items, chunks[0])
+        self.assertEqual(len(items), sum(len(x) for x in chunks))
+
+    def test_one_chunk_for_greater_than_25k_name(self):
+        items = self.get_list(length=26000)
+        chunks = panos.chunk_instances_for_delete_similar(items)
+
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(items, chunks[0])
+        self.assertEqual(len(items), sum(len(x) for x in chunks))
+
+    def test_one_chunk_for_25k_exactly(self):
+        items = self.get_list(count=5, length=4988)
+        chunks = panos.chunk_instances_for_delete_similar(items)
+
+        self.assertEqual(1, len(chunks))
+        self.assertEqual(items, chunks[0])
+        self.assertEqual(len(items), sum(len(x) for x in chunks))
+
+    def test_two_chunks_high_count(self):
+        items = self.get_list(length=30, count=900)
+        chunks = panos.chunk_instances_for_delete_similar(items)
+
+        self.assertEqual(2, len(chunks))
+        self.assertEqual(len(items), sum(len(x) for x in chunks))
+
+    def test_two_chunks_long_names(self):
+        items = self.get_list(length=300, count=100)
+        chunks = panos.chunk_instances_for_delete_similar(items)
+
+        self.assertEqual(2, len(chunks))
+        self.assertEqual(len(items), sum(len(x) for x in chunks))
 
 
 if __name__ == "__main__":

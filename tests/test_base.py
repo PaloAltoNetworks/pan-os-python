@@ -15,6 +15,7 @@ try:
     from unittest import mock
 except ImportError:
     import mock
+import random
 import unittest
 import uuid
 import xml.etree.ElementTree as ET
@@ -1415,6 +1416,106 @@ class TestWhoami(unittest.TestCase):
         con.op = mock.Mock(**spec)
 
         self.assertIsNone(con.whoami())
+
+
+class TestDeleteSimilar(unittest.TestCase):
+    def config(self, length=10, count=1, suffix="entry"):
+        dev = mock.Mock()
+        chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+        listing = []
+        for x in range(count):
+            obj = Base.PanObject("".join(random.choice(chars) for y in range(length)),)
+            obj.parent = mock.Mock()
+            listing.append(obj)
+
+        # Now tweak the first element for the tests, the rest don't matter.
+        obj = listing[0]
+
+        obj._gather_bulk_info = mock.Mock(return_value=(dev, listing, None),)
+        if suffix == "member":
+            obj.SUFFIX = Base.MEMBER
+        else:
+            obj.SUFFIX = Base.ENTRY
+        obj._perform_vsys_dict_import_delete = mock.Mock()
+        obj.xpath_nosuffix = mock.Mock(return_value="/mock/xpath")
+
+        return dev, listing, obj
+
+    def test_delete_one_entry(self):
+        dev, listing, obj = self.config()
+
+        obj.delete_similar()
+
+        dev.xapi.delete.assert_called_once()
+        dev.xapi.delete.assert_called_once_with(
+            "/mock/xpath/entry[@name='{0}']".format(obj.uid), retry_on_peer=obj.HA_SYNC,
+        )
+
+    def test_delete_one_member(self):
+        dev, listing, obj = self.config(suffix="member")
+
+        obj.delete_similar()
+
+        dev.xapi.delete.assert_called_once()
+        dev.xapi.delete.assert_called_once_with(
+            "/mock/xpath/member[text()='{0}']".format(obj.uid),
+            retry_on_peer=obj.HA_SYNC,
+        )
+
+    def test_delete_two_entries(self):
+        dev, listing, obj = self.config(count=2)
+
+        obj.delete_similar()
+
+        dev.xapi.delete.assert_called_once()
+        dev.xapi.delete.assert_called_once_with(
+            "/mock/xpath/entry[@name='{0}' or @name='{1}']".format(
+                listing[0].uid, listing[1].uid
+            ),
+            retry_on_peer=obj.HA_SYNC,
+        )
+
+    def test_delete_two_members(self):
+        dev, listing, obj = self.config(count=2, suffix="member")
+
+        obj.delete_similar()
+
+        dev.xapi.delete.assert_called_once()
+        dev.xapi.delete.assert_called_once_with(
+            "/mock/xpath/member[text()='{0}' or text()='{1}']".format(
+                listing[0].uid, listing[1].uid
+            ),
+            retry_on_peer=obj.HA_SYNC,
+        )
+
+    def test_delete_gets_chunked_for_entries(self):
+        dev, listing, obj = self.config(length=30, count=1000, suffix="entry")
+
+        obj.delete_similar()
+
+        self.assertEqual(2, dev.xapi.delete.call_count)
+
+    def test_delete_gets_chunked_for_members(self):
+        dev, listing, obj = self.config(length=30, count=1000, suffix="member")
+
+        obj.delete_similar()
+
+        self.assertEqual(2, dev.xapi.delete.call_count)
+
+    def test_delete_extreme_entries(self):
+        dev, listing, obj = self.config(length=30, count=10000, suffix="entry")
+
+        obj.delete_similar()
+
+        self.assertTrue(dev.xapi.delete.call_count > 2)
+
+    def test_delete_extreme_members(self):
+        dev, listing, obj = self.config(length=30, count=10000, suffix="member")
+
+        obj.delete_similar()
+
+        self.assertTrue(dev.xapi.delete.call_count > 2)
 
 
 if __name__ == "__main__":

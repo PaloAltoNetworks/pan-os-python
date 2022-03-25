@@ -510,3 +510,20 @@ def parents_for(cls, classes):
         for ctn, x in classes.items()
         if childtype_name(cls) in getattr(x, "CHILDTYPES", [])
     ]
+
+
+def chunk_instances_for_delete_similar(instances):
+    start = 0
+    chunks = []
+    cur_length = 0
+
+    for end, x in enumerate(instances):
+        if cur_length >= 25000:
+            chunks.append(instances[start:end])
+            start = end
+            cur_length = 0
+        cur_length += len(x.uid) + 8 + 4
+
+    chunks.append(instances[start:])
+
+    return chunks
