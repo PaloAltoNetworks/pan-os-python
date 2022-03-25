@@ -883,6 +883,26 @@ class Panorama(base.PanDevice):
 
         return ans
 
+    def refresh_shared_objects(self, running_config=False, exceptions=True):
+        """Refresh all objects present in the shared scope.
+
+        NOTE:  This will remove any instance of any class that shows up
+        in the :class:`panos.panorama.Panorama` `CHILDTYPES` constant from
+        this Panorama's `children`.
+
+        Args:
+            running_config (bool): Set to True to refresh from the running
+                configuration (Default: False)
+            exceptions (bool): Set to False to prevent exceptions on failure
+                (Default: True)
+
+        """
+        xml = self.xapi.get("/config/shared")
+        if xml is not None:
+            xml = xml.find("./result/shared")
+
+        self.refresh(xml=xml, running_config=running_config, exceptions=exceptions)
+
 
 class PanoramaCommit(object):
     """Normalization of a Panorama commit.
