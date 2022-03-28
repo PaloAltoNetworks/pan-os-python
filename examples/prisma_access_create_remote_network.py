@@ -34,16 +34,15 @@ curpath = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.join(curpath, os.pardir)]
 
 
-from panos.panorama import Panorama
+from panos.network import IkeGateway, IpsecTunnel
+from panos.panorama import Panorama, Template
 from panos.plugins import (
+    AggBandwidth,
+    Bgp,
     CloudServicesPlugin,
     RemoteNetwork,
     RemoteNetworks,
-    Bgp,
-    AggBandwidth,
 )
-from panos.network import IkeGateway, IpsecTunnel
-from panos.panorama import Template
 
 __author__ = "bmigette"
 
@@ -90,7 +89,7 @@ def get_region_spn(remote_networks, region):
 def main():
     # Setting logging to debug the PanOS SDK
     logging_format = "%(levelname)s:%(name)s:%(message)s"
-    # logging.basicConfig(format=logging_format, level=logging.DEBUG - 2) #Use this to be even more verbose
+    # logging.basicConfig(format=logging_format, level=logging.DEBUG - 2)  # Use this to be even more verbose
     logging.basicConfig(format=logging_format, level=logging.DEBUG)
     # 1 - let's create the panorama  object that we want to modify.
     pan = Panorama(HOSTNAME, USERNAME, PASSWORD)
@@ -133,7 +132,7 @@ def main():
     # 5 - Creating Remote Network
     rn = RemoteNetwork(
         name=REMOTE_NETWORK_NAME,
-        static_routes=["10.11.12.0/24"],
+        subnets=["10.11.12.0/24"],
         region=REMOTE_NETWORK_REGION,
         spn_name=get_region_spn(remote_networks, REMOTE_NETWORK_COMPUTEREGION),
         ipsec_tunnel=IPSEC_TUNNEL_NAME,
@@ -142,9 +141,10 @@ def main():
 
     rn.add(bgp)
     remote_networks.add(rn).create()
-    # 6 - Commit + Push
-    # pan.commit_all(devicegroup="Remote_Network_Device_Group") #commit + push
-    pan.commit()  # commit only
+    # 6 - Commit + Push. r will be jobid
+    # r = pan.commit_all(devicegroup="Remote_Network_Device_Group")  # commit + push.
+    r = pan.commit()  # commit only
+    print(f"commit job id: {r}")
 
 
 if __name__ == "__main__":
