@@ -110,12 +110,28 @@ class RulebaseHitCount(OpState):
 
         cmd = ET.Element("show")
         sub = ET.SubElement(cmd, "rule-hit-count")
-        sub = ET.SubElement(sub, "vsys")
-        sub = ET.SubElement(sub, "vsys-name")
-        sub = ET.SubElement(sub, "entry", {"name": dev.vsys or "vsys1"})
-        sub = ET.SubElement(sub, "rule-base")
+        res_path = "./result/rule-hit-count"
+        rb_type_path_map = {PreRulebase: "pre-rulebase", PostRulebase: "post-rulebase"}
+
+        if dev.__class__.__name__ == "Panorama":
+            if self.obj.parent.__class__.__name__ == "Panorama":
+                sub = ET.SubElement(sub, "shared")
+                res_path += "/shared"
+            elif self.obj.parent.__class__.__name__ == "DeviceGroup":
+                sub = ET.SubElement(sub, "device-group")
+                sub = ET.SubElement(sub, "entry", {"name": self.obj.parent.name})
+                res_path += "/device-group/entry"
+            sub = ET.SubElement(sub, rb_type_path_map.get(type(self.obj)))
+        else:
+            sub = ET.SubElement(sub, "vsys")
+            sub = ET.SubElement(sub, "vsys-name")
+            sub = ET.SubElement(sub, "entry", {"name": dev.vsys or "vsys1"})
+            sub = ET.SubElement(sub, "rule-base")
+            res_path += "/vsys/entry"
+
         sub = ET.SubElement(sub, "entry", {"name": style})
         sub = ET.SubElement(sub, "rules")
+        res_path += "/rule-base/entry/rules/entry"
 
         if all_rules:
             ET.SubElement(sub, "all")
@@ -132,11 +148,9 @@ class RulebaseHitCount(OpState):
                     ET.SubElement(sub, "member").text = x
 
         res = dev.op(ET.tostring(cmd, encoding="utf-8"), cmd_xml=False)
-
         ans = {}
-        for elm in res.findall(
-            "./result/rule-hit-count/vsys/entry/rule-base/entry/rules/entry"
-        ):
+
+        for elm in res.findall(res_path):
             name = elm.attrib["name"]
             for x in kids:
                 if x.uid == name:
