@@ -311,7 +311,7 @@ class SecurityRule(VersionedPanObject):
         tozone (list): To zones
         source (list): Source addresses
         source_user (list): Source users and groups
-        hip_profiles (list): GlobalProtect host integrity profiles
+        hip_profiles (list): (PAN-OS 10.1.4-) GlobalProtect host integrity profiles
         destination (list): Destination addresses
         application (list): Applications
         service (list): Destination services (ports) (Default:
@@ -377,7 +377,22 @@ class SecurityRule(VersionedPanObject):
             ("tozone", "to"),
             ("source", "source"),
             ("source_user", "source-user"),
-            ("hip_profiles", "hip-profiles"),
+        )
+        for var_name, path in any_defaults:
+            params.append(
+                VersionedParamPath(
+                    var_name, default=["any",], vartype="member", path=path
+                )
+            )
+        # this is hokey, but we have to preserve the ordering of the
+        # parameters in case callers specified `hip_profiles` positionally
+        # and not as a kwarg.
+        params.append(VersionedParamPath(
+            "hip_profiles",
+            default=["any",]))
+        params[-1].add_profile("0.0.0", vartype="member", path="hip-profiles")
+        params[-1].add_profile("10.1.5", exclude=True)
+        any_defaults = (
             ("destination", "destination"),
             ("application", "application"),
         )
