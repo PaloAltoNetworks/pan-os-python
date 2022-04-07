@@ -4230,10 +4230,14 @@ class PanDevice(PanObject):
     def _set_version_and_version_info(self, version):
         """Sets the version and the specially formatted versioning version."""
         self.version = version
-        # Example PAN-OS versions:  9.0.3-h1, 9.0.3.xfr
-        tokens = self.version.split(".")[:3]
-        tokens[2] = tokens[2].split("-")[0]
-        self._version_info = tuple(int(x) for x in tokens)
+        if version:
+            # Example PAN-OS versions:  9.0.3-h1, 9.0.3.xfr
+            tokens = self.version.split(".")[:3]
+            tokens[2] = tokens[2].split("-")[0]
+            self._version_info = tuple(int(x) for x in tokens)
+        else:
+            # Cases where version is not known (ie : firewall pre-registered on Panorama but never connected yet)
+            self._version_info = version
 
     def refresh_version(self):
         """Refresh version of PAN-OS
