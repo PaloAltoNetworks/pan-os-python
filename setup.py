@@ -23,7 +23,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name="pan-os-python",
-    version="1.7.0",
+    version="1.7.1",
     description="Framework for interacting with Palo Alto Networks devices via API",
     python_requires="!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,<4.0,>=2.7",
     project_urls={
@@ -49,7 +49,7 @@ setup(
     packages=["examples", "panos"],
     package_dir={"": "."},
     package_data={"examples": ["*.md"]},
-    install_requires=["pan-python==0.*,>=0.16.0"],
+    install_requires=["pan-python==0.*,>=0.17.0"],
     extras_require={
         "dev": [
             "bandit==1.*,>=1.6.2",
