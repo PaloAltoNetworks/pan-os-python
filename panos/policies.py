@@ -394,6 +394,7 @@ class SecurityRule(VersionedPanObject):
         for param in params:
             if param.name == 'hip_profiles':
                 param.add_profile("10.1.5", exclude=True)
+                break
 
         params.append(
             VersionedParamPath(
