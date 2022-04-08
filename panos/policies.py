@@ -377,22 +377,7 @@ class SecurityRule(VersionedPanObject):
             ("tozone", "to"),
             ("source", "source"),
             ("source_user", "source-user"),
-        )
-        for var_name, path in any_defaults:
-            params.append(
-                VersionedParamPath(
-                    var_name, default=["any",], vartype="member", path=path
-                )
-            )
-        # this is hokey, but we have to preserve the ordering of the
-        # parameters in case callers specified `hip_profiles` positionally
-        # and not as a kwarg.
-        params.append(VersionedParamPath(
-            "hip_profiles",
-            default=["any",]))
-        params[-1].add_profile("0.0.0", vartype="member", path="hip-profiles")
-        params[-1].add_profile("10.1.5", exclude=True)
-        any_defaults = (
+            ("hip_profiles", "hip-profiles"),
             ("destination", "destination"),
             ("application", "application"),
         )
@@ -402,6 +387,13 @@ class SecurityRule(VersionedPanObject):
                     var_name, default=["any",], vartype="member", path=path
                 )
             )
+
+        # 10.1.5 drops support for hip-profiles,
+        # so we want to make sure we don't include it in the request
+        # body that we send to the api
+        for param in params:
+            if param.name == 'hip_profiles':
+                param.add_profile("10.1.5", exclude=True)
 
         params.append(
             VersionedParamPath(
