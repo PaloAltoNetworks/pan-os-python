@@ -2,7 +2,6 @@ try:
     from unittest import mock
 except ImportError:
     import mock
-import re
 import unittest
 import xml.etree.ElementTree as ET
 
