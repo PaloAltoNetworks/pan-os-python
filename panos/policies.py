@@ -392,7 +392,7 @@ class SecurityRule(VersionedPanObject):
         # so we want to make sure we don't include it in the request
         # body that we send to the api
         for param in params:
-            if param.name == 'hip_profiles':
+            if param.name == "hip_profiles":
                 param.add_profile("10.1.5", exclude=True)
                 break
 
