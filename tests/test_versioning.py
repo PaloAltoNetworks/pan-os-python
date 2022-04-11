@@ -302,5 +302,22 @@ class TestVersionedObject(unittest.TestCase):
         self.assertRaises(ValueError, self.obj.add_profile, "5.5.5", "foo")
 
 
+def test_security_rule_hip_profiles():
+    "security rules on 10.1.5 should not have hip-profiles"
+    rule = panos.policies.SecurityRule(
+        name="test_rule", source=["0.0.0.0/0"], destination=["0.0.0.0/0"],
+    )
+    rule._UNKNOWN_PANOS_VERSION = (10, 1, 5)
+    st = rule.element_str(False).decode()
+    assert "<hip-profiles>" not in st
+
+    rule = panos.policies.SecurityRule(
+        name="test_rule", source=["0.0.0.0/0"], destination=["0.0.0.0/0"],
+    )
+    rule._UNKNOWN_PANOS_VERSION = (9, 0, 0)
+    st = rule.element_str(False).decode()
+    assert "<hip-profiles><member>any</member></hip-profiles>" in st
+
+
 if __name__ == "__main__":
     unittest.main()

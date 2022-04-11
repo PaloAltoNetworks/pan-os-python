@@ -1,4 +1,4 @@
-.PHONY: clean-pyc clean-build docs clean
+.PHONY: clean-pyc clean-build docs clean local-setup
 
 help:
 	@echo "clean - remove all build, test, coverage and Python artifacts"
@@ -16,6 +16,7 @@ help:
 	@echo "release - package and upload a release"
 	@echo "dist - package"
 	@echo "sync-deps - save dependencies to requirements.txt"
+	@echo "local-setup - sets up a linux or macos local directory for contribution by installing poetry and requirements"
 
 clean: clean-build clean-pyc clean-test clean-docs
 
@@ -57,6 +58,9 @@ check-format:
 test:
 	pytest
 
+test-simple:
+	pytest --disable-warnings
+
 test-all:
 	tox
 
@@ -80,3 +84,14 @@ sync-deps:
 	poetry export -f requirements.txt > requirements.txt
 	dephell deps convert
 	black setup.py
+
+local-setup:
+ifeq ($(wildcard ~/.local/bin/poetry),)
+	@echo "installing poetry"
+	curl -sSL https://install.python-poetry.org | python3 -
+else
+	@echo "poetry installation found"
+endif
+	~/.local/bin/poetry install
+
+	
