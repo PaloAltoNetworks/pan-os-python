@@ -696,7 +696,7 @@ class PanObject(object):
             % (type(self), self.uid, variable)
         )
         device.set_config_changed()
-        path, value, var_path = self._get_param_specific_info(variable)
+        path, attr, value, var_path = self._get_param_specific_info(variable)
         if var_path.vartype == "attrib":
             raise NotImplementedError("Cannot update 'attrib' style params")
         xpath = "{0}/{1}".format(self.xpath(), path)
@@ -868,7 +868,17 @@ class PanObject(object):
                 # Not an 'entry' variable
                 varpath = re.sub(regex, getattr(self, matchedvar.variable), varpath)
 
-        return (varpath, value, var)
+        # For vartype=attrib params, we need the containing XML element.
+        attr = None
+        if var.vartype == "attrib":
+            tokens = varpath.rsplit("/", 1)
+            attr = tokens[-1]
+            if len(tokens) == 1:
+                varpath = None
+            else:
+                varpath = tokens[0]
+
+        return (varpath, attr, value, var)
 
     def refresh(
         self, running_config=False, refresh_children=True, exceptions=True, xml=None
@@ -937,10 +947,10 @@ class PanObject(object):
         msg = '{0}: refresh_variable({1}) called on {2} object "{3}"'
         logger.debug(msg.format(device.id, variable, self.__class__.__name__, self.uid))
 
-        info = self._get_param_specific_info(variable)
-        path = info[0]
-        var_path = info[2]
-        xpath = "{0}/{1}".format(self.xpath(), path)
+        path, attr, value, var_path = self._get_param_specific_info(variable)
+        xpath = self.xpath()
+        if path is not None:
+            xpath += "/{0}".format(path)
         err_msg = "Object doesn't exist: {0}".format(xpath)
         setattr(self, variable, [] if var_path.vartype in ("member", "entry") else None)
 
@@ -957,7 +967,7 @@ class PanObject(object):
             return
 
         # Determine the first element to look for in the XML
-        lasttag = path.rsplit("/", 1)[-1]
+        lasttag = xpath.rsplit("/", 1)[-1]
         obj = root.find("result/" + lasttag)
         if obj is None:
             if exceptions:
@@ -967,13 +977,13 @@ class PanObject(object):
         if hasattr(var_path, "parse_value_from_xml_last_tag"):
             # Versioned class
             settings = {}
-            var_path.parse_value_from_xml_last_tag(obj, settings)
+            var_path.parse_value_from_xml_last_tag(obj, settings, attr)
             setattr(self, variable, settings.get(variable))
         else:
             # Classic class
             # Rebuild the elements that are lost by refreshing the
             # variable directly
-            sections = path.split("/")[:-1]
+            sections = xpath.split("/")[:-1]
             root = ET.Element("root")
             next_element = root
             for section in sections:
@@ -2677,7 +2687,8 @@ class VersionedPanObject(PanObject):
         parameter attached to this PanObject / VersionedPanObject.
 
         Returns:
-            A three element tuple of the variable's xpath (str), the value of
+            A four element tuple of the variable's xpath (str), the attribute
+            name (if this is vartype="attrib"), the value of
             the variable, and the full ``VarPath`` or ``ParamPath`` object that
             is responsible for handling this variable.
 
@@ -2725,7 +2736,12 @@ class VersionedPanObject(PanObject):
                     p = token.format(**settings)
             xpath.append(p)
 
-        return ("/".join(xpath), value, var_path)
+        # Remove the last part of vartype=attrib variable xpath parts.
+        attr = None
+        if var_path.vartype == "attrib":
+            attr = xpath.pop()
+
+        return ("/".join(xpath) or None, attr, value, var_path)
 
     def parse_xml(self, xml):
         """Parse the given XML into this object's parameters.
