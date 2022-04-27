@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pan-os-python"
-version = "1.7.1"
+version = "1.7.2"
 description = "Framework for interacting with Palo Alto Networks devices via API"
 authors = ["Palo Alto Networks <devrel@paloaltonetworks.com>"]
 license = "ISC"

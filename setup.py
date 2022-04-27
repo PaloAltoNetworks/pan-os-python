@@ -23,7 +23,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name="pan-os-python",
-    version="1.7.1",
+    version="1.7.2",
     description="Framework for interacting with Palo Alto Networks devices via API",
     python_requires="!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,<4.0,>=2.7",
     project_urls={
