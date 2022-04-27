@@ -1245,8 +1245,110 @@ class MyVersionedObject(Base.VersionedPanObject):
             )
         )
         params.append(Base.VersionedParamPath("someint", path="someint", vartype="int"))
+        params.append(
+            Base.VersionedParamPath("base_uuid", path="uuid", vartype="attrib")
+        )
+        params.append(Base.VersionedParamPath("action", path="config/action"))
+        params.append(
+            Base.VersionedParamPath(
+                "action_uuid", path="config/action/uuid", vartype="attrib"
+            )
+        )
 
         self._params = tuple(params)
+
+
+class TestVariableRefreshes(unittest.TestCase):
+    def obj(self, key, attribs, value):
+        o = MyVersionedObject("foo")
+        o.xpath = mock.Mock(return_value="/unit/test/xpath/for/entry[@name='foo']")
+
+        av = ""
+        if attribs:
+            for k, v in attribs.items():
+                av += ' {0}="{1}"'.format(k, v)
+        respString = "<response><result><{0}{1}>{2}</{0}></result></response>".format(
+            key, av, value, key
+        )
+        resp = ET.fromstring(respString)
+
+        spec = {
+            "id": "unittest",
+            "get_device_version.return_value": o._UNKNOWN_PANOS_VERSION,
+            "xapi.show.return_value": resp,
+            "xapi.get.return_value": resp,
+        }
+        m = mock.Mock(**spec)
+
+        o.nearest_pandevice = mock.Mock(return_value=m)
+
+        return m, o
+
+    def test_entry_refresh(self):
+        m, o = self.obj("entries", None, "<entry name='one'/><entry name='two'/>")
+
+        ans = o.refresh_variable("entries")
+
+        m.xapi.get.assert_called_once_with(
+            o.xpath() + "/multiple/entries", retry_on_peer=o.HA_SYNC,
+        )
+        self.assertEqual(ans, o.entries)
+        self.assertEqual(ans, ["one", "two"])
+
+    def test_member_refresh(self):
+        m, o = self.obj(
+            "members", None, "<member>first</member><member>second</member>"
+        )
+
+        ans = o.refresh_variable("members")
+
+        m.xapi.get.assert_called_once_with(
+            o.xpath() + "/multiple/members", retry_on_peer=o.HA_SYNC,
+        )
+        self.assertEqual(ans, o.members)
+        self.assertEqual(ans, ["first", "second"])
+
+    def test_int_refresh(self):
+        m, o = self.obj("someint", None, "42")
+
+        ans = o.refresh_variable("someint")
+
+        m.xapi.get.assert_called_once_with(
+            o.xpath() + "/someint", retry_on_peer=o.HA_SYNC,
+        )
+        self.assertEqual(ans, o.someint)
+        self.assertEqual(ans, 42)
+
+    def test_base_attrib_refresh(self):
+        m, o = self.obj("entry", {"name": "foo", "uuid": "1234-56-789"}, "")
+
+        ans = o.refresh_variable("base_uuid")
+
+        m.xapi.get.assert_called_once_with(o.xpath(), retry_on_peer=o.HA_SYNC)
+        self.assertEqual(ans, o.base_uuid)
+        self.assertEqual(ans, "1234-56-789")
+
+    def test_string_refresh(self):
+        m, o = self.obj("action", {"uuid": "1234-56-789"}, "DENY")
+
+        ans = o.refresh_variable("action")
+
+        m.xapi.get.assert_called_once_with(
+            o.xpath() + "/config/action", retry_on_peer=o.HA_SYNC,
+        )
+        self.assertEqual(ans, o.action)
+        self.assertEqual(ans, "DENY")
+
+    def test_nested_attrib_refresh(self):
+        m, o = self.obj("action", {"uuid": "1234-56-789"}, "DENY")
+
+        ans = o.refresh_variable("action_uuid")
+
+        m.xapi.get.assert_called_once_with(
+            o.xpath() + "/config/action", retry_on_peer=o.HA_SYNC,
+        )
+        self.assertEqual(ans, o.action_uuid)
+        self.assertEqual(ans, "1234-56-789")
 
 
 class TestEqual(unittest.TestCase):
