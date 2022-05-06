@@ -120,9 +120,9 @@ class SoftwareUpdater(Updater):
             "Device %s installing version: %s" % (self.pandevice.id, version)
         )
         response = self._op(
-            'request system software install%s version "%s"'
+            'request system software install %s version "%s"'
             % (
-                " load-config " + load_config if load_config is not None else "",
+                'load-config "{0}"'.format(load_config) if load_config else "",
                 version,
             )
         )
