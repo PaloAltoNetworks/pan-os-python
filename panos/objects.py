@@ -1275,15 +1275,15 @@ class Edl(VersionedPanObject):
 
         self._params = tuple(params)
 
-class TSAgent(VersionedPanObject):
+class TerminalServerAgent(VersionedPanObject):
     """Terminal Server Agent Object.
        Component of UserID to map users to traffic on terminal servers. 
 
     Args:
-        name (str): Name of TS Agent Client
+        name (str): Name of Terminal Server Agent Client
         disabled (bool): Whether TS Agent is enabled
-        host (str): IP address of the host where TS Agent is installed
-        port (str): Port of the TS Agent
+        host (str): IP address of the host where Terminal Server Agent is installed
+        port (str): Port of the Terminal Server Agent
     """
     ROOT = Root.VSYS
     SUFFIX = ENTRY
