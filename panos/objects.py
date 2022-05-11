@@ -214,6 +214,10 @@ class ServiceObject(VersionedPanObject):
         destination_port (str): Destination port of the service
         description (str): Description of this object
         tag (list): Administrative tags
+        enable_override_timeout (str): (PAN-OS 8.1+) Override session timeout value.
+        override_timeout (int): (PAN-OS 8.1+) The TCP or UDP session timeout value (in seconds).
+        override_half_close_timeout (int): (PAN-OS 8.1+) TCP session half-close tieout value (in seconds).
+        override_time_wait_timeout (int): (PAN-OS 8.1+) TCP session time-wait timeout value (in seconds).
 
     """
 
@@ -235,6 +239,9 @@ class ServiceObject(VersionedPanObject):
                 default="tcp",
             )
         )
+        params[-1].add_profile(
+            "8.1.0", path="protocol/{protocol}", values=["tcp", "udp", "sctp"],
+        )
         params.append(
             VersionedParamPath("source_port", path="protocol/{protocol}/source-port")
         )
@@ -243,6 +250,35 @@ class ServiceObject(VersionedPanObject):
         )
         params.append(VersionedParamPath("description", path="description"))
         params.append(VersionedParamPath("tag", path="tag", vartype="member"))
+        params.append(
+            VersionedParamPath("enable_override_timeout", default="no", exclude=True)
+        )
+        params[-1].add_profile(
+            "8.1.0",
+            values=["no", "yes"],
+            path="protocol/{protocol}/override/{enable_override_timeout}",
+        )
+        params.append(VersionedParamPath("override_timeout", exclude=True))
+        params[-1].add_profile(
+            "8.1.0",
+            vartype="int",
+            condition={"enable_override_timeout": "yes"},
+            path="protocol/{protocol}/override/{enable_override_timeout}/timeout",
+        )
+        params.append(VersionedParamPath("override_half_close_timeout", exclude=True))
+        params[-1].add_profile(
+            "8.1.0",
+            vartype="int",
+            condition={"enable_override_timeout": "yes", "protocol": "tcp",},
+            path="protocol/{protocol}/override/{enable_override_timeout}/halfclose-timeout",
+        )
+        params.append(VersionedParamPath("override_time_wait_timeout", exclude=True))
+        params[-1].add_profile(
+            "8.1.0",
+            vartype="int",
+            condition={"enable_override_timeout": "yes", "protocol": "tcp",},
+            path="protocol/{protocol}/override/{enable_override_timeout}/timewait-timeout",
+        )
 
         self._params = tuple(params)
 
