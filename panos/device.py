@@ -299,6 +299,10 @@ class SystemSettings(VersionedPanObject):
         dhcp_send_client_id (bool): (DHCP Mngt) Send Client ID
         accept_dhcp_hostname (bool): (DHCP Mngt) Accept DHCP hostname
         accept_dhcp_domain (bool): (DHCP Mngt) Accept DHCP domain name
+        proxy_server (str): Secure proxy server to use
+        proxy_port (int): Port for secure proxy server
+        proxy_username (str): Secure proxy user name to use
+        proxy_password (str): Secure proxy password to use
 
     """
 
@@ -377,6 +381,16 @@ class SystemSettings(VersionedPanObject):
                 "accept_dhcp_domain",
                 vartype="yesno",
                 path="type/dhcp-client/accept-dhcp-domain",
+            )
+        )
+        params.append(VersionedParamPath("proxy_server", path="secure-proxy-server"))
+        params.append(
+            VersionedParamPath("proxy_port", vartype="int", path="secure-proxy-port")
+        )
+        params.append(VersionedParamPath("proxy_username", path="secure-proxy-user"))
+        params.append(
+            VersionedParamPath(
+                "proxy_password", vartype="encrypted", path="secure-proxy-password"
             )
         )
 
