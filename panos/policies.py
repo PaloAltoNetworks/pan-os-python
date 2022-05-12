@@ -311,7 +311,7 @@ class SecurityRule(VersionedPanObject):
         tozone (list): To zones
         source (list): Source addresses
         source_user (list): Source users and groups
-        hip_profiles (list): (PAN-OS 10.1.4-) GlobalProtect host integrity profiles
+        hip_profiles (list): (PAN-OS 10.0.0-) GlobalProtect host integrity profiles
         destination (list): Destination addresses
         application (list): Applications
         service (list): Destination services (ports) (Default:
@@ -388,12 +388,12 @@ class SecurityRule(VersionedPanObject):
                 )
             )
 
-        # 10.1.5 drops support for hip-profiles,
+        # 10.0.0 drops support for hip-profiles,
         # so we want to make sure we don't include it in the request
         # body that we send to the api
         for param in params:
             if param.name == "hip_profiles":
-                param.add_profile("10.1.5", exclude=True)
+                param.add_profile("10.0.0", exclude=True)
                 break
 
         params.append(
