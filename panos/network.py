@@ -426,8 +426,8 @@ class Interface(VsysOperations):
             Zone: The zone for this interface after the operation completes
 
         """
-        # Don't add HA or aggregate-group interfaces to virtual router.
-        if getattr(self, "mode", "") in ("ha", "aggregate-group"):
+        # Don't add HA, aggregate-group, and layer2 interfaces to virtual router.
+        if getattr(self, "mode", "") in ("ha", "aggregate-group", "layer2"):
             return False
 
         return self._set_reference(
