@@ -496,6 +496,41 @@ class Interface(VsysOperations):
             False,
         )
 
+    def get_lldp_neighbors(self):
+        """Pull the LLDP neighbors for an interface
+
+        Returns:
+            list of dicts with keys ['chassis-type', 'chassis-id', 'port-type',
+                                     'port-id', 'port-description', 'ttl',
+                                     'system-name', 'system-description',
+                                     'system-capabilities',
+                                     'enabled-capabilities',
+                                     ]
+
+        """
+        from pan.config import PanConfig
+        if not self.lldp_enabled:
+            logger.debug("not fetching lldp neighbors from %s as lldp is not enabled", self.name)
+            return []
+
+        device = self.nearest_pandevice()
+        cmd = 'show lldp neighbors "{0}"'.format(self.name)
+        pconf = device.op(cmd)
+        pconf = PanConfig(pconf)
+        response = pconf.python()
+        logger.debug("response: " + str(response))
+        neighbors = response["response"]["result"]["entry"][0].get("neighbors")
+
+        if neighbors is None:
+            return []
+
+        for e in entries:
+            e.pop("name", None)
+            e.pop("management-address", None)
+
+        return neighbors["entry"]
+
+
     def get_counters(self):
         """Pull the counters for an interface
 
