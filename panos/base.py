@@ -5129,7 +5129,7 @@ class PanDevice(PanObject):
         else:
             try:
                 messages = job["details"]["line"]
-            except KeyError:
+            except (TypeError, KeyError):
                 messages = []
         if isstring(messages):
             messages = string_or_list(messages)
