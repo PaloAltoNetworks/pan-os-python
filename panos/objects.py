@@ -1379,13 +1379,12 @@ class UrlFilteringProfile(VersionedPanObject):
 
         params.append(VersionedParamPath("override", path="override", vartype="member"))
 
-        params.append(VersionedParamPath("mode", path="{type}"))
         params.append(
             VersionedParamPath(
-                "type",
+                "mode",
                 values=["disabled", "ip-user", "domain-credentials"],
                 default="disabled",
-                path="credential-enforcement/mode/{type}",
+                path="credential-enforcement/mode/{mode}",
             )
         )
 
