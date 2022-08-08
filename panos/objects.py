@@ -1274,3 +1274,123 @@ class Edl(VersionedPanObject):
         )
 
         self._params = tuple(params)
+
+class UrlFilteringProfile(VersionedPanObject):
+    """Administrator object
+
+    Args:
+        name (str): URL-Filtering name
+        description (str): Profile description
+        allow (list): Allowed categories
+        alert (list): Alert categories
+        categorychange (list): Category change categories
+        block (list): Block categories
+        continue (list): Continue categories
+        override (list): Override categories
+        mode (str): Credential enforcement mode. Valid values are "disabled",
+            "ip-user", "domain-credentials". Default value is "disabled". 
+        group_mapping (str): Group mapping used
+        log_severity (str): Log severity. Default value is "medium"
+        ce_allow (list): Credential enforcement allow categories
+        ce_alert (list): Credential enforcement alert categories
+        ce_block (list): Credential enforcement block categories
+        ce_continue (list): Credential enforcement continue categories
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/profiles/url-filtering")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+        
+        params.append(
+            VersionedParamPath("allow", path="allow", vartype="member")
+        )
+        
+        params.append(
+            VersionedParamPath("alert", path="alert", vartype="member")
+        )
+        
+        params.append(
+            VersionedParamPath("categorychange", path="categorychange", vartype="member")
+        )
+        
+        params.append(
+            VersionedParamPath("block", path="block", vartype="member")
+        )
+        
+        params.append(
+            VersionedParamPath("continue", path="continue", vartype="member")
+        )
+        
+        params.append(
+            VersionedParamPath("override", path="override", vartype="member")
+        )
+        
+        params.append(VersionedParamPath("mode", path="{type}"))
+        params.append(
+            VersionedParamPath(
+                "type",
+                values=["disabled", "ip-user", "domain-credentials"],
+                default="disabled",
+                path="credential-enforcement/mode/{type}",
+            )
+        )
+        
+        params.append(
+            VersionedParamPath(
+                "group_mapping",
+                path="credential-enforcement/mode/group-mapping",
+                vartype="string"
+            )
+        )
+        
+        params.append(
+            VersionedParamPath(
+                "log_severity",
+                path="credential-enforcement/log-severity",
+                vartype="string",
+                default="medium",
+            )
+        )
+        
+        params.append(
+            VersionedParamPath(
+                "ce_allow",
+                path="credential-enforcement/allow",
+                vartype="member",
+            )
+        )
+        
+        params.append(
+            VersionedParamPath(
+                "ce_alert",
+                path="credential-enforcement/alert",
+                vartype="member",
+            )
+        )
+        
+        params.append(
+            VersionedParamPath(
+                "ce_block",
+                path="credential-enforcement/block",
+                vartype="member",
+            )
+        )
+        
+        params.append(
+            VersionedParamPath(
+                "ce_continue",
+                path="credential-enforcement/continue",
+                vartype="member",
+            )
+        )
+
+        self._params = tuple(params)
