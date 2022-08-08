@@ -319,7 +319,8 @@ class ApplicationObject(VersionedPanObject):
         # xpaths
         self._xpaths.add_profile(value="/application")
         self._xpaths.add_profile(
-            value='//*[contains(local-name(), "application")]', parents=("Predefined",),
+            value='//*[contains(local-name(), "application")]',
+            parents=("Predefined",),
         )
 
         # params
@@ -615,7 +616,8 @@ class ApplicationContainer(VersionedPanObject):
         # xpaths
         self._xpaths.add_profile(value="/application-container")
         self._xpaths.add_profile(
-            value='//*[contains(local-name(), "application")]', parents=("Predefined",),
+            value='//*[contains(local-name(), "application")]',
+            parents=("Predefined",),
         )
 
         # params
@@ -859,7 +861,9 @@ class LogForwardingProfileMatchListAction(VersionedPanObject):
             VersionedParamPath(
                 "action_type",
                 default="tagging",
-                values=["tagging",],
+                values=[
+                    "tagging",
+                ],
                 path="type/{action_type}",
             )
         )
@@ -1149,7 +1153,10 @@ class Edl(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "edl_type", default="ip", path="type", values=("ip", "domain", "url"),
+                "edl_type",
+                default="ip",
+                path="type",
+                values=("ip", "domain", "url"),
             ),
         )
         params[-1].add_profile(
@@ -1162,38 +1169,77 @@ class Edl(VersionedPanObject):
             path="type/{edl_type}",
             values=("ip", "domain", "url", "predefined-ip", "predefined-url"),
         )
-        params.append(VersionedParamPath("description", path="description",),)
-        params[-1].add_profile(
-            "8.0.0", path="type/{edl_type}/description",
+        params.append(
+            VersionedParamPath(
+                "description",
+                path="description",
+            ),
         )
-        params.append(VersionedParamPath("source", path="url",),)
         params[-1].add_profile(
-            "8.0.0", path="type/{edl_type}/url",
+            "8.0.0",
+            path="type/{edl_type}/description",
         )
-        params.append(VersionedParamPath("exceptions", exclude=True,),)
+        params.append(
+            VersionedParamPath(
+                "source",
+                path="url",
+            ),
+        )
         params[-1].add_profile(
-            "8.0.0", vartype="member", path="type/{edl_type}/exception-list",
+            "8.0.0",
+            path="type/{edl_type}/url",
         )
-        params.append(VersionedParamPath("certificate_profile", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "exceptions",
+                exclude=True,
+            ),
+        )
+        params[-1].add_profile(
+            "8.0.0",
+            vartype="member",
+            path="type/{edl_type}/exception-list",
+        )
+        params.append(
+            VersionedParamPath(
+                "certificate_profile",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
             "8.0.0",
             path="type/{edl_type}/certificate-profile",
             condition={"edl_type": ["ip", "domain", "url"]},
         )
-        params.append(VersionedParamPath("username", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "username",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
             "8.0.0",
             path="type/{edl_type}/auth/username",
             condition={"edl_type": ["ip", "domain", "url"]},
         )
-        params.append(VersionedParamPath("password", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "password",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
             "8.0.0",
             path="type/{edl_type}/auth/password",
             vartype="encrypted",
             condition={"edl_type": ["ip", "domain", "url"]},
         )
-        params.append(VersionedParamPath("expand_domain", exclude=True,),)
+        params.append(
+            VersionedParamPath(
+                "expand_domain",
+                exclude=True,
+            ),
+        )
         params[-1].add_profile(
             "9.0.0",
             path="type/{edl_type}/expand-domain",
@@ -1256,7 +1302,10 @@ class Edl(VersionedPanObject):
                 "friday",
                 "saturday",
             ),
-            condition={"edl_type": ["ip", "domain", "url"], "repeat": "weekly",},
+            condition={
+                "edl_type": ["ip", "domain", "url"],
+                "repeat": "weekly",
+            },
         )
         params.append(
             VersionedParamPath(
@@ -1270,10 +1319,14 @@ class Edl(VersionedPanObject):
             "8.0.0",
             vartype="int",
             path="type/{edl_type}/recurring/{repeat}/day-of-month",
-            condition={"edl_type": ["ip", "domain", "url"], "repeat": "monthly",},
+            condition={
+                "edl_type": ["ip", "domain", "url"],
+                "repeat": "monthly",
+            },
         )
 
         self._params = tuple(params)
+
 
 class UrlFilteringProfile(VersionedPanObject):
     """Administrator object
@@ -1288,7 +1341,7 @@ class UrlFilteringProfile(VersionedPanObject):
         continue (list): Continue categories
         override (list): Override categories
         mode (str): Credential enforcement mode. Valid values are "disabled",
-            "ip-user", "domain-credentials". Default value is "disabled". 
+            "ip-user", "domain-credentials". Default value is "disabled".
         group_mapping (str): Group mapping used
         log_severity (str): Log severity. Default value is "medium"
         ce_allow (list): Credential enforcement allow categories
@@ -1309,31 +1362,23 @@ class UrlFilteringProfile(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath("description", path="description"))
-        
+
+        params.append(VersionedParamPath("allow", path="allow", vartype="member"))
+
+        params.append(VersionedParamPath("alert", path="alert", vartype="member"))
+
         params.append(
-            VersionedParamPath("allow", path="allow", vartype="member")
+            VersionedParamPath(
+                "categorychange", path="categorychange", vartype="member"
+            )
         )
-        
-        params.append(
-            VersionedParamPath("alert", path="alert", vartype="member")
-        )
-        
-        params.append(
-            VersionedParamPath("categorychange", path="categorychange", vartype="member")
-        )
-        
-        params.append(
-            VersionedParamPath("block", path="block", vartype="member")
-        )
-        
-        params.append(
-            VersionedParamPath("continue", path="continue", vartype="member")
-        )
-        
-        params.append(
-            VersionedParamPath("override", path="override", vartype="member")
-        )
-        
+
+        params.append(VersionedParamPath("block", path="block", vartype="member"))
+
+        params.append(VersionedParamPath("continue", path="continue", vartype="member"))
+
+        params.append(VersionedParamPath("override", path="override", vartype="member"))
+
         params.append(VersionedParamPath("mode", path="{type}"))
         params.append(
             VersionedParamPath(
@@ -1343,15 +1388,15 @@ class UrlFilteringProfile(VersionedPanObject):
                 path="credential-enforcement/mode/{type}",
             )
         )
-        
+
         params.append(
             VersionedParamPath(
                 "group_mapping",
                 path="credential-enforcement/mode/group-mapping",
-                vartype="string"
+                vartype="string",
             )
         )
-        
+
         params.append(
             VersionedParamPath(
                 "log_severity",
@@ -1360,7 +1405,7 @@ class UrlFilteringProfile(VersionedPanObject):
                 default="medium",
             )
         )
-        
+
         params.append(
             VersionedParamPath(
                 "ce_allow",
@@ -1368,7 +1413,7 @@ class UrlFilteringProfile(VersionedPanObject):
                 vartype="member",
             )
         )
-        
+
         params.append(
             VersionedParamPath(
                 "ce_alert",
@@ -1376,7 +1421,7 @@ class UrlFilteringProfile(VersionedPanObject):
                 vartype="member",
             )
         )
-        
+
         params.append(
             VersionedParamPath(
                 "ce_block",
@@ -1384,7 +1429,7 @@ class UrlFilteringProfile(VersionedPanObject):
                 vartype="member",
             )
         )
-        
+
         params.append(
             VersionedParamPath(
                 "ce_continue",

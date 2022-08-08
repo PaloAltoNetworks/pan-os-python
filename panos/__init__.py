@@ -241,7 +241,9 @@ def tree_legend_dot():
         result += (
             '{module} [style=filled fillcolor={color} URL="{url}'
             '/module-{module}.html" target="_blank"];'.format(
-                module=module, color=node_color(module), url=DOCUMENTATION_URL,
+                module=module,
+                color=node_color(module),
+                url=DOCUMENTATION_URL,
             )
         )
     result += "}"
@@ -286,7 +288,11 @@ def string_or_list(value):
             value,
         ]
     return (
-        list(value) if "__iter__" in dir(value) else [value,]
+        list(value)
+        if "__iter__" in dir(value)
+        else [
+            value,
+        ]
     )
 
 
