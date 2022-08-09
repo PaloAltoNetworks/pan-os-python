@@ -1428,10 +1428,10 @@ class UrlFilteringProfile(VersionedPanObject):
             "ip-user", "domain-credentials". Default value is "disabled".
         group_mapping (str): Group mapping used
         log_severity (str): Log severity. Default value is "medium"
-        ce_allow (list): Credential enforcement allow categories
-        ce_alert (list): Credential enforcement alert categories
-        ce_block (list): Credential enforcement block categories
-        ce_continue (list): Credential enforcement continue categories
+        credential_enforcement_allow (list): Credential enforcement allow categories
+        credential_enforcement_alert (list): Credential enforcement alert categories
+        credential_enforcement_block (list): Credential enforcement block categories
+        credential_enforcement_continue (list): Credential enforcement continue categories
         enable_container_page (bool): Enable container page
         log_container_page_only (bool): Log container page only
         safe_search_enforcement (bool): Safe search enforcement
@@ -1498,7 +1498,7 @@ class UrlFilteringProfile(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "ce_allow",
+                "credential_enforcement_allow",
                 path="credential-enforcement/allow",
                 vartype="member",
             )
@@ -1506,7 +1506,7 @@ class UrlFilteringProfile(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "ce_alert",
+                "credential_enforcement_alert",
                 path="credential-enforcement/alert",
                 vartype="member",
             )
@@ -1514,7 +1514,7 @@ class UrlFilteringProfile(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "ce_block",
+                "credential_enforcement_block",
                 path="credential-enforcement/block",
                 vartype="member",
             )
@@ -1522,7 +1522,7 @@ class UrlFilteringProfile(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "ce_continue",
+                "credential_enforcement_continue",
                 path="credential-enforcement/continue",
                 vartype="member",
             )
