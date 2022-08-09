@@ -1329,7 +1329,7 @@ class Edl(VersionedPanObject):
 
 
 class UrlFilteringProfile(VersionedPanObject):
-    """Administrator object
+    """UrlFilteringProfile object
 
     Args:
         name (str): URL-Filtering name
