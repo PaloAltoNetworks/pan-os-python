@@ -1328,6 +1328,90 @@ class Edl(VersionedPanObject):
         self._params = tuple(params)
 
 
+class HTTPHeaderInsertionHeaders(VersionedPanObject):
+    """HTTPHeaderInsertionHeaders object
+
+    Args:
+        name (str): HTTP Insertion header name
+        header (str): Header key to be inserted
+        value (str): Header value to be inserted
+        log (bool): Enable log
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/headers")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("header", vartype="string", path="/header"))
+
+        params.append(VersionedParamPath("value", vartype="string", path="/value"))
+
+        params.append(VersionedParamPath("log", vartype="yesno", path="/log"))
+
+        self._params = tuple(params)
+
+
+class HTTPHeaderInsertionType(VersionedPanObject):
+    """HTTPHeaderInsertionType object
+
+    Args:
+        name (str): HTTP Header Insertion Type name
+        domains (list): List of domains
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = ("objects.HTTPHeaderInsertionHeaders",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/type")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("domains", vartype="member", path="/domains"))
+
+        self._params = tuple(params)
+
+
+class HTTPHeaderInsertion(VersionedPanObject):
+    """HTTPHeaderInsertion object
+
+    Args:
+        name (str): HTTP Header Insertion name
+        disable_override (bool): Disable override
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = ("objects.HTTPHeaderInsertionType",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/http-header-insertion")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "disable_override", vartype="yesno", path="/disable-override"
+            )
+        )
+
+        self._params = tuple(params)
+
+
 class UrlFilteringProfile(VersionedPanObject):
     """UrlFilteringProfile object
 
@@ -1348,11 +1432,18 @@ class UrlFilteringProfile(VersionedPanObject):
         ce_alert (list): Credential enforcement alert categories
         ce_block (list): Credential enforcement block categories
         ce_continue (list): Credential enforcement continue categories
+        enable_container_page (bool): Enable container page
+        log_container_page_only (bool): Log container page only
+        safe_search_enforcement (bool): Safe search enforcement
+        log_http_hdr_xff (bool): Log HTTP HDR XFF
+        log_http_hdr_user_agent (bool): Log HTTP HDR User-Agent
+        log_http_hdr_referer (bool): Log HTTP HDR Referer
 
     """
 
     ROOT = Root.VSYS
     SUFFIX = ENTRY
+    CHILDTYPES = ("objects.HTTPHeaderInsertion",)
 
     def _setup(self):
         # xpaths
@@ -1434,6 +1525,54 @@ class UrlFilteringProfile(VersionedPanObject):
                 "ce_continue",
                 path="credential-enforcement/continue",
                 vartype="member",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "enable_container_page",
+                path="enable-container-page",
+                vartype="yesno",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "log_container_page_only",
+                path="log-container-page-only",
+                vartype="yesno",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "safe_search_enforcement",
+                path="safe-search-enforcement",
+                vartype="yesno",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "log_http_hdr_xff",
+                path="log-http-hdr-xff",
+                vartype="yesno",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "log_http_hdr_user_agent",
+                path="log-http-hdr-user-agent",
+                vartype="yesno",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "log_http_hdr_referer",
+                path="log-http-hdr-referer",
+                vartype="yesno",
             )
         )
 
