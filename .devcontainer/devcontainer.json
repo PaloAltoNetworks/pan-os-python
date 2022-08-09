@@ -1,0 +1,40 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+	"name": "Python 3",
+	"image": "mcr.microsoft.com/devcontainers/python:1-3.9-bullseye",
+	"features": {
+		"ghcr.io/devcontainers-contrib/features/poetry:2": {
+			"version": "latest"
+		},
+		"ghcr.io/dhoeric/features/google-cloud-cli:1": {}
+	},
+	"postCreateCommand": "poetry install",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				// Python
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-python.black-formatter",
+				"ms-python.flake8",
+				"matangover.mypy",
+				"nwgh.bandit",
+				"KevinRose.vsc-python-indent",
+				// RestructuredText
+				"lextudio.restructuredtext",
+				"trond-snekvik.simple-rst",
+				// Helpers
+				"tamasfe.even-better-toml",
+				"njpwerner.autodocstring",
+				"aaron-bond.better-comments",
+				// Tools
+				"github.vscode-github-actions",
+				"GitHub.copilot",
+				"ms-toolsai.jupyter",
+				// VIM
+				"vscodevim.vim"
+			]
+		}
+	}
+}
