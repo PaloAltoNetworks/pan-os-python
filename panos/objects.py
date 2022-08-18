@@ -1454,9 +1454,9 @@ class UrlFilteringProfile(VersionedPanObject):
 
         params.append(VersionedParamPath("description", path="description"))
 
-        params.append(VersionedParamPath("allow", path="allow", vartype="member"))
+        params.append(VersionedParamPath("action_allow", path="allow", vartype="member"))
 
-        params.append(VersionedParamPath("alert", path="alert", vartype="member"))
+        params.append(VersionedParamPath("action_alert", path="alert", vartype="member"))
 
         params.append(
             VersionedParamPath(
@@ -1464,9 +1464,9 @@ class UrlFilteringProfile(VersionedPanObject):
             )
         )
 
-        params.append(VersionedParamPath("block", path="block", vartype="member"))
+        params.append(VersionedParamPath("action_block", path="block", vartype="member"))
 
-        params.append(VersionedParamPath("continue", path="continue", vartype="member"))
+        params.append(VersionedParamPath("action_continue", path="continue", vartype="member"))
 
         params.append(VersionedParamPath("override", path="override", vartype="member"))
 
