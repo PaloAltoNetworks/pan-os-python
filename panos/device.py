@@ -118,6 +118,11 @@ class Vsys(VersionedPanObject):
         "device.SyslogServerProfile",
         "device.HttpServerProfile",
         "device.LogSettingsSystem",
+        "device.LogSettingsGlobalProtect",
+        "device.LogSettingsUserId",
+        "device.LogSettingsIpTag",
+        "device.LogSettingsHipMatch",
+        "device.LogSettingsCorrelation",
         "device.LogSettingsConfig",
         "device.CertificateProfile",
         "device.SslDecrypt",
@@ -476,6 +481,286 @@ class LogSettingsConfig(VersionedPanObject):
     def _setup(self):
         # xpaths
         self._xpaths.add_profile(value="/log-settings/config/match-list")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("filter", default="All Logs", path="filter"))
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        params.append(
+            VersionedParamPath(
+                "send_to_panorama", vartype="yesno", path="send-to-panorama"
+            )
+        )
+
+        params.append(
+            VersionedParamPath("send_email", vartype="member", path="send-email")
+        )
+
+        params.append(
+            VersionedParamPath("send_snmp", vartype="member", path="send-snmptrap")
+        )
+
+        params.append(
+            VersionedParamPath("send_syslog", vartype="member", path="send-syslog")
+        )
+
+        params.append(
+            VersionedParamPath("send_http", vartype="member", path="send-http")
+        )
+
+        self._params = tuple(params)
+
+
+class LogSettingsGlobalProtect(VersionedPanObject):
+    """Firewall or Panorama device log settings globalprotect
+
+    Note: This is valid for PANS-OS 9.1+.
+
+    Args:
+        name (string): The name
+        filter (string): Valid values are "All logs" (default) or create your own filter
+        description (string): Description
+        send_to_panorama (bool): Send to panorama
+        send_email (list): Send email profile
+        send_snmp (list): Send snmp profile
+        send_syslog (list): Send syslog profile
+        send_http (list): Send http profile
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/log-settings/globalprotect/match-list")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("filter", default="All Logs", path="filter"))
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        params.append(
+            VersionedParamPath(
+                "send_to_panorama", vartype="yesno", path="send-to-panorama"
+            )
+        )
+
+        params.append(
+            VersionedParamPath("send_email", vartype="member", path="send-email")
+        )
+
+        params.append(
+            VersionedParamPath("send_snmp", vartype="member", path="send-snmptrap")
+        )
+
+        params.append(
+            VersionedParamPath("send_syslog", vartype="member", path="send-syslog")
+        )
+
+        params.append(
+            VersionedParamPath("send_http", vartype="member", path="send-http")
+        )
+
+        self._params = tuple(params)
+
+
+class LogSettingsUserId(VersionedPanObject):
+    """Firewall or Panorama device log settings userid
+
+    Note: This is valid for PANS-OS 8.0+.
+
+    Args:
+        name (string): The name
+        filter (string): Valid values are "All logs" (default) or create your own filter
+        description (string): Description
+        send_to_panorama (bool): Send to panorama
+        send_email (list): Send email profile
+        send_snmp (list): Send snmp profile
+        send_syslog (list): Send syslog profile
+        send_http (list): Send http profile
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/log-settings/userid/match-list")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("filter", default="All Logs", path="filter"))
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        params.append(
+            VersionedParamPath(
+                "send_to_panorama", vartype="yesno", path="send-to-panorama"
+            )
+        )
+
+        params.append(
+            VersionedParamPath("send_email", vartype="member", path="send-email")
+        )
+
+        params.append(
+            VersionedParamPath("send_snmp", vartype="member", path="send-snmptrap")
+        )
+
+        params.append(
+            VersionedParamPath("send_syslog", vartype="member", path="send-syslog")
+        )
+
+        params.append(
+            VersionedParamPath("send_http", vartype="member", path="send-http")
+        )
+
+        self._params = tuple(params)
+
+
+class LogSettingsIpTag(VersionedPanObject):
+    """Firewall or Panorama device log settings iptag
+
+    Note: This is valid for PANS-OS 9.0+.
+
+    Args:
+        name (string): The name
+        filter (string): Valid values are "All logs" (default) or create your own filter
+        description (string): Description
+        send_to_panorama (bool): Send to panorama
+        send_email (list): Send email profile
+        send_snmp (list): Send snmp profile
+        send_syslog (list): Send syslog profile
+        send_http (list): Send http profile
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/log-settings/iptag/match-list")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("filter", default="All Logs", path="filter"))
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        params.append(
+            VersionedParamPath(
+                "send_to_panorama", vartype="yesno", path="send-to-panorama"
+            )
+        )
+
+        params.append(
+            VersionedParamPath("send_email", vartype="member", path="send-email")
+        )
+
+        params.append(
+            VersionedParamPath("send_snmp", vartype="member", path="send-snmptrap")
+        )
+
+        params.append(
+            VersionedParamPath("send_syslog", vartype="member", path="send-syslog")
+        )
+
+        params.append(
+            VersionedParamPath("send_http", vartype="member", path="send-http")
+        )
+
+        self._params = tuple(params)
+
+
+class LogSettingsHipMatch(VersionedPanObject):
+    """Firewall or Panorama device log settings hipmatch
+
+    Note: This is valid for PANS-OS 8.0+.
+
+    Args:
+        name (string): The name
+        filter (string): Valid values are "All logs" (default) or create your own filter
+        description (string): Description
+        send_to_panorama (bool): Send to panorama
+        send_email (list): Send email profile
+        send_snmp (list): Send snmp profile
+        send_syslog (list): Send syslog profile
+        send_http (list): Send http profile
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/log-settings/hipmatch/match-list")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("filter", default="All Logs", path="filter"))
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        params.append(
+            VersionedParamPath(
+                "send_to_panorama", vartype="yesno", path="send-to-panorama"
+            )
+        )
+
+        params.append(
+            VersionedParamPath("send_email", vartype="member", path="send-email")
+        )
+
+        params.append(
+            VersionedParamPath("send_snmp", vartype="member", path="send-snmptrap")
+        )
+
+        params.append(
+            VersionedParamPath("send_syslog", vartype="member", path="send-syslog")
+        )
+
+        params.append(
+            VersionedParamPath("send_http", vartype="member", path="send-http")
+        )
+
+        self._params = tuple(params)
+
+
+class LogSettingsCorrelation(VersionedPanObject):
+    """Firewall or Panorama device log settings correlation
+
+    Note: This is valid for PANS-OS 8.0+.
+
+    Args:
+        name (string): The name
+        filter (string): Valid values are "All logs" (default) or create your own filter
+        description (string): Description
+        send_to_panorama (bool): Send to panorama
+        send_email (list): Send email profile
+        send_snmp (list): Send snmp profile
+        send_syslog (list): Send syslog profile
+        send_http (list): Send http profile
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/log-settings/correlation/match-list")
 
         # params
         params = []
