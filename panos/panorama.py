@@ -1148,6 +1148,10 @@ class PanoramaCommitAll(object):
             ET.SubElement(body, "name").text = self.name
             if self.description:
                 ET.SubElement(body, "description").text = self.description
+            if self.admins:
+                adms = ET.SubElement(body, "admin")
+                for user in self.admins:
+                    ET.SubElement(adms, "member").text = user
             if self.force_template_values:
                 ET.SubElement(body, "force-template-values").text = "yes"
             elif self.force_template_values is False:
@@ -1161,6 +1165,10 @@ class PanoramaCommitAll(object):
             ET.SubElement(body, "name").text = self.name
             if self.description:
                 ET.SubElement(body, "description").text = self.description
+            if self.admins:
+                adms = ET.SubElement(body, "admin")
+                for user in self.admins:
+                    ET.SubElement(adms, "member").text = user
             if self.force_template_values:
                 ET.SubElement(body, "force-template-values").text = "yes"
             elif self.force_template_values is False:
