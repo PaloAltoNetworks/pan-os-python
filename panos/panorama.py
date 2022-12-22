@@ -1057,6 +1057,7 @@ class PanoramaCommitAll(object):
         name (str): The name of the location to push the config to (e.g. - name
             of the device group, name of the template, etc).
         description (str): The commit message.
+        admins (list): (PAN-OS 10.2+) List of admins whose changes are to be pushed.
         include_template (bool): (For `device group` style commits) Set to True to include
             template changes.
         force_template_values (bool): (For `device group`, `template`, or `template stack`
@@ -1077,6 +1078,7 @@ class PanoramaCommitAll(object):
         style,
         name,
         description=None,
+        admins=None,
         include_template=None,
         force_template_values=None,
         devices=None,
@@ -1092,10 +1094,13 @@ class PanoramaCommitAll(object):
             raise ValueError("Invalid style {0}".format(style))
         if devices and not isinstance(devices, list):
             raise ValueError("devices must be a list")
+        if admins and not isinstance(admins, list):
+            raise ValueError("admins must be a list")
 
         self.style = style
         self.name = name
         self.description = description
+        self.admins = admins
         self.include_template = include_template
         self.force_template_values = force_template_values
         self.devices = devices
@@ -1126,6 +1131,10 @@ class PanoramaCommitAll(object):
                     ET.SubElement(de, "entry", {"name": x})
             if self.description:
                 ET.SubElement(body, "description").text = self.description
+            if self.admins:
+                adms = ET.SubElement(body, "admin")
+                for user in self.admins:
+                    ET.SubElement(adms, "member").text = user
             if self.include_template:
                 ET.SubElement(body, "include-template").text = "yes"
             elif self.include_template is False:
