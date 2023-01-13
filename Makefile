@@ -82,7 +82,7 @@ dist: clean
 
 sync-deps:
 	poetry export -f requirements.txt > requirements.txt
-	dephell deps convert
+	poetry2setup > setup.py
 	black setup.py
 
 local-setup:
