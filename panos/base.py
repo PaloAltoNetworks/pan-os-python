@@ -4862,21 +4862,24 @@ class PanDevice(PanObject):
             if exception:
                 raise err.PanCommitNotNeeded("Commit not needed", pan_device=self)
             else:
-                # By getting here, there was no "./result/job" in the commit response, 
+                # By getting here, there was no "./result/job" in the commit response,
                 # and there was no exception raised either, so capture the response message
                 commit_response_msg = commit_response.find("./msg/line").text
                 self._logger.debug("No job id. Msg: " + commit_response_msg)
 
                 # One scenario for arriving here in the the code is pushing to Log Collector Groups (LCG),
                 # they don't have a job ID, so test for the relevant message to see if this is the case
-                if 'Generated config and committed to connected collectors in group' in commit_response_msg:
+                if (
+                    "Generated config and committed to connected collectors in group"
+                    in commit_response_msg
+                ):
                     # With no real job ID to return, construct a reasonable response.
                     # There is currently no way to check the push to LCG was a success, so assume it was
                     log_collector_group_push_result = {
                         "success": True,
                         "result": "Ok",
                         "jobid": "0",
-                        "messages": [commit_response_msg]
+                        "messages": [commit_response_msg],
                     }
                     return log_collector_group_push_result
                 return
