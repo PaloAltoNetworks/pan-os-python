@@ -427,7 +427,7 @@ class Interface(VsysOperations):
 
         """
         # Don't add HA or aggregate-group interfaces to virtual router.
-        if getattr(self, "mode", "") in ("ha", "aggregate-group"):
+        if getattr(self, "mode", "") in ("ha", "aggregate-group", "layer2"):
             return False
 
         return self._set_reference(
