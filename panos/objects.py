@@ -1295,8 +1295,8 @@ class TerminalServerAgent(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath("host", path="host"))
         params.append(VersionedParamPath("disabled", path="disabled"))
+        params.append(VersionedParamPath("host", path="host"))
         params.append(VersionedParamPath("port", path="port"))
 
         self._params = tuple(params)
