@@ -1344,6 +1344,7 @@ class AggregateInterface(PhysicalInterface):
         lacp_passive_pre_negotiation (bool): Enable LACP passive pre-negotiation, off by default
         lacp_mode (str): Set LACP mode to 'active' or 'passive'
         lacp_rate (str): Set LACP transmission-rate to 'fast' or 'slow'
+        lacp_fast_failover (bool): Enable fast failover for LACP
 
     """
 
@@ -1509,6 +1510,14 @@ class AggregateInterface(PhysicalInterface):
                 condition={"mode": ["layer3", "layer2", "ha"], "lacp_enable": True},
                 values=["fast", "slow"],
                 path="{mode}/lacp/transmission-rate",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lacp_fast_failover",
+                condition={"mode": ["layer3", "layer2", "ha"], "lacp_enable": True},
+                vartype="yesno",
+                path="{mode}/lacp/fast-failover",
             )
         )
 
