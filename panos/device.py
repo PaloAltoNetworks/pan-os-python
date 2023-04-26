@@ -1494,6 +1494,12 @@ class HttpServerProfile(VersionedPanObject):
         iptag_name (str): (PAN-OS 9.0+) Name for custom IP tag format
         iptag_uri_format (str): (PAN-OS 9.0+) URI format for custom IP tag format
         iptag_payload (str): (PAN-OS 9.0+) Payload for custom IP tag format
+        globalprotect_name (str): (PAN-OS 9.1+) Name for custom GlobalProtect format
+        globalprotect_uri_format (str): (PAN-OS 9.1+) URI format for custom GlobalProtect format
+        globalprotect_payload (str): (PAN-OS 9.1+) Payload for custom GlobalProtect format
+        decryption_name (str): (PAN-OS 10.0+) Name for custom Decryption format
+        decryption_uri_format (str): (PAN-OS 10.0+) URI format for custom Decryption format
+        decryption_payload (str): (PAN-OS 10.0+) Payload for custom Decryption format
 
     """
 
@@ -1529,6 +1535,10 @@ class HttpServerProfile(VersionedPanObject):
         "device.HttpSctpParam",
         "device.HttpIpTagHeader",
         "device.HttpIpTagParam",
+        "device.HttpGlobalProtectHeader",
+        "device.HttpGlobalProtectParam",
+        "device.HttpDecryptionHeader",
+        "device.HttpDecryptionParam",
     )
 
     def _setup(self):
@@ -1635,6 +1645,18 @@ class HttpServerProfile(VersionedPanObject):
         params[-1].add_profile("9.0.0", path="format/iptag/url-format")
         params.append(VersionedParamPath("iptag_payload", exclude=True))
         params[-1].add_profile("9.0.0", path="format/iptag/payload")
+        params.append(VersionedParamPath("globalprotect_name", exclude=True))
+        params[-1].add_profile("9.1.0", path="format/globalprotect/name")
+        params.append(VersionedParamPath("globalprotect_uri_format", exclude=True))
+        params[-1].add_profile("9.1.0", path="format/globalprotect/url-format")
+        params.append(VersionedParamPath("globalprotect_payload", exclude=True))
+        params[-1].add_profile("9.1.0", path="format/globalprotect/payload")
+        params.append(VersionedParamPath("decryption_name", exclude=True))
+        params[-1].add_profile("10.0.0", path="format/decryption/name")
+        params.append(VersionedParamPath("decryption_uri_format", exclude=True))
+        params[-1].add_profile("10.0.0", path="format/decryption/url-format")
+        params.append(VersionedParamPath("decryption_payload", exclude=True))
+        params[-1].add_profile("10.0.0", path="format/decryption/payload")
 
         self._params = tuple(params)
 
@@ -2110,6 +2132,66 @@ class HttpIpTagParam(ValueEntry):
     """
 
     LOCATION = "/format/iptag/params"
+    ROOT = Root.PANORAMA_VSYS
+
+
+class HttpDecryptionHeader(ValueEntry):
+    """HTTP header for Decryption.
+
+    Note: This is valid for PAN-OS 10.0+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+
+    LOCATION = "/format/decryption/headers"
+    ROOT = Root.PANORAMA_VSYS
+
+
+class HttpDecryptionParam(ValueEntry):
+    """HTTP param for Decryption.
+
+    Note: This is valid for PAN-OS 10.0+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+
+    LOCATION = "/format/decryption/params"
+    ROOT = Root.PANORAMA_VSYS
+
+
+class HttpGlobalProtectHeader(ValueEntry):
+    """HTTP header for GlobalProtect.
+
+    Note: This is valid for PAN-OS 9.1+
+
+    Args:
+        name (str): The header name
+        value (str): The header value
+
+    """
+
+    LOCATION = "/format/globalprotect/headers"
+    ROOT = Root.PANORAMA_VSYS
+
+
+class HttpGlobalProtectParam(ValueEntry):
+    """HTTP param for GlobalProtect.
+
+    Note: This is valid for PAN-OS 9.1+
+
+    Args:
+        name (str): The param name
+        value (str): The param value
+
+    """
+
+    LOCATION = "/format/globalprotect/params"
     ROOT = Root.PANORAMA_VSYS
 
 
