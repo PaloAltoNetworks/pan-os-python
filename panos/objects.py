@@ -838,6 +838,22 @@ class LogForwardingProfileMatchList(VersionedPanObject):
                 "sctp",
             ],
         )
+        params[-1].add_profile(
+            "10.0.0",
+            path="log-type",
+            values=[
+                "traffic",
+                "threat",
+                "wildfire",
+                "url",
+                "data",
+                "gtp",
+                "tunnel",
+                "auth",
+                "sctp",
+                "decryption",
+            ],
+        )
         params.append(VersionedParamPath("filter", path="filter"))
         params.append(
             VersionedParamPath(
