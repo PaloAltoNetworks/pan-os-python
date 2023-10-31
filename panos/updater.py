@@ -17,10 +17,14 @@
 
 """Device updater handles software versions and updates for devices"""
 
+import time
+
 from pan.config import PanConfig
+from pan.xapi import PanXapiError
 
 import panos.errors as err
 from panos import PanOSVersion, getlogger, isstring
+from panos.errors import PanDeviceXapiError, PanURLError
 
 logger = getlogger(__name__)
 
@@ -271,6 +275,24 @@ class SoftwareUpdater(Updater):
             err.PanDeviceError: any problem during the upgrade process
 
         """
+        # Given this function is called repeatedly between upgrade and
+        # reboot cycles, ensure the device is ready before attempting
+        # to continue with further checking and upgrading
+        while True:
+            try:
+                response = self.pandevice.op('show chassis-ready')
+                ready_status = response.find(".//result").text.strip()
+            
+                if ready_status.lower() == "yes":
+                    print("Device is ready!")
+                    break  # Exit the loop if the device is ready
+
+            except (PanURLError, PanXapiError, PanDeviceXapiError) as e:
+                print(f"Error: {e}")
+                print("Device not ready. Retrying in 2 seconds...")
+                time.sleep(2)  # Wait for 2 seconds before checking again
+
+
         # Get list of software if needed
         if not self.versions:
             self.check()
@@ -282,7 +304,34 @@ class SoftwareUpdater(Updater):
         available_versions = map(PanOSVersion, self.versions.keys())
         current_version = PanOSVersion(self.pandevice.version)
         latest_version = max(available_versions)
-        next_minor_version = self._next_minor_version(current_version)
+        next_minor_version = self._next_minor_version(
+            current_version, self.versions.keys()
+        )
+        print(
+            "current ver:"
+            + str(current_version.major)
+            + "."
+            + str(current_version.minor)
+            + "."
+            + str(current_version.patch)
+        )
+        print("target ver:" + target_version)
+        print(
+            "next_minor_version:"
+            + str(next_minor_version.major)
+            + "."
+            + str(next_minor_version.minor)
+            + "."
+            + str(next_minor_version.patch)
+        )
+
+        # Check if done upgrading
+        if current_version == target_version:
+            self._logger.info(
+                "Device %s is running target version: %s"
+                % (self.pandevice.id, target_version)
+            )
+            return True
 
         # Check that this is an upgrade, not a downgrade
         if current_version > target_version:
@@ -293,15 +342,29 @@ class SoftwareUpdater(Updater):
 
         # Determine the next version to upgrade to
         if target_version == "latest":
+            print("latest")
             next_version = min(latest_version, next_minor_version)
         elif latest_version < target_version:
+            print("go to next minor")
             next_version = next_minor_version
-        elif not self._direct_upgrade_possible(current_version, target_version):
+        elif not self._direct_upgrade_possible(
+            current_version, target_version, self.versions.keys()
+        ):
+            print("direct not possible")
             next_version = next_minor_version
         else:
+            print("lgtm")
             next_version = PanOSVersion(str(target_version))
+        print(
+            "next_version:"
+            + str(next_version.major)
+            + "."
+            + str(next_version.minor)
+            + "."
+            + str(next_version.patch)
+        )
 
-        if next_version not in available_versions and not dryrun:
+        if str(next_version) not in self.versions.keys() and not dryrun:
             self._logger.info(
                 "Device %s upgrading to %s, currently on %s. Checking for newer versions."
                 % (self.pandevice.id, target_version, self.pandevice.version)
@@ -361,25 +424,80 @@ class SoftwareUpdater(Updater):
             next_version = PanOSVersion("7.0.1")
         return next_version
 
-    def _next_minor_version(self, version):
-        from panos.firewall import Firewall
+    def _next_minor_version(self, version, available_version_list):
 
+        # If version parameter is a string, convert to a PanOSVersion object
         if isstring(version):
-            next_version = PanOSVersion(version)
-        if version.minor == 1:
-            next_version = PanOSVersion(str(version.major + 1) + ".0.0")
-        # There is no PAN-OS 5.1 for firewalls, so next minor release from 5.0.x is 6.0.0.
-        elif (
-            version.major == 5
-            and version.minor == 0
-            and issubclass(type(self.pandevice), Firewall)
-        ):
-            next_version = PanOSVersion("6.0.0")
-        else:
-            next_version = PanOSVersion(str(version.major) + ".1.0")
-        # Account for lack of PAN-OS 7.0.0
-        if next_version == "7.0.0":
-            next_version = PanOSVersion("7.0.1")
+            version = PanOSVersion(version)
+
+        # Initial values before iterating over list of available versions
+        next_minor_found = False
+        next_minor_patch_number = 999
+
+        # Create a map or PanOSVersion objects to represent all the
+        # available versions the device has reported, and iterate
+        available_versions = map(PanOSVersion, available_version_list)
+        for available_version in available_versions:
+            if (
+                available_version.major == version.major
+                and available_version.minor == (version.minor + 1)
+            ):
+                # We found a newer minor version on the current major version
+                # Examples: 9.1 from 9.0, 10.2 from 10.1
+                next_minor_found = True
+
+                if available_version.patch < next_minor_patch_number:
+                    # Looking for the lowest patch version of this newer
+                    # minor version
+                    next_minor_patch_number = available_version.patch
+                    next_version = available_version
+
+        if not next_minor_found:
+            # We didn't find a newer minor version for the current major
+            # version, so now check for a newer major version, set initial
+            # values before iterating over available values
+            next_major_found = False
+            next_major_number = 999
+            next_minor_number = 999
+            next_patch_number = 999
+
+            # Create a map or PanOSVersion objects to represent all the
+            # available versions the device has reported, and iterate
+            available_versions = map(PanOSVersion, available_version_list)
+            for available_version in available_versions:
+                if available_version.major == (version.major + 1):
+                    # Found a newer minor version of the current major version
+                    # Examples: 9.0 from 8.1, 10.0 from 9.1, 11.0 from 10.2
+                    next_major_found = True
+                    next_major_number = available_version.major
+
+                    if available_version.minor < next_minor_number:
+                        # Looking for the lowest minor version of this newer
+                        # major version
+                        next_minor_number = available_version.minor
+                        next_patch_number = 999
+                    if (
+                        available_version.minor == next_minor_number
+                        and available_version.patch < next_patch_number
+                    ):
+                        # Looking for the lowest patch version of the current
+                        # lowest minor version of this newer major version
+                        next_patch_number = available_version.patch
+
+            # Create the return object
+            next_version = PanOSVersion(
+                str(next_major_number)
+                + "."
+                + str(next_minor_number)
+                + "."
+                + str(next_patch_number)
+            )
+
+            # If there were no newer minor or major version, return the
+            # current version
+            if not next_minor_found and not next_major_found:
+                next_version = version
+
         return next_version
 
     def _next_patch_version(self, version):
@@ -390,7 +508,9 @@ class SoftwareUpdater(Updater):
         )
         return next_version
 
-    def _direct_upgrade_possible(self, current_version, target_version):
+    def _direct_upgrade_possible(
+        self, current_version, target_version, available_version_list
+    ):
         """Check if current version can directly upgrade to target version
 
         :returns True if a direct upgrade is possible, False if not
@@ -406,28 +526,173 @@ class SoftwareUpdater(Updater):
         if (
             current_version.major == target_version.major
             and current_version.minor == target_version.minor
+            and (
+                current_version.patch < target_version.patch
+                or (
+                    current_version.patch == target_version.patch
+                    and current_version.subrelease_num < target_version.subrelease_num
+                )
+            )
         ):
+            print(
+                "patch upgrade: "
+                + str(current_version.major)
+                + "."
+                + str(current_version.minor)
+                + "."
+                + str(current_version.patch)
+                + " to "
+                + str(target_version.major)
+                + "."
+                + str(target_version.minor)
+                + "."
+                + str(target_version.patch)
+            )
             return True
 
         # Upgrade the minor version
         # eg. 6.0.2 -> 6.1.0
-        if (
-            current_version.major == target_version.major
-            and current_version.minor == 0
-            and target_version.minor == 1
-            and target_version.patch == 0
-        ):
-            return True
+        for available_version in available_version_list:
+            # First check if there is a newer minor
+            # Example: 10.0 to 10.1, 10.1 to 10.2, etc
+            # If so, this becomes the direct upgrade
+            # If not, the next major is the direct upgrade
+            if (
+                # Search all the available versions to see if there is a newer
+                # minor of this major version, and if the target matches
+                # the newer minor version
+                # Example 10.1.something to 10.2.lowest
+                PanOSVersion(available_version).major == current_version.major
+                and PanOSVersion(available_version).minor == current_version.minor + 1
+                and PanOSVersion(available_version).major == target_version.major
+                and PanOSVersion(available_version).minor == target_version.minor
+            ):
+                # Check if there is a lower patch version of the proposed minor upgrade
+                for checking_version in available_version_list:
+                    if (
+                        PanOSVersion(checking_version).major == target_version.major
+                        and PanOSVersion(checking_version).minor == target_version.minor
+                        and PanOSVersion(checking_version).patch < target_version.patch
+                    ):
+                        print("version that's lower:" + checking_version)
+                        print(
+                            "not direct, minor upgrade must go to lowest patch version first: "
+                            + str(current_version.major)
+                            + "."
+                            + str(current_version.minor)
+                            + "."
+                            + str(current_version.patch)
+                            + " to "
+                            + str(target_version.major)
+                            + "."
+                            + str(target_version.minor)
+                            + "."
+                            + str(target_version.patch)
+                        )
+                        return False
+                print(
+                    "upgrade is minor: "
+                    + str(current_version.major)
+                    + "."
+                    + str(current_version.minor)
+                    + "."
+                    + str(current_version.patch)
+                    + " to "
+                    + str(target_version.major)
+                    + "."
+                    + str(target_version.minor)
+                    + "."
+                    + str(target_version.patch)
+                )
+                return True
+            elif (
+                # Search all the available versions, to see if user is trying a
+                # major upgrade when there is a newer minor of this major version,
+                # because that would not be a direct upgrade
+                # Example 10.1 to 11.0 is attempting to skip 10.2
+                target_version.major > current_version.major
+                and PanOSVersion(available_version).major == current_version.major
+                and PanOSVersion(available_version).minor > current_version.minor
+            ):
+                print(
+                    "not direct, intermediate minor being skipped: "
+                    + str(current_version.major)
+                    + "."
+                    + str(current_version.minor)
+                    + "."
+                    + str(current_version.patch)
+                    + " to "
+                    + str(target_version.major)
+                    + "."
+                    + str(target_version.minor)
+                    + "."
+                    + str(target_version.patch)
+                )
+                return False
 
         # Upgrade the major version
         # eg. 6.1.2 -> 7.0.0
         if (
+            # Having checked above that there is no newer minor for
+            # the current major, just check that we're moving to the
+            # next major version
             current_version.major + 1 == target_version.major
-            and current_version.minor == 1
             and target_version.minor == 0
-            and target_version.patch == 0
         ):
-            return True
+            # Collect all the available minor versions in the next
+            # major version
+            minors_in_next_major = []
+            for available_version in available_version_list:
+                if (
+                    PanOSVersion(available_version).major == target_version.major
+                    and PanOSVersion(available_version).minor >= target_version.minor
+                ):
+                    minors_in_next_major.append(available_version)
+            if len(minors_in_next_major) == 0:
+                print(
+                    "no direct upgrade earlier: "
+                    + str(current_version.major)
+                    + "."
+                    + str(current_version.minor)
+                    + "."
+                    + str(current_version.patch)
+                    + " to "
+                    + str(target_version.major)
+                    + "."
+                    + str(target_version.minor)
+                    + "."
+                    + str(target_version.patch)
+                )
+                return False
+
+            # Create a map of PanOSVersion objects so we can use min()
+            minor_vers_in_next_major = map(PanOSVersion, minors_in_next_major)
+
+            if min(minor_vers_in_next_major) == target_version:
+                # Ensures the attempted major upgrade is targeting the
+                # lowest minor version available, to cover cases like
+                # 7.0.0 being pulled
+                print(
+                    "major upgrade: "
+                    + str(current_version.major)
+                    + "."
+                    + str(current_version.minor)
+                    + "."
+                    + str(current_version.patch)
+                    + " to "
+                    + str(target_version.major)
+                    + "."
+                    + str(target_version.minor)
+                    + "."
+                    + str(target_version.patch)
+                )
+                return True
+            else:
+                # Whilst the upgrade is valid in theory, target version
+                # was not the lowest minor version of the next major version
+                # as observed in the available versions
+                print("New failure condition")
+                return False
 
         # Upgrading a firewall from PAN-OS 5.0.x to 6.0.x
         # This is a special case because there is no PAN-OS 5.1.x
@@ -439,8 +704,36 @@ class SoftwareUpdater(Updater):
             and target_version == "6.0.0"
             and issubclass(type(self.pandevice), Firewall)
         ):
+            print(
+                "major upgrade 5x case: "
+                + str(current_version.major)
+                + "."
+                + str(current_version.minor)
+                + "."
+                + str(current_version.patch)
+                + " to "
+                + str(target_version.major)
+                + "."
+                + str(target_version.minor)
+                + "."
+                + str(target_version.patch)
+            )
             return True
 
+        print(
+            "no direct upgrade: "
+            + str(current_version.major)
+            + "."
+            + str(current_version.minor)
+            + "."
+            + str(current_version.patch)
+            + " to "
+            + str(target_version.major)
+            + "."
+            + str(target_version.minor)
+            + "."
+            + str(target_version.patch)
+        )
         return False
 
 
