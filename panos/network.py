@@ -5460,3 +5460,33 @@ class DhcpRelayIpv6Address(VersionedPanObject):
         params.append(VersionedParamPath("interface", path="interface"),)
 
         self._params = tuple(params)
+
+
+class LogicalRouter(VsysOperations):
+    """Logical router
+
+    Args:
+        name (str): Name of logical router (Default: "default")
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/network/logical-router")
+        self._xpaths.add_profile(
+            value="{0}/network/logical-router".format(self._TEMPLATE_DEVICE_XPATH),
+            parents=("Template", "TemplateStack"),
+        )
+
+        # xpath imports
+        self._xpath_imports.add_profile(value="/network/virtual-router")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath("interface", path="interface", vartype="member")
+        )
+
+        self._params = tuple(params)
