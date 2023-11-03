@@ -1158,8 +1158,8 @@ class EthernetInterface(PhysicalInterface):
         params.append(
             VersionedParamPath(
                 "ipv6_enabled",
-                path="{mode}/ipv6/enabled",
                 vartype="yesno",
+                path="{mode}/ipv6/enabled",
                 condition={"mode": "layer3"},
             )
         )
@@ -5466,7 +5466,7 @@ class LogicalRouter(VsysOperations):
     """Logical router
 
     Args:
-        name (str): Name of logical router (Default: "default")
+        name (str): Name of logical router
     """
 
     SUFFIX = ENTRY
@@ -5480,13 +5480,36 @@ class LogicalRouter(VsysOperations):
         )
 
         # xpath imports
-        self._xpath_imports.add_profile(value="/network/virtual-router")
+        self._xpath_imports.add_profile(value="/network/logical-router")
 
         # params
         params = []
 
         params.append(
-            VersionedParamPath("interface", path="interface", vartype="member")
+            VersionedParamPath("vrf", path="vrf", vartype="entry")
         )
+        params.append(
+            VersionedParamPath("interface", path="vrf/entry vrf/interface", vartype="member")
+        )
+
+        admin_dists = (
+            ("ad_static", "static"),
+            ("ad_static_ipv6", "static-ipv6"),
+            ("ad_ospf_inter", "ospf-inter"),
+            ("ad_ospf_intra", "ospf-intra"),
+            ("ad_ospf_ext", "ospf-ext"),
+            ("ad_ospfv3_inter", "ospfv3-inter"),
+            ("ad_ospfv3_intra", "ospfv3-intra"),
+            ("ad_ospfv3_ext", "ospfv3-ext"),
+            ("ad_bgp_internal", "bgp-internal"),
+            ("ad_bgp_external", "bgp-external"),
+            ("ad_bgp_local", "bgp-local"),
+            ("ad_rip", "rip"),
+        )
+
+        for var_name, path in admin_dists:
+            params.append(
+                VersionedParamPath(var_name, vartype="int", path="vrf/entry vrf/admin-dists/" + path)
+            )
 
         self._params = tuple(params)
