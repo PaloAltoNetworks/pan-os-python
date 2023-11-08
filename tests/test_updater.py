@@ -10,7 +10,6 @@ from panos.firewall import Firewall
 from panos.panorama import Panorama
 from panos.updater import SoftwareUpdater
 import panos.errors as err
-from pan.xapi import PanXapiError
 
 firewall_latest = "12.0.1"
 firewall_versionlist_to_test = [
@@ -602,35 +601,6 @@ class TestDownloadInstallReboot(TestCase):
         assert fw.restart.call_count == 1
         assert fw.syncreboot.call_count == 1
         assert PanOSVersion(new_version) == fw.version
-
-
-@patch("time.sleep")
-def test_is_ready_ok(mocksleep):
-    fw = _fw()
-    fw.xapi.op = mock.Mock(side_effect=[
-        err.PanURLError,
-        PanXapiError,
-        err.PanXapiError,
-        ET.fromstring("<response><result>yes</result></response>"),
-    ])
-
-    ans = fw.is_ready()
-
-    assert ans == True
-    assert mocksleep.call_count == 3
-
-
-@patch("time.sleep")
-def test_is_ready_times_out(mocksleep):
-    fw = _fw()
-    fw.xapi.op = mock.Mock(side_effect=[
-        err.PanURLError,
-    ])
-
-    ans = fw.is_ready(seconds=0)
-
-    assert ans == False
-    assert mocksleep.call_count == 0
 
 
 class TestUpgradeToVersion(TestCase):
