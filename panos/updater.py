@@ -278,20 +278,7 @@ class SoftwareUpdater(Updater):
         # Given this function is called repeatedly between upgrade and
         # reboot cycles, ensure the device is ready before attempting
         # to continue with further checking and upgrading
-        while True:
-            try:
-                response = self.pandevice.op('show chassis-ready')
-                ready_status = response.find(".//result").text.strip()
-            
-                if ready_status.lower() == "yes":
-                    print("Device is ready!")
-                    break  # Exit the loop if the device is ready
-
-            except (PanURLError, PanXapiError, PanDeviceXapiError) as e:
-                print(f"Error: {e}")
-                print("Device not ready. Retrying in 2 seconds...")
-                time.sleep(2)  # Wait for 2 seconds before checking again
-
+        self.pandevice.is_ready()
 
         # Get list of software if needed
         if not self.versions:
