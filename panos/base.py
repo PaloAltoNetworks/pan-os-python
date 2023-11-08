@@ -5602,7 +5602,9 @@ class PanDevice(PanObject):
         """
         end = None
         if minutes is not None or seconds is not None:
-            end = datetime.datetime.now() + datetime.timedelta(minutes=minutes or 0, seconds=seconds or 0)
+            end = datetime.datetime.now() + datetime.timedelta(
+                minutes=minutes or 0, seconds=seconds or 0,
+            )
 
         while True:
             response = None

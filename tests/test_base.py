@@ -1642,12 +1642,7 @@ class TestIsReady(unittest.TestCase):
     @mock.patch("time.sleep")
     def test_times_out(self, mocksleep):
         fw = Base.PanDevice("127.0.0.1", "admin", "secret", api_key="apikey")
-        fw.xapi.op = mock.Mock(
-            side_effect=[
-                Err.PanURLError,
-                ValueError,
-            ],
-        )
+        fw.xapi.op = mock.Mock(side_effect=[Err.PanURLError, ValueError,],)
 
         ans = fw.is_ready(seconds=0)
 
