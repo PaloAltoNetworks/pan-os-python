@@ -53,7 +53,7 @@ format:
 
 check-format:
 	isort --recursive --atomic --check-only panos
-	black --check .
+	black --check --diff .
 
 test:
 	pytest

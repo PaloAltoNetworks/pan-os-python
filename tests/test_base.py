@@ -1620,5 +1620,35 @@ class TestDeleteSimilar(unittest.TestCase):
         self.assertTrue(dev.xapi.delete.call_count > 2)
 
 
+class TestIsReady(unittest.TestCase):
+    @mock.patch("time.sleep")
+    def test_ok(self, mocksleep):
+        fw = Base.PanDevice("127.0.0.1", "admin", "secret", api_key="apikey")
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                Err.PanURLError,
+                pan.xapi.PanXapiError,
+                Err.PanXapiError,
+                ET.fromstring("<response><result>yes</result></response>"),
+                ValueError,
+            ],
+        )
+
+        ans = fw.is_ready()
+
+        assert ans == True
+        assert mocksleep.call_count == 3
+
+    @mock.patch("time.sleep")
+    def test_times_out(self, mocksleep):
+        fw = Base.PanDevice("127.0.0.1", "admin", "secret", api_key="apikey")
+        fw.xapi.op = mock.Mock(side_effect=[Err.PanURLError, ValueError,],)
+
+        ans = fw.is_ready(seconds=0)
+
+        assert ans == False
+        assert mocksleep.call_count == 0
+
+
 if __name__ == "__main__":
     unittest.main()
