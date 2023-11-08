@@ -5589,3 +5589,34 @@ class PanDevice(PanObject):
 
                 if name is not None and is_self:
                     return name
+
+    def is_ready(self, minutes=None, seconds=None):
+        """Runs "show chassis-ready" until the PAN-OS management plane is up.
+
+        Args:
+            minutes (int): The number of minutes to wait before giving up.
+            seconds (int): The number of seconds to wait before giving up.
+
+        Returns:
+            True if PAN-OS is ready, or False if a timeout was reached.
+        """
+        end = None
+        if minutes is not None or seconds is not None:
+            end = datetime.datetime.now() + datetime.timedelta(minutes=minutes or 0, seconds=seconds or 0)
+
+        while True:
+            response = None
+            try:
+                response = self.op("show chassis-ready")
+            except (err.PanURLError, pan.xapi.PanXapiError, err.PanDeviceXapiError):
+                pass
+            else:
+                ready_status = response.find(".//result").text.strip()
+                if ready_status.lower() == "yes":
+                    return True
+
+            if end is not None and datetime.datetime.now() >= end:
+                return False
+
+            # Device isn't up yet, retry after sleeping.
+            time.sleep(2)
