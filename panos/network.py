@@ -5470,6 +5470,9 @@ class LogicalRouter(VsysOperations):
     """
 
     SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.Vrf",
+    )
 
     def _setup(self):
         # xpaths
@@ -5488,8 +5491,43 @@ class LogicalRouter(VsysOperations):
         params.append(
             VersionedParamPath("vrf", path="vrf", vartype="entry")
         )
+
+        self._params = tuple(params)
+
+class Vrf(VsysOperations):
+    """VRF
+
+    Args:
+        name (str): Name of VRF
+        interface (list): List of interface names
+        ad_static (int): Administrative distance for this protocol
+        ad_static_ipv6 (int): Administrative distance for this protocol
+        ad_ospf_inter (int): Administrative distance for this protocol
+        ad_ospf_intra (int): Administrative distance for this protocol
+        ad_ospf_ext (int): Administrative distance for this protocol
+        ad_ospfv3_inter (int): Administrative distance for this protocol
+        ad_ospfv3_intra (int): Administrative distance for this protocol
+        ad_ospfv3_ext (int): Administrative distance for this protocol
+        ad_bgp_internal (int): Administrative distance for this protocol
+        ad_bgp_external (int): Administrative distance for this protocol
+        ad_bgp_local (int): Administrative distance for this protocol
+        ad_rip (int): Administrative distance for this protocol
+    """
+
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.VrfStaticRoute",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/vrf")
+
+        # params
+        params = []
+
         params.append(
-            VersionedParamPath("interface", path="vrf/entry vrf/interface", vartype="member")
+            VersionedParamPath("interface", path="interface", vartype="member")
         )
 
         admin_dists = (
@@ -5509,7 +5547,73 @@ class LogicalRouter(VsysOperations):
 
         for var_name, path in admin_dists:
             params.append(
-                VersionedParamPath(var_name, vartype="int", path="vrf/entry vrf/admin-dists/" + path)
+                VersionedParamPath(var_name, vartype="int", path="admin-dists/" + path)
             )
+
+        self._params = tuple(params)
+
+class VrfStaticRoute(VersionedPanObject):
+    """VRF Static Route
+
+    Add to a :class:`panos.network.Vrf` instance.
+
+    Args:
+        name (str): The name
+        destination (str): Destination network
+        nexthop_type (str): ip-address, discard, or next-vr
+        nexthop (str): Next hop IP address or Next VR Name
+        interface (str): Next hop interface
+        admin_dist (str): Administrative distance
+        metric (int): Metric (Default: 10)
+        enable_path_monitor (bool): Enable Path Monitor
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all'
+        preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
+
+    """
+
+    SUFFIX = ENTRY
+    CHILDTYPES = ("network.PathMonitorDestination",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/routing-table/ip/static-route")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("destination", path="destination"))
+        params.append(
+            VersionedParamPath(
+                "nexthop_type",
+                default="ip-address",
+                values=["discard", "ip-address", "next-lr", "fqdn"],
+                path="nexthop/{nexthop_type}",
+            )
+        )
+        params.append(VersionedParamPath("nexthop", path="nexthop/{nexthop_type}"))
+        params.append(VersionedParamPath("interface", path="interface"))
+        params.append(
+            VersionedParamPath("admin_dist", vartype="int", path="admin-dist")
+        )
+        params.append(
+            VersionedParamPath("metric", default=10, vartype="int", path="metric")
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_path_monitor", path="path-monitor/enable", vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "failure_condition",
+                values=("all", "any"),
+                path="path-monitor/failure-condition",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "preemptive_hold_time", vartype="int", path="path-monitor/hold-time"
+            )
+        )
 
         self._params = tuple(params)
