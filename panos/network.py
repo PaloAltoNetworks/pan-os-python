@@ -5494,6 +5494,7 @@ class LogicalRouter(VsysOperations):
 
         self._params = tuple(params)
 
+
 class Vrf(VsysOperations):
     """VRF
 
@@ -5551,6 +5552,64 @@ class Vrf(VsysOperations):
             )
 
         self._params = tuple(params)
+
+
+class BrfProfile(VersionedPanObject):
+    """BFD profile
+
+    Args:
+        name (str): The name
+        mode (str): BFD operation mode
+        min_tx_interval (int): Desired Minimum Tx Interval (ms)
+        min_rx_interval (int): Required Minimum Rx Interval (ms)
+        detection_multiplier (int): Detection Time Multiplier
+        hold_time (int) Hold Time (ms)
+        enable_multihop (bool): Enable Multihop
+        min_received_ttl (int): Minimum accepted TTL on received BFD packet
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/network/routing-profile/bfd")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "mode",
+                default="active",
+                values=["active", "passive"],
+                path="mode",
+            )
+        )
+        params.append(
+            VersionedParamPath("min_tx_interval", default=1000, vartype="int", path="min-tx-interval")
+        )
+        params.append(
+            VersionedParamPath("min_rx_interval", default=1000, vartype="int", path="min-rx-interval")
+        )
+        params.append(
+            VersionedParamPath("detection_multiplier", default=3, vartype="int", path="detection-multiplier")
+        )
+        params.append(
+            VersionedParamPath("hold_time", default=0, vartype="int", path="hold-time")
+        )
+        params.append(
+            VersionedParamPath("enable_multihop", default=False, vartype="yesno", path="multihop", exclude=True)
+        )
+        params.append(
+            VersionedParamPath(
+                "min_received_ttl",
+                vartype="int",
+                condition={"enable_multihop": True},
+                path="multihop/min-received-ttl"
+            )
+        )
+
+        self._params = tuple(params)
+
 
 class VrfStaticRoute(VersionedPanObject):
     """VRF Static Route
