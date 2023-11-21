@@ -5670,5 +5670,6 @@ class VrfStaticRoute(VersionedPanObject):
                 "preemptive_hold_time", vartype="int", path="path-monitor/hold-time"
             )
         )
+        params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
 
         self._params = tuple(params)
