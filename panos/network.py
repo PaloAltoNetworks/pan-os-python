@@ -5554,7 +5554,7 @@ class Vrf(VsysOperations):
         self._params = tuple(params)
 
 
-class BrfProfile(VersionedPanObject):
+class BfdProfile(VersionedPanObject):
     """BFD profile
 
     Args:
@@ -5597,13 +5597,9 @@ class BrfProfile(VersionedPanObject):
             VersionedParamPath("hold_time", default=0, vartype="int", path="hold-time")
         )
         params.append(
-            VersionedParamPath("enable_multihop", default=False, vartype="yesno", path="multihop", exclude=True)
-        )
-        params.append(
             VersionedParamPath(
                 "min_received_ttl",
                 vartype="int",
-                condition={"enable_multihop": True},
                 path="multihop/min-received-ttl"
             )
         )
