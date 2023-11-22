@@ -5675,6 +5675,7 @@ class VrfStaticRoute(VersionedPanObject):
 
         self._params = tuple(params)
 
+
 class VrfStaticRouteV6(VersionedPanObject):
     """VRF Static Route IPv6
 
@@ -5741,3 +5742,89 @@ class VrfStaticRouteV6(VersionedPanObject):
         params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
 
         self._params = tuple(params)
+
+
+class RoutingProfileBgpAuth(VersionedPanObject):
+    """BGP auth profile
+
+    Args:
+        name (str): The name of the profile
+        secret (str): Shared secret for the TCP MD5 authentication
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/bgp/auth-profile")
+
+        params = []
+
+        params.append(VersionedParamPath("secret", vartype="encrypted"))
+
+        self._params = tuple(params)
+
+
+class RoutingProfileBgpTimer(VersionedPanObject):
+    """BGP timer profile
+
+    Args:
+        name (str): The name of the profile
+        keep_alive_interval (int): Keep-alive interval
+        hold_time (int): Hold time
+        reconnect_retry_interval (int): Wait in the connect state before retrying connection to the peer
+        open_delay_time (int): Delay time after peer TCP connection up and sending 1st BGP Open Message
+        min_route_adv_interval (int): Minimum Route Advertisement Interval
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/bgp/timer-profile")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "keep_alive_interval",
+                path="keep-alive-interval",
+                vartype="int",
+                default=30,
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "hold_time",
+                path="hold-time",
+                vartype="int",
+                default=90,
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "reconnect_retry_interval",
+                path="reconnect-retry-interval",
+                vartype="int",
+                default=15,
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "open_delay_time",
+                path="open-delay-time",
+                vartype="int",
+                default=0,
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "min_route_adv_interval",
+                path="min-route-adv-interval",
+                vartype="int",
+                default=30,
+            )
+        )
+
+        self._params = tuple(params)
+
