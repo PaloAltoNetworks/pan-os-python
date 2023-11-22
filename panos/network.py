@@ -5745,7 +5745,7 @@ class VrfStaticRouteV6(VersionedPanObject):
 
 
 class RoutingProfileBgpAuth(VersionedPanObject):
-    """BGP auth profile
+    """BGP authentication profile
 
     Args:
         name (str): The name of the profile
@@ -5828,3 +5828,84 @@ class RoutingProfileBgpTimer(VersionedPanObject):
 
         self._params = tuple(params)
 
+
+class RoutingProfileBgpAddressFamily(VersionedPanObject):
+    """BGP address family profile
+
+    Args:
+        name (str): The name of the profile
+
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/bgp/address-family-profile")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_enable",
+                path="ipv4/unicast/enable",
+                default=False,
+                vartype="yesno"
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_soft_reconfig_with_stored_info",
+                path="ipv4/unicast/soft-reconfig-with-stored-info",
+                default=True,
+                vartype="yesno"
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_add_path_tx_all_paths",
+                path="ipv4/unicast/add-path/tx-all-paths",
+                default=False,
+                vartype="yesno"
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_add_path_tx_bestpath_per_as",
+                path="ipv4/unicast/add-path/tx-bestpath-per-AS",
+                default=False,
+                vartype="yesno"
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_as_override",
+                path="ipv4/unicast/as-override",
+                default=False,
+                vartype="yesno"
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_default_originate",
+                path="ipv4/unicast/default-originate",
+                default=False,
+                vartype="yesno"
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_route_reflector_client",
+                path="ipv4/unicast/route-reflector-client",
+                default=False,
+                vartype="yesno"
+            )
+        )
+
+
+
+        self._params = tuple(params)
