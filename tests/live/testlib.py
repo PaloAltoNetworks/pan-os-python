@@ -21,7 +21,9 @@ def random_ip(netmask=None):
 
 def random_netmask():
     return "{0}.{1}.{2}.0/24".format(
-        random.randint(11, 150), random.randint(1, 200), random.randint(1, 200),
+        random.randint(11, 150),
+        random.randint(1, 200),
+        random.randint(1, 200),
     )
 
 

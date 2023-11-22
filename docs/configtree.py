@@ -70,8 +70,10 @@ def node_style(cls):
                 style = "style=filled " + nodestyle[module] + " "
             except:
                 pass
-        result = '    {0} [{1}URL="../module-{2}.html#panos.{3}" target="_top"];\n'.format(
-            cls_name, style, module, cls
+        result = (
+            '    {0} [{1}URL="../module-{2}.html#panos.{3}" target="_top"];\n'.format(
+                cls_name, style, module, cls
+            )
         )
     else:
         if style:

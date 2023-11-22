@@ -94,6 +94,7 @@ class Firewall(PanDevice):
         "objects.DynamicUserGroup",
         "objects.Region",
         "objects.Edl",
+        "objects.UrlFilteringProfile",
         "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",

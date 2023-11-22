@@ -60,9 +60,18 @@ from panos.panorama import Template
 
 OBJECTS = {
     SnmpServerProfile: [None, SnmpV2cServer, SnmpV3Server],
-    EmailServerProfile: [None, EmailServer,],
-    LdapServerProfile: [None, LdapServer,],
-    SyslogServerProfile: [None, SyslogServer,],
+    EmailServerProfile: [
+        None,
+        EmailServer,
+    ],
+    LdapServerProfile: [
+        None,
+        LdapServer,
+    ],
+    SyslogServerProfile: [
+        None,
+        SyslogServer,
+    ],
     HttpServerProfile: [
         None,
         HttpServer,

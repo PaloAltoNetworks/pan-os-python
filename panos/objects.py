@@ -355,7 +355,8 @@ class ApplicationObject(VersionedPanObject):
         # xpaths
         self._xpaths.add_profile(value="/application")
         self._xpaths.add_profile(
-            value='//*[contains(local-name(), "application")]', parents=("Predefined",),
+            value='//*[contains(local-name(), "application")]',
+            parents=("Predefined",),
         )
 
         # params
@@ -651,7 +652,8 @@ class ApplicationContainer(VersionedPanObject):
         # xpaths
         self._xpaths.add_profile(value="/application-container")
         self._xpaths.add_profile(
-            value='//*[contains(local-name(), "application")]', parents=("Predefined",),
+            value='//*[contains(local-name(), "application")]',
+            parents=("Predefined",),
         )
 
         # params
@@ -911,7 +913,9 @@ class LogForwardingProfileMatchListAction(VersionedPanObject):
             VersionedParamPath(
                 "action_type",
                 default="tagging",
-                values=["tagging",],
+                values=[
+                    "tagging",
+                ],
                 path="type/{action_type}",
             )
         )
@@ -1201,7 +1205,10 @@ class Edl(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "edl_type", default="ip", path="type", values=("ip", "domain", "url"),
+                "edl_type",
+                default="ip",
+                path="type",
+                values=("ip", "domain", "url"),
             ),
         )
         params[-1].add_profile(
@@ -1214,38 +1221,77 @@ class Edl(VersionedPanObject):
             path="type/{edl_type}",
             values=("ip", "domain", "url", "predefined-ip", "predefined-url"),
         )
-        params.append(VersionedParamPath("description", path="description",),)
-        params[-1].add_profile(
-            "8.0.0", path="type/{edl_type}/description",
+        params.append(
+            VersionedParamPath(
+                "description",
+                path="description",
+            ),
         )
-        params.append(VersionedParamPath("source", path="url",),)
         params[-1].add_profile(
-            "8.0.0", path="type/{edl_type}/url",
+            "8.0.0",
+            path="type/{edl_type}/description",
         )
-        params.append(VersionedParamPath("exceptions", exclude=True,),)
+        params.append(
+            VersionedParamPath(
+                "source",
+                path="url",
+            ),
+        )
         params[-1].add_profile(
-            "8.0.0", vartype="member", path="type/{edl_type}/exception-list",
+            "8.0.0",
+            path="type/{edl_type}/url",
         )
-        params.append(VersionedParamPath("certificate_profile", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "exceptions",
+                exclude=True,
+            ),
+        )
+        params[-1].add_profile(
+            "8.0.0",
+            vartype="member",
+            path="type/{edl_type}/exception-list",
+        )
+        params.append(
+            VersionedParamPath(
+                "certificate_profile",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
             "8.0.0",
             path="type/{edl_type}/certificate-profile",
             condition={"edl_type": ["ip", "domain", "url"]},
         )
-        params.append(VersionedParamPath("username", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "username",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
             "8.0.0",
             path="type/{edl_type}/auth/username",
             condition={"edl_type": ["ip", "domain", "url"]},
         )
-        params.append(VersionedParamPath("password", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "password",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
             "8.0.0",
             path="type/{edl_type}/auth/password",
             vartype="encrypted",
             condition={"edl_type": ["ip", "domain", "url"]},
         )
-        params.append(VersionedParamPath("expand_domain", exclude=True,),)
+        params.append(
+            VersionedParamPath(
+                "expand_domain",
+                exclude=True,
+            ),
+        )
         params[-1].add_profile(
             "9.0.0",
             path="type/{edl_type}/expand-domain",
@@ -1308,7 +1354,10 @@ class Edl(VersionedPanObject):
                 "friday",
                 "saturday",
             ),
-            condition={"edl_type": ["ip", "domain", "url"], "repeat": "weekly",},
+            condition={
+                "edl_type": ["ip", "domain", "url"],
+                "repeat": "weekly",
+            },
         )
         params.append(
             VersionedParamPath(
@@ -1322,7 +1371,261 @@ class Edl(VersionedPanObject):
             "8.0.0",
             vartype="int",
             path="type/{edl_type}/recurring/{repeat}/day-of-month",
-            condition={"edl_type": ["ip", "domain", "url"], "repeat": "monthly",},
+            condition={
+                "edl_type": ["ip", "domain", "url"],
+                "repeat": "monthly",
+            },
+        )
+
+        self._params = tuple(params)
+
+
+class HTTPHeaderInsertionHeaders(VersionedPanObject):
+    """HTTPHeaderInsertionHeaders object
+
+    Args:
+        name (str): HTTP Insertion header name
+        header (str): Header key to be inserted
+        value (str): Header value to be inserted
+        log (bool): Enable log
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/headers")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("header", vartype="string", path="/header"))
+
+        params.append(VersionedParamPath("value", vartype="string", path="/value"))
+
+        params.append(VersionedParamPath("log", vartype="yesno", path="/log"))
+
+        self._params = tuple(params)
+
+
+class HTTPHeaderInsertionType(VersionedPanObject):
+    """HTTPHeaderInsertionType object
+
+    Args:
+        name (str): HTTP Header Insertion Type name
+        domains (list): List of domains
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = ("objects.HTTPHeaderInsertionHeaders",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/type")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("domains", vartype="member", path="/domains"))
+
+        self._params = tuple(params)
+
+
+class HTTPHeaderInsertion(VersionedPanObject):
+    """HTTPHeaderInsertion object
+
+    Args:
+        name (str): HTTP Header Insertion name
+        disable_override (bool): Disable override
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = ("objects.HTTPHeaderInsertionType",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/http-header-insertion")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "disable_override", vartype="yesno", path="/disable-override"
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class UrlFilteringProfile(VersionedPanObject):
+    """UrlFilteringProfile object
+
+    Args:
+        name (str): URL-Filtering name
+        description (str): Profile description
+        allow (list): Allowed categories
+        alert (list): Alert categories
+        categorychange (list): Category change categories
+        block (list): Block categories
+        continue (list): Continue categories
+        override (list): Override categories
+        mode (str): Credential enforcement mode. Valid values are "disabled",
+            "ip-user", "domain-credentials". Default value is "disabled".
+        group_mapping (str): Group mapping used
+        log_severity (str): Log severity. Default value is "medium"
+        credential_enforcement_allow (list): Credential enforcement allow categories
+        credential_enforcement_alert (list): Credential enforcement alert categories
+        credential_enforcement_block (list): Credential enforcement block categories
+        credential_enforcement_continue (list): Credential enforcement continue categories
+        enable_container_page (bool): Enable container page
+        log_container_page_only (bool): Log container page only
+        safe_search_enforcement (bool): Safe search enforcement
+        log_http_hdr_xff (bool): Log HTTP HDR XFF
+        log_http_hdr_user_agent (bool): Log HTTP HDR User-Agent
+        log_http_hdr_referer (bool): Log HTTP HDR Referer
+
+    """
+
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+    CHILDTYPES = ("objects.HTTPHeaderInsertion",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/profiles/url-filtering")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        params.append(VersionedParamPath("action_allow", path="allow", vartype="member"))
+
+        params.append(VersionedParamPath("action_alert", path="alert", vartype="member"))
+
+        params.append(
+            VersionedParamPath(
+                "categorychange", path="categorychange", vartype="member"
+            )
+        )
+
+        params.append(VersionedParamPath("action_block", path="block", vartype="member"))
+
+        params.append(VersionedParamPath("action_continue", path="continue", vartype="member"))
+
+        params.append(VersionedParamPath("override", path="override", vartype="member"))
+
+        params.append(
+            VersionedParamPath(
+                "mode",
+                values=["disabled", "ip-user", "domain-credentials"],
+                default="disabled",
+                path="credential-enforcement/mode/{mode}",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "group_mapping",
+                path="credential-enforcement/mode/group-mapping",
+                vartype="string",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "log_severity",
+                path="credential-enforcement/log-severity",
+                vartype="string",
+                default="medium",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "credential_enforcement_allow",
+                path="credential-enforcement/allow",
+                vartype="member",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "credential_enforcement_alert",
+                path="credential-enforcement/alert",
+                vartype="member",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "credential_enforcement_block",
+                path="credential-enforcement/block",
+                vartype="member",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "credential_enforcement_continue",
+                path="credential-enforcement/continue",
+                vartype="member",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "enable_container_page",
+                path="enable-container-page",
+                vartype="yesno",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "log_container_page_only",
+                path="log-container-page-only",
+                vartype="yesno",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "safe_search_enforcement",
+                path="safe-search-enforcement",
+                vartype="yesno",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "log_http_hdr_xff",
+                path="log-http-hdr-xff",
+                vartype="yesno",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "log_http_hdr_user_agent",
+                path="log-http-hdr-user-agent",
+                vartype="yesno",
+            )
+        )
+
+        params.append(
+            VersionedParamPath(
+                "log_http_hdr_referer",
+                path="log-http-hdr-referer",
+                vartype="yesno",
+            )
         )
 
         self._params = tuple(params)

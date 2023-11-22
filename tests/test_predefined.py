@@ -45,9 +45,13 @@ PREDEFINED_TEST_DATA = (
     (
         """//*[contains(local-name(), "application")]/entry[@name='{0}']""",
         '//*[contains(local-name(), "application")]/entry',
-        ApplicationContainer(name="ap container 1", applications=["func1", "func2"],),
         ApplicationContainer(
-            name="application container deux", applications=["a", "la", "mode"],
+            name="ap container 1",
+            applications=["func1", "func2"],
+        ),
+        ApplicationContainer(
+            name="application container deux",
+            applications=["a", "la", "mode"],
         ),
     ),
     (
@@ -97,8 +101,16 @@ PREDEFINED_TEST_DATA = (
     (
         None,
         "/tag/entry",
-        Tag(name="foo", color="color1", comments="First color",),
-        Tag(name="bar", color="color42", comments="Another color for another time",),
+        Tag(
+            name="foo",
+            color="color1",
+            comments="First color",
+        ),
+        Tag(
+            name="bar",
+            color="color42",
+            comments="Another color for another time",
+        ),
     ),
 )
 
@@ -142,7 +154,11 @@ def _fw(*args):
         prefix = "<response><result>"
         suffix = "</result></response>"
         inner = "".join(x.element_str().decode("utf-8") for x in args)
-        fw.xapi.get = mock.Mock(return_value=ET.fromstring(prefix + inner + suffix,))
+        fw.xapi.get = mock.Mock(
+            return_value=ET.fromstring(
+                prefix + inner + suffix,
+            )
+        )
 
     return fw
 

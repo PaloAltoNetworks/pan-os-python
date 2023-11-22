@@ -39,7 +39,8 @@ class TestObject(unittest.TestCase):
             raise unittest.SkipTest("OLD_CLS does not have element_str()")
 
         self.assertEqual(
-            old.element_str(), new.element_str(),
+            old.element_str(),
+            new.element_str(),
         )
 
     def test_positionally_populated_objects_are_equal(self):
@@ -56,7 +57,8 @@ class TestObject(unittest.TestCase):
             raise unittest.SkipTest("OLD_CLS does not have element_str()")
 
         self.assertEqual(
-            old.element_str(), new.element_str(),
+            old.element_str(),
+            new.element_str(),
         )
 
     def test_keyword_populated_objects_are_equal(self):
@@ -73,7 +75,8 @@ class TestObject(unittest.TestCase):
             raise unittest.SkipTest("OLD_CLS does not have element_str()")
 
         self.assertEqual(
-            old.element_str(), new.element_str(),
+            old.element_str(),
+            new.element_str(),
         )
 
     def test_parsing_old_elmstring_works(self):

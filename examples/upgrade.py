@@ -95,7 +95,11 @@ def main():
 
     # Connect to the device and determine its type (Firewall or Panorama).
     # This is important to know what version to upgrade to next.
-    device = PanDevice.create_from_device(args.hostname, args.username, args.password,)
+    device = PanDevice.create_from_device(
+        args.hostname,
+        args.username,
+        args.password,
+    )
 
     # Perform the upgrades in sequence with reboots between each upgrade
     device.software.upgrade_to_version(args.version, args.dryrun)

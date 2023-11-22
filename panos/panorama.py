@@ -118,7 +118,9 @@ class DeviceGroup(VersionedPanObject):
         "objects.CustomUrlCategory",
         "objects.LogForwardingProfile",
         "objects.Region",
+        "objects.Tag",
         "objects.Edl",
+        "objects.UrlFilteringProfile",
         "policies.PreRulebase",
         "policies.PostRulebase",
     )
@@ -439,6 +441,7 @@ class Panorama(base.PanDevice):
         "objects.DynamicUserGroup",
         "objects.Region",
         "objects.Edl",
+        "objects.UrlFilteringProfile",
         "firewall.Firewall",
         "panorama.DeviceGroup",
         "panorama.Template",
