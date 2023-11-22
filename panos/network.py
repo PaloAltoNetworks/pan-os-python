@@ -5518,6 +5518,7 @@ class Vrf(VsysOperations):
     SUFFIX = ENTRY
     CHILDTYPES = (
         "network.VrfStaticRoute",
+        "network.VrfStaticRouteV6",
     )
 
     def _setup(self):
@@ -5642,6 +5643,73 @@ class VrfStaticRoute(VersionedPanObject):
                 "nexthop_type",
                 default="ip-address",
                 values=["discard", "ip-address", "next-lr", "fqdn"],
+                path="nexthop/{nexthop_type}",
+            )
+        )
+        params.append(VersionedParamPath("nexthop", path="nexthop/{nexthop_type}"))
+        params.append(VersionedParamPath("interface", path="interface"))
+        params.append(
+            VersionedParamPath("admin_dist", vartype="int", path="admin-dist")
+        )
+        params.append(
+            VersionedParamPath("metric", default=10, vartype="int", path="metric")
+        )
+        params.append(
+            VersionedParamPath(
+                "enable_path_monitor", path="path-monitor/enable", vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "failure_condition",
+                values=("all", "any"),
+                path="path-monitor/failure-condition",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "preemptive_hold_time", vartype="int", path="path-monitor/hold-time"
+            )
+        )
+        params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
+
+        self._params = tuple(params)
+
+class VrfStaticRouteV6(VersionedPanObject):
+    """VRF Static Route IPv6
+
+    Add to a :class:`panos.network.Vrf` instance.
+
+    Args:
+        name (str): The name
+        destination (str): Destination network
+        nexthop_type (str): ip-address, discard, or next-vr
+        nexthop (str): Next hop IP address or Next VR Name
+        interface (str): Next hop interface
+        admin_dist (str): Administrative distance
+        metric (int): Metric (Default: 10)
+        enable_path_monitor (bool): Enable Path Monitor
+        failure_condition (str): Path Monitor failure condition set 'any' or 'all'
+        preemptive_hold_time (int): Path Monitor Preemptive Hold Time in minutes
+        bfd_profile (str): Name of the BRF profile
+    """
+
+    SUFFIX = ENTRY
+    CHILDTYPES = ("network.PathMonitorDestination",)
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/routing-table/ipv6/static-route")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("destination", path="destination"))
+        params.append(
+            VersionedParamPath(
+                "nexthop_type",
+                default="ip-address",
+                values=["discard", "ipv6-address", "next-lr", "fqdn"],
                 path="nexthop/{nexthop_type}",
             )
         )
