@@ -6235,3 +6235,108 @@ class RoutingProfileBgpDampening(VersionedPanObject):
         )
 
         self._params = tuple(params)
+
+
+class RoutingProfileBgpRedistribution(VersionedPanObject):
+    """BGP redistribution profile
+
+    Args:
+        name (str): The name of the profile
+        afi (str): Address Family Identifier
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/bgp/redistribution-profile")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "afi",
+                path="{afi}",
+                default="ipv4",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "static_enable",
+                path="{afi}/unicast/static/enable",
+                condition={"afi": ["ipv4", "ipv6"]},
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "static_metric",
+                path="{afi}/unicast/static/metric",
+                condition={"afi": ["ipv4", "ipv6"]},
+                vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connected_enable",
+                path="{afi}/unicast/connected/enable",
+                condition={"afi": ["ipv4", "ipv6"]},
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connected_metric",
+                path="{afi}/unicast/connected/metric",
+                condition={"afi": ["ipv4", "ipv6"]},
+                vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_enable",
+                path="{afi}/unicast/ospf/enable",
+                condition={"afi": "ipv4"},
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_metric",
+                path="{afi}/unicast/ospf/metric",
+                condition={"afi": "ipv4"},
+                vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospfv3_enable",
+                path="{afi}/unicast/ospfv3/enable",
+                condition={"afi": "ipv6"},
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospfv3_metric",
+                path="{afi}/unicast/ospfv3/metric",
+                condition={"afi": "ipv6"},
+                vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "rip_enable",
+                path="{afi}/unicast/rip/enable",
+                condition={"afi": "ipv4"},
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "rip_metric",
+                path="{afi}/unicast/rip/metric",
+                condition={"afi": "ipv4"},
+                vartype="int"
+            )
+        )
+
+        self._params = tuple(params)
