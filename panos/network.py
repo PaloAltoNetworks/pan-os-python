@@ -6180,3 +6180,58 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
         )
 
         self._params = tuple(params)
+
+
+class RoutingProfileBgpDampening(VersionedPanObject):
+    """BGP dampening profile
+
+    Args:
+        name (str): The name of the profile
+        description (str): Description of the BGP Dampening Profile
+        half_life (int): Half-life for the penalty
+        reuse_limit (int): Value to start reusing a route
+        suppress_limit (int): Value to start supressing the route
+        max_suppress_limit (int): Maximum duration (in minutes) a route can be suppressed
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/bgp/dampening-profile")
+
+        params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(
+            VersionedParamPath(
+                "half_life",
+                path="half-life",
+                default=15,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "reuse_limit",
+                path="reuse-limit",
+                default=750,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "suppress_limit",
+                path="suppress-limit",
+                default=2000,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "max_suppress_limit",
+                path="max-suppress-limit",
+                default=60,
+                vartype="int",
+            )
+        )
+
+        self._params = tuple(params)
