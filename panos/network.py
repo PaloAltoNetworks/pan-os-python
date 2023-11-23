@@ -6377,3 +6377,137 @@ class RoutingProfileBgpFiltering(VersionedPanObject):
         )
 
         self._params = tuple(params)
+
+
+class RoutingProfileOspfAuth(VersionedPanObject):
+    """OSPF authentication profile
+
+    Args:
+        name (str): The name of the profile
+        password (str): Simple password authentication
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/ospf/auth-profile")
+
+        params = []
+
+        params.append(VersionedParamPath("password", vartype="encrypted"))
+
+        self._params = tuple(params)
+
+
+class RoutingProfileOspfIfTimer(VersionedPanObject):
+    """BGP timer profile
+
+    Args:
+        name (str): The name of the profile
+        hello_interval (int): Interval (in seconds) to send Hello packets
+        dead_counts (int): Number of lost hello packets to declare router down
+        retransmit_interval (int): Interval (in seconds) to retransmit LSAs
+        transit_delay (int): Estimated delay (in seconds) to transmit LSAs
+        gr_delay (int): Period (in seconds) used to send grace LSAs before first hello is sent when graceful restart starts
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/ospf/if-timer-profile")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "hello_interval",
+                path="hello-interval",
+                vartype="int",
+                default=10,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "dead_counts",
+                path="dead-counts",
+                vartype="int",
+                default=4,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "retransmit_interval",
+                path="retransmit-interval",
+                vartype="int",
+                default=5,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "transit_delay",
+                path="transit-delay",
+                vartype="int",
+                default=1,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "gr_delay",
+                path="gr-delay",
+                vartype="int",
+                default=10,
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileOspfSpfTimer(VersionedPanObject):
+    """BGP timer profile
+
+    Args:
+        name (str): The name of the profile
+        lsa_interval (int): The minimum time in seconds between distinct originations of any particular LSA
+        spf_calculation_delay (int): Delay in seconds before running the SPF algorithm
+        initial_hold_time (int): Initial hold time (second) between consecutive SPF calculations
+        max_hold_time (int): Maximum hold time (second)
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/ospf/spf-timer-profile")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "lsa_interval",
+                path="lsa-interval",
+                vartype="int",
+                default=5,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "spf_calculation_delay",
+                path="spf-calculation-delay",
+                vartype="int",
+                default=5,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "initial_hold_time",
+                path="initial-hold-time",
+                vartype="int",
+                default=5,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "max_hold_time",
+                path="max-hold-time",
+                vartype="int",
+                default=5,
+            )
+        )
+
+        self._params = tuple(params)
