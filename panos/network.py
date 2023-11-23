@@ -6243,6 +6243,16 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
     Args:
         name (str): The name of the profile
         afi (str): Address Family Identifier
+        static_enable (bool): Enable Static Routes
+        static_metric (int): Static Metric (Field ignored if route-map configured)
+        connected_enable (bool): Enable Connected Routes
+        connected_metric (int): Connected Metric (Field ignored if route-map configured)
+        rip_enable (bool): Enable RIP Routes
+        rip_metric (int): RIP Metric (Field ignored if route-map configured)
+        ospf_enable (bool): Enable OSPF Routes (only for IPv4)
+        ospf_metric (int): OSPF Metric (Field ignored if route-map configured)
+        ospfv3_enable (bool): Enable OSPFv3 Routes (only for IPv6)
+        ospfv3_metric (int): OSPFv3 Metric (Field ignored if route-map configured)
     """
     SUFFIX = ENTRY
 
@@ -6336,6 +6346,33 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
                 path="{afi}/unicast/rip/metric",
                 condition={"afi": "ipv4"},
                 vartype="int"
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileBgpFiltering(VersionedPanObject):
+    """BGP filtering profile
+
+    Args:
+        name (str): The name of the profile
+        description (str): Description of the profile
+        afi (str): Address Family Identifier
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/bgp/filtering-profile")
+
+        params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(
+            VersionedParamPath(
+                "afi",
+                path="{afi}",
+                default="ipv4",
             )
         )
 
