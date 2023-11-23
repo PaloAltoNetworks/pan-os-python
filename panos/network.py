@@ -5834,7 +5834,23 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
 
     Args:
         name (str): The name of the profile
-
+        ipv4_unicast_enable (bool): Enable IPv4 Unicast Profile
+        ipv4_unicast_soft_reconfig_with_stored_info (bool): Soft reconfiguration of peer with stored routes
+        ipv4_unicast_add_path_tx_all_paths (bool): Advertise all paths to peer
+        ipv4_unicast_add_path_tx_bestpath_per_as (bool): Advertise the bestpath per each neighboring AS
+        ipv4_unicast_as_override (bool): Override ASNs in outbound updates if AS-Path equals Remote-A
+        ipv4_unicast_route_reflector_client (bool): Route Reflector Client
+        ipv4_unicast_default_originate (bool): Originate Default Route
+        ipv4_unicast_allowas_in (str): Accept my AS in AS_PATH if route originated in my AS
+        ipv4_unicast_allowas_in_occurrence (int): Number of occurrences of AS number
+        ipv4_unicast_maximum_prefix_num_prefixes (int): Max allowed prefixes from this peer
+        ipv4_unicast_maximum_prefix_threshold (int): Threshold value (%) at which to generate a warning msg
+        ipv4_unicast_maximum_prefix_action (str): Action if max-prefixes reached
+        ipv4_unicast_maximum_prefix_action_restart_interval (int): Restart connection when limit exceeded
+        ipv4_unicast_next_hop (str): Disable next-hop calculation
+        ipv4_unicast_remove_private_as (str): Remove private ASNs in outbound updates
+        ipv4_unicast_send_community (str): Send community attributes
+        ipv4_unicast_orf (str): Advertise ORF (Outbound Route Filtering) Capability
     """
     SUFFIX = ENTRY
 
@@ -5906,6 +5922,88 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
             )
         )
 
-
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_allowas_in",
+                path="ipv4/unicast/allowas-in/{ipv4_unicast_allowas_in}",
+                values=["origin", "occurrence", "none"],
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_allowas_in_occurrence",
+                condition={"ipv4_unicast_allowas_in": "occurrence"},
+                path="ipv4/unicast/allowas-in/occurrence",
+                default=1,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_maximum_prefix_num_prefixes",
+                path="ipv4/unicast/maximum-prefix/num_prefixes",
+                default=1000,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_maximum_prefix_threshold",
+                path="ipv4/unicast/maximum-prefix/threshold",
+                default=100,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_maximum_prefix_action",
+                path="ipv4/unicast/maximum-prefix/action/{ipv4_unicast_maximum_prefix_action}",
+                default="warning-only",
+                values=["restart", "warning-only",]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_maximum_prefix_action_restart_interval",
+                path="ipv4/unicast/maximum-prefix/action/restart/interval",
+                condition={"ipv4_unicast_maximum_prefix_action": "restart"},
+                default=1,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_next_hop",
+                path="ipv4/unicast/next-hop/{ipv4_unicast_next_hop}",
+                values=["self", "self-force"]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_remove_private_as",
+                path="ipv4/unicast/remove-private-AS/{ipv4_unicast_remove_private_as}",
+                values=["all", "replace-AS"]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_send_community",
+                path="ipv4/unicast/send-community/{ipv4_unicast_send_community}",
+                values=["all", "both", "extended", "large", "standard"]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_orf",
+                path="ipv4/unicast/orf/orf-prefix-list",
+                values=["none", "both", "receive", "send"]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ipv4_unicast_default_originate_map",
+                path="ipv4/unicast/default-originate-map"
+            )
+        )
 
         self._params = tuple(params)
