@@ -5789,7 +5789,6 @@ class RoutingProfileBgpTimer(VersionedPanObject):
                 default=30,
             )
         )
-
         params.append(
             VersionedParamPath(
                 "hold_time",
@@ -5798,7 +5797,6 @@ class RoutingProfileBgpTimer(VersionedPanObject):
                 default=90,
             )
         )
-
         params.append(
             VersionedParamPath(
                 "reconnect_retry_interval",
@@ -5807,7 +5805,6 @@ class RoutingProfileBgpTimer(VersionedPanObject):
                 default=15,
             )
         )
-
         params.append(
             VersionedParamPath(
                 "open_delay_time",
@@ -5816,7 +5813,6 @@ class RoutingProfileBgpTimer(VersionedPanObject):
                 default=0,
             )
         )
-
         params.append(
             VersionedParamPath(
                 "min_route_adv_interval",
@@ -5834,23 +5830,41 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
 
     Args:
         name (str): The name of the profile
-        ipv4_unicast_enable (bool): Enable IPv4 Unicast Profile
-        ipv4_unicast_soft_reconfig_with_stored_info (bool): Soft reconfiguration of peer with stored routes
-        ipv4_unicast_add_path_tx_all_paths (bool): Advertise all paths to peer
-        ipv4_unicast_add_path_tx_bestpath_per_as (bool): Advertise the bestpath per each neighboring AS
-        ipv4_unicast_as_override (bool): Override ASNs in outbound updates if AS-Path equals Remote-A
-        ipv4_unicast_route_reflector_client (bool): Route Reflector Client
-        ipv4_unicast_default_originate (bool): Originate Default Route
-        ipv4_unicast_allowas_in (str): Accept my AS in AS_PATH if route originated in my AS
-        ipv4_unicast_allowas_in_occurrence (int): Number of occurrences of AS number
-        ipv4_unicast_maximum_prefix_num_prefixes (int): Max allowed prefixes from this peer
-        ipv4_unicast_maximum_prefix_threshold (int): Threshold value (%) at which to generate a warning msg
-        ipv4_unicast_maximum_prefix_action (str): Action if max-prefixes reached
-        ipv4_unicast_maximum_prefix_action_restart_interval (int): Restart connection when limit exceeded
-        ipv4_unicast_next_hop (str): Disable next-hop calculation
-        ipv4_unicast_remove_private_as (str): Remove private ASNs in outbound updates
-        ipv4_unicast_send_community (str): Send community attributes
-        ipv4_unicast_orf (str): Advertise ORF (Outbound Route Filtering) Capability
+        afi (str): Address Family Identifier
+        unicast_enable (bool): Enable IPv4/IPv6 Unicast Profile
+        unicast_soft_reconfig_with_stored_info (bool): Soft reconfiguration of peer with stored routes
+        unicast_add_path_tx_all_paths (bool): Advertise all paths to peer
+        unicast_add_path_tx_bestpath_per_as (bool): Advertise the bestpath per each neighboring AS
+        unicast_as_override (bool): Override ASNs in outbound updates if AS-Path equals Remote-A
+        unicast_route_reflector_client (bool): Route Reflector Client
+        unicast_default_originate (bool): Originate Default Route
+        unicast_allowas_in (str): Accept my AS in AS_PATH if route originated in my AS
+        unicast_allowas_in_occurrence (int): Number of occurrences of AS number
+        unicast_maximum_prefix_num_prefixes (int): Max allowed prefixes from this peer
+        unicast_maximum_prefix_threshold (int): Threshold value (%) at which to generate a warning msg
+        unicast_maximum_prefix_action (str): Action if max-prefixes reached
+        unicast_maximum_prefix_action_restart_interval (int): Restart connection when limit exceeded
+        unicast_next_hop (str): Disable next-hop calculation
+        unicast_remove_private_as (str): Remove private ASNs in outbound updates
+        unicast_send_community (str): Send community attributes
+        unicast_orf (str): Advertise ORF (Outbound Route Filtering) Capability
+        multicast_enable (bool): Enable IPv4 Multicast Profile
+        multicast_soft_reconfig_with_stored_info (bool): Soft reconfiguration of peer with stored routes
+        multicast_add_path_tx_all_paths (bool): Advertise all paths to peer
+        multicast_add_path_tx_bestpath_per_as (bool): Advertise the bestpath per each neighboring AS
+        multicast_as_override (bool): Override ASNs in outbound updates if AS-Path equals Remote-A
+        multicast_route_reflector_client (bool): Route Reflector Client
+        multicast_default_originate (bool): Originate Default Route
+        multicast_allowas_in (str): Accept my AS in AS_PATH if route originated in my AS
+        multicast_allowas_in_occurrence (int): Number of occurrences of AS number
+        multicast_maximum_prefix_num_prefixes (int): Max allowed prefixes from this peer
+        multicast_maximum_prefix_threshold (int): Threshold value (%) at which to generate a warning msg
+        multicast_maximum_prefix_action (str): Action if max-prefixes reached
+        multicast_maximum_prefix_action_restart_interval (int): Restart connection when limit exceeded
+        multicast_next_hop (str): Disable next-hop calculation
+        multicast_remove_private_as (str): Remove private ASNs in outbound updates
+        multicast_send_community (str): Send community attributes
+        multicast_orf (str): Advertise ORF (Outbound Route Filtering) Capability
     """
     SUFFIX = ENTRY
 
@@ -5861,148 +5875,307 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_enable",
-                path="ipv4/unicast/enable",
+                "afi",
+                path="{afi}",
+                default="ipv4",
+            )
+        )
+
+        # IPv4/IPv6 unicast
+        params.append(
+            VersionedParamPath(
+                "unicast_enable",
+                path="{afi}/unicast/enable",
                 default=False,
                 vartype="yesno"
             )
         )
-
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_soft_reconfig_with_stored_info",
-                path="ipv4/unicast/soft-reconfig-with-stored-info",
+                "unicast_soft_reconfig_with_stored_info",
+                path="{afi}/unicast/soft-reconfig-with-stored-info",
                 default=True,
                 vartype="yesno"
             )
         )
-
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_add_path_tx_all_paths",
-                path="ipv4/unicast/add-path/tx-all-paths",
+                "unicast_add_path_tx_all_paths",
+                path="{afi}/unicast/add-path/tx-all-paths",
                 default=False,
                 vartype="yesno"
             )
         )
-
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_add_path_tx_bestpath_per_as",
-                path="ipv4/unicast/add-path/tx-bestpath-per-AS",
+                "unicast_add_path_tx_bestpath_per_as",
+                path="{afi}/unicast/add-path/tx-bestpath-per-AS",
                 default=False,
                 vartype="yesno"
             )
         )
-
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_as_override",
-                path="ipv4/unicast/as-override",
+                "unicast_as_override",
+                path="{afi}/unicast/as-override",
                 default=False,
                 vartype="yesno"
             )
         )
-
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_default_originate",
-                path="ipv4/unicast/default-originate",
+                "unicast_default_originate",
+                path="{afi}/unicast/default-originate",
                 default=False,
                 vartype="yesno"
             )
         )
-
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_route_reflector_client",
-                path="ipv4/unicast/route-reflector-client",
+                "unicast_route_reflector_client",
+                path="{afi}/unicast/route-reflector-client",
                 default=False,
                 vartype="yesno"
             )
         )
-
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_allowas_in",
-                path="ipv4/unicast/allowas-in/{ipv4_unicast_allowas_in}",
+                "unicast_allowas_in",
+                path="{afi}/unicast/allowas-in/{unicast_allowas_in}",
                 values=["origin", "occurrence", "none"],
             )
         )
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_allowas_in_occurrence",
-                condition={"ipv4_unicast_allowas_in": "occurrence"},
-                path="ipv4/unicast/allowas-in/occurrence",
+                "unicast_allowas_in_occurrence",
+                condition={"unicast_allowas_in": "occurrence"},
+                path="{afi}/unicast/allowas-in/occurrence",
                 default=1,
                 vartype="int",
             )
         )
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_maximum_prefix_num_prefixes",
-                path="ipv4/unicast/maximum-prefix/num_prefixes",
+                "unicast_maximum_prefix_num_prefixes",
+                path="{afi}/unicast/maximum-prefix/num_prefixes",
                 default=1000,
                 vartype="int",
             )
         )
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_maximum_prefix_threshold",
-                path="ipv4/unicast/maximum-prefix/threshold",
+                "unicast_maximum_prefix_threshold",
+                path="{afi}/unicast/maximum-prefix/threshold",
                 default=100,
                 vartype="int",
             )
         )
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_maximum_prefix_action",
-                path="ipv4/unicast/maximum-prefix/action/{ipv4_unicast_maximum_prefix_action}",
+                "unicast_maximum_prefix_action",
+                path="{afi}/unicast/maximum-prefix/action/{unicast_maximum_prefix_action}",
                 default="warning-only",
                 values=["restart", "warning-only",]
             )
         )
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_maximum_prefix_action_restart_interval",
-                path="ipv4/unicast/maximum-prefix/action/restart/interval",
-                condition={"ipv4_unicast_maximum_prefix_action": "restart"},
+                "unicast_maximum_prefix_action_restart_interval",
+                path="{afi}/unicast/maximum-prefix/action/restart/interval",
+                condition={"unicast_maximum_prefix_action": "restart"},
                 default=1,
                 vartype="int",
             )
         )
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_next_hop",
-                path="ipv4/unicast/next-hop/{ipv4_unicast_next_hop}",
+                "unicast_next_hop",
+                path="{afi}/unicast/next-hop/{unicast_next_hop}",
                 values=["self", "self-force"]
             )
         )
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_remove_private_as",
-                path="ipv4/unicast/remove-private-AS/{ipv4_unicast_remove_private_as}",
+                "unicast_remove_private_as",
+                path="{afi}/unicast/remove-private-AS/{unicast_remove_private_as}",
                 values=["all", "replace-AS"]
             )
         )
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_send_community",
-                path="ipv4/unicast/send-community/{ipv4_unicast_send_community}",
+                "unicast_send_community",
+                path="{afi}/unicast/send-community/{unicast_send_community}",
                 values=["all", "both", "extended", "large", "standard"]
             )
         )
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_orf",
-                path="ipv4/unicast/orf/orf-prefix-list",
+                "unicast_orf",
+                path="{afi}/unicast/orf/orf-prefix-list",
                 values=["none", "both", "receive", "send"]
             )
         )
         params.append(
             VersionedParamPath(
-                "ipv4_unicast_default_originate_map",
-                path="ipv4/unicast/default-originate-map"
+                "unicast_default_originate_map",
+                path="{afi}/unicast/default-originate-map"
+            )
+        )
+
+        # IPv4 multicast
+        params.append(
+            VersionedParamPath(
+                "multicast_enable",
+                path="{afi}/multicast/enable",
+                condition={"afi": "ipv4"},
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_soft_reconfig_with_stored_info",
+                path="{afi}/multicast/soft-reconfig-with-stored-info",
+                condition={"afi": "ipv4"},
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_add_path_tx_all_paths",
+                path="{afi}/multicast/add-path/tx-all-paths",
+                condition={"afi": "ipv4"},
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_add_path_tx_bestpath_per_as",
+                path="{afi}/multicast/add-path/tx-bestpath-per-AS",
+                condition={"afi": "ipv4"},
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_as_override",
+                path="{afi}/multicast/as-override",
+                condition={"afi": "ipv4"},
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_default_originate",
+                path="{afi}/multicast/default-originate",
+                condition={"afi": "ipv4"},
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_route_reflector_client",
+                path="{afi}/multicast/route-reflector-client",
+                condition={"afi": "ipv4"},
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_allowas_in",
+                path="{afi}/multicast/allowas-in/{multicast_allowas_in}",
+                condition={"afi": "ipv4"},
+                values=["origin", "occurrence", "none"],
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_allowas_in_occurrence",
+                path="{afi}/multicast/allowas-in/occurrence",
+                condition={"afi": "ipv4", "multicast_allowas_in": "occurrence"},
+                default=1,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_maximum_prefix_num_prefixes",
+                path="{afi}/multicast/maximum-prefix/num_prefixes",
+                condition={"afi": "ipv4"},
+                default=1000,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_maximum_prefix_threshold",
+                path="{afi}/multicast/maximum-prefix/threshold",
+                condition={"afi": "ipv4"},
+                default=100,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_maximum_prefix_action",
+                path="{afi}/multicast/maximum-prefix/action/{multicast_maximum_prefix_action}",
+                condition={"afi": "ipv4"},
+                default="warning-only",
+                values=["restart", "warning-only",]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_maximum_prefix_action_restart_interval",
+                path="{afi}/multicast/maximum-prefix/action/restart/interval",
+                condition={"afi": "ipv4", "multicast_maximum_prefix_action": "restart"},
+                default=1,
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_next_hop",
+                path="{afi}/multicast/next-hop/{multicast_next_hop}",
+                condition={"afi": "ipv4"},
+                values=["self", "self-force"]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_remove_private_as",
+                path="{afi}/multicast/remove-private-AS/{multicast_remove_private_as}",
+                condition={"afi": "ipv4"},
+                values=["all", "replace-AS"]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_send_community",
+                path="{afi}/multicast/send-community/{multicast_send_community}",
+                condition={"afi": "ipv4"},
+                values=["all", "both", "extended", "large", "standard"]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_orf",
+                path="{afi}/multicast/orf/orf-prefix-list",
+                condition={"afi": "ipv4"},
+                values=["none", "both", "receive", "send"]
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "multicast_default_originate_map",
+                path="{afi}/multicast/default-originate-map",
+                condition={"afi": "ipv4"},
             )
         )
 
