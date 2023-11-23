@@ -104,6 +104,8 @@ class Firewall(PanDevice):
         "network.Layer3Subinterface",
         "network.Vlan",
         "network.VirtualRouter",
+        "network.LogicalRouter",
+        "network.Vrf",
         "network.ManagementProfile",
         "network.VirtualWire",
         "network.IkeGateway",

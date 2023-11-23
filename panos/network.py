@@ -5467,6 +5467,7 @@ class LogicalRouter(VsysOperations):
 
     Args:
         name (str): Name of logical router
+        vrf (str): Name of VRF
     """
 
     SUFFIX = ENTRY
@@ -5519,6 +5520,16 @@ class Vrf(VsysOperations):
     CHILDTYPES = (
         "network.VrfStaticRoute",
         "network.VrfStaticRouteV6",
+        "network.BfdProfile",
+        "network.RoutingProfileBgpAuth",
+        "network.RoutingProfileBgpTimer",
+        "network.RoutingProfileBgpAddressFamily",
+        "network.RoutingProfileBgpDampening",
+        "network.RoutingProfileBgpRedistribution",
+        "network.RoutingProfileBgpFiltering",
+        "network.RoutingProfileOspfAuth",
+        "network.RoutingProfileOspfIfTimer",
+        "network.RoutingProfileOspfSpfTimer",
     )
 
     def _setup(self):
@@ -5565,7 +5576,6 @@ class BfdProfile(VersionedPanObject):
         min_rx_interval (int): Required Minimum Rx Interval (ms)
         detection_multiplier (int): Detection Time Multiplier
         hold_time (int) Hold Time (ms)
-        enable_multihop (bool): Enable Multihop
         min_received_ttl (int): Minimum accepted TTL on received BFD packet
     """
     SUFFIX = ENTRY
@@ -5836,8 +5846,8 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
         unicast_add_path_tx_all_paths (bool): Advertise all paths to peer
         unicast_add_path_tx_bestpath_per_as (bool): Advertise the bestpath per each neighboring AS
         unicast_as_override (bool): Override ASNs in outbound updates if AS-Path equals Remote-A
-        unicast_route_reflector_client (bool): Route Reflector Client
         unicast_default_originate (bool): Originate Default Route
+        unicast_route_reflector_client (bool): Route Reflector Client
         unicast_allowas_in (str): Accept my AS in AS_PATH if route originated in my AS
         unicast_allowas_in_occurrence (int): Number of occurrences of AS number
         unicast_maximum_prefix_num_prefixes (int): Max allowed prefixes from this peer
@@ -5848,13 +5858,14 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
         unicast_remove_private_as (str): Remove private ASNs in outbound updates
         unicast_send_community (str): Send community attributes
         unicast_orf (str): Advertise ORF (Outbound Route Filtering) Capability
+        unicast_default_originate_map (str): Default Originate Route-Map
         multicast_enable (bool): Enable IPv4 Multicast Profile
         multicast_soft_reconfig_with_stored_info (bool): Soft reconfiguration of peer with stored routes
         multicast_add_path_tx_all_paths (bool): Advertise all paths to peer
         multicast_add_path_tx_bestpath_per_as (bool): Advertise the bestpath per each neighboring AS
         multicast_as_override (bool): Override ASNs in outbound updates if AS-Path equals Remote-A
-        multicast_route_reflector_client (bool): Route Reflector Client
         multicast_default_originate (bool): Originate Default Route
+        multicast_route_reflector_client (bool): Route Reflector Client
         multicast_allowas_in (str): Accept my AS in AS_PATH if route originated in my AS
         multicast_allowas_in_occurrence (int): Number of occurrences of AS number
         multicast_maximum_prefix_num_prefixes (int): Max allowed prefixes from this peer
@@ -5865,6 +5876,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
         multicast_remove_private_as (str): Remove private ASNs in outbound updates
         multicast_send_community (str): Send community attributes
         multicast_orf (str): Advertise ORF (Outbound Route Filtering) Capability
+        multicast_default_originate_map (str): Default Originate Route-Map
     """
     SUFFIX = ENTRY
 
@@ -6247,12 +6259,12 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
         static_metric (int): Static Metric (Field ignored if route-map configured)
         connected_enable (bool): Enable Connected Routes
         connected_metric (int): Connected Metric (Field ignored if route-map configured)
-        rip_enable (bool): Enable RIP Routes
-        rip_metric (int): RIP Metric (Field ignored if route-map configured)
         ospf_enable (bool): Enable OSPF Routes (only for IPv4)
         ospf_metric (int): OSPF Metric (Field ignored if route-map configured)
         ospfv3_enable (bool): Enable OSPFv3 Routes (only for IPv6)
         ospfv3_metric (int): OSPFv3 Metric (Field ignored if route-map configured)
+        rip_enable (bool): Enable RIP Routes
+        rip_metric (int): RIP Metric (Field ignored if route-map configured)
     """
     SUFFIX = ENTRY
 
