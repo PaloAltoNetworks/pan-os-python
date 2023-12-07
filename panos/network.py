@@ -3515,11 +3515,12 @@ class BgpPolicyRule(BgpPolicyFilter):
             * overwrite
         action_community_argument (str): Argument to the action community value if needed
             * None
+            * regex
+        action_community_modifier (str): Argument to the action community value when type is 'append' or 'overwrite'
             * local-as
             * no-advertise
             * no-export
             * nopeer
-            * regex
             * 32-bit value
             * AS:VAL
         action_extended_community_type (str): Extended community update options
