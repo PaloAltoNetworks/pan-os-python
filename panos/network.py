@@ -3640,7 +3640,7 @@ class BgpPolicyRule(BgpPolicyFilter):
                     "action_community_type": ["append", "overwrite"],
                 },
                 path="action/{action}/update/community/{action_community_type}",
-                vartype="member"
+                vartype="member",
             )
         )
         params.append(
