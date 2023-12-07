@@ -3625,7 +3625,18 @@ class BgpPolicyRule(BgpPolicyFilter):
                 default=None,
                 condition={
                     "action": "allow",
-                    "action_community_type": ["remove-regex", "append", "overwrite"],
+                    "action_community_type": ["remove-regex"],
+                },
+                path="action/{action}/update/community/{action_community_type}",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "action_community_modifier",
+                default=None,
+                condition={
+                    "action": "allow",
+                    "action_community_type": ["append", "overwrite"],
                 },
                 path="action/{action}/update/community/{action_community_type}",
                 vartype="member"
