@@ -5530,6 +5530,7 @@ class Vrf(VsysOperations):
         "network.RoutingProfileOspfAuth",
         "network.RoutingProfileOspfIfTimer",
         "network.RoutingProfileOspfSpfTimer",
+        "network.RoutingProfileOspfRedistributionProfile",
     )
 
     def _setup(self):
@@ -6411,7 +6412,7 @@ class RoutingProfileOspfAuth(VersionedPanObject):
 
 
 class RoutingProfileOspfIfTimer(VersionedPanObject):
-    """BGP timer profile
+    """OSPF interface timer profile
 
     Args:
         name (str): The name of the profile
@@ -6473,7 +6474,7 @@ class RoutingProfileOspfIfTimer(VersionedPanObject):
 
 
 class RoutingProfileOspfSpfTimer(VersionedPanObject):
-    """BGP timer profile
+    """OSPF global timer profile
 
     Args:
         name (str): The name of the profile
@@ -6521,5 +6522,21 @@ class RoutingProfileOspfSpfTimer(VersionedPanObject):
                 default=5,
             )
         )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileOspfRedistributionProfile(VersionedPanObject):
+    """OSPF redistribution profile
+
+    Args:
+        name (str): The name of the profile
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/ospf/redistribution-profile")
+
+        params = []
 
         self._params = tuple(params)
