@@ -6539,4 +6539,93 @@ class RoutingProfileOspfRedistributionProfile(VersionedPanObject):
 
         params = []
 
+        params.append(
+            VersionedParamPath(
+                "static_enable",
+                path="static/enable",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "static_metric",
+                path="static/metric",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "static_metric_type",
+                path="static/metric-type",
+                values=("type-1", "type-2"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connected_enable",
+                path="connected/enable",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connected_metric",
+                path="connected/metric",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connected_metric_type",
+                path="connected/metric-type",
+                values=("type-1", "type-2"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "rip_enable",
+                path="rip/enable",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "rip_metric",
+                path="rip/metric",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "rip_metric_type",
+                path="rip/metric-type",
+                values=("type-1", "type-2"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_enable",
+                path="bgp/enable",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_metric",
+                path="bgp/metric",
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_metric_type",
+                path="bgp/metric-type",
+                values=("type-1", "type-2"),
+            )
+        )
+
         self._params = tuple(params)
