@@ -5530,7 +5530,8 @@ class Vrf(VsysOperations):
         "network.RoutingProfileOspfAuth",
         "network.RoutingProfileOspfIfTimer",
         "network.RoutingProfileOspfSpfTimer",
-        "network.RoutingProfileOspfRedistributionProfile",
+        "network.RoutingProfileOspfRedistribution",
+        "network.RoutingProfileOspfv3Auth",
     )
 
     def _setup(self):
@@ -6526,7 +6527,7 @@ class RoutingProfileOspfSpfTimer(VersionedPanObject):
         self._params = tuple(params)
 
 
-class RoutingProfileOspfRedistributionProfile(VersionedPanObject):
+class RoutingProfileOspfRedistribution(VersionedPanObject):
     """OSPF redistribution profile
 
     Args:
@@ -6737,6 +6738,87 @@ class RoutingProfileOspfRedistributionProfile(VersionedPanObject):
                 condition={"default_route": "default-route"},
                 default="type-2",
                 values=("type-1", "type-2"),
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileOspfv3Auth(VersionedPanObject):
+    """OSPFv3 authentication profile
+
+    Args:
+        name (str): The name of the profile
+        spi (str): SPI for both inbound and outbound SA, hex format xxxxxxxx.
+        protocol (str): Protocol ESP or AH
+        esp_auth_type (str): ESP options - Authentication type
+        esp_auth_key (str): ESP options - Authentication key
+        esp_encrypt_algorithm (str): ESP options - Encryption algorithm
+        esp_encrypt_key (str): ESP options - Encryption key
+        ah_type (str): AH options - type
+        ah_key (str): AH options - key
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/ospfv3/auth-profile")
+
+        params = []
+
+        params.append(
+            VersionedParamPath("spi", path="spi")
+        )
+        params.append(
+            VersionedParamPath(
+                "protocol",
+                path="{protocol}",
+                values=("esp", "ah"),
+                default="esp",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "esp_auth_type",
+                path="{protocol}/authentication/{esp_auth_type}",
+                values=["md5", "sha1", "sha256", "sha384", "sha512"],
+                condition={"protocol": "esp"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "esp_auth_key",
+                path="{protocol}/authentication/{esp_auth_type}/key",
+                condition={"protocol": "esp", "esp_auth_type": ["md5", "sha1", "sha256", "sha384", "sha512"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "esp_encrypt_algorithm",
+                path="{protocol}/encryption/algorithm",
+                values=["3des", "aes-128-cbc", "aes-192-cbc", "aes-256-cbc", "null"],
+                condition={"protocol": "esp"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "esp_encrypt_key",
+                path="{protocol}/encryption/key",
+                condition={"protocol": "esp", "esp_encrypt_algorithm": ["3des", "aes-128-cbc", "aes-192-cbc", "aes-256-cbc", "null"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ah_type",
+                path="{protocol}/{ah_type}",
+                values=["md5", "sha1", "sha256", "sha384", "sha512"],
+                condition={"protocol": "ah"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ah_key",
+                path="{protocol}/{ah_type}/key",
+                condition={"protocol": "ah", "ah_type": ["md5", "sha1", "sha256", "sha384", "sha512"]},
             )
         )
 
