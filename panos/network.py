@@ -5534,7 +5534,12 @@ class Vrf(VsysOperations):
         "network.RoutingProfileOspfv3Auth",
         "network.RoutingProfileOspfv3IfTimer",
         "network.RoutingProfileOspfv3SpfTimer",
-        "network.RoutingProfileOspfv3Redistribution"
+        "network.RoutingProfileOspfv3Redistribution",
+        "network.RoutingProfileFilterAccessList",
+        "network.RoutingProfileFilterPrefixList",
+        "network.RoutingProfileFilterAsPathAccessList",
+        "network.RoutingProfileFilterCommunityList",
+        "network.RoutingProfileFilterRouteMaps",
     )
 
     def _setup(self):
@@ -7122,3 +7127,171 @@ class RoutingProfileOspfv3Redistribution(VersionedPanObject):
         self._params = tuple(params)
 
 
+class RoutingProfileFilterAccessList(VersionedPanObject):
+    """Filter Access List
+
+    Args:
+        name (str): The name of the profile
+        description (str): Description of the Access-List
+        type (str): IPv4 or IPv6
+    """
+    SUFFIX = ENTRY
+
+    CHILDTYPES = (
+        "network.RoutingProfileFilterAccessListEntryIpv4",
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/filters/access-list")
+
+        params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(
+            VersionedParamPath(
+                "type",
+                path="type/{type}",
+                default="ipv4",
+                values=("ipv4", "ipv6"),
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterAccessListEntryIpv4(VersionedPanObject):
+    """Filter Access List - IPv4 entry
+
+    Args:
+        name (str): The name of the entry
+        action (str): Deny of permit action
+        source_address_type (str): IPv4 Access-List Source Address (none, any, address)
+        source_address (str): IPv4 Source Address
+        source_wildcard (str): IPv4 Source Wildcard
+        destination_address_type (str): IPv4 Access-List Destination Address (none, any, address)
+        destination_address (str): IPv4 Destination Address
+        destination_wildcard (str): IPv4 Destination Wildcard
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/type/ipv4/ipv4-entry")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "action",
+                path="action",
+                default="deny",
+                values=("deny", "permit"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_address_type",
+                path="source-address/address",
+                condition={"source_address_type": "any"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_address",
+                path="source-address/entry/address",
+                condition={"source_address_type": "address"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_wildcard",
+                path="source-address/entry/wildcard",
+                condition={"source_address_type": "address"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_address_type",
+                path="destination-address/address",
+                condition={"destination_address_type": "any"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_address",
+                path="destination-address/entry/address",
+                condition={"destination_address_type": "address"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "destination_wildcard",
+                path="destination-address/entry/wildcard",
+                condition={"destination_address_type": "address"}
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterPrefixList(VersionedPanObject):
+    """Filter Prefix List
+
+    Args:
+        name (str): The name of the profile
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/filters/prefix-list")
+
+        params = []
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterAsPathAccessList(VersionedPanObject):
+    """Filter AS-Path Access List
+
+    Args:
+        name (str): The name of the profile
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/filters/as-path-access-list")
+
+        params = []
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterCommunityList(VersionedPanObject):
+    """Filter Community List
+
+    Args:
+        name (str): The name of the profile
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/filters/community-list")
+
+        params = []
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterRouteMaps(VersionedPanObject):
+    """Filter Route-Maps
+
+    Args:
+        name (str): The name of the profile
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/filters/route-maps")
+
+        params = []
+
+        self._params = tuple(params)
