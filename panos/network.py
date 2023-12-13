@@ -5534,6 +5534,7 @@ class Vrf(VsysOperations):
         "network.RoutingProfileOspfv3Auth",
         "network.RoutingProfileOspfv3IfTimer",
         "network.RoutingProfileOspfv3SpfTimer",
+        "network.RoutingProfileOspfv3Redistribution"
     )
 
     def _setup(self):
@@ -6940,4 +6941,184 @@ class RoutingProfileOspfv3SpfTimer(VersionedPanObject):
         )
 
         self._params = tuple(params)
+
+
+class RoutingProfileOspfv3Redistribution(VersionedPanObject):
+    """OSPFv3 redistribution profile
+
+    Args:
+        name (str): The name of the profile
+        static (str): IPv4 static section
+        static_enable (bool): IPv4 static enabled
+        static_metric (int): IPv4 static metric value (1-65535)
+        static_metric_type (str): IPv4 static metric type (type-1, type-2)
+        connected (str): Connected section
+        connected_enable (bool): Connected enabled
+        connected_metric (int): Connected metric value (1-65535)
+        connected_metric_type (str): Connected metric type (type-1, type-2)
+        bgp (str): BGP AFI IPv4 section
+        bgp_enable (bool): BGP AFI IPv4 enabled
+        bgp_metric (int): BGP AFI IPv4 metric value (1-4294967295)
+        bgp_metric_type (str): BGP AFI IPv4 metric type (type-1, type-2)
+        default_route (str): IPv6 Default Route section
+        default_route_always (bool): IPv6 Default Route always
+        default_route_enable (bool): IPv6 Default Route enabled
+        default_route_metric (int): IPv6 Default Route metric value (1-4294967295)
+        default_route_metric_type (str): IPv6 Default Route metric type (type-1, type-2)
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/ospfv3/redistribution-profile")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "static",
+                path="{static}",
+                values=("static"),
+                default=None
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "static_enable",
+                path="{static}/enable",
+                condition={"static": "static"},
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "static_metric",
+                path="{static}/metric",
+                condition={"static": "static"},
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "static_metric_type",
+                path="{static}/metric-type",
+                condition={"static": "static"},
+                default="type-2",
+                values=("type-1", "type-2"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connected",
+                path="{connected}",
+                values=("connected"),
+                default=None
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connected_enable",
+                path="connected/enable",
+                condition={"connected": "connected"},
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connected_metric",
+                path="connected/metric",
+                condition={"connected": "connected"},
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connected_metric_type",
+                path="connected/metric-type",
+                condition={"connected": "connected"},
+                default="type-2",
+                values=("type-1", "type-2"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp",
+                path="{bgp}",
+                values=("bgp"),
+                default=None
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_enable",
+                path="bgp/enable",
+                condition={"bgp": "bgp"},
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_metric",
+                path="bgp/metric",
+                condition={"bgp": "bgp"},
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_metric_type",
+                path="bgp/metric-type",
+                condition={"bgp": "bgp"},
+                default="type-2",
+                values=("type-1", "type-2"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "default_route",
+                path="{default_route}",
+                values=("default-route"),
+                default=None
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "default_route_always",
+                path="default-route/always",
+                condition={"default_route": "default-route"},
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "default_route_enable",
+                path="default-route/enable",
+                condition={"default_route": "default-route"},
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "default_route_metric",
+                path="default-route/metric",
+                condition={"default_route": "default-route"},
+                vartype="int",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "default_route_metric_type",
+                path="default-route/metric-type",
+                condition={"default_route": "default-route"},
+                default="type-2",
+                values=("type-1", "type-2"),
+            )
+        )
+
+        self._params = tuple(params)
+
 
