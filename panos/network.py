@@ -7496,13 +7496,135 @@ class RoutingProfileFilterCommunityList(VersionedPanObject):
 
     Args:
         name (str): The name of the profile
+        description (str): Description of the community list
+        type (str): Community list entries type
     """
     SUFFIX = ENTRY
+
+    CHILDTYPES = (
+        "network.RoutingProfileFilterCommunityListEntryRegular",
+        "network.RoutingProfileFilterCommunityListEntryLarge",
+        "network.RoutingProfileFilterCommunityListEntryExtended",
+    )
 
     def _setup(self):
         self._xpaths.add_profile(value="/network/routing-profile/filters/community-list")
 
         params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(
+            VersionedParamPath(
+                "type",
+                path="type/{type}",
+                default="regular",
+                values=("regular", "large", "extended"),
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterCommunityListEntryRegular(VersionedPanObject):
+    """Filter Community List - regular entry
+
+    Args:
+        name (str): The name of the entry
+        action (str): Permit or Deny (default) this Regular Community-List Entry
+        community(list): Specify Community either using number in AA:NN format (where AA and NN are between (0-65535)) or pre-defined value
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/type/regular/regular-entry")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "action",
+                path="action",
+                default="deny",
+                values=("deny", "permit"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "community",
+                path="community",
+                vartype="member",
+                values=("blackhole", "no-peer", "graceful-shutdown", "accept-own", "local-as",
+                        "route-filter-v4", "route-filter-v6", "no-advertise", "no-export", "internet"),
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterCommunityListEntryLarge(VersionedPanObject):
+    """Filter Community List - large entry
+
+    Args:
+        name (str): The name of the entry
+        action (str): Permit or Deny (default) this Large Community-List Entry
+        lc_regex(list): Specify Large Community regular expression format {regex1:regex2:regex3}
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/type/large/large-entry")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "action",
+                path="action",
+                default="deny",
+                values=("deny", "permit"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "lc_regex",
+                path="lc-regex",
+                vartype="member",
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterCommunityListEntryExtended(VersionedPanObject):
+    """Filter Community List - extended entry
+
+    Args:
+        name (str): The name of the entry
+        action (str): Permit or Deny (default) this Extended Community-List Entry
+        ec_regex(list): Specify Extended Community regular expression format {regex1:regex2}
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/type/extended/extended-entry")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "action",
+                path="action",
+                default="deny",
+                values=("deny", "permit"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ec_regex",
+                path="ec-regex",
+                vartype="member",
+            )
+        )
 
         self._params = tuple(params)
 
