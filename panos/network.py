@@ -7291,13 +7291,146 @@ class RoutingProfileFilterPrefixList(VersionedPanObject):
 
     Args:
         name (str): The name of the profile
+        description (str): Description of the Prefix-List
+        type (str): IPv4 or IPv6
     """
     SUFFIX = ENTRY
+
+    CHILDTYPES = (
+        "network.RoutingProfileFilterPrefixListEntryIpv4",
+        "network.RoutingProfileFilterPrefixListEntryIpv6",
+    )
 
     def _setup(self):
         self._xpaths.add_profile(value="/network/routing-profile/filters/prefix-list")
 
         params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(
+            VersionedParamPath(
+                "type",
+                path="type/{type}",
+                default="ipv4",
+                values=("ipv4", "ipv6"),
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterPrefixListEntryIpv4(VersionedPanObject):
+    """Filter Prefix List - IPv4 entry
+
+    Args:
+        name (str): The name of the entry
+        action (str): Deny or permit action
+        prefix (str): IPv4 prefix list network (none, any, network)
+        network (str): IPv4 prefix
+        greater_than_or_equal (int): Maximum Prefix length to be matched
+        less_than_or_equal (int): Minimum Prefix length to be matched
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/type/ipv4/ipv4-entry")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "action",
+                path="action",
+                default="deny",
+                values=("deny", "permit"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "prefix",
+                path="prefix/network",
+                condition={"prefix": "any"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "network",
+                path="prefix/entry/network",
+                condition={"prefix": "network"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "greater_than_or_equal",
+                path="prefix/entry/greater-than-or-equal",
+                condition={"prefix": "network"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "less_than_or_equal",
+                path="prefix/entry/less-than-or-equal",
+                condition={"prefix": "network"}
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterPrefixListEntryIpv6(VersionedPanObject):
+    """Filter Prefix List - IPv6 entry
+
+    Args:
+        name (str): The name of the entry
+        action (str): Deny or permit action
+        prefix (str): IPv4 prefix list network (none, any, network)
+        network (str): IPv4 prefix
+        greater_than_or_equal (int): Maximum Prefix length to be matched
+        less_than_or_equal (int): Minimum Prefix length to be matched
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/type/ipv6/ipv6-entry")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "action",
+                path="action",
+                default="deny",
+                values=("deny", "permit"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "prefix",
+                path="prefix/network",
+                condition={"prefix": "any"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "network",
+                path="prefix/entry/network",
+                condition={"prefix": "network"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "greater_than_or_equal",
+                path="prefix/entry/greater-than-or-equal",
+                condition={"prefix": "network"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "less_than_or_equal",
+                path="prefix/entry/less-than-or-equal",
+                condition={"prefix": "network"}
+            )
+        )
 
         self._params = tuple(params)
 
