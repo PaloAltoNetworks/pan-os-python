@@ -7440,13 +7440,53 @@ class RoutingProfileFilterAsPathAccessList(VersionedPanObject):
 
     Args:
         name (str): The name of the profile
+        description (str): Description of the AS path access list
     """
     SUFFIX = ENTRY
+
+    CHILDTYPES = (
+        "network.RoutingProfileFilterAsPathAccessListEntry"
+    )
 
     def _setup(self):
         self._xpaths.add_profile(value="/network/routing-profile/filters/as-path-access-list")
 
         params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterAsPathAccessListEntry(VersionedPanObject):
+    """Filter AS-Path Access List - entry
+
+    Args:
+        name (str): The name of the entry
+        action (str): Deny or permit action
+        aspath_regex (str): Regular-expression (1234567890_^|[,{}()]$*+.?-\) to match the BGP AS path
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/aspath-entry")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "action",
+                path="action",
+                default="deny",
+                values=("deny", "permit"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "aspath_regex",
+                path="aspath-regex",
+            )
+        )
 
         self._params = tuple(params)
 
