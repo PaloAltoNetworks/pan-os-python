@@ -7139,6 +7139,7 @@ class RoutingProfileFilterAccessList(VersionedPanObject):
 
     CHILDTYPES = (
         "network.RoutingProfileFilterAccessListEntryIpv4",
+        "network.RoutingProfileFilterAccessListEntryIpv6",
     )
 
     def _setup(self):
@@ -7164,7 +7165,7 @@ class RoutingProfileFilterAccessListEntryIpv4(VersionedPanObject):
 
     Args:
         name (str): The name of the entry
-        action (str): Deny of permit action
+        action (str): Deny or permit action
         source_address_type (str): IPv4 Access-List Source Address (none, any, address)
         source_address (str): IPv4 Source Address
         source_wildcard (str): IPv4 Source Wildcard
@@ -7227,6 +7228,58 @@ class RoutingProfileFilterAccessListEntryIpv4(VersionedPanObject):
                 "destination_wildcard",
                 path="destination-address/entry/wildcard",
                 condition={"destination_address_type": "address"}
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterAccessListEntryIpv6(VersionedPanObject):
+    """Filter Access List - IPv6 entry
+
+    Args:
+        name (str): The name of the entry
+        action (str): Deny or permit action
+        source_address_type (str): IPv6 Access-List Source Address (none, any, address)
+        source_address (str): IPv6 Source Address
+        source_exact_match (bool): Exact Match of this address
+    """
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/type/ipv6/ipv6-entry")
+
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "action",
+                path="action",
+                default="deny",
+                values=("deny", "permit"),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_address_type",
+                path="source-address/address",
+                condition={"source_address_type": "any"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_address",
+                path="source-address/entry/address",
+                condition={"source_address_type": "address"}
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "source_exact_match",
+                path="source-address/entry/exact-match",
+                condition={"source_address_type": "address"},
+                default=False,
+                vartype="yesno"
             )
         )
 
