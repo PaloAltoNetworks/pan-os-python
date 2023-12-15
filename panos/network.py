@@ -7131,8 +7131,8 @@ class RoutingProfileFilterAccessList(VersionedPanObject):
     """Filter Access List
 
     Args:
-        name (str): The name of the profile
-        description (str): Description of the Access-List
+        name (str): The name of the access list
+        description (str): Description of the access list
         type (str): IPv4 or IPv6
     """
     SUFFIX = ENTRY
@@ -7290,8 +7290,8 @@ class RoutingProfileFilterPrefixList(VersionedPanObject):
     """Filter Prefix List
 
     Args:
-        name (str): The name of the profile
-        description (str): Description of the Prefix-List
+        name (str): The name of the prefix list
+        description (str): Description of the prefix list
         type (str): IPv4 or IPv6
     """
     SUFFIX = ENTRY
@@ -7462,7 +7462,7 @@ class RoutingProfileFilterAsPathAccessListEntry(VersionedPanObject):
     """Filter AS-Path Access List - entry
 
     Args:
-        name (str): The name of the entry
+        name (str): The name of the AS-Path access list
         action (str): Deny or permit action
         aspath_regex (str): Regular-expression (1234567890_^|[,{}()]$*+.?-\) to match the BGP AS path
     """
@@ -7495,7 +7495,7 @@ class RoutingProfileFilterCommunityList(VersionedPanObject):
     """Filter Community List
 
     Args:
-        name (str): The name of the profile
+        name (str): The name of the community list
         description (str): Description of the community list
         type (str): Community list entries type
     """
@@ -7630,16 +7630,141 @@ class RoutingProfileFilterCommunityListEntryExtended(VersionedPanObject):
 
 
 class RoutingProfileFilterRouteMaps(VersionedPanObject):
-    """Filter Route-Maps
+    """Filter BGP Route-Maps
 
     Args:
-        name (str): The name of the profile
+        name (str): The name of BGP route map
+        description (str): BGP route map description
+    """
+    SUFFIX = ENTRY
+
+    CHILDTYPES = (
+        "network.RoutingProfileFilterRouteMapsEntry"
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/filters/route-maps/bgp/bgp-entry")
+
+        params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterRouteMapsEntry(VersionedPanObject):
+    """Filter BGP Route-Maps - entry
+
+    Args:
+        name (str): The name of the entry
+        action (str): Permit or Deny (default) route map
+        description (str): Description of route map
+        match_as_path_access_list (str): AS Path Access List Name
+        match_regular_community (str): Regular Community Name
+        match_large_community (str): Large Community Name
+        match_extended_community (str): Extended Community Name
+        match_interface (str): Match Interface of the route
+        match_origin (str): Match origin
+        match_metric (str): Match Metric (BGP MED) of route
+        match_tag (str): Match Tag of route
+        match_local_preference (str): "Match Local Preference of route
+        match_peer (str): Match Peer Address
+        match_ipv4_address_access_list (str): Match IPv4 Route - Route Access-List
+        match_ipv4_address_prefix_list (str): Match IPv4 Route - Route Prefix-List
+        match_ipv4_next_hop_access_list (str): Match IPv4 Next-Hop of Route - Access-List
+        match_ipv4_next_hop_prefix_list (str): Match IPv4 Next-Hop of Route - Prefix-List
+        match_ipv4_route_source_access_list (str): Match IPv4 Advertising Source Address of route - Access-List
+        match_ipv4_route_source_prefix_list (str): Match IPv4 Advertising Source Address of route - Prefix-List
+        match_ipv6_address_access_list (str): Match IPv6 Route - Route Access-List
+        match_ipv6_address_prefix_list (str): Match IPv6 Route - Route Prefix-List
+        match_ipv6_next_hop_access_list (str): Match IPv6 Next-Hop of Route - Access-List
+        match_ipv6_next_hop_prefix_list (str): Match IPv6 Next-Hop of Route - Prefix-List
+        set_aggregator_as (str): Set Aggregator AS Number
+        set_aggregator_router_id (str): Set Aggregator Router ID
+        set_tag (str): Set Tag of route
+        set_local_preference (str): Set Local Preference of route
+        set_weight (str): Set BGP weight of the route
+        set_origin (str): Set BGP origin
+        set_atomic_aggregate (bool): Enable BGP atomic aggregate
+        set_metric_action (str): Set Metric action
+        set_metric_value (str): Set Metric value (BGP MED) of route
+        set_originator_id (str): Set BGP Originator Id
+        set_ipv4_source_address (str): Source IPv4 Address
+        set_ipv4_next_hop (str): IPv4 Next-Hop Address
+        set_ipv6_source_address (str): Source IPv6 Address
+        set_ipv6_next_hop (str): IPv6 Next-Hop Address
+        set_ipv6_next_hop_prefer_global (bool): IPv6 Nexthop Prefer Global Address
+        set_overwrite_regular_community (bool): If enabled, set community will overwite existing communities, instead of appending
+        set_overwrite_large_community (bool): If enabled, set community will overwite existing large communities, instead of appending
+        set_remove_regular_community (str): Remove Regular Community Name
+        set_remove_large_community (str): Remove Large Community Name
+        set_aspath_exclude (list): Remove BGP AS-Path Attribute
+        set_aspath_prepend (list): Prepend BGP AS-Path Attribute
+        set_regular_community (list): Regular Community either using number in AA:NN format (where AA and NN are between (0-65535)) or pre-defined value
+        set_large_community (list): Large Community in AA:BB:CC format (where AA, BB and CC are between (0-4294967295))
     """
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/filters/route-maps")
+        self._xpaths.add_profile(value="/route-map")
 
         params = []
+
+        params.append(
+            VersionedParamPath(
+                "action",
+                path="action",
+                default="deny",
+                values=("deny", "permit"),
+            )
+        )
+        params.append(VersionedParamPath("description", path="description"))
+        params.append(VersionedParamPath("match_as_path_access_list", path="match/as-path-access-list"))
+        params.append(VersionedParamPath("match_regular_community", path="match/regular-community"))
+        params.append(VersionedParamPath("match_large_community", path="match/large-community"))
+        params.append(VersionedParamPath("match_extended_community", path="match/extended-community"))
+        params.append(VersionedParamPath("match_interface", path="match/interface"))
+        params.append(VersionedParamPath("match_origin", path="match/origin"))
+        params.append(VersionedParamPath("match_metric", path="match/metric"))
+        params.append(VersionedParamPath("match_tag", path="match/tag"))
+        params.append(VersionedParamPath("match_local_preference", path="match/local-preference"))
+        params.append(VersionedParamPath("match_peer", path="match/peer"))
+        params.append(VersionedParamPath("match_ipv4_address_access_list", path="match/ipv4/address/access-list"))
+        params.append(VersionedParamPath("match_ipv4_address_prefix_list", path="match/ipv4/address/prefix-list"))
+        params.append(VersionedParamPath("match_ipv4_next_hop_access_list", path="match/ipv4/next-hop/access-list"))
+        params.append(VersionedParamPath("match_ipv4_next_hop_prefix_list", path="match/ipv4/next-hop/prefix-list"))
+        params.append(VersionedParamPath("match_ipv4_route_source_access_list", path="match/ipv4/route-source/access-list"))
+        params.append(VersionedParamPath("match_ipv4_route_source_prefix_list", path="match/ipv4/route-source/prefix-list"))
+        params.append(VersionedParamPath("match_ipv6_address_access_list", path="match/ipv6/address/access-list"))
+        params.append(VersionedParamPath("match_ipv6_address_prefix_list", path="match/ipv6/address/prefix-list"))
+        params.append(VersionedParamPath("match_ipv6_next_hop_access_list", path="match/ipv6/next-hop/access-list"))
+        params.append(VersionedParamPath("match_ipv6_next_hop_prefix_list", path="match/ipv6/next-hop/prefix-list"))
+        params.append(VersionedParamPath("set_aggregator_as", path="set/aggregator/as"))
+        params.append(VersionedParamPath("set_aggregator_router_id", path="set/aggregator/router-id"))
+        params.append(VersionedParamPath("set_tag", path="set/tag"))
+        params.append(VersionedParamPath("set_local_preference", path="set/local-preference"))
+        params.append(VersionedParamPath("set_weight", path="set/weight"))
+        params.append(VersionedParamPath("set_origin", path="set/origin"))
+        params.append(VersionedParamPath("set_atomic_aggregate", path="set/atomic-aggregate", vartype="yesno"))
+        params.append(VersionedParamPath("set_metric_action", path="set/metric/action"))
+        params.append(VersionedParamPath("set_metric_value", path="set/metric/value"))
+        params.append(VersionedParamPath("set_originator_id", path="set/originator-id"))
+        params.append(VersionedParamPath("set_ipv4_source_address", path="set/ipv4/source-address"))
+        params.append(VersionedParamPath("set_ipv4_next_hop", path="set/ipv4/next-hop"))
+        params.append(VersionedParamPath("set_ipv6_source_address", path="set/ipv6/source-address"))
+        params.append(VersionedParamPath("set_ipv6_next_hop", path="set/ipv6/next-hop"))
+        params.append(VersionedParamPath("set_ipv6_next_hop_prefer_global", path="set/ipv6-nexthop-prefer-global", vartype="yesno"))
+        params.append(VersionedParamPath("set_overwrite_regular_community", path="set/overwrite-regular-community", vartype="yesno"))
+        params.append(VersionedParamPath("set_overwrite_large_community", path="set/overwrite-large-community", vartype="yesno"))
+        params.append(VersionedParamPath("set_remove_regular_community", path="set/remove-regular-community"))
+        params.append(VersionedParamPath("set_remove_large_community", path="set/remove-large-community"))
+        params.append(VersionedParamPath("set_aspath_exclude", path="set/aspath-exclude", vartype="member"))
+        params.append(VersionedParamPath("set_aspath_prepend", path="set/aspath-prepend", vartype="member"))
+        params.append(VersionedParamPath("set_regular_community", path="set/regular-community",
+                                         vartype="member", values=("blackhole", "no-peer",
+                                                                   "graceful-shutdown", "accept-own", "local-as",
+                                                                    "route-filter-v4", "route-filter-v6", "no-advertise",
+                                                                    "no-export", "internet"),))
+        params.append(VersionedParamPath("set_large_community", path="set/large-community", vartype="member"))
 
         self._params = tuple(params)
