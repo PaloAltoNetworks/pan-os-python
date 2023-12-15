@@ -5540,6 +5540,7 @@ class Vrf(VsysOperations):
         "network.RoutingProfileFilterAsPathAccessList",
         "network.RoutingProfileFilterCommunityList",
         "network.RoutingProfileFilterRouteMaps",
+        "network.RoutingProfileFilterRouteMapsRedistribution",
     )
 
     def _setup(self):
@@ -7766,5 +7767,44 @@ class RoutingProfileFilterRouteMapsEntry(VersionedPanObject):
                                                                     "route-filter-v4", "route-filter-v6", "no-advertise",
                                                                     "no-export", "internet"),))
         params.append(VersionedParamPath("set_large_community", path="set/large-community", vartype="member"))
+
+        self._params = tuple(params)
+
+
+class RoutingProfileFilterRouteMapsRedistribution(VersionedPanObject):
+    """Filter BGP Route-Maps Redistribution
+
+    Args:
+        name (str): The name of BGP route map redistribution
+        description (str): BGP route map description redistribution
+    """
+    SUFFIX = ENTRY
+
+    CHILDTYPES = (
+        "network.RoutingProfileFilterRouteMapsEntry"
+    )
+
+    def _setup(self):
+        self._xpaths.add_profile(value="/network/routing-profile/filters/route-maps/redistribution/redist-entry")
+
+        params = []
+
+        params.append(VersionedParamPath("description", path="description"))
+
+        ### TODO: implement from-protocol , to-protocol e.g. 
+        #   <entry name="custom-filter-route-map-redistribution">
+        #     <bgp>
+        #       <ospf>
+        #         <route-map>
+        #           <entry name="1">
+        #             <set>
+        #               <metric-type>type-2</metric-type>
+        #             </set>
+        #             <action>deny</action>
+        #           </entry>
+        #         </route-map>
+        #       </ospf>
+        #     </bgp>
+        #   </entry>
 
         self._params = tuple(params)
