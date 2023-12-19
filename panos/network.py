@@ -5514,13 +5514,33 @@ class Vrf(VsysOperations):
         ad_bgp_external (int): Administrative distance for this protocol
         ad_bgp_local (int): Administrative distance for this protocol
         ad_rip (int): Administrative distance for this protocol
+        bgp_enable (bool): Enable BGP
+        bgp_router_id (str): Router id of this BGP instance
+        bgp_local_as (str): Local AS number
+        bgp_install_route (bool): Populate BGP learned route to global route table
+        bgp_enforce_first_as (bool): Enforce First AS
+        bgp_fast_external_failover (bool): Immediately reset session if a link to a directly connected external peer goes down
+        bgp_ecmp_multi_as (bool): Support multiple AS in ECMP
+        bgp_default_local_preference (int): Global Default Local Preference
+        bgp_graceful_shutdown (bool): Gracefully Shutdown BGP following RFC-8326
+        bgp_always_advertise_network_route (bool): Always advertise network routes even if not present in RIB
+        bgp_med_always_compare_med (bool): Always compare MEDs
+        bgp_med_deterministic_med_comparison (bool): Deterministic MEDs comparison
+        bgp_graceful_restart_enable (bool): Graceful-restart options enabled
+        bgp_graceful_restart_stale_route_time (int): Time to remove stale routes after peer restart
+        bgp_graceful_max_peer_restart_time (int): Maximum of peer restart time accepted
+        bgp_graceful_local_restart_time (int): Local restart time to advertise to peer
+        bgp_global_bfd (str): Global BFD Profile
+        bgp_redistribution_profile_ipv4_unicast (str): IPv4 Redistribution Profile
+        bgp_redistribution_profile_ipv6_unicast (str): IPv6 Redistribution Profile
     """
 
     SUFFIX = ENTRY
     CHILDTYPES = (
         "network.VrfStaticRoute",
         "network.VrfStaticRouteV6",
-        "network.BfdProfile",
+        "network.VrfBgpPeerGroup",
+        "network.RoutingProfileBfd",
         "network.RoutingProfileBgpAuth",
         "network.RoutingProfileBgpTimer",
         "network.RoutingProfileBgpAddressFamily",
@@ -5574,10 +5594,121 @@ class Vrf(VsysOperations):
                 VersionedParamPath(var_name, vartype="int", path="admin-dists/" + path)
             )
 
+        params.append(
+            VersionedParamPath(
+                "bgp_enable",
+                path="bgp/enable",
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(VersionedParamPath("bgp_router_id", path="bgp/router-id"))
+        params.append(VersionedParamPath("bgp_local_as", path="bgp/local-as"))
+        params.append(
+            VersionedParamPath(
+                "bgp_install_route",
+                path="bgp/install-route",
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_enforce_first_as",
+                path="bgp/enforce-first-as",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_fast_external_failover",
+                path="bgp/fast-external-failover",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_ecmp_multi_as",
+                path="bgp/ecmp-multi-as",
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(VersionedParamPath("bgp_default_local_preference", path="bgp/default-local-preference", vartype="int"))
+        params.append(
+            VersionedParamPath(
+                "bgp_graceful_shutdown",
+                path="bgp/graceful-shutdown",
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_always_advertise_network_route",
+                path="bgp/always-advertise-network-route",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_med_always_compare_med",
+                path="bgp/med/always-compare-med",
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_med_deterministic_med_comparison",
+                path="bgp/med/deterministic-med-comparison",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_graceful_restart_enable",
+                path="bgp/graceful-restart/enable",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_graceful_restart_stale_route_time",
+                path="bgp/graceful-restart/stale-route-time",
+                default=120,
+                vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_graceful_max_peer_restart_time",
+                path="bgp/graceful-restart/max-peer-restart-time",
+                default=120,
+                vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_graceful_local_restart_time",
+                path="bgp/graceful-restart/local-restart-time",
+                default=120,
+                vartype="int"
+            )
+        )
+        params.append(VersionedParamPath("bgp_global_bfd", path="bgp/global-bfd/profile", default="None"))
+        params.append(VersionedParamPath("bgp_redistribution_profile_ipv4_unicast", path="bgp/redistribution-profile/ipv4/unicast"))
+        params.append(VersionedParamPath("bgp_redistribution_profile_ipv6_unicast", path="bgp/redistribution-profile/ipv6/unicast"))
+
         self._params = tuple(params)
 
 
-class BfdProfile(VersionedPanObject):
+class RoutingProfileBfd(VersionedPanObject):
     """BFD profile
 
     Args:
@@ -5763,6 +5894,135 @@ class VrfStaticRouteV6(VersionedPanObject):
         params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
 
         self._params = tuple(params)
+
+
+class VrfBgpPeerGroup(VersionedPanObject):
+    """VRF BGP peer group
+
+    Args:
+        name (str): Name of the BGP peer group
+        enable (bool): Enabled BGP peer group
+        type (str): Type of BGP peer group
+        address_family_ipv4 (str): IPv4 Address Family
+        address_family_ipv6 (str): IPv6 Address Family
+        filtering_profile_ipv4 (str): IPv4 Filtering Profile
+        filtering_profile_ipv6 (str): IPv6 Filtering Profile
+        connection_options_timers (str): Timer Profile Name
+        connection_options_multihop (int): Multi-hop value
+        connection_options_authentication (str): Authentication Profile Name
+        connection_options_dampening (str): Dampening Profile Name
+    """
+
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.VrfBgpPeer"
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/bgp/peer-group")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "enable",
+                path="enable",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "type",
+                path="type/{type}",
+                values=["ebgp", "ibgp"],
+                default="ebgp",
+            )
+        )
+        params.append(VersionedParamPath("address_family_ipv4", path="address-family/ipv4"))
+        params.append(VersionedParamPath("address_family_ipv6", path="address-family/ipv6"))
+        params.append(VersionedParamPath("filtering_profile_ipv4", path="filtering-profile/ipv4"))
+        params.append(VersionedParamPath("filtering_profile_ipv6", path="filtering-profile/ipv6"))
+
+        params.append(VersionedParamPath("connection_options_timers", path="connection-options/timers/"))
+        params.append(VersionedParamPath("connection_options_multihop", path="connection-options/multihop", default=0))
+        params.append(VersionedParamPath("connection_options_authentication", path="connection-options/authentication"))
+        params.append(VersionedParamPath("connection_options_dampening", path="connection-options/dampening"))
+
+        self._params = tuple(params)
+
+
+class VrfBgpPeer(VersionedPanObject):
+    """VRF BGP peer
+
+    Args:
+        name (str): Name of the BGP peer
+        enable (bool): Enable BGP peer
+        passive (bool): If enabled, open messages are not sent to this peer
+        peer_as (int): Peer AS number
+        enable_sender_side_loop_detection (bool): Enable Sender Side Loop Detection
+        local_address_interface (str): Interface to accept BGP session
+        local_address_ip (str): Specify exact IP address if interface has multiple addresses
+        peer_address_type (str): Peer address configuration
+        peer_address_value (str): IP or FQDN
+        bfd_profile (str): BFD profile
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/peer")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "enable",
+                path="enable",
+                default=True,
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "passive",
+                path="passive",
+                default=False,
+                vartype="yesno"
+            )
+        )
+        params.append(VersionedParamPath("peer_as", path="peer-as", vartype="int"))
+        params.append(
+            VersionedParamPath(
+                "enable_sender_side_loop_detection",
+                path="enable-sender-side-loop-detection",
+                default=True,
+                vartype="yesno"
+            )
+        )
+
+        ### TODO: implement BGP peer group -> peer -> inherit
+
+        params.append(VersionedParamPath("local_address_interface", path="local-address/interface"))
+        params.append(VersionedParamPath("local_address_ip", path="local-address/ip"))
+        params.append(VersionedParamPath("peer_address_type", path="peer-address/{peer_address_type}", values=["ip", "fqdn"]))
+        params.append(VersionedParamPath("peer_address_value", path="peer-address/{peer_address_type}/"))
+
+        ### TODO: implement BGP peer group -> peer -> connection-options
+
+        params.append(VersionedParamPath("bfd_profile", path="bfd/profile", default="Inherit-lr-global-setting"))
+
+        self._params = tuple(params)
+
+
+### TODO: implement BGP -> aggregate-routes
+
+
+### TODO: implement BGP -> advertise-network
 
 
 class RoutingProfileBgpAuth(VersionedPanObject):
@@ -7791,7 +8051,7 @@ class RoutingProfileFilterRouteMapsRedistribution(VersionedPanObject):
 
         params.append(VersionedParamPath("description", path="description"))
 
-        ### TODO: implement from-protocol , to-protocol e.g. 
+        ### TODO: implement routing-profile -> filters -> route-maps -> redistribution -> redist -> from-protocol, to-protocol e.g.
         #   <entry name="custom-filter-route-map-redistribution">
         #     <bgp>
         #       <ospf>
