@@ -5530,9 +5530,21 @@ class Vrf(VsysOperations):
         bgp_graceful_restart_stale_route_time (int): Time to remove stale routes after peer restart
         bgp_graceful_max_peer_restart_time (int): Maximum of peer restart time accepted
         bgp_graceful_local_restart_time (int): Local restart time to advertise to peer
-        bgp_global_bfd (str): Global BFD Profile
+        bgp_global_bfd (str): BGP Global BFD Profile
         bgp_redistribution_profile_ipv4_unicast (str): IPv4 Redistribution Profile
         bgp_redistribution_profile_ipv6_unicast (str): IPv6 Redistribution Profile
+        ospf_enable (bool): Enable OSPF (Default: True)
+        ospf_router_id (str): Router ID in IP format (eg. 1.1.1.1)
+        ospf_global_bfd (str): OSPF Global BFD Profile
+        ospf_spf_timer (str): SPF timer setting
+        ospf_global_if_timer (str): Global protocol timer setting
+        ospf_redistribution_profile (str): Redistribution profile setting
+        ospf_rfc1583 (bool): RFC 1583 compatibility
+        ospf_graceful_restart_enable (bool): Enable OSPF graceful restart
+        ospf_graceful_restart_grace_period (int): Graceful restart period
+        ospf_graceful_restart_helper_enable (bool): Graceful restart helper enable
+        ospf_graceful_restart_strict_lsa_checking (bool): Graceful restart strict lsa checking
+        ospf_graceful_restart_max_neighbor_restart_time (int): Graceful restart neighbor restart time
     """
 
     SUFFIX = ENTRY
@@ -5704,6 +5716,63 @@ class Vrf(VsysOperations):
         params.append(VersionedParamPath("bgp_global_bfd", path="bgp/global-bfd/profile", default="None"))
         params.append(VersionedParamPath("bgp_redistribution_profile_ipv4_unicast", path="bgp/redistribution-profile/ipv4/unicast"))
         params.append(VersionedParamPath("bgp_redistribution_profile_ipv6_unicast", path="bgp/redistribution-profile/ipv6/unicast"))
+
+        params.append(
+            VersionedParamPath(
+                "ospf_enable",
+                default=False,
+                path="ospf/enable",
+                vartype="yesno"
+            )
+        )
+        params.append(VersionedParamPath("ospf_router_id", path="ospf/router-id", default=None))
+        params.append(VersionedParamPath("ospf_global_bfd", path="ospf/global-bfd/profile"))
+        params.append(VersionedParamPath("ospf_spf_timer", path="ospf/spf-timer"))
+        params.append(VersionedParamPath("ospf_global_if_timer", path="ospf/global-if-timer"))
+        params.append(VersionedParamPath("ospf_redistribution_profile", path="ospf/redistribution-profile"))
+        params.append(
+            VersionedParamPath(
+                "ospf_rfc1583",
+                path="ospf/rfc1583",
+                default=False,
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_graceful_restart_enable",
+                path="ospf/graceful-restart/enable",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_graceful_restart_grace_period",
+                path="ospf/graceful-restart/grace-period",
+                vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_graceful_restart_helper_enable",
+                path="ospf/graceful-restart/helper-enable",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_graceful_restart_strict_lsa_checking",
+                path="ospf/graceful-restart/strict-LSA-checking",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_graceful_restart_max_neighbor_restart_time",
+                path="ospf/graceful-restart/max-neighbor-restart-time",
+                vartype="int",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -5894,6 +5963,21 @@ class VrfStaticRouteV6(VersionedPanObject):
         params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
 
         self._params = tuple(params)
+
+
+### TODO: implement logical router -> VRF -> rib-filter
+
+
+### TODO: implement logical router -> VRF -> ecmp
+
+
+### TODO: implement logical router -> VRF -> ospf -> area
+
+
+### TODO: implement logical router -> VRF -> ospfv3
+
+
+### TODO: implement logical router -> VRF -> ospfv3 -> area
 
 
 class VrfBgpPeerGroup(VersionedPanObject):
