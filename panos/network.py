@@ -5552,6 +5552,7 @@ class Vrf(VsysOperations):
         "network.VrfStaticRoute",
         "network.VrfStaticRouteV6",
         "network.VrfBgpPeerGroup",
+        "network.VrfOspfArea",
         "network.RoutingProfileBfd",
         "network.RoutingProfileBgpAuth",
         "network.RoutingProfileBgpTimer",
@@ -5971,13 +5972,106 @@ class VrfStaticRouteV6(VersionedPanObject):
 ### TODO: implement logical router -> VRF -> ecmp
 
 
-### TODO: implement logical router -> VRF -> ospf -> area
+### TODO: implement logical router -> VRF -> ospf -> area -> range
+### TODO: implement logical router -> VRF -> ospf -> area -> interface
+### TODO: implement logical router -> VRF -> ospf -> area -> virtual-link
 
 
 ### TODO: implement logical router -> VRF -> ospfv3
-
-
 ### TODO: implement logical router -> VRF -> ospfv3 -> area
+### TODO: implement logical router -> VRF -> ospfv3 -> area -> range
+### TODO: implement logical router -> VRF -> ospfv3 -> area -> interface
+### TODO: implement logical router -> VRF -> ospfv3 -> area -> virtual-link
+
+
+class VrfOspfArea(VersionedPanObject):
+    """VRF OSPF area
+
+    Args:
+        name (str): The name
+        authentication (str): Authentication profile name
+        type (str): Area type
+        import_list (str): Import list
+        export_list (str): Export list
+        inbound_filter_list (str): Inbound filter list
+        outbound_filter_list (str): Outbound filter list
+        no_summary (bool): No summary
+        metric (int): Metric value
+        metric_type (str): Metric type
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/ospf/area")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("authentication", path="authentication"))
+        params.append(
+            VersionedParamPath(
+                "type",
+                path="type/{type}",
+                values=["normal", "stub", "nssa"],
+                default="normal",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "import_list",
+                path="type/{type}/abr/import-list",
+                condition={"type": ["normal", "stub", "nssa"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "export_list",
+                path="type/{type}/abr/export-list",
+                condition={"type": ["normal", "stub", "nssa"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "inbound_filter_list",
+                path="type/{type}/abr/inbound-filter-list",
+                condition={"type": ["normal", "stub", "nssa"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "outbound_filter_list",
+                path="type/{type}/abr/outbound-filter-list",
+                condition={"type": ["normal", "stub", "nssa"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "no_summary",
+                path="type/{type}/no-summary",
+                condition={"type": ["stub", "nssa"]},
+                vartype="yesno",
+                default=False,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "metric",
+                path="type/{type}/default-information-originate/metric",
+                condition={"type": "nssa"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "metric_type",
+                path="type/{type}/default-information-originate/metric-type",
+                values=["type-1", "type-2"],
+                condition={"type": "nssa"},
+            )
+        )
+
+        self._params = tuple(params)
 
 
 class VrfBgpPeerGroup(VersionedPanObject):
