@@ -6136,6 +6136,11 @@ class VrfOspfArea(VersionedPanObject):
     """
 
     SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.VrfOspfAreaRange",
+        "network.VrfOspfAreaInterface",
+        "network.VrfOspfAreaVirtualLink",
+    )
 
     def _setup(self):
         # xpaths
@@ -6203,6 +6208,37 @@ class VrfOspfArea(VersionedPanObject):
                 path="type/{type}/default-information-originate/metric-type",
                 values=["type-1", "type-2"],
                 condition={"type": "nssa"},
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class VrfOspfAreaRange(VersionedPanObject):
+    """VRF OSPF area range
+
+    Args:
+        name (str): IP Address/Netmask
+        substitute (str): Substitute network/prefix
+        advertise (bool): Do summarization and advertise
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/range")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("substitute", path="substitute", vartype="attrib"))
+        params.append(
+            VersionedParamPath(
+                "advertise",
+                path="advertise",
+                vartype="yesno",
+                default=True,
             )
         )
 
