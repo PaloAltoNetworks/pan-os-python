@@ -5816,6 +5816,72 @@ class Vrf(VsysOperations):
                 path="rib-filter/ipv6/ospfv3",
             )
         )
+        params.append(
+            VersionedParamPath(
+                "ecmp_enable",
+                default=False,
+                path="ecmp/enable",
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ecmp_symmetric_return",
+                default=False,
+                path="ecmp/symmetric-return",
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ecmp_strict_source_path",
+                default=False,
+                path="ecmp/strict-source-path",
+                vartype="yesno"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ecmp_max_path",
+                path="ecmp/max-path",
+                default=2,
+                vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ecmp_algorithm",
+                values=["ip-modulo", "ip-hash", "weighted-round-robin", "balanced-round-robin"],
+                path="ecmp/algorithm",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ecmp_algorithm_src_only",
+                default=False,
+                path="ecmp/algorithm/src-only",
+                vartype="yesno",
+                condition={"ecmp_algorithm": "ip-hash"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ecmp_algorithm_use_port",
+                default=False,
+                path="ecmp/algorithm/use-port",
+                vartype="yesno",
+                condition={"ecmp_algorithm": "ip-hash"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ecmp_algorithm_hash_seed",
+                path="ecmp/algorithm/hash-seed",
+                default=0,
+                vartype="int",
+                condition={"ecmp_algorithm": "ip-hash"},
+            )
+        )
 
         self._params = tuple(params)
 
@@ -6006,9 +6072,6 @@ class VrfStaticRouteV6(VersionedPanObject):
         params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
 
         self._params = tuple(params)
-
-
-### TODO: implement logical router -> VRF -> ecmp
 
 
 ### TODO: implement logical router -> VRF -> ospf -> area -> range
