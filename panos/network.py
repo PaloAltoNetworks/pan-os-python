@@ -5545,6 +5545,12 @@ class Vrf(VsysOperations):
         ospf_graceful_restart_helper_enable (bool): Graceful restart helper enable
         ospf_graceful_restart_strict_lsa_checking (bool): Graceful restart strict lsa checking
         ospf_graceful_restart_max_neighbor_restart_time (int): Graceful restart neighbor restart time
+        rib_filter_ipv4_static (str): IPv4 static route map
+        rib_filter_ipv4_bgp  (str): IPv4 BGP route map
+        rib_filter_ipv4_ospf (str): IPv4 OSPF route map
+        rib_filter_ipv6_static (str): IPv6 static route map
+        rib_filter_ipv6_bgp (str): IPv6 BGP route map
+        rib_filter_ipv6_ospfv3 (str): IPv6 OSPFv3 route map
     """
 
     SUFFIX = ENTRY
@@ -5774,6 +5780,42 @@ class Vrf(VsysOperations):
                 vartype="int",
             )
         )
+        params.append(
+            VersionedParamPath(
+                "rib_filter_ipv4_static",
+                path="rib-filter/ipv4/static",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "rib_filter_ipv4_bgp",
+                path="rib-filter/ipv4/bgp",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "rib_filter_ipv4_ospf",
+                path="rib-filter/ipv4/ospf",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "rib_filter_ipv6_static",
+                path="rib-filter/ipv6/static",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "rib_filter_ipv6_bgp",
+                path="rib-filter/ipv6/bgp",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "rib_filter_ipv6_ospfv3",
+                path="rib-filter/ipv6/ospfv3",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -5964,9 +6006,6 @@ class VrfStaticRouteV6(VersionedPanObject):
         params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
 
         self._params = tuple(params)
-
-
-### TODO: implement logical router -> VRF -> rib-filter
 
 
 ### TODO: implement logical router -> VRF -> ecmp
