@@ -6083,10 +6083,7 @@ class VrfStaticRouteV6(VersionedPanObject):
         self._params = tuple(params)
 
 
-### TODO: implement logical router -> VRF -> ospf -> area -> range
-### TODO: implement logical router -> VRF -> ospf -> area -> interface
 ### TODO: implement logical router -> VRF -> ospf -> area -> virtual-link
-
 
 ### TODO: implement logical router -> VRF -> ospfv3
 ### TODO: implement logical router -> VRF -> ospfv3 -> area
@@ -6241,6 +6238,93 @@ class VrfOspfAreaRange(VersionedPanObject):
                 default=True,
             )
         )
+
+        self._params = tuple(params)
+
+
+class VrfOspfAreaInterface(VersionedPanObject):
+    """VRF OSPF area interface
+
+    Args:
+        name (str): Interface name
+        enable (): Enable OSPF on this interface
+        mtu_ignore (): Ignore mtu when try to establish adjacency
+        passive (): "Suppress the sending of hello packets in this interface
+        priority (): Priority for OSPF designated router selection
+        link_type (): Link Type
+        metric (): Cost of OSPF interface
+        authentication (): Authentication options
+        bfd_profile (): BFD profile
+        timing (): Protocol timer setting
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/interface")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "enable",
+                path="enable",
+                vartype="yesno",
+                default=True,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mtu_ignore",
+                path="mtu-ignore",
+                vartype="yesno",
+                default=False,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "passive",
+                path="passive",
+                vartype="yesno",
+                default=False,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "priority",
+                path="priority",
+                vartype="int",
+                default=1,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "link_type",
+                path="link-type/{link_type}",
+                values=["broadcast", "p2p", "p2mp"],
+                default="broadcast",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "metric",
+                path="metric",
+                vartype="int",
+                default=10,
+            )
+        )
+        params.append(VersionedParamPath("authentication", path="authentication"))
+        params.append(
+            VersionedParamPath(
+                "bfd_profile",
+                path="bfd/profile",
+            )
+        )
+        params.append(VersionedParamPath("timing", path="timing"))
+
+        ### TODO: implement neighbor for link type p2mp
 
         self._params = tuple(params)
 
