@@ -5551,6 +5551,14 @@ class Vrf(VsysOperations):
         rib_filter_ipv6_static (str): IPv6 static route map
         rib_filter_ipv6_bgp (str): IPv6 BGP route map
         rib_filter_ipv6_ospfv3 (str): IPv6 OSPFv3 route map
+        ecmp_enable (bool): Enable Equal Cost Multipath
+        ecmp_symmetric_return (bool): Allows return packets to egress out of the ingress interface of the flow
+        ecmp_strict_source_path (bool): Force VPN traffic to exit interface that the source-ip belongs to
+        ecmp_max_path (int): Maxmum number of ECMP paths supported, change this configuration will result in a virtual router restart
+        ecmp_algorithm (str): Load balancing algorithm
+        ecmp_algorithm_src_only (bool): Only use source address for hash
+        ecmp_algorithm_use_port (bool): Use source/destination port for hash
+        ecmp_algorithm_hash_seed (int): User-specified hash seed
     """
 
     SUFFIX = ENTRY
@@ -5559,6 +5567,7 @@ class Vrf(VsysOperations):
         "network.VrfStaticRouteV6",
         "network.VrfBgpPeerGroup",
         "network.VrfOspfArea",
+        "network.VrfEcmpInterfaceWeight",
         "network.RoutingProfileBfd",
         "network.RoutingProfileBgpAuth",
         "network.RoutingProfileBgpTimer",
@@ -5852,14 +5861,14 @@ class Vrf(VsysOperations):
             VersionedParamPath(
                 "ecmp_algorithm",
                 values=["ip-modulo", "ip-hash", "weighted-round-robin", "balanced-round-robin"],
-                path="ecmp/algorithm",
+                path="ecmp/algorithm/{ecmp_algorithm}",
             )
         )
         params.append(
             VersionedParamPath(
                 "ecmp_algorithm_src_only",
                 default=False,
-                path="ecmp/algorithm/src-only",
+                path="ecmp/algorithm/{ecmp_algorithm}/src-only",
                 vartype="yesno",
                 condition={"ecmp_algorithm": "ip-hash"},
             )
@@ -5868,7 +5877,7 @@ class Vrf(VsysOperations):
             VersionedParamPath(
                 "ecmp_algorithm_use_port",
                 default=False,
-                path="ecmp/algorithm/use-port",
+                path="ecmp/algorithm/{ecmp_algorithm}/use-port",
                 vartype="yesno",
                 condition={"ecmp_algorithm": "ip-hash"},
             )
@@ -5876,7 +5885,7 @@ class Vrf(VsysOperations):
         params.append(
             VersionedParamPath(
                 "ecmp_algorithm_hash_seed",
-                path="ecmp/algorithm/hash-seed",
+                path="ecmp/algorithm/{ecmp_algorithm}/hash-seed",
                 default=0,
                 vartype="int",
                 condition={"ecmp_algorithm": "ip-hash"},
@@ -6084,6 +6093,30 @@ class VrfStaticRouteV6(VersionedPanObject):
 ### TODO: implement logical router -> VRF -> ospfv3 -> area -> range
 ### TODO: implement logical router -> VRF -> ospfv3 -> area -> interface
 ### TODO: implement logical router -> VRF -> ospfv3 -> area -> virtual-link
+
+
+class VrfEcmpInterfaceWeight(VersionedPanObject):
+    """VRF ECMP interface and weight
+
+    Args:
+        name (str): Interface name
+        weight (int): Interface ECMP weight
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/ecmp/algorithm/weighted-round-robin/interface")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath("weight", default=100, vartype="int", path="weight")
+        )
+
+        self._params = tuple(params)
 
 
 class VrfOspfArea(VersionedPanObject):
