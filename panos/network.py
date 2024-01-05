@@ -6083,8 +6083,6 @@ class VrfStaticRouteV6(VersionedPanObject):
         self._params = tuple(params)
 
 
-### TODO: implement logical router -> VRF -> ospf -> area -> virtual-link
-
 ### TODO: implement logical router -> VRF -> ospfv3
 ### TODO: implement logical router -> VRF -> ospfv3 -> area
 ### TODO: implement logical router -> VRF -> ospfv3 -> area -> range
@@ -6325,6 +6323,43 @@ class VrfOspfAreaInterface(VersionedPanObject):
         params.append(VersionedParamPath("timing", path="timing"))
 
         ### TODO: implement neighbor for link type p2mp
+
+        self._params = tuple(params)
+
+
+class VrfOspfAreaVirtualLink(VersionedPanObject):
+    """VRF OSPF area virtual link
+
+    Args:
+        name (str): Virtual link name
+        enable (bool): Enable this virtual link
+        neighbor_id (str): Neighbor router id for virtual link
+        transit_area_id (str): ID of transit area, cannot be backbone, stub or NSSA
+        timing (str): Timer profile
+        authentication (str): Authentication options
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/virtual-link")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "enable",
+                path="enable",
+                vartype="yesno",
+                default=True,
+            )
+        )
+        params.append(VersionedParamPath("neighbor_id", path="neighbor-id"))
+        params.append(VersionedParamPath("transit_area_id", path="transit-area-id"))
+        params.append(VersionedParamPath("timing", path="timing"))
+        params.append(VersionedParamPath("authentication", path="authentication"))
 
         self._params = tuple(params)
 
