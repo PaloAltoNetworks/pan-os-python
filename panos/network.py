@@ -5471,9 +5471,7 @@ class LogicalRouter(VsysOperations):
     """
 
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.Vrf",
-    )
+    CHILDTYPES = ("network.Vrf",)
 
     def _setup(self):
         # xpaths
@@ -5489,9 +5487,7 @@ class LogicalRouter(VsysOperations):
         # params
         params = []
 
-        params.append(
-            VersionedParamPath("vrf", path="vrf", vartype="entry")
-        )
+        params.append(VersionedParamPath("vrf", path="vrf", vartype="entry"))
 
         self._params = tuple(params)
 
@@ -5637,10 +5633,7 @@ class Vrf(VsysOperations):
 
         params.append(
             VersionedParamPath(
-                "bgp_enable",
-                path="bgp/enable",
-                default=False,
-                vartype="yesno"
+                "bgp_enable", path="bgp/enable", default=False, vartype="yesno"
             )
         )
         params.append(VersionedParamPath("bgp_router_id", path="bgp/router-id"))
@@ -5650,7 +5643,7 @@ class Vrf(VsysOperations):
                 "bgp_install_route",
                 path="bgp/install-route",
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -5658,7 +5651,7 @@ class Vrf(VsysOperations):
                 "bgp_enforce_first_as",
                 path="bgp/enforce-first-as",
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -5666,7 +5659,7 @@ class Vrf(VsysOperations):
                 "bgp_fast_external_failover",
                 path="bgp/fast-external-failover",
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -5674,16 +5667,22 @@ class Vrf(VsysOperations):
                 "bgp_ecmp_multi_as",
                 path="bgp/ecmp-multi-as",
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
-        params.append(VersionedParamPath("bgp_default_local_preference", path="bgp/default-local-preference", vartype="int"))
+        params.append(
+            VersionedParamPath(
+                "bgp_default_local_preference",
+                path="bgp/default-local-preference",
+                vartype="int",
+            )
+        )
         params.append(
             VersionedParamPath(
                 "bgp_graceful_shutdown",
                 path="bgp/graceful-shutdown",
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -5691,7 +5690,7 @@ class Vrf(VsysOperations):
                 "bgp_always_advertise_network_route",
                 path="bgp/always-advertise-network-route",
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -5699,7 +5698,7 @@ class Vrf(VsysOperations):
                 "bgp_med_always_compare_med",
                 path="bgp/med/always-compare-med",
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -5707,7 +5706,7 @@ class Vrf(VsysOperations):
                 "bgp_med_deterministic_med_comparison",
                 path="bgp/med/deterministic-med-comparison",
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -5715,7 +5714,7 @@ class Vrf(VsysOperations):
                 "bgp_graceful_restart_enable",
                 path="bgp/graceful-restart/enable",
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -5723,7 +5722,7 @@ class Vrf(VsysOperations):
                 "bgp_graceful_restart_stale_route_time",
                 path="bgp/graceful-restart/stale-route-time",
                 default=120,
-                vartype="int"
+                vartype="int",
             )
         )
         params.append(
@@ -5731,7 +5730,7 @@ class Vrf(VsysOperations):
                 "bgp_graceful_max_peer_restart_time",
                 path="bgp/graceful-restart/max-peer-restart-time",
                 default=120,
-                vartype="int"
+                vartype="int",
             )
         )
         params.append(
@@ -5739,32 +5738,50 @@ class Vrf(VsysOperations):
                 "bgp_graceful_local_restart_time",
                 path="bgp/graceful-restart/local-restart-time",
                 default=120,
-                vartype="int"
+                vartype="int",
             )
         )
-        params.append(VersionedParamPath("bgp_global_bfd", path="bgp/global-bfd/profile", default="None"))
-        params.append(VersionedParamPath("bgp_redistribution_profile_ipv4_unicast", path="bgp/redistribution-profile/ipv4/unicast"))
-        params.append(VersionedParamPath("bgp_redistribution_profile_ipv6_unicast", path="bgp/redistribution-profile/ipv6/unicast"))
+        params.append(
+            VersionedParamPath(
+                "bgp_global_bfd", path="bgp/global-bfd/profile", default="None"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_redistribution_profile_ipv4_unicast",
+                path="bgp/redistribution-profile/ipv4/unicast",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "bgp_redistribution_profile_ipv6_unicast",
+                path="bgp/redistribution-profile/ipv6/unicast",
+            )
+        )
 
         params.append(
             VersionedParamPath(
-                "ospf_enable",
-                default=False,
-                path="ospf/enable",
-                vartype="yesno"
+                "ospf_enable", default=False, path="ospf/enable", vartype="yesno"
             )
         )
-        params.append(VersionedParamPath("ospf_router_id", path="ospf/router-id", default=None))
-        params.append(VersionedParamPath("ospf_global_bfd", path="ospf/global-bfd/profile"))
+        params.append(
+            VersionedParamPath("ospf_router_id", path="ospf/router-id", default=None)
+        )
+        params.append(
+            VersionedParamPath("ospf_global_bfd", path="ospf/global-bfd/profile")
+        )
         params.append(VersionedParamPath("ospf_spf_timer", path="ospf/spf-timer"))
-        params.append(VersionedParamPath("ospf_global_if_timer", path="ospf/global-if-timer"))
-        params.append(VersionedParamPath("ospf_redistribution_profile", path="ospf/redistribution-profile"))
+        params.append(
+            VersionedParamPath("ospf_global_if_timer", path="ospf/global-if-timer")
+        )
         params.append(
             VersionedParamPath(
-                "ospf_rfc1583",
-                path="ospf/rfc1583",
-                default=False,
-                vartype="yesno",
+                "ospf_redistribution_profile", path="ospf/redistribution-profile"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospf_rfc1583", path="ospf/rfc1583", default=False, vartype="yesno",
             )
         )
         params.append(
@@ -5778,7 +5795,7 @@ class Vrf(VsysOperations):
             VersionedParamPath(
                 "ospf_graceful_restart_grace_period",
                 path="ospf/graceful-restart/grace-period",
-                vartype="int"
+                vartype="int",
             )
         )
         params.append(
@@ -5805,17 +5822,26 @@ class Vrf(VsysOperations):
 
         params.append(
             VersionedParamPath(
-                "ospfv3_enable",
-                default=False,
-                path="ospfv3/enable",
-                vartype="yesno"
+                "ospfv3_enable", default=False, path="ospfv3/enable", vartype="yesno"
             )
         )
-        params.append(VersionedParamPath("ospfv3_router_id", path="ospfv3/router-id", default=None))
-        params.append(VersionedParamPath("ospfv3_global_bfd", path="ospfv3/global-bfd/profile"))
+        params.append(
+            VersionedParamPath(
+                "ospfv3_router_id", path="ospfv3/router-id", default=None
+            )
+        )
+        params.append(
+            VersionedParamPath("ospfv3_global_bfd", path="ospfv3/global-bfd/profile")
+        )
         params.append(VersionedParamPath("ospfv3_spf_timer", path="ospfv3/spf-timer"))
-        params.append(VersionedParamPath("ospfv3_global_if_timer", path="ospfv3/global-if-timer"))
-        params.append(VersionedParamPath("ospfv3_redistribution_profile", path="ospfv3/redistribution-profile"))
+        params.append(
+            VersionedParamPath("ospfv3_global_if_timer", path="ospfv3/global-if-timer")
+        )
+        params.append(
+            VersionedParamPath(
+                "ospfv3_redistribution_profile", path="ospfv3/redistribution-profile",
+            )
+        )
         params.append(
             VersionedParamPath(
                 "ospfv3_disable_transit_traffic",
@@ -5835,7 +5861,7 @@ class Vrf(VsysOperations):
             VersionedParamPath(
                 "ospfv3_graceful_restart_grace_period",
                 path="ospfv3/graceful-restart/grace-period",
-                vartype="int"
+                vartype="int",
             )
         )
         params.append(
@@ -5861,48 +5887,27 @@ class Vrf(VsysOperations):
         )
 
         params.append(
-            VersionedParamPath(
-                "rib_filter_ipv4_static",
-                path="rib-filter/ipv4/static",
-            )
+            VersionedParamPath("rib_filter_ipv4_static", path="rib-filter/ipv4/static",)
         )
         params.append(
-            VersionedParamPath(
-                "rib_filter_ipv4_bgp",
-                path="rib-filter/ipv4/bgp",
-            )
+            VersionedParamPath("rib_filter_ipv4_bgp", path="rib-filter/ipv4/bgp",)
         )
         params.append(
-            VersionedParamPath(
-                "rib_filter_ipv4_ospf",
-                path="rib-filter/ipv4/ospf",
-            )
+            VersionedParamPath("rib_filter_ipv4_ospf", path="rib-filter/ipv4/ospf",)
         )
         params.append(
-            VersionedParamPath(
-                "rib_filter_ipv6_static",
-                path="rib-filter/ipv6/static",
-            )
+            VersionedParamPath("rib_filter_ipv6_static", path="rib-filter/ipv6/static",)
         )
         params.append(
-            VersionedParamPath(
-                "rib_filter_ipv6_bgp",
-                path="rib-filter/ipv6/bgp",
-            )
+            VersionedParamPath("rib_filter_ipv6_bgp", path="rib-filter/ipv6/bgp",)
         )
         params.append(
-            VersionedParamPath(
-                "rib_filter_ipv6_ospfv3",
-                path="rib-filter/ipv6/ospfv3",
-            )
+            VersionedParamPath("rib_filter_ipv6_ospfv3", path="rib-filter/ipv6/ospfv3",)
         )
 
         params.append(
             VersionedParamPath(
-                "ecmp_enable",
-                default=False,
-                path="ecmp/enable",
-                vartype="yesno"
+                "ecmp_enable", default=False, path="ecmp/enable", vartype="yesno",
             )
         )
         params.append(
@@ -5910,7 +5915,7 @@ class Vrf(VsysOperations):
                 "ecmp_symmetric_return",
                 default=False,
                 path="ecmp/symmetric-return",
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -5918,21 +5923,23 @@ class Vrf(VsysOperations):
                 "ecmp_strict_source_path",
                 default=False,
                 path="ecmp/strict-source-path",
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
             VersionedParamPath(
-                "ecmp_max_path",
-                path="ecmp/max-path",
-                default=2,
-                vartype="int"
+                "ecmp_max_path", path="ecmp/max-path", default=2, vartype="int"
             )
         )
         params.append(
             VersionedParamPath(
                 "ecmp_algorithm",
-                values=["ip-modulo", "ip-hash", "weighted-round-robin", "balanced-round-robin"],
+                values=[
+                    "ip-modulo",
+                    "ip-hash",
+                    "weighted-round-robin",
+                    "balanced-round-robin",
+                ],
                 path="ecmp/algorithm/{ecmp_algorithm}",
             )
         )
@@ -5979,6 +5986,7 @@ class RoutingProfileBfd(VersionedPanObject):
         hold_time (int) Hold Time (ms)
         min_received_ttl (int): Minimum accepted TTL on received BFD packet
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -5990,29 +5998,33 @@ class RoutingProfileBfd(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "mode",
-                default="active",
-                values=["active", "passive"],
-                path="mode",
+                "mode", default="active", values=["active", "passive"], path="mode",
             )
         )
         params.append(
-            VersionedParamPath("min_tx_interval", default=1000, vartype="int", path="min-tx-interval")
+            VersionedParamPath(
+                "min_tx_interval", default=1000, vartype="int", path="min-tx-interval"
+            )
         )
         params.append(
-            VersionedParamPath("min_rx_interval", default=1000, vartype="int", path="min-rx-interval")
+            VersionedParamPath(
+                "min_rx_interval", default=1000, vartype="int", path="min-rx-interval"
+            )
         )
         params.append(
-            VersionedParamPath("detection_multiplier", default=3, vartype="int", path="detection-multiplier")
+            VersionedParamPath(
+                "detection_multiplier",
+                default=3,
+                vartype="int",
+                path="detection-multiplier",
+            )
         )
         params.append(
             VersionedParamPath("hold_time", default=0, vartype="int", path="hold-time")
         )
         params.append(
             VersionedParamPath(
-                "min_received_ttl",
-                vartype="int",
-                path="multihop/min-received-ttl"
+                "min_received_ttl", vartype="int", path="multihop/min-received-ttl"
             )
         )
 
@@ -6292,13 +6304,12 @@ class VrfOspfAreaRange(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath("substitute", path="substitute", vartype="attrib"))
+        params.append(
+            VersionedParamPath("substitute", path="substitute", vartype="attrib")
+        )
         params.append(
             VersionedParamPath(
-                "advertise",
-                path="advertise",
-                vartype="yesno",
-                default=True,
+                "advertise", path="advertise", vartype="yesno", default=True,
             )
         )
 
@@ -6331,36 +6342,20 @@ class VrfOspfAreaInterface(VersionedPanObject):
         params = []
 
         params.append(
+            VersionedParamPath("enable", path="enable", vartype="yesno", default=True)
+        )
+        params.append(
             VersionedParamPath(
-                "enable",
-                path="enable",
-                vartype="yesno",
-                default=True,
+                "mtu_ignore", path="mtu-ignore", vartype="yesno", default=False,
             )
         )
         params.append(
             VersionedParamPath(
-                "mtu_ignore",
-                path="mtu-ignore",
-                vartype="yesno",
-                default=False,
+                "passive", path="passive", vartype="yesno", default=False,
             )
         )
         params.append(
-            VersionedParamPath(
-                "passive",
-                path="passive",
-                vartype="yesno",
-                default=False,
-            )
-        )
-        params.append(
-            VersionedParamPath(
-                "priority",
-                path="priority",
-                vartype="int",
-                default=1,
-            )
+            VersionedParamPath("priority", path="priority", vartype="int", default=1)
         )
         params.append(
             VersionedParamPath(
@@ -6371,20 +6366,10 @@ class VrfOspfAreaInterface(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "metric",
-                path="metric",
-                vartype="int",
-                default=10,
-            )
+            VersionedParamPath("metric", path="metric", vartype="int", default=10)
         )
         params.append(VersionedParamPath("authentication", path="authentication"))
-        params.append(
-            VersionedParamPath(
-                "bfd_profile",
-                path="bfd/profile",
-            )
-        )
+        params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
         params.append(VersionedParamPath("timing", path="timing"))
 
         ### TODO: implement neighbor for link type p2mp
@@ -6414,12 +6399,7 @@ class VrfOspfAreaVirtualLink(VersionedPanObject):
         params = []
 
         params.append(
-            VersionedParamPath(
-                "enable",
-                path="enable",
-                vartype="yesno",
-                default=True,
-            )
+            VersionedParamPath("enable", path="enable", vartype="yesno", default=True)
         )
         params.append(VersionedParamPath("neighbor_id", path="neighbor-id"))
         params.append(VersionedParamPath("transit_area_id", path="transit-area-id"))
@@ -6542,13 +6522,12 @@ class VrfOspfv3AreaRange(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath("substitute", path="substitute", vartype="attrib"))
+        params.append(
+            VersionedParamPath("substitute", path="substitute", vartype="attrib")
+        )
         params.append(
             VersionedParamPath(
-                "advertise",
-                path="advertise",
-                vartype="yesno",
-                default=True,
+                "advertise", path="advertise", vartype="yesno", default=True,
             )
         )
 
@@ -6582,36 +6561,20 @@ class VrfOspfv3AreaInterface(VersionedPanObject):
         params = []
 
         params.append(
+            VersionedParamPath("enable", path="enable", vartype="yesno", default=True)
+        )
+        params.append(
             VersionedParamPath(
-                "enable",
-                path="enable",
-                vartype="yesno",
-                default=True,
+                "mtu_ignore", path="mtu-ignore", vartype="yesno", default=False,
             )
         )
         params.append(
             VersionedParamPath(
-                "mtu_ignore",
-                path="mtu-ignore",
-                vartype="yesno",
-                default=False,
+                "passive", path="passive", vartype="yesno", default=False,
             )
         )
         params.append(
-            VersionedParamPath(
-                "passive",
-                path="passive",
-                vartype="yesno",
-                default=False,
-            )
-        )
-        params.append(
-            VersionedParamPath(
-                "priority",
-                path="priority",
-                vartype="int",
-                default=1,
-            )
+            VersionedParamPath("priority", path="priority", vartype="int", default=1)
         )
         params.append(
             VersionedParamPath(
@@ -6622,21 +6585,11 @@ class VrfOspfv3AreaInterface(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "metric",
-                path="metric",
-                vartype="int",
-                default=10,
-            )
+            VersionedParamPath("metric", path="metric", vartype="int", default=10)
         )
         params.append(VersionedParamPath("instance_id", path="instance-id"))
         params.append(VersionedParamPath("authentication", path="authentication"))
-        params.append(
-            VersionedParamPath(
-                "bfd_profile",
-                path="bfd/profile",
-            )
-        )
+        params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
         params.append(VersionedParamPath("timing", path="timing"))
 
         ### TODO: implement neighbor for link type p2mp
@@ -6666,12 +6619,7 @@ class VrfOspfv3AreaVirtualLink(VersionedPanObject):
         params = []
 
         params.append(
-            VersionedParamPath(
-                "enable",
-                path="enable",
-                vartype="yesno",
-                default=True,
-            )
+            VersionedParamPath("enable", path="enable", vartype="yesno", default=True)
         )
         params.append(VersionedParamPath("neighbor_id", path="neighbor-id"))
         params.append(VersionedParamPath("transit_area_id", path="transit-area-id"))
@@ -6699,9 +6647,7 @@ class VrfBgpPeerGroup(VersionedPanObject):
     """
 
     SUFFIX = ENTRY
-    CHILDTYPES = (
-        "network.VrfBgpPeer"
-    )
+    CHILDTYPES = "network.VrfBgpPeer"
 
     def _setup(self):
         # xpaths
@@ -6711,30 +6657,49 @@ class VrfBgpPeerGroup(VersionedPanObject):
         params = []
 
         params.append(
+            VersionedParamPath("enable", path="enable", default=True, vartype="yesno")
+        )
+        params.append(
             VersionedParamPath(
-                "enable",
-                path="enable",
-                default=True,
-                vartype="yesno"
+                "type", path="type/{type}", values=["ebgp", "ibgp"], default="ebgp",
+            )
+        )
+        params.append(
+            VersionedParamPath("address_family_ipv4", path="address-family/ipv4")
+        )
+        params.append(
+            VersionedParamPath("address_family_ipv6", path="address-family/ipv6")
+        )
+        params.append(
+            VersionedParamPath("filtering_profile_ipv4", path="filtering-profile/ipv4")
+        )
+        params.append(
+            VersionedParamPath("filtering_profile_ipv6", path="filtering-profile/ipv6")
+        )
+
+        params.append(
+            VersionedParamPath(
+                "connection_options_timers", path="connection-options/timers/",
             )
         )
         params.append(
             VersionedParamPath(
-                "type",
-                path="type/{type}",
-                values=["ebgp", "ibgp"],
-                default="ebgp",
+                "connection_options_multihop",
+                path="connection-options/multihop",
+                default=0,
             )
         )
-        params.append(VersionedParamPath("address_family_ipv4", path="address-family/ipv4"))
-        params.append(VersionedParamPath("address_family_ipv6", path="address-family/ipv6"))
-        params.append(VersionedParamPath("filtering_profile_ipv4", path="filtering-profile/ipv4"))
-        params.append(VersionedParamPath("filtering_profile_ipv6", path="filtering-profile/ipv6"))
-
-        params.append(VersionedParamPath("connection_options_timers", path="connection-options/timers/"))
-        params.append(VersionedParamPath("connection_options_multihop", path="connection-options/multihop", default=0))
-        params.append(VersionedParamPath("connection_options_authentication", path="connection-options/authentication"))
-        params.append(VersionedParamPath("connection_options_dampening", path="connection-options/dampening"))
+        params.append(
+            VersionedParamPath(
+                "connection_options_authentication",
+                path="connection-options/authentication",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "connection_options_dampening", path="connection-options/dampening",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -6765,19 +6730,11 @@ class VrfBgpPeer(VersionedPanObject):
         params = []
 
         params.append(
-            VersionedParamPath(
-                "enable",
-                path="enable",
-                default=True,
-                vartype="yesno"
-            )
+            VersionedParamPath("enable", path="enable", default=True, vartype="yesno")
         )
         params.append(
             VersionedParamPath(
-                "passive",
-                path="passive",
-                default=False,
-                vartype="yesno"
+                "passive", path="passive", default=False, vartype="yesno",
             )
         )
         params.append(VersionedParamPath("peer_as", path="peer-as", vartype="int"))
@@ -6786,20 +6743,38 @@ class VrfBgpPeer(VersionedPanObject):
                 "enable_sender_side_loop_detection",
                 path="enable-sender-side-loop-detection",
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
 
         ### TODO: implement BGP peer group -> peer -> inherit
 
-        params.append(VersionedParamPath("local_address_interface", path="local-address/interface"))
+        params.append(
+            VersionedParamPath(
+                "local_address_interface", path="local-address/interface"
+            )
+        )
         params.append(VersionedParamPath("local_address_ip", path="local-address/ip"))
-        params.append(VersionedParamPath("peer_address_type", path="peer-address/{peer_address_type}", values=["ip", "fqdn"]))
-        params.append(VersionedParamPath("peer_address_value", path="peer-address/{peer_address_type}/"))
+        params.append(
+            VersionedParamPath(
+                "peer_address_type",
+                path="peer-address/{peer_address_type}",
+                values=["ip", "fqdn"],
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "peer_address_value", path="peer-address/{peer_address_type}/",
+            )
+        )
 
         ### TODO: implement BGP peer group -> peer -> connection-options
 
-        params.append(VersionedParamPath("bfd_profile", path="bfd/profile", default="Inherit-lr-global-setting"))
+        params.append(
+            VersionedParamPath(
+                "bfd_profile", path="bfd/profile", default="Inherit-lr-global-setting",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -6817,6 +6792,7 @@ class RoutingProfileBgpAuth(VersionedPanObject):
         name (str): The name of the profile
         secret (str): Shared secret for the TCP MD5 authentication
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -6840,6 +6816,7 @@ class RoutingProfileBgpTimer(VersionedPanObject):
         open_delay_time (int): Delay time after peer TCP connection up and sending 1st BGP Open Message
         min_route_adv_interval (int): Minimum Route Advertisement Interval
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -6857,10 +6834,7 @@ class RoutingProfileBgpTimer(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "hold_time",
-                path="hold-time",
-                vartype="int",
-                default=90,
+                "hold_time", path="hold-time", vartype="int", default=90,
             )
         )
         params.append(
@@ -6873,10 +6847,7 @@ class RoutingProfileBgpTimer(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "open_delay_time",
-                path="open-delay-time",
-                vartype="int",
-                default=0,
+                "open_delay_time", path="open-delay-time", vartype="int", default=0,
             )
         )
         params.append(
@@ -6934,20 +6905,17 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
         multicast_orf (str): Advertise ORF (Outbound Route Filtering) Capability
         multicast_default_originate_map (str): Default Originate Route-Map
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/bgp/address-family-profile")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/bgp/address-family-profile"
+        )
 
         params = []
 
-        params.append(
-            VersionedParamPath(
-                "afi",
-                path="{afi}",
-                default="ipv4",
-            )
-        )
+        params.append(VersionedParamPath("afi", path="{afi}", default="ipv4"))
 
         # IPv4/IPv6 unicast
         params.append(
@@ -6955,7 +6923,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "unicast_enable",
                 path="{afi}/unicast/enable",
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -6963,7 +6931,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "unicast_soft_reconfig_with_stored_info",
                 path="{afi}/unicast/soft-reconfig-with-stored-info",
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -6971,7 +6939,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "unicast_add_path_tx_all_paths",
                 path="{afi}/unicast/add-path/tx-all-paths",
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -6979,7 +6947,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "unicast_add_path_tx_bestpath_per_as",
                 path="{afi}/unicast/add-path/tx-bestpath-per-AS",
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -6987,7 +6955,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "unicast_as_override",
                 path="{afi}/unicast/as-override",
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -6995,7 +6963,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "unicast_default_originate",
                 path="{afi}/unicast/default-originate",
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7003,7 +6971,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "unicast_route_reflector_client",
                 path="{afi}/unicast/route-reflector-client",
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7043,7 +7011,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "unicast_maximum_prefix_action",
                 path="{afi}/unicast/maximum-prefix/action/{unicast_maximum_prefix_action}",
                 default="warning-only",
-                values=["restart", "warning-only",]
+                values=["restart", "warning-only",],
             )
         )
         params.append(
@@ -7059,34 +7027,34 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
             VersionedParamPath(
                 "unicast_next_hop",
                 path="{afi}/unicast/next-hop/{unicast_next_hop}",
-                values=["self", "self-force"]
+                values=["self", "self-force"],
             )
         )
         params.append(
             VersionedParamPath(
                 "unicast_remove_private_as",
                 path="{afi}/unicast/remove-private-AS/{unicast_remove_private_as}",
-                values=["all", "replace-AS"]
+                values=["all", "replace-AS"],
             )
         )
         params.append(
             VersionedParamPath(
                 "unicast_send_community",
                 path="{afi}/unicast/send-community/{unicast_send_community}",
-                values=["all", "both", "extended", "large", "standard"]
+                values=["all", "both", "extended", "large", "standard"],
             )
         )
         params.append(
             VersionedParamPath(
                 "unicast_orf",
                 path="{afi}/unicast/orf/orf-prefix-list",
-                values=["none", "both", "receive", "send"]
+                values=["none", "both", "receive", "send"],
             )
         )
         params.append(
             VersionedParamPath(
                 "unicast_default_originate_map",
-                path="{afi}/unicast/default-originate-map"
+                path="{afi}/unicast/default-originate-map",
             )
         )
 
@@ -7097,7 +7065,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 path="{afi}/multicast/enable",
                 condition={"afi": "ipv4"},
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7106,7 +7074,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 path="{afi}/multicast/soft-reconfig-with-stored-info",
                 condition={"afi": "ipv4"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7115,7 +7083,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 path="{afi}/multicast/add-path/tx-all-paths",
                 condition={"afi": "ipv4"},
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7124,7 +7092,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 path="{afi}/multicast/add-path/tx-bestpath-per-AS",
                 condition={"afi": "ipv4"},
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7133,7 +7101,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 path="{afi}/multicast/as-override",
                 condition={"afi": "ipv4"},
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7142,7 +7110,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 path="{afi}/multicast/default-originate",
                 condition={"afi": "ipv4"},
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7151,7 +7119,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 path="{afi}/multicast/route-reflector-client",
                 condition={"afi": "ipv4"},
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7195,7 +7163,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 path="{afi}/multicast/maximum-prefix/action/{multicast_maximum_prefix_action}",
                 condition={"afi": "ipv4"},
                 default="warning-only",
-                values=["restart", "warning-only",]
+                values=["restart", "warning-only",],
             )
         )
         params.append(
@@ -7212,7 +7180,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "multicast_next_hop",
                 path="{afi}/multicast/next-hop/{multicast_next_hop}",
                 condition={"afi": "ipv4"},
-                values=["self", "self-force"]
+                values=["self", "self-force"],
             )
         )
         params.append(
@@ -7220,7 +7188,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "multicast_remove_private_as",
                 path="{afi}/multicast/remove-private-AS/{multicast_remove_private_as}",
                 condition={"afi": "ipv4"},
-                values=["all", "replace-AS"]
+                values=["all", "replace-AS"],
             )
         )
         params.append(
@@ -7228,7 +7196,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "multicast_send_community",
                 path="{afi}/multicast/send-community/{multicast_send_community}",
                 condition={"afi": "ipv4"},
-                values=["all", "both", "extended", "large", "standard"]
+                values=["all", "both", "extended", "large", "standard"],
             )
         )
         params.append(
@@ -7236,7 +7204,7 @@ class RoutingProfileBgpAddressFamily(VersionedPanObject):
                 "multicast_orf",
                 path="{afi}/multicast/orf/orf-prefix-list",
                 condition={"afi": "ipv4"},
-                values=["none", "both", "receive", "send"]
+                values=["none", "both", "receive", "send"],
             )
         )
         params.append(
@@ -7261,6 +7229,7 @@ class RoutingProfileBgpDampening(VersionedPanObject):
         suppress_limit (int): Value to start supressing the route
         max_suppress_limit (int): Maximum duration (in minutes) a route can be suppressed
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -7271,26 +7240,17 @@ class RoutingProfileBgpDampening(VersionedPanObject):
         params.append(VersionedParamPath("description", path="description"))
         params.append(
             VersionedParamPath(
-                "half_life",
-                path="half-life",
-                default=15,
-                vartype="int",
+                "half_life", path="half-life", default=15, vartype="int",
             )
         )
         params.append(
             VersionedParamPath(
-                "reuse_limit",
-                path="reuse-limit",
-                default=750,
-                vartype="int",
+                "reuse_limit", path="reuse-limit", default=750, vartype="int",
             )
         )
         params.append(
             VersionedParamPath(
-                "suppress_limit",
-                path="suppress-limit",
-                default=2000,
-                vartype="int",
+                "suppress_limit", path="suppress-limit", default=2000, vartype="int",
             )
         )
         params.append(
@@ -7322,26 +7282,23 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
         rip_enable (bool): Enable RIP Routes
         rip_metric (int): RIP Metric (Field ignored if route-map configured)
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/bgp/redistribution-profile")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/bgp/redistribution-profile"
+        )
 
         params = []
 
-        params.append(
-            VersionedParamPath(
-                "afi",
-                path="{afi}",
-                default="ipv4",
-            )
-        )
+        params.append(VersionedParamPath("afi", path="{afi}", default="ipv4"))
         params.append(
             VersionedParamPath(
                 "static_enable",
                 path="{afi}/unicast/static/enable",
                 condition={"afi": ["ipv4", "ipv6"]},
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7349,7 +7306,7 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
                 "static_metric",
                 path="{afi}/unicast/static/metric",
                 condition={"afi": ["ipv4", "ipv6"]},
-                vartype="int"
+                vartype="int",
             )
         )
         params.append(
@@ -7357,7 +7314,7 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
                 "connected_enable",
                 path="{afi}/unicast/connected/enable",
                 condition={"afi": ["ipv4", "ipv6"]},
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7365,7 +7322,7 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
                 "connected_metric",
                 path="{afi}/unicast/connected/metric",
                 condition={"afi": ["ipv4", "ipv6"]},
-                vartype="int"
+                vartype="int",
             )
         )
         params.append(
@@ -7373,7 +7330,7 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
                 "ospf_enable",
                 path="{afi}/unicast/ospf/enable",
                 condition={"afi": "ipv4"},
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7381,7 +7338,7 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
                 "ospf_metric",
                 path="{afi}/unicast/ospf/metric",
                 condition={"afi": "ipv4"},
-                vartype="int"
+                vartype="int",
             )
         )
         params.append(
@@ -7389,7 +7346,7 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
                 "ospfv3_enable",
                 path="{afi}/unicast/ospfv3/enable",
                 condition={"afi": "ipv6"},
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7397,7 +7354,7 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
                 "ospfv3_metric",
                 path="{afi}/unicast/ospfv3/metric",
                 condition={"afi": "ipv6"},
-                vartype="int"
+                vartype="int",
             )
         )
         params.append(
@@ -7405,7 +7362,7 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
                 "rip_enable",
                 path="{afi}/unicast/rip/enable",
                 condition={"afi": "ipv4"},
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7413,7 +7370,7 @@ class RoutingProfileBgpRedistribution(VersionedPanObject):
                 "rip_metric",
                 path="{afi}/unicast/rip/metric",
                 condition={"afi": "ipv4"},
-                vartype="int"
+                vartype="int",
             )
         )
 
@@ -7428,6 +7385,7 @@ class RoutingProfileBgpFiltering(VersionedPanObject):
         description (str): Description of the profile
         afi (str): Address Family Identifier
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -7436,13 +7394,7 @@ class RoutingProfileBgpFiltering(VersionedPanObject):
         params = []
 
         params.append(VersionedParamPath("description", path="description"))
-        params.append(
-            VersionedParamPath(
-                "afi",
-                path="{afi}",
-                default="ipv4",
-            )
-        )
+        params.append(VersionedParamPath("afi", path="{afi}", default="ipv4"))
 
         self._params = tuple(params)
 
@@ -7454,6 +7406,7 @@ class RoutingProfileOspfAuth(VersionedPanObject):
         name (str): The name of the profile
         password (str): Simple password authentication
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -7477,6 +7430,7 @@ class RoutingProfileOspfIfTimer(VersionedPanObject):
         transit_delay (int): Estimated delay (in seconds) to transmit LSAs
         gr_delay (int): Period (in seconds) used to send grace LSAs before first hello is sent when graceful restart starts
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -7486,18 +7440,12 @@ class RoutingProfileOspfIfTimer(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "hello_interval",
-                path="hello-interval",
-                vartype="int",
-                default=10,
+                "hello_interval", path="hello-interval", vartype="int", default=10,
             )
         )
         params.append(
             VersionedParamPath(
-                "dead_counts",
-                path="dead-counts",
-                vartype="int",
-                default=4,
+                "dead_counts", path="dead-counts", vartype="int", default=4,
             )
         )
         params.append(
@@ -7510,19 +7458,11 @@ class RoutingProfileOspfIfTimer(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "transit_delay",
-                path="transit-delay",
-                vartype="int",
-                default=1,
+                "transit_delay", path="transit-delay", vartype="int", default=1,
             )
         )
         params.append(
-            VersionedParamPath(
-                "gr_delay",
-                path="gr-delay",
-                vartype="int",
-                default=10,
-            )
+            VersionedParamPath("gr_delay", path="gr-delay", vartype="int", default=10,)
         )
 
         self._params = tuple(params)
@@ -7538,19 +7478,19 @@ class RoutingProfileOspfSpfTimer(VersionedPanObject):
         initial_hold_time (int): Initial hold time (second) between consecutive SPF calculations
         max_hold_time (int): Maximum hold time (second)
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/ospf/spf-timer-profile")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/ospf/spf-timer-profile"
+        )
 
         params = []
 
         params.append(
             VersionedParamPath(
-                "lsa_interval",
-                path="lsa-interval",
-                vartype="int",
-                default=5,
+                "lsa_interval", path="lsa-interval", vartype="int", default=5,
             )
         )
         params.append(
@@ -7563,18 +7503,12 @@ class RoutingProfileOspfSpfTimer(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "initial_hold_time",
-                path="initial-hold-time",
-                vartype="int",
-                default=5,
+                "initial_hold_time", path="initial-hold-time", vartype="int", default=5,
             )
         )
         params.append(
             VersionedParamPath(
-                "max_hold_time",
-                path="max-hold-time",
-                vartype="int",
-                default=5,
+                "max_hold_time", path="max-hold-time", vartype="int", default=5,
             )
         )
 
@@ -7608,19 +7542,19 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
         default_route_metric (int): IPv4 Default Route metric value (1-65535)
         default_route_metric_type (str): IPv4 Default Route metric type (type-1, type-2)
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/ospf/redistribution-profile")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/ospf/redistribution-profile"
+        )
 
         params = []
 
         params.append(
             VersionedParamPath(
-                "static",
-                path="{static}",
-                values=("static"),
-                default=None
+                "static", path="{static}", values=("static"), default=None,
             )
         )
         params.append(
@@ -7629,7 +7563,7 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
                 path="{static}/enable",
                 condition={"static": "static"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7651,10 +7585,7 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "connected",
-                path="{connected}",
-                values=("connected"),
-                default=None
+                "connected", path="{connected}", values=("connected"), default=None,
             )
         )
         params.append(
@@ -7663,7 +7594,7 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
                 path="connected/enable",
                 condition={"connected": "connected"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7684,12 +7615,7 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "rip",
-                path="{rip}",
-                values=("rip"),
-                default=None
-            )
+            VersionedParamPath("rip", path="{rip}", values=("rip"), default=None,)
         )
         params.append(
             VersionedParamPath(
@@ -7697,7 +7623,7 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
                 path="rip/enable",
                 condition={"rip": "rip"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7718,12 +7644,7 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "bgp",
-                path="{bgp}",
-                values=("bgp"),
-                default=None
-            )
+            VersionedParamPath("bgp", path="{bgp}", values=("bgp"), default=None,)
         )
         params.append(
             VersionedParamPath(
@@ -7731,7 +7652,7 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
                 path="bgp/enable",
                 condition={"bgp": "bgp"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7756,7 +7677,7 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
                 "default_route",
                 path="{default_route}",
                 values=("default-route"),
-                default=None
+                default=None,
             )
         )
         params.append(
@@ -7765,7 +7686,7 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
                 path="default-route/always",
                 condition={"default_route": "default-route"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7774,7 +7695,7 @@ class RoutingProfileOspfRedistribution(VersionedPanObject):
                 path="default-route/enable",
                 condition={"default_route": "default-route"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -7812,6 +7733,7 @@ class RoutingProfileOspfv3Auth(VersionedPanObject):
         ah_type (str): AH options - type
         ah_key (str): AH options - key
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -7819,15 +7741,10 @@ class RoutingProfileOspfv3Auth(VersionedPanObject):
 
         params = []
 
-        params.append(
-            VersionedParamPath("spi", path="spi")
-        )
+        params.append(VersionedParamPath("spi", path="spi"))
         params.append(
             VersionedParamPath(
-                "protocol",
-                path="{protocol}",
-                values=("esp", "ah"),
-                default="esp",
+                "protocol", path="{protocol}", values=("esp", "ah"), default="esp",
             )
         )
         params.append(
@@ -7842,7 +7759,10 @@ class RoutingProfileOspfv3Auth(VersionedPanObject):
             VersionedParamPath(
                 "esp_auth_key",
                 path="{protocol}/authentication/{esp_auth_type}/key",
-                condition={"protocol": "esp", "esp_auth_type": ["md5", "sha1", "sha256", "sha384", "sha512"]},
+                condition={
+                    "protocol": "esp",
+                    "esp_auth_type": ["md5", "sha1", "sha256", "sha384", "sha512"],
+                },
             )
         )
         params.append(
@@ -7857,7 +7777,16 @@ class RoutingProfileOspfv3Auth(VersionedPanObject):
             VersionedParamPath(
                 "esp_encrypt_key",
                 path="{protocol}/encryption/key",
-                condition={"protocol": "esp", "esp_encrypt_algorithm": ["3des", "aes-128-cbc", "aes-192-cbc", "aes-256-cbc", "null"]},
+                condition={
+                    "protocol": "esp",
+                    "esp_encrypt_algorithm": [
+                        "3des",
+                        "aes-128-cbc",
+                        "aes-192-cbc",
+                        "aes-256-cbc",
+                        "null",
+                    ],
+                },
             )
         )
         params.append(
@@ -7872,7 +7801,10 @@ class RoutingProfileOspfv3Auth(VersionedPanObject):
             VersionedParamPath(
                 "ah_key",
                 path="{protocol}/{ah_type}/key",
-                condition={"protocol": "ah", "ah_type": ["md5", "sha1", "sha256", "sha384", "sha512"]},
+                condition={
+                    "protocol": "ah",
+                    "ah_type": ["md5", "sha1", "sha256", "sha384", "sha512"],
+                },
             )
         )
 
@@ -7890,27 +7822,24 @@ class RoutingProfileOspfv3IfTimer(VersionedPanObject):
         transit_delay (int): Estimated delay (in seconds) to transmit LSAs
         gr_delay (int): Period (in seconds) used to send grace LSAs before first hello is sent when graceful restart starts
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/ospfv3/if-timer-profile")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/ospfv3/if-timer-profile"
+        )
 
         params = []
 
         params.append(
             VersionedParamPath(
-                "hello_interval",
-                path="hello-interval",
-                vartype="int",
-                default=10,
+                "hello_interval", path="hello-interval", vartype="int", default=10,
             )
         )
         params.append(
             VersionedParamPath(
-                "dead_counts",
-                path="dead-counts",
-                vartype="int",
-                default=4,
+                "dead_counts", path="dead-counts", vartype="int", default=4,
             )
         )
         params.append(
@@ -7923,19 +7852,11 @@ class RoutingProfileOspfv3IfTimer(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "transit_delay",
-                path="transit-delay",
-                vartype="int",
-                default=1,
+                "transit_delay", path="transit-delay", vartype="int", default=1,
             )
         )
         params.append(
-            VersionedParamPath(
-                "gr_delay",
-                path="gr-delay",
-                vartype="int",
-                default=10,
-            )
+            VersionedParamPath("gr_delay", path="gr-delay", vartype="int", default=10,)
         )
 
         self._params = tuple(params)
@@ -7951,19 +7872,19 @@ class RoutingProfileOspfv3SpfTimer(VersionedPanObject):
         initial_hold_time (int): Initial hold time (second) between consecutive SPF calculations
         max_hold_time (int): Maximum hold time (second)
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/ospfv3/spf-timer-profile")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/ospfv3/spf-timer-profile"
+        )
 
         params = []
 
         params.append(
             VersionedParamPath(
-                "lsa_interval",
-                path="lsa-interval",
-                vartype="int",
-                default=5,
+                "lsa_interval", path="lsa-interval", vartype="int", default=5,
             )
         )
         params.append(
@@ -7976,18 +7897,12 @@ class RoutingProfileOspfv3SpfTimer(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "initial_hold_time",
-                path="initial-hold-time",
-                vartype="int",
-                default=5,
+                "initial_hold_time", path="initial-hold-time", vartype="int", default=5,
             )
         )
         params.append(
             VersionedParamPath(
-                "max_hold_time",
-                path="max-hold-time",
-                vartype="int",
-                default=5,
+                "max_hold_time", path="max-hold-time", vartype="int", default=5,
             )
         )
 
@@ -8017,19 +7932,19 @@ class RoutingProfileOspfv3Redistribution(VersionedPanObject):
         default_route_metric (int): IPv6 Default Route metric value (1-4294967295)
         default_route_metric_type (str): IPv6 Default Route metric type (type-1, type-2)
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/ospfv3/redistribution-profile")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/ospfv3/redistribution-profile"
+        )
 
         params = []
 
         params.append(
             VersionedParamPath(
-                "static",
-                path="{static}",
-                values=("static"),
-                default=None
+                "static", path="{static}", values=("static"), default=None,
             )
         )
         params.append(
@@ -8038,7 +7953,7 @@ class RoutingProfileOspfv3Redistribution(VersionedPanObject):
                 path="{static}/enable",
                 condition={"static": "static"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -8060,10 +7975,7 @@ class RoutingProfileOspfv3Redistribution(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "connected",
-                path="{connected}",
-                values=("connected"),
-                default=None
+                "connected", path="{connected}", values=("connected"), default=None,
             )
         )
         params.append(
@@ -8072,7 +7984,7 @@ class RoutingProfileOspfv3Redistribution(VersionedPanObject):
                 path="connected/enable",
                 condition={"connected": "connected"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -8093,12 +8005,7 @@ class RoutingProfileOspfv3Redistribution(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "bgp",
-                path="{bgp}",
-                values=("bgp"),
-                default=None
-            )
+            VersionedParamPath("bgp", path="{bgp}", values=("bgp"), default=None,)
         )
         params.append(
             VersionedParamPath(
@@ -8106,7 +8013,7 @@ class RoutingProfileOspfv3Redistribution(VersionedPanObject):
                 path="bgp/enable",
                 condition={"bgp": "bgp"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -8131,7 +8038,7 @@ class RoutingProfileOspfv3Redistribution(VersionedPanObject):
                 "default_route",
                 path="{default_route}",
                 values=("default-route"),
-                default=None
+                default=None,
             )
         )
         params.append(
@@ -8140,7 +8047,7 @@ class RoutingProfileOspfv3Redistribution(VersionedPanObject):
                 path="default-route/always",
                 condition={"default_route": "default-route"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -8149,7 +8056,7 @@ class RoutingProfileOspfv3Redistribution(VersionedPanObject):
                 path="default-route/enable",
                 condition={"default_route": "default-route"},
                 default=True,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
         params.append(
@@ -8181,6 +8088,7 @@ class RoutingProfileFilterAccessList(VersionedPanObject):
         description (str): Description of the access list
         type (str): IPv4 or IPv6
     """
+
     SUFFIX = ENTRY
 
     CHILDTYPES = (
@@ -8196,10 +8104,7 @@ class RoutingProfileFilterAccessList(VersionedPanObject):
         params.append(VersionedParamPath("description", path="description"))
         params.append(
             VersionedParamPath(
-                "type",
-                path="type/{type}",
-                default="ipv4",
-                values=("ipv4", "ipv6"),
+                "type", path="type/{type}", default="ipv4", values=("ipv4", "ipv6"),
             )
         )
 
@@ -8219,6 +8124,7 @@ class RoutingProfileFilterAccessListEntryIpv4(VersionedPanObject):
         destination_address (str): IPv4 Destination Address
         destination_wildcard (str): IPv4 Destination Wildcard
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -8228,52 +8134,49 @@ class RoutingProfileFilterAccessListEntryIpv4(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "action",
-                path="action",
-                default="deny",
-                values=("deny", "permit"),
+                "action", path="action", default="deny", values=("deny", "permit"),
             )
         )
         params.append(
             VersionedParamPath(
                 "source_address_type",
                 path="source-address/address",
-                condition={"source_address_type": "any"}
+                condition={"source_address_type": "any"},
             )
         )
         params.append(
             VersionedParamPath(
                 "source_address",
                 path="source-address/entry/address",
-                condition={"source_address_type": "address"}
+                condition={"source_address_type": "address"},
             )
         )
         params.append(
             VersionedParamPath(
                 "source_wildcard",
                 path="source-address/entry/wildcard",
-                condition={"source_address_type": "address"}
+                condition={"source_address_type": "address"},
             )
         )
         params.append(
             VersionedParamPath(
                 "destination_address_type",
                 path="destination-address/address",
-                condition={"destination_address_type": "any"}
+                condition={"destination_address_type": "any"},
             )
         )
         params.append(
             VersionedParamPath(
                 "destination_address",
                 path="destination-address/entry/address",
-                condition={"destination_address_type": "address"}
+                condition={"destination_address_type": "address"},
             )
         )
         params.append(
             VersionedParamPath(
                 "destination_wildcard",
                 path="destination-address/entry/wildcard",
-                condition={"destination_address_type": "address"}
+                condition={"destination_address_type": "address"},
             )
         )
 
@@ -8290,6 +8193,7 @@ class RoutingProfileFilterAccessListEntryIpv6(VersionedPanObject):
         source_address (str): IPv6 Source Address
         source_exact_match (bool): Exact Match of this address
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -8299,24 +8203,21 @@ class RoutingProfileFilterAccessListEntryIpv6(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "action",
-                path="action",
-                default="deny",
-                values=("deny", "permit"),
+                "action", path="action", default="deny", values=("deny", "permit"),
             )
         )
         params.append(
             VersionedParamPath(
                 "source_address_type",
                 path="source-address/address",
-                condition={"source_address_type": "any"}
+                condition={"source_address_type": "any"},
             )
         )
         params.append(
             VersionedParamPath(
                 "source_address",
                 path="source-address/entry/address",
-                condition={"source_address_type": "address"}
+                condition={"source_address_type": "address"},
             )
         )
         params.append(
@@ -8325,7 +8226,7 @@ class RoutingProfileFilterAccessListEntryIpv6(VersionedPanObject):
                 path="source-address/entry/exact-match",
                 condition={"source_address_type": "address"},
                 default=False,
-                vartype="yesno"
+                vartype="yesno",
             )
         )
 
@@ -8340,6 +8241,7 @@ class RoutingProfileFilterPrefixList(VersionedPanObject):
         description (str): Description of the prefix list
         type (str): IPv4 or IPv6
     """
+
     SUFFIX = ENTRY
 
     CHILDTYPES = (
@@ -8355,10 +8257,7 @@ class RoutingProfileFilterPrefixList(VersionedPanObject):
         params.append(VersionedParamPath("description", path="description"))
         params.append(
             VersionedParamPath(
-                "type",
-                path="type/{type}",
-                default="ipv4",
-                values=("ipv4", "ipv6"),
+                "type", path="type/{type}", default="ipv4", values=("ipv4", "ipv6"),
             )
         )
 
@@ -8376,6 +8275,7 @@ class RoutingProfileFilterPrefixListEntryIpv4(VersionedPanObject):
         greater_than_or_equal (int): Maximum Prefix length to be matched
         less_than_or_equal (int): Minimum Prefix length to be matched
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -8385,38 +8285,31 @@ class RoutingProfileFilterPrefixListEntryIpv4(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "action",
-                path="action",
-                default="deny",
-                values=("deny", "permit"),
+                "action", path="action", default="deny", values=("deny", "permit"),
             )
         )
         params.append(
             VersionedParamPath(
-                "prefix",
-                path="prefix/network",
-                condition={"prefix": "any"}
+                "prefix", path="prefix/network", condition={"prefix": "any"},
             )
         )
         params.append(
             VersionedParamPath(
-                "network",
-                path="prefix/entry/network",
-                condition={"prefix": "network"}
+                "network", path="prefix/entry/network", condition={"prefix": "network"},
             )
         )
         params.append(
             VersionedParamPath(
                 "greater_than_or_equal",
                 path="prefix/entry/greater-than-or-equal",
-                condition={"prefix": "network"}
+                condition={"prefix": "network"},
             )
         )
         params.append(
             VersionedParamPath(
                 "less_than_or_equal",
                 path="prefix/entry/less-than-or-equal",
-                condition={"prefix": "network"}
+                condition={"prefix": "network"},
             )
         )
 
@@ -8434,6 +8327,7 @@ class RoutingProfileFilterPrefixListEntryIpv6(VersionedPanObject):
         greater_than_or_equal (int): Maximum Prefix length to be matched
         less_than_or_equal (int): Minimum Prefix length to be matched
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -8443,38 +8337,31 @@ class RoutingProfileFilterPrefixListEntryIpv6(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "action",
-                path="action",
-                default="deny",
-                values=("deny", "permit"),
+                "action", path="action", default="deny", values=("deny", "permit"),
             )
         )
         params.append(
             VersionedParamPath(
-                "prefix",
-                path="prefix/network",
-                condition={"prefix": "any"}
+                "prefix", path="prefix/network", condition={"prefix": "any"},
             )
         )
         params.append(
             VersionedParamPath(
-                "network",
-                path="prefix/entry/network",
-                condition={"prefix": "network"}
+                "network", path="prefix/entry/network", condition={"prefix": "network"},
             )
         )
         params.append(
             VersionedParamPath(
                 "greater_than_or_equal",
                 path="prefix/entry/greater-than-or-equal",
-                condition={"prefix": "network"}
+                condition={"prefix": "network"},
             )
         )
         params.append(
             VersionedParamPath(
                 "less_than_or_equal",
                 path="prefix/entry/less-than-or-equal",
-                condition={"prefix": "network"}
+                condition={"prefix": "network"},
             )
         )
 
@@ -8488,14 +8375,15 @@ class RoutingProfileFilterAsPathAccessList(VersionedPanObject):
         name (str): The name of the profile
         description (str): Description of the AS path access list
     """
+
     SUFFIX = ENTRY
 
-    CHILDTYPES = (
-        "network.RoutingProfileFilterAsPathAccessListEntry"
-    )
+    CHILDTYPES = "network.RoutingProfileFilterAsPathAccessListEntry"
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/filters/as-path-access-list")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/filters/as-path-access-list"
+        )
 
         params = []
 
@@ -8512,6 +8400,7 @@ class RoutingProfileFilterAsPathAccessListEntry(VersionedPanObject):
         action (str): Deny or permit action
         aspath_regex (str): Regular-expression (1234567890_^|[,{}()]$*+.?-\) to match the BGP AS path
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -8521,18 +8410,10 @@ class RoutingProfileFilterAsPathAccessListEntry(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "action",
-                path="action",
-                default="deny",
-                values=("deny", "permit"),
+                "action", path="action", default="deny", values=("deny", "permit"),
             )
         )
-        params.append(
-            VersionedParamPath(
-                "aspath_regex",
-                path="aspath-regex",
-            )
-        )
+        params.append(VersionedParamPath("aspath_regex", path="aspath-regex",))
 
         self._params = tuple(params)
 
@@ -8545,6 +8426,7 @@ class RoutingProfileFilterCommunityList(VersionedPanObject):
         description (str): Description of the community list
         type (str): Community list entries type
     """
+
     SUFFIX = ENTRY
 
     CHILDTYPES = (
@@ -8554,7 +8436,9 @@ class RoutingProfileFilterCommunityList(VersionedPanObject):
     )
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/filters/community-list")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/filters/community-list"
+        )
 
         params = []
 
@@ -8579,6 +8463,7 @@ class RoutingProfileFilterCommunityListEntryRegular(VersionedPanObject):
         action (str): Permit or Deny (default) this Regular Community-List Entry
         community(list): Specify Community either using number in AA:NN format (where AA and NN are between (0-65535)) or pre-defined value
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -8588,10 +8473,7 @@ class RoutingProfileFilterCommunityListEntryRegular(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "action",
-                path="action",
-                default="deny",
-                values=("deny", "permit"),
+                "action", path="action", default="deny", values=("deny", "permit"),
             )
         )
         params.append(
@@ -8599,8 +8481,18 @@ class RoutingProfileFilterCommunityListEntryRegular(VersionedPanObject):
                 "community",
                 path="community",
                 vartype="member",
-                values=("blackhole", "no-peer", "graceful-shutdown", "accept-own", "local-as",
-                        "route-filter-v4", "route-filter-v6", "no-advertise", "no-export", "internet"),
+                values=(
+                    "blackhole",
+                    "no-peer",
+                    "graceful-shutdown",
+                    "accept-own",
+                    "local-as",
+                    "route-filter-v4",
+                    "route-filter-v6",
+                    "no-advertise",
+                    "no-export",
+                    "internet",
+                ),
             )
         )
 
@@ -8615,6 +8507,7 @@ class RoutingProfileFilterCommunityListEntryLarge(VersionedPanObject):
         action (str): Permit or Deny (default) this Large Community-List Entry
         lc_regex(list): Specify Large Community regular expression format {regex1:regex2:regex3}
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -8624,18 +8517,11 @@ class RoutingProfileFilterCommunityListEntryLarge(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "action",
-                path="action",
-                default="deny",
-                values=("deny", "permit"),
+                "action", path="action", default="deny", values=("deny", "permit"),
             )
         )
         params.append(
-            VersionedParamPath(
-                "lc_regex",
-                path="lc-regex",
-                vartype="member",
-            )
+            VersionedParamPath("lc_regex", path="lc-regex", vartype="member",)
         )
 
         self._params = tuple(params)
@@ -8649,6 +8535,7 @@ class RoutingProfileFilterCommunityListEntryExtended(VersionedPanObject):
         action (str): Permit or Deny (default) this Extended Community-List Entry
         ec_regex(list): Specify Extended Community regular expression format {regex1:regex2}
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -8658,18 +8545,11 @@ class RoutingProfileFilterCommunityListEntryExtended(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "action",
-                path="action",
-                default="deny",
-                values=("deny", "permit"),
+                "action", path="action", default="deny", values=("deny", "permit"),
             )
         )
         params.append(
-            VersionedParamPath(
-                "ec_regex",
-                path="ec-regex",
-                vartype="member",
-            )
+            VersionedParamPath("ec_regex", path="ec-regex", vartype="member",)
         )
 
         self._params = tuple(params)
@@ -8682,14 +8562,15 @@ class RoutingProfileFilterRouteMaps(VersionedPanObject):
         name (str): The name of BGP route map
         description (str): BGP route map description
     """
+
     SUFFIX = ENTRY
 
-    CHILDTYPES = (
-        "network.RoutingProfileFilterRouteMapsEntry"
-    )
+    CHILDTYPES = "network.RoutingProfileFilterRouteMapsEntry"
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/filters/route-maps/bgp/bgp-entry")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/filters/route-maps/bgp/bgp-entry"
+        )
 
         params = []
 
@@ -8749,6 +8630,7 @@ class RoutingProfileFilterRouteMapsEntry(VersionedPanObject):
         set_regular_community (list): Regular Community either using number in AA:NN format (where AA and NN are between (0-65535)) or pre-defined value
         set_large_community (list): Large Community in AA:BB:CC format (where AA, BB and CC are between (0-4294967295))
     """
+
     SUFFIX = ENTRY
 
     def _setup(self):
@@ -8758,60 +8640,189 @@ class RoutingProfileFilterRouteMapsEntry(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "action",
-                path="action",
-                default="deny",
-                values=("deny", "permit"),
+                "action", path="action", default="deny", values=("deny", "permit"),
             )
         )
         params.append(VersionedParamPath("description", path="description"))
-        params.append(VersionedParamPath("match_as_path_access_list", path="match/as-path-access-list"))
-        params.append(VersionedParamPath("match_regular_community", path="match/regular-community"))
-        params.append(VersionedParamPath("match_large_community", path="match/large-community"))
-        params.append(VersionedParamPath("match_extended_community", path="match/extended-community"))
+        params.append(
+            VersionedParamPath(
+                "match_as_path_access_list", path="match/as-path-access-list"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_regular_community", path="match/regular-community"
+            )
+        )
+        params.append(
+            VersionedParamPath("match_large_community", path="match/large-community")
+        )
+        params.append(
+            VersionedParamPath(
+                "match_extended_community", path="match/extended-community"
+            )
+        )
         params.append(VersionedParamPath("match_interface", path="match/interface"))
         params.append(VersionedParamPath("match_origin", path="match/origin"))
         params.append(VersionedParamPath("match_metric", path="match/metric"))
         params.append(VersionedParamPath("match_tag", path="match/tag"))
-        params.append(VersionedParamPath("match_local_preference", path="match/local-preference"))
+        params.append(
+            VersionedParamPath("match_local_preference", path="match/local-preference")
+        )
         params.append(VersionedParamPath("match_peer", path="match/peer"))
-        params.append(VersionedParamPath("match_ipv4_address_access_list", path="match/ipv4/address/access-list"))
-        params.append(VersionedParamPath("match_ipv4_address_prefix_list", path="match/ipv4/address/prefix-list"))
-        params.append(VersionedParamPath("match_ipv4_next_hop_access_list", path="match/ipv4/next-hop/access-list"))
-        params.append(VersionedParamPath("match_ipv4_next_hop_prefix_list", path="match/ipv4/next-hop/prefix-list"))
-        params.append(VersionedParamPath("match_ipv4_route_source_access_list", path="match/ipv4/route-source/access-list"))
-        params.append(VersionedParamPath("match_ipv4_route_source_prefix_list", path="match/ipv4/route-source/prefix-list"))
-        params.append(VersionedParamPath("match_ipv6_address_access_list", path="match/ipv6/address/access-list"))
-        params.append(VersionedParamPath("match_ipv6_address_prefix_list", path="match/ipv6/address/prefix-list"))
-        params.append(VersionedParamPath("match_ipv6_next_hop_access_list", path="match/ipv6/next-hop/access-list"))
-        params.append(VersionedParamPath("match_ipv6_next_hop_prefix_list", path="match/ipv6/next-hop/prefix-list"))
+        params.append(
+            VersionedParamPath(
+                "match_ipv4_address_access_list", path="match/ipv4/address/access-list",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_ipv4_address_prefix_list", path="match/ipv4/address/prefix-list",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_ipv4_next_hop_access_list",
+                path="match/ipv4/next-hop/access-list",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_ipv4_next_hop_prefix_list",
+                path="match/ipv4/next-hop/prefix-list",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_ipv4_route_source_access_list",
+                path="match/ipv4/route-source/access-list",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_ipv4_route_source_prefix_list",
+                path="match/ipv4/route-source/prefix-list",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_ipv6_address_access_list", path="match/ipv6/address/access-list",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_ipv6_address_prefix_list", path="match/ipv6/address/prefix-list",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_ipv6_next_hop_access_list",
+                path="match/ipv6/next-hop/access-list",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "match_ipv6_next_hop_prefix_list",
+                path="match/ipv6/next-hop/prefix-list",
+            )
+        )
         params.append(VersionedParamPath("set_aggregator_as", path="set/aggregator/as"))
-        params.append(VersionedParamPath("set_aggregator_router_id", path="set/aggregator/router-id"))
+        params.append(
+            VersionedParamPath(
+                "set_aggregator_router_id", path="set/aggregator/router-id"
+            )
+        )
         params.append(VersionedParamPath("set_tag", path="set/tag"))
-        params.append(VersionedParamPath("set_local_preference", path="set/local-preference"))
+        params.append(
+            VersionedParamPath("set_local_preference", path="set/local-preference")
+        )
         params.append(VersionedParamPath("set_weight", path="set/weight"))
         params.append(VersionedParamPath("set_origin", path="set/origin"))
-        params.append(VersionedParamPath("set_atomic_aggregate", path="set/atomic-aggregate", vartype="yesno"))
+        params.append(
+            VersionedParamPath(
+                "set_atomic_aggregate", path="set/atomic-aggregate", vartype="yesno",
+            )
+        )
         params.append(VersionedParamPath("set_metric_action", path="set/metric/action"))
         params.append(VersionedParamPath("set_metric_value", path="set/metric/value"))
         params.append(VersionedParamPath("set_originator_id", path="set/originator-id"))
-        params.append(VersionedParamPath("set_ipv4_source_address", path="set/ipv4/source-address"))
+        params.append(
+            VersionedParamPath(
+                "set_ipv4_source_address", path="set/ipv4/source-address"
+            )
+        )
         params.append(VersionedParamPath("set_ipv4_next_hop", path="set/ipv4/next-hop"))
-        params.append(VersionedParamPath("set_ipv6_source_address", path="set/ipv6/source-address"))
+        params.append(
+            VersionedParamPath(
+                "set_ipv6_source_address", path="set/ipv6/source-address"
+            )
+        )
         params.append(VersionedParamPath("set_ipv6_next_hop", path="set/ipv6/next-hop"))
-        params.append(VersionedParamPath("set_ipv6_next_hop_prefer_global", path="set/ipv6-nexthop-prefer-global", vartype="yesno"))
-        params.append(VersionedParamPath("set_overwrite_regular_community", path="set/overwrite-regular-community", vartype="yesno"))
-        params.append(VersionedParamPath("set_overwrite_large_community", path="set/overwrite-large-community", vartype="yesno"))
-        params.append(VersionedParamPath("set_remove_regular_community", path="set/remove-regular-community"))
-        params.append(VersionedParamPath("set_remove_large_community", path="set/remove-large-community"))
-        params.append(VersionedParamPath("set_aspath_exclude", path="set/aspath-exclude", vartype="member"))
-        params.append(VersionedParamPath("set_aspath_prepend", path="set/aspath-prepend", vartype="member"))
-        params.append(VersionedParamPath("set_regular_community", path="set/regular-community",
-                                         vartype="member", values=("blackhole", "no-peer",
-                                                                   "graceful-shutdown", "accept-own", "local-as",
-                                                                    "route-filter-v4", "route-filter-v6", "no-advertise",
-                                                                    "no-export", "internet"),))
-        params.append(VersionedParamPath("set_large_community", path="set/large-community", vartype="member"))
+        params.append(
+            VersionedParamPath(
+                "set_ipv6_next_hop_prefer_global",
+                path="set/ipv6-nexthop-prefer-global",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "set_overwrite_regular_community",
+                path="set/overwrite-regular-community",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "set_overwrite_large_community",
+                path="set/overwrite-large-community",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "set_remove_regular_community", path="set/remove-regular-community"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "set_remove_large_community", path="set/remove-large-community"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "set_aspath_exclude", path="set/aspath-exclude", vartype="member"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "set_aspath_prepend", path="set/aspath-prepend", vartype="member"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "set_regular_community",
+                path="set/regular-community",
+                vartype="member",
+                values=(
+                    "blackhole",
+                    "no-peer",
+                    "graceful-shutdown",
+                    "accept-own",
+                    "local-as",
+                    "route-filter-v4",
+                    "route-filter-v6",
+                    "no-advertise",
+                    "no-export",
+                    "internet",
+                ),
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "set_large_community", path="set/large-community", vartype="member"
+            )
+        )
 
         self._params = tuple(params)
 
@@ -8823,14 +8834,15 @@ class RoutingProfileFilterRouteMapsRedistribution(VersionedPanObject):
         name (str): The name of BGP route map redistribution
         description (str): BGP route map description redistribution
     """
+
     SUFFIX = ENTRY
 
-    CHILDTYPES = (
-        "network.RoutingProfileFilterRouteMapsEntry"
-    )
+    CHILDTYPES = "network.RoutingProfileFilterRouteMapsEntry"
 
     def _setup(self):
-        self._xpaths.add_profile(value="/network/routing-profile/filters/route-maps/redistribution/redist-entry")
+        self._xpaths.add_profile(
+            value="/network/routing-profile/filters/route-maps/redistribution/redist-entry"
+        )
 
         params = []
 
