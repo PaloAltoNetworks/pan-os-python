@@ -5579,6 +5579,7 @@ class Vrf(VsysOperations):
         "network.VrfStaticRouteV6",
         "network.VrfBgpPeerGroup",
         "network.VrfOspfArea",
+        "network.VrfOspfv3Area",
         "network.VrfEcmpInterfaceWeight",
         "network.RoutingProfileBfd",
         "network.RoutingProfileBgpAuth",
@@ -6154,13 +6155,6 @@ class VrfStaticRouteV6(VersionedPanObject):
         self._params = tuple(params)
 
 
-### TODO: implement logical router -> VRF -> ospfv3
-### TODO: implement logical router -> VRF -> ospfv3 -> area
-### TODO: implement logical router -> VRF -> ospfv3 -> area -> range
-### TODO: implement logical router -> VRF -> ospfv3 -> area -> interface
-### TODO: implement logical router -> VRF -> ospfv3 -> area -> virtual-link
-
-
 class VrfEcmpInterfaceWeight(VersionedPanObject):
     """VRF ECMP interface and weight
 
@@ -6316,15 +6310,15 @@ class VrfOspfAreaInterface(VersionedPanObject):
 
     Args:
         name (str): Interface name
-        enable (): Enable OSPF on this interface
-        mtu_ignore (): Ignore mtu when try to establish adjacency
-        passive (): "Suppress the sending of hello packets in this interface
-        priority (): Priority for OSPF designated router selection
-        link_type (): Link Type
-        metric (): Cost of OSPF interface
-        authentication (): Authentication options
-        bfd_profile (): BFD profile
-        timing (): Protocol timer setting
+        enable (bool): Enable OSPF on this interface
+        mtu_ignore (bool): Ignore mtu when try to establish adjacency
+        passive (bool): "Suppress the sending of hello packets in this interface
+        priority (int): Priority for OSPF designated router selection
+        link_type (str): Link Type
+        metric (int): Cost of OSPF interface
+        authentication (str): Authentication options
+        bfd_profile (str): BFD profile
+        timing (str): Protocol timer setting
     """
 
     SUFFIX = ENTRY
@@ -6399,6 +6393,258 @@ class VrfOspfAreaInterface(VersionedPanObject):
 
 
 class VrfOspfAreaVirtualLink(VersionedPanObject):
+    """VRF OSPF area virtual link
+
+    Args:
+        name (str): Virtual link name
+        enable (bool): Enable this virtual link
+        neighbor_id (str): Neighbor router id for virtual link
+        transit_area_id (str): ID of transit area, cannot be backbone, stub or NSSA
+        timing (str): Timer profile
+        authentication (str): Authentication options
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/virtual-link")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "enable",
+                path="enable",
+                vartype="yesno",
+                default=True,
+            )
+        )
+        params.append(VersionedParamPath("neighbor_id", path="neighbor-id"))
+        params.append(VersionedParamPath("transit_area_id", path="transit-area-id"))
+        params.append(VersionedParamPath("timing", path="timing"))
+        params.append(VersionedParamPath("authentication", path="authentication"))
+
+        self._params = tuple(params)
+
+
+class VrfOspfv3Area(VersionedPanObject):
+    """VRF OSPFv3 area
+
+    Args:
+        name (str): The name
+        authentication (str): Authentication profile name
+        type (str): Area type
+        import_list (str): Import list
+        export_list (str): Export list
+        inbound_filter_list (str): Inbound filter list
+        outbound_filter_list (str): Outbound filter list
+        no_summary (bool): No summary
+        metric (int): Metric value
+        metric_type (str): Metric type
+    """
+
+    SUFFIX = ENTRY
+    CHILDTYPES = (
+        "network.VrfOspfv3AreaRange",
+        "network.VrfOspfv3AreaInterface",
+        "network.VrfOspfv3AreaVirtualLink",
+    )
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/ospfv3/area")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("authentication", path="authentication"))
+        params.append(
+            VersionedParamPath(
+                "type",
+                path="type/{type}",
+                values=["normal", "stub", "nssa"],
+                default="normal",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "import_list",
+                path="type/{type}/abr/import-list",
+                condition={"type": ["normal", "stub", "nssa"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "export_list",
+                path="type/{type}/abr/export-list",
+                condition={"type": ["normal", "stub", "nssa"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "inbound_filter_list",
+                path="type/{type}/abr/inbound-filter-list",
+                condition={"type": ["normal", "stub", "nssa"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "outbound_filter_list",
+                path="type/{type}/abr/outbound-filter-list",
+                condition={"type": ["normal", "stub", "nssa"]},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "no_summary",
+                path="type/{type}/no-summary",
+                condition={"type": ["stub", "nssa"]},
+                vartype="yesno",
+                default=False,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "metric",
+                path="type/{type}/default-information-originate/metric",
+                condition={"type": "nssa"},
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "metric_type",
+                path="type/{type}/default-information-originate/metric-type",
+                values=["type-1", "type-2"],
+                condition={"type": "nssa"},
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class VrfOspfv3AreaRange(VersionedPanObject):
+    """VRF OSPFv3 area range
+
+    Args:
+        name (str): IP Address/Netmask
+        substitute (str): Substitute network/prefix
+        advertise (bool): Do summarization and advertise
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/range")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("substitute", path="substitute", vartype="attrib"))
+        params.append(
+            VersionedParamPath(
+                "advertise",
+                path="advertise",
+                vartype="yesno",
+                default=True,
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class VrfOspfv3AreaInterface(VersionedPanObject):
+    """VRF OSPF area interface
+
+    Args:
+        name (str): Interface name
+        enable (bool): Enable OSPF on this interface
+        mtu_ignore (bool): Ignore mtu when try to establish adjacency
+        passive (bool): "Suppress the sending of hello packets in this interface
+        priority (int): Priority for OSPF designated router selection
+        link_type (str): Link Type
+        metric (int): Cost of OSPF interface
+        instance_id (str): OSPFv3 instance ID
+        authentication (str): Authentication options
+        bfd_profile (str): BFD profile
+        timing (str): Protocol timer setting
+    """
+
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/interface")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "enable",
+                path="enable",
+                vartype="yesno",
+                default=True,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "mtu_ignore",
+                path="mtu-ignore",
+                vartype="yesno",
+                default=False,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "passive",
+                path="passive",
+                vartype="yesno",
+                default=False,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "priority",
+                path="priority",
+                vartype="int",
+                default=1,
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "link_type",
+                path="link-type/{link_type}",
+                values=["broadcast", "p2p", "p2mp"],
+                default="broadcast",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "metric",
+                path="metric",
+                vartype="int",
+                default=10,
+            )
+        )
+        params.append(VersionedParamPath("instance_id", path="instance-id"))
+        params.append(VersionedParamPath("authentication", path="authentication"))
+        params.append(
+            VersionedParamPath(
+                "bfd_profile",
+                path="bfd/profile",
+            )
+        )
+        params.append(VersionedParamPath("timing", path="timing"))
+
+        ### TODO: implement neighbor for link type p2mp
+
+        self._params = tuple(params)
+
+
+class VrfOspfv3AreaVirtualLink(VersionedPanObject):
     """VRF OSPF area virtual link
 
     Args:
