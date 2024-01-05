@@ -5545,6 +5545,18 @@ class Vrf(VsysOperations):
         ospf_graceful_restart_helper_enable (bool): Graceful restart helper enable
         ospf_graceful_restart_strict_lsa_checking (bool): Graceful restart strict lsa checking
         ospf_graceful_restart_max_neighbor_restart_time (int): Graceful restart neighbor restart time
+        ospfv3_enable (bool): Enable OSPFv3 (Default: True)
+        ospfv3_router_id (str): Router ID in IP format (eg. 1.1.1.1)
+        ospfv3_global_bfd (str): OSPFv3 Global BFD Profile
+        ospfv3_spf_timer (str): SPF timer setting
+        ospfv3_global_if_timer (str): Global protocol timer setting
+        ospfv3_redistribution_profile (str): Redistribution profile setting
+        ospfv3_disable_transit_traffic (bool): Disable R-Bit and v6-Bit
+        ospfv3_graceful_restart_enable (bool): Enable OSPFv3 graceful restart
+        ospfv3_graceful_restart_grace_period (int): Graceful restart period
+        ospfv3_graceful_restart_helper_enable (bool): Graceful restart helper enable
+        ospfv3_graceful_restart_strict_lsa_checking (bool): Graceful restart strict lsa checking
+        ospfv3_graceful_restart_max_neighbor_restart_time (int): Graceful restart neighbor restart time
         rib_filter_ipv4_static (str): IPv4 static route map
         rib_filter_ipv4_bgp  (str): IPv4 BGP route map
         rib_filter_ipv4_ospf (str): IPv4 OSPF route map
@@ -5789,6 +5801,64 @@ class Vrf(VsysOperations):
                 vartype="int",
             )
         )
+
+        params.append(
+            VersionedParamPath(
+                "ospfv3_enable",
+                default=False,
+                path="ospfv3/enable",
+                vartype="yesno"
+            )
+        )
+        params.append(VersionedParamPath("ospfv3_router_id", path="ospfv3/router-id", default=None))
+        params.append(VersionedParamPath("ospfv3_global_bfd", path="ospfv3/global-bfd/profile"))
+        params.append(VersionedParamPath("ospfv3_spf_timer", path="ospfv3/spf-timer"))
+        params.append(VersionedParamPath("ospfv3_global_if_timer", path="ospfv3/global-if-timer"))
+        params.append(VersionedParamPath("ospfv3_redistribution_profile", path="ospfv3/redistribution-profile"))
+        params.append(
+            VersionedParamPath(
+                "ospfv3_disable_transit_traffic",
+                path="ospfv3/disable-transit-traffic",
+                default=False,
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospfv3_graceful_restart_enable",
+                path="ospfv3/graceful-restart/enable",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospfv3_graceful_restart_grace_period",
+                path="ospfv3/graceful-restart/grace-period",
+                vartype="int"
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospfv3_graceful_restart_helper_enable",
+                path="ospfv3/graceful-restart/helper-enable",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospfv3_graceful_restart_strict_lsa_checking",
+                path="ospfv3/graceful-restart/strict-LSA-checking",
+                vartype="yesno",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "ospfv3_graceful_restart_max_neighbor_restart_time",
+                path="ospfv3/graceful-restart/max-neighbor-restart-time",
+                vartype="int",
+            )
+        )
+
         params.append(
             VersionedParamPath(
                 "rib_filter_ipv4_static",
@@ -5825,6 +5895,7 @@ class Vrf(VsysOperations):
                 path="rib-filter/ipv6/ospfv3",
             )
         )
+
         params.append(
             VersionedParamPath(
                 "ecmp_enable",
