@@ -1623,6 +1623,50 @@ class TestBgpRedistributionRule(MakeVirtualRouter):
         state.obj.enable = False
 
 
+class TestLogicalRouter(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        state.eth_obj = None
+        state.eth = testlib.get_available_interfaces(fw)[0]
+
+        state.eth_obj = network.EthernetInterface(
+            state.eth, "layer3", testlib.random_ip("/24")
+        )
+        fw.add(state.eth_obj)
+        state.eth_obj.create()
+
+    def setup_state_obj(self, fw, state):
+        vrf = network.Vrf(
+            "default",
+            interface=state.eth,
+            ad_static=random.randint(10, 240),
+            ad_static_ipv6=random.randint(10, 240),
+            ad_ospf_inter=random.randint(10, 240),
+            ad_ospf_intra=random.randint(10, 240),
+            ad_ospf_ext=random.randint(10, 240),
+            ad_ospfv3_inter=random.randint(10, 240),
+            ad_ospfv3_intra=random.randint(10, 240),
+            ad_ospfv3_ext=random.randint(10, 240),
+            ad_bgp_internal=random.randint(10, 240),
+            ad_bgp_external=random.randint(10, 240),
+            ad_bgp_local=random.randint(10, 240),
+            ad_rip=random.randint(10, 240),
+        )
+        lr = network.LogicalRouter(testlib.random_name())
+        lr.add(vrf)
+        state.obj = lr
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.ad_static = random.randint(10, 240)
+        state.obj.ad_rip = random.randint(10, 240)
+
+    def cleanup_dependencies(self, fw, state):
+        try:
+            state.eth_obj.delete()
+        except Exception:
+            pass
+
+
 class TestManagementProfile(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
         state.obj = network.ManagementProfile(
