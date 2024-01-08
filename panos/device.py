@@ -399,6 +399,35 @@ class SystemSettings(VersionedPanObject):
         self._params = tuple(params)
 
 
+class AdvancedRoutingEngine(VersionedPanObject):
+    """
+    Note: This is valid for PANS-OS 10.2+.
+
+    Args:
+        enable (bool): Enable advanced routing engine
+
+    """
+
+    NAME = None
+    ROOT = Root.DEVICE
+    CHILDTYPES = ()
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/deviceconfig/setting")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "enable", default=False, vartype="yesno", path="advance-routing",
+            )
+        )
+
+        self._params = tuple(params)
+
+
 class LogSettingsSystem(VersionedPanObject):
     """Firewall or Panorama device log settings system
 
