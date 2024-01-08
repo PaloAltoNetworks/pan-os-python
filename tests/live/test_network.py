@@ -1667,6 +1667,116 @@ class TestLogicalRouter(testlib.FwFlow):
             pass
 
 
+class MakeLogicalRouter(testlib.FwFlow):
+    WITH_OSPF = False
+    WITH_BGP = False
+
+    def create_dependencies(self, fw, state):
+        state.eths = testlib.get_available_interfaces(fw, 2)
+
+        state.eth_obj_v4 = network.EthernetInterface(
+            state.eths[0], "layer3", testlib.random_ip("/24")
+        )
+        fw.add(state.eth_obj_v4)
+
+        state.eth_obj_v6 = network.EthernetInterface(
+            state.eths[1], "layer3", ipv6_enabled=True
+        )
+        fw.add(state.eth_obj_v6)
+
+        state.eth_obj_v4.create_similar()
+
+        state.vrf = network.Vrf(
+            "default",
+            interface=[state.eth_obj_v4, state.eth_obj_v6],
+            ad_static=random.randint(10, 240),
+            ad_static_ipv6=random.randint(10, 240),
+            ad_ospf_inter=random.randint(10, 240),
+            ad_ospf_intra=random.randint(10, 240),
+            ad_ospf_ext=random.randint(10, 240),
+            ad_ospfv3_inter=random.randint(10, 240),
+            ad_ospfv3_intra=random.randint(10, 240),
+            ad_ospfv3_ext=random.randint(10, 240),
+            ad_bgp_internal=random.randint(10, 240),
+            ad_bgp_external=random.randint(10, 240),
+            ad_bgp_local=random.randint(10, 240),
+            ad_rip=random.randint(10, 240),
+        )
+        state.lr = network.LogicalRouter(testlib.random_name())
+        state.lr.add(state.vrf)
+        fw.add(state.lr)
+        state.lr.create()
+
+        if self.WITH_BGP:
+            state.bgp_address_family_ipv4_name = testlib.random_name()
+            state.bgp_address_family_ipv4 = network.RoutingProfileBgpAddressFamily(
+                state.bgp_address_family_ipv4_name,
+                afi="ipv4",
+                unicast_enable=True,
+                unicast_soft_reconfig_with_stored_info=True,
+                unicast_add_path_tx_all_paths=True,
+                unicast_add_path_tx_bestpath_per_as=True,
+                unicast_as_override=True,
+                unicast_route_reflector_client=True,
+                unicast_default_originate=True,
+                unicast_allowas_in="occurrence",
+                unicast_allowas_in_occurrence=10,
+                unicast_maximum_prefix_num_prefixes=900,
+                unicast_maximum_prefix_threshold=60,
+                unicast_maximum_prefix_action="restart",
+                unicast_maximum_prefix_action_restart_interval=15,
+                unicast_next_hop="self",
+                unicast_remove_private_as="all",
+                unicast_send_community="both",
+                unicast_orf="none",
+                multicast_enable=False,
+                multicast_soft_reconfig_with_stored_info=False,
+                multicast_add_path_tx_all_paths=False,
+                multicast_add_path_tx_bestpath_per_as=False,
+                multicast_as_override=False,
+                multicast_route_reflector_client=False,
+                multicast_default_originate=False,
+                multicast_allowas_in="origin",
+                multicast_maximum_prefix_num_prefixes=800,
+                multicast_maximum_prefix_threshold=50,
+                multicast_maximum_prefix_action="warning-only",
+                multicast_next_hop="self-force",
+                multicast_remove_private_as="replace-AS",
+                multicast_send_community="extended",
+                multicast_orf="receive",
+            )
+            fw.add(state.bgp_address_family_ipv4)
+            state.bgp_address_family_ipv4.create()
+
+    def cleanup_dependencies(self, fw, state):
+        try:
+            state.lr.delete()
+            state.bgp_address_family_ipv4.delete()
+        except Exception:
+            pass
+
+        try:
+            state.eth_obj_v4.delete_similar()
+        except Exception:
+            pass
+
+
+class TestVrfBgpPeerGroup(MakeLogicalRouter):
+    WITH_BGP = True
+
+    def setup_state_obj(self, fw, state):
+        bgp_peer_group = network.VrfBgpPeerGroup(
+            name=testlib.random_name(),
+            enable=True,
+            address_family_ipv4=state.bgp_address_family_ipv4_name,
+        )
+        state.obj = bgp_peer_group
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
+
+
 class TestManagementProfile(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
         state.obj = network.ManagementProfile(
