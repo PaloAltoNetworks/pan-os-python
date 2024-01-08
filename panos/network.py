@@ -6647,7 +6647,7 @@ class VrfBgpPeerGroup(VersionedPanObject):
     """
 
     SUFFIX = ENTRY
-    CHILDTYPES = "network.VrfBgpPeer"
+    CHILDTYPES = ("network.VrfBgpPeer",)
 
     def _setup(self):
         # xpaths
