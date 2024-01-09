@@ -6372,7 +6372,7 @@ class VrfOspfAreaInterface(VersionedPanObject):
         params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
         params.append(VersionedParamPath("timing", path="timing"))
 
-        ### TODO: implement neighbor for link type p2mp
+        ### TODO: implement neighbor for link type p2mp: ospf -> area -> interface -> link-type -> p2mp
 
         self._params = tuple(params)
 
@@ -6592,7 +6592,7 @@ class VrfOspfv3AreaInterface(VersionedPanObject):
         params.append(VersionedParamPath("bfd_profile", path="bfd/profile"))
         params.append(VersionedParamPath("timing", path="timing"))
 
-        ### TODO: implement neighbor for link type p2mp
+        ### TODO: implement neighbor for link type p2mp: ospfv3 -> area -> interface -> link-type -> p2mp
 
         self._params = tuple(params)
 
@@ -6779,10 +6779,10 @@ class VrfBgpPeer(VersionedPanObject):
         self._params = tuple(params)
 
 
-### TODO: implement BGP -> aggregate-routes
+### TODO: implement VRF -> BGP -> aggregate-routes
 
 
-### TODO: implement BGP -> advertise-network
+### TODO: implement VRF -> BGP -> advertise-network
 
 
 class RoutingProfileBgpAuth(VersionedPanObject):
