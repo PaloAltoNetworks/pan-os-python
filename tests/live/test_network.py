@@ -1777,6 +1777,20 @@ class TestVrfBgpPeerGroup(MakeLogicalRouter):
         state.obj.enable = False
 
 
+class TestRoutingProfileBgpAuth(MakeLogicalRouter):
+    WITH_BGP = True
+
+    def setup_state_obj(self, fw, state):
+        bgp_auth = network.RoutingProfileBgpAuth(
+            name=testlib.random_name(), secret=testlib.random_name(),
+        )
+        state.obj = bgp_auth
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.secret = testlib.random_name()
+
+
 class TestManagementProfile(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
         state.obj = network.ManagementProfile(
