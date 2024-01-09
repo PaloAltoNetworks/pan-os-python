@@ -1728,6 +1728,27 @@ class MakeLogicalRouter(testlib.FwFlow):
                 bgp_local_as=state.bgp_local_as,
                 bgp_install_route=True,
             )
+        elif self.WITH_OSPF:
+            state.vrf = network.Vrf(
+                "default",
+                interface=[state.eth_obj_v4, state.eth_obj_v6],
+                ad_static=random.randint(10, 240),
+                ad_static_ipv6=random.randint(10, 240),
+                ad_ospf_inter=random.randint(10, 240),
+                ad_ospf_intra=random.randint(10, 240),
+                ad_ospf_ext=random.randint(10, 240),
+                ad_ospfv3_inter=random.randint(10, 240),
+                ad_ospfv3_intra=random.randint(10, 240),
+                ad_ospfv3_ext=random.randint(10, 240),
+                ad_bgp_internal=random.randint(10, 240),
+                ad_bgp_external=random.randint(10, 240),
+                ad_bgp_local=random.randint(10, 240),
+                ad_rip=random.randint(10, 240),
+                ospf_enable=True,
+                ospf_router_id=testlib.random_ip(),
+                ospfv3_enable=True,
+                ospfv3_router_id=testlib.random_ip(),
+            )
         else:
             state.vrf = network.Vrf(
                 "default",
@@ -1918,6 +1939,8 @@ class TestAreRoutingProfileBgpAuth(MakeLogicalRouter):
 
 
 class TestAreRoutingProfileBgpTimer(MakeLogicalRouter):
+    WITH_BGP = True
+
     def setup_state_obj(self, fw, state):
         state.obj = network.RoutingProfileBgpTimer(
             testlib.random_name(),
@@ -1934,6 +1957,8 @@ class TestAreRoutingProfileBgpTimer(MakeLogicalRouter):
 
 
 class TestAreRoutingProfileBgpAddressFamily(MakeLogicalRouter):
+    WITH_BGP = True
+
     def setup_state_obj(self, fw, state):
         state.obj = network.RoutingProfileBgpAddressFamily(
             testlib.random_name(),
@@ -1978,6 +2003,8 @@ class TestAreRoutingProfileBgpAddressFamily(MakeLogicalRouter):
 
 
 class TestAreRoutingProfileBgpDampening(MakeLogicalRouter):
+    WITH_BGP = True
+
     def setup_state_obj(self, fw, state):
         state.obj = network.RoutingProfileBgpDampening(
             testlib.random_name(),
@@ -1993,6 +2020,8 @@ class TestAreRoutingProfileBgpDampening(MakeLogicalRouter):
 
 
 class TestAreRoutingProfileBgpRedistribution(MakeLogicalRouter):
+    WITH_BGP = True
+
     def setup_state_obj(self, fw, state):
         state.obj = network.RoutingProfileBgpRedistribution(
             testlib.random_name(),
@@ -2012,6 +2041,8 @@ class TestAreRoutingProfileBgpRedistribution(MakeLogicalRouter):
 
 
 class TestAreRoutingProfileBgpFiltering(MakeLogicalRouter):
+    WITH_BGP = True
+
     def setup_state_obj(self, fw, state):
         state.obj = network.RoutingProfileBgpFiltering(
             testlib.random_name(), description="IPv4 profile"
@@ -2023,6 +2054,8 @@ class TestAreRoutingProfileBgpFiltering(MakeLogicalRouter):
 
 
 class TestAreVrfOspfArea(MakeLogicalRouter):
+    WITH_OSPF = True
+
     def setup_state_obj(self, fw, state):
         state.obj = network.VrfOspfArea(testlib.random_ip(), type="normal")
         state.vrf.add(state.obj)
@@ -2032,6 +2065,8 @@ class TestAreVrfOspfArea(MakeLogicalRouter):
 
 
 class TestAreVrfOspfAreaRange(MakeLogicalRouter):
+    WITH_OSPF = True
+
     def setup_state_obj(self, fw, state):
         state.ospf_area_range = network.VrfOspfAreaRange(
             testlib.random_netmask(),
@@ -2047,6 +2082,8 @@ class TestAreVrfOspfAreaRange(MakeLogicalRouter):
 
 
 class TestAreVrfOspfAreaInterface(MakeLogicalRouter):
+    WITH_OSPF = True
+
     def setup_state_obj(self, fw, state):
         state.ospf_area_interface = network.VrfOspfAreaInterface(
             state.eths[0],
@@ -2064,6 +2101,8 @@ class TestAreVrfOspfAreaInterface(MakeLogicalRouter):
 
 
 class TestAreVrfOspfAreaVirtualLink(MakeLogicalRouter):
+    WITH_OSPF = True
+
     def setup_state_obj(self, fw, state):
         state.ospf_area_id = testlib.random_ip()
         state.ospf_are_virtual_link = network.VrfOspfAreaVirtualLink(
@@ -2081,6 +2120,8 @@ class TestAreVrfOspfAreaVirtualLink(MakeLogicalRouter):
 
 
 class TestAreVrfOspfv3Area(MakeLogicalRouter):
+    WITH_OSPF = True
+
     def setup_state_obj(self, fw, state):
         state.obj = network.VrfOspfv3Area(testlib.random_ip(), type="normal")
         state.vrf.add(state.obj)
@@ -2090,6 +2131,8 @@ class TestAreVrfOspfv3Area(MakeLogicalRouter):
 
 
 class TestAreVrfOspfv3AreaRange(MakeLogicalRouter):
+    WITH_OSPF = True
+
     def setup_state_obj(self, fw, state):
         state.ospf_area_range = network.VrfOspfv3AreaRange(
             testlib.random_ipv6(ending="/64"),
@@ -2105,6 +2148,8 @@ class TestAreVrfOspfv3AreaRange(MakeLogicalRouter):
 
 
 class TestAreVrfOspfv3AreaInterface(MakeLogicalRouter):
+    WITH_OSPF = True
+
     def setup_state_obj(self, fw, state):
         state.ospf_area_interface = network.VrfOspfv3AreaInterface(
             state.eths[1],
@@ -2122,6 +2167,8 @@ class TestAreVrfOspfv3AreaInterface(MakeLogicalRouter):
 
 
 class TestAreVrfOspfv3AreaVirtualLink(MakeLogicalRouter):
+    WITH_OSPF = True
+
     def setup_state_obj(self, fw, state):
         state.ospf_area_id = testlib.random_ip()
         state.ospf_are_virtual_link = network.VrfOspfv3AreaVirtualLink(
