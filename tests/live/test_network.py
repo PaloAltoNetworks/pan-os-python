@@ -1876,7 +1876,7 @@ class TestAreVrfBgpPeer(MakeLogicalRouter):
         state.vrf.add(state.obj)
 
     def update_state_obj(self, fw, state):
-        state.obj.enable = False
+        state.bgp_peer.peer_address_value = "changed-peer-test.example.com"
 
 
 class TestAreVrfEcmpInterfaceWeight(MakeLogicalRouter):
@@ -2020,6 +2020,122 @@ class TestAreRoutingProfileBgpFiltering(MakeLogicalRouter):
 
     def update_state_obj(self, fw, state):
         state.obj.description = "Updated IPv4 profile"
+
+
+class TestAreVrfOspfArea(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.VrfOspfArea(testlib.random_ip(), type="normal")
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.type = "stub"
+
+
+class TestAreVrfOspfAreaRange(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.ospf_area_range = network.VrfOspfAreaRange(
+            testlib.random_netmask(),
+            substitute=testlib.random_netmask(),
+            advertise="false",
+        )
+        state.obj = network.VrfOspfArea(testlib.random_ip(), type="normal")
+        state.obj.add(state.ospf_area_range)
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.ospf_area_range.substitute = testlib.random_netmask()
+
+
+class TestAreVrfOspfAreaInterface(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.ospf_area_interface = network.VrfOspfAreaInterface(
+            state.eths[0],
+            metric=random.randint(10, 50),
+            mtu_ignore=True,
+            passive=True,
+            priority=2,
+        )
+        state.obj = network.VrfOspfArea(testlib.random_ip(), type="normal")
+        state.obj.add(state.ospf_area_interface)
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.ospf_area_interface.metric = random.randint(10, 50)
+
+
+class TestAreVrfOspfAreaVirtualLink(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.ospf_area_id = testlib.random_ip()
+        state.ospf_are_virtual_link = network.VrfOspfAreaVirtualLink(
+            testlib.random_name(),
+            enable=True,
+            neighbor_id=testlib.random_ip(),
+            transit_area_id=state.ospf_area_id,
+        )
+        state.obj = network.VrfOspfArea(state.ospf_area_id, type="normal")
+        state.obj.add(state.ospf_are_virtual_link)
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.ospf_are_virtual_link.neighbor_id = testlib.random_ip()
+
+
+class TestAreVrfOspfv3Area(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.VrfOspfv3Area(testlib.random_ip(), type="normal")
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.type = "stub"
+
+
+class TestAreVrfOspfv3AreaRange(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.ospf_area_range = network.VrfOspfv3AreaRange(
+            testlib.random_ipv6(ending="/64"),
+            substitute=testlib.random_ipv6(ending="/64"),
+            advertise="false",
+        )
+        state.obj = network.VrfOspfv3Area(testlib.random_ip(), type="normal")
+        state.obj.add(state.ospf_area_range)
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.ospf_area_range.substitute = testlib.random_netmask()
+
+
+class TestAreVrfOspfv3AreaInterface(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.ospf_area_interface = network.VrfOspfv3AreaInterface(
+            state.eths[1],
+            metric=random.randint(10, 50),
+            mtu_ignore=True,
+            passive=True,
+            priority=2,
+        )
+        state.obj = network.VrfOspfv3Area(testlib.random_ip(), type="normal")
+        state.obj.add(state.ospf_area_interface)
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.ospf_area_interface.metric = random.randint(10, 50)
+
+
+class TestAreVrfOspfv3AreaVirtualLink(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.ospf_area_id = testlib.random_ip()
+        state.ospf_are_virtual_link = network.VrfOspfv3AreaVirtualLink(
+            testlib.random_name(),
+            enable=True,
+            neighbor_id=testlib.random_ip(),
+            transit_area_id=state.ospf_area_id,
+        )
+        state.obj = network.VrfOspfv3Area(state.ospf_area_id, type="normal")
+        state.obj.add(state.ospf_are_virtual_link)
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.ospf_are_virtual_link.neighbor_id = testlib.random_ip()
 
 
 class TestManagementProfile(testlib.FwFlow):
