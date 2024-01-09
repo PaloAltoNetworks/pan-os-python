@@ -2185,6 +2185,152 @@ class TestAreVrfOspfv3AreaVirtualLink(MakeLogicalRouter):
         state.ospf_are_virtual_link.neighbor_id = testlib.random_ip()
 
 
+class TestAreRoutingProfileOspfAuth(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileOspfAuth(
+            testlib.random_name(), password=testlib.random_name(8)
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.password = testlib.random_name(8)
+
+
+class TestAreRoutingProfileOspfIfTimer(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileOspfIfTimer(
+            testlib.random_name(),
+            hello_interval=random.randint(1, 50),
+            dead_counts=random.randint(3, 20),
+            retransmit_interval=random.randint(1, 50),
+            transit_delay=random.randint(1, 50),
+            gr_delay=random.randint(1, 10),
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.hello_interval = random.randint(1, 50)
+
+
+class TestAreRoutingProfileOspfSpfTimer(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileOspfSpfTimer(
+            testlib.random_name(),
+            lsa_interval=random.randint(1, 10),
+            spf_calculation_delay=random.randint(1, 50),
+            initial_hold_time=random.randint(1, 50),
+            max_hold_time=random.randint(1, 50),
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.lsa_interval = random.randint(1, 10)
+
+
+class TestAreRoutingProfileOspfRedistribution(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileOspfRedistribution(
+            testlib.random_name(),
+            static="static",
+            static_enable=True,
+            static_metric=random.randint(1, 50),
+            static_metric_type="type-2",
+            connected="connected",
+            connected_enable=True,
+            connected_metric=2,
+            rip="rip",
+            rip_enable=True,
+            rip_metric=random.randint(100, 200),
+            rip_metric_type="type-2",
+            bgp="bgp",
+            bgp_enable=True,
+            bgp_metric=random.randint(300, 500),
+            bgp_metric_type="type-1",
+            default_route="default-route",
+            default_route_always=False,
+            default_route_enable=True,
+            default_route_metric=77,
+            default_route_metric_type="type-2",
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.static_metric = random.randint(1, 50)
+
+
+class TestAreRoutingProfileOspfv3Auth(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileOspfv3Auth(
+            testlib.random_name(),
+            spi="01234568",
+            protocol="ah",
+            ah_type="sha384",
+            ah_key="123",
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.ah_key = "456"
+
+
+class TestAreRoutingProfileOspfv3IfTimer(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileOspfv3IfTimer(
+            testlib.random_name(),
+            hello_interval=random.randint(1, 50),
+            dead_counts=random.randint(3, 20),
+            retransmit_interval=random.randint(1, 50),
+            transit_delay=random.randint(1, 50),
+            gr_delay=random.randint(1, 10),
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.hello_interval = random.randint(1, 50)
+
+
+class TestAreRoutingProfileOspfv3SpfTimer(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileOspfv3SpfTimer(
+            testlib.random_name(),
+            lsa_interval=random.randint(1, 10),
+            spf_calculation_delay=random.randint(1, 50),
+            initial_hold_time=random.randint(1, 50),
+            max_hold_time=random.randint(1, 10),
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.lsa_interval = random.randint(1, 10)
+
+
+class TestAreRoutingProfileOspfv3Redistribution(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileOspfv3Redistribution(
+            testlib.random_name(),
+            static="static",
+            static_enable=True,
+            static_metric=random.randint(1, 50),
+            static_metric_type="type-2",
+            connected="connected",
+            connected_enable=True,
+            connected_metric=2,
+            bgp="bgp",
+            bgp_enable=True,
+            bgp_metric=random.randint(100, 500),
+            bgp_metric_type="type-1",
+            default_route="default-route",
+            default_route_always=False,
+            default_route_enable=True,
+            default_route_metric=random.randint(60, 90),
+            default_route_metric_type="type-2",
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.static_metric = random.randint(1, 50)
+
+
 class TestManagementProfile(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
         state.obj = network.ManagementProfile(
