@@ -1879,6 +1879,31 @@ class TestAreVrfBgpPeer(MakeLogicalRouter):
         state.obj.enable = False
 
 
+class TestAreVrfEcmpInterfaceWeight(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.VrfEcmpInterfaceWeight(
+            state.eths[0], weight=random.randint(100, 200)
+        )
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.weight = random.randint(100, 200)
+
+
+class TestAreRoutingProfileBfd(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileBfd(
+            name=testlib.random_name(),
+            mode="passive",
+            min_tx_interval=random.randint(300, 400),
+            min_received_ttl=random.randint(100, 200),
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.min_tx_interval = random.randint(300, 400)
+
+
 class TestAreRoutingProfileBgpAuth(MakeLogicalRouter):
     WITH_BGP = True
 
@@ -1890,6 +1915,111 @@ class TestAreRoutingProfileBgpAuth(MakeLogicalRouter):
 
     def update_state_obj(self, fw, state):
         state.obj.secret = testlib.random_name()
+
+
+class TestAreRoutingProfileBgpTimer(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileBgpTimer(
+            testlib.random_name(),
+            keep_alive_interval=random.randint(1, 60),
+            hold_time=random.randint(100, 150),
+            reconnect_retry_interval=random.randint(10, 60),
+            open_delay_time=random.randint(10, 60),
+            min_route_adv_interval=random.randint(10, 60),
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.hold_time = random.randint(100, 150)
+
+
+class TestAreRoutingProfileBgpAddressFamily(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileBgpAddressFamily(
+            testlib.random_name(),
+            afi="ipv4",
+            unicast_enable=True,
+            unicast_soft_reconfig_with_stored_info=True,
+            unicast_add_path_tx_all_paths=True,
+            unicast_add_path_tx_bestpath_per_as=True,
+            unicast_as_override=True,
+            unicast_route_reflector_client=True,
+            unicast_default_originate=True,
+            unicast_allowas_in="occurrence",
+            unicast_allowas_in_occurrence=random.randint(1, 10),
+            unicast_maximum_prefix_num_prefixes=random.randint(700, 900),
+            unicast_maximum_prefix_threshold=random.randint(10, 60),
+            unicast_maximum_prefix_action="restart",
+            unicast_maximum_prefix_action_restart_interval=random.randint(10, 60),
+            unicast_next_hop="self",
+            unicast_remove_private_as="all",
+            unicast_send_community="both",
+            unicast_orf="none",
+            multicast_enable=False,
+            multicast_soft_reconfig_with_stored_info=False,
+            multicast_add_path_tx_all_paths=False,
+            multicast_add_path_tx_bestpath_per_as=False,
+            multicast_as_override=False,
+            multicast_route_reflector_client=False,
+            multicast_default_originate=False,
+            multicast_allowas_in="origin",
+            multicast_maximum_prefix_num_prefixes=random.randint(700, 900),
+            multicast_maximum_prefix_threshold=random.randint(10, 60),
+            multicast_maximum_prefix_action="warning-only",
+            multicast_next_hop="self-force",
+            multicast_remove_private_as="replace-AS",
+            multicast_send_community="extended",
+            multicast_orf="receive",
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.unicast_allowas_in_occurrence = random.randint(1, 10)
+
+
+class TestAreRoutingProfileBgpDampening(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileBgpDampening(
+            testlib.random_name(),
+            half_life=random.randint(10, 45),
+            reuse_limit=random.randint(700, 900),
+            suppress_limit=random.randint(1000, 2000),
+            max_suppress_limit=random.randint(10, 60),
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.reuse_limit = random.randint(700, 900)
+
+
+class TestAreRoutingProfileBgpRedistribution(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileBgpRedistribution(
+            testlib.random_name(),
+            static_enable=True,
+            static_metric=random.randint(65300, 65500),
+            connected_enable=True,
+            connected_metric=random.randint(100, 120),
+            ospf_enable=True,
+            ospf_metric=random.randint(47000, 50000),
+            rip_enable=True,
+            rip_metric=random.randint(12000, 15000),
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.static_metric = random.randint(65300, 65500)
+
+
+class TestAreRoutingProfileBgpFiltering(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileBgpFiltering(
+            testlib.random_name(), description="IPv4 profile"
+        )
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.description = "Updated IPv4 profile"
 
 
 class TestManagementProfile(testlib.FwFlow):
