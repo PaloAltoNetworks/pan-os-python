@@ -1623,14 +1623,14 @@ class TestBgpRedistributionRule(MakeVirtualRouter):
         state.obj.enable = False
 
 
-class TestAdvancedRoutingEngine(testlib.FwFlow):
+class TestAreEnableAdvancedRoutingEngine(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
         advanced_routing_engine = device.AdvancedRoutingEngine(enable=True)
         state.obj = advanced_routing_engine
         fw.add(state.obj)
 
 
-class TestLogicalRouter(testlib.FwFlow):
+class TestAreLogicalRouter(testlib.FwFlow):
     def create_dependencies(self, fw, state):
         state.advanced_routing_engine_obj = device.AdvancedRoutingEngine(enable=True)
         fw.add(state.advanced_routing_engine_obj)
@@ -1661,6 +1661,10 @@ class TestLogicalRouter(testlib.FwFlow):
             ad_bgp_external=random.randint(10, 240),
             ad_bgp_local=random.randint(10, 240),
             ad_rip=random.randint(10, 240),
+            bgp_enable=True,
+            bgp_router_id="11.22.33.44",
+            bgp_local_as=64512,
+            bgp_install_route=True,
         )
         lr = network.LogicalRouter(testlib.random_name())
         lr.add(vrf)
@@ -1702,22 +1706,45 @@ class MakeLogicalRouter(testlib.FwFlow):
 
         state.eth_obj_v4.create_similar()
 
-        state.vrf = network.Vrf(
-            "default",
-            interface=[state.eth_obj_v4, state.eth_obj_v6],
-            ad_static=random.randint(10, 240),
-            ad_static_ipv6=random.randint(10, 240),
-            ad_ospf_inter=random.randint(10, 240),
-            ad_ospf_intra=random.randint(10, 240),
-            ad_ospf_ext=random.randint(10, 240),
-            ad_ospfv3_inter=random.randint(10, 240),
-            ad_ospfv3_intra=random.randint(10, 240),
-            ad_ospfv3_ext=random.randint(10, 240),
-            ad_bgp_internal=random.randint(10, 240),
-            ad_bgp_external=random.randint(10, 240),
-            ad_bgp_local=random.randint(10, 240),
-            ad_rip=random.randint(10, 240),
-        )
+        if self.WITH_BGP:
+            state.bgp_local_as = random.randint(64500, 64550)
+            state.vrf = network.Vrf(
+                "default",
+                interface=[state.eth_obj_v4, state.eth_obj_v6],
+                ad_static=random.randint(10, 240),
+                ad_static_ipv6=random.randint(10, 240),
+                ad_ospf_inter=random.randint(10, 240),
+                ad_ospf_intra=random.randint(10, 240),
+                ad_ospf_ext=random.randint(10, 240),
+                ad_ospfv3_inter=random.randint(10, 240),
+                ad_ospfv3_intra=random.randint(10, 240),
+                ad_ospfv3_ext=random.randint(10, 240),
+                ad_bgp_internal=random.randint(10, 240),
+                ad_bgp_external=random.randint(10, 240),
+                ad_bgp_local=random.randint(10, 240),
+                ad_rip=random.randint(10, 240),
+                bgp_enable=True,
+                bgp_router_id=testlib.random_ip(),
+                bgp_local_as=state.bgp_local_as,
+                bgp_install_route=True,
+            )
+        else:
+            state.vrf = network.Vrf(
+                "default",
+                interface=[state.eth_obj_v4, state.eth_obj_v6],
+                ad_static=random.randint(10, 240),
+                ad_static_ipv6=random.randint(10, 240),
+                ad_ospf_inter=random.randint(10, 240),
+                ad_ospf_intra=random.randint(10, 240),
+                ad_ospf_ext=random.randint(10, 240),
+                ad_ospfv3_inter=random.randint(10, 240),
+                ad_ospfv3_intra=random.randint(10, 240),
+                ad_ospfv3_ext=random.randint(10, 240),
+                ad_bgp_internal=random.randint(10, 240),
+                ad_bgp_external=random.randint(10, 240),
+                ad_bgp_local=random.randint(10, 240),
+                ad_rip=random.randint(10, 240),
+            )
         state.lr = network.LogicalRouter(testlib.random_name())
         state.lr.add(state.vrf)
         fw.add(state.lr)
@@ -1779,30 +1806,86 @@ class MakeLogicalRouter(testlib.FwFlow):
             pass
 
 
-class TestVrfBgpPeerGroup(MakeLogicalRouter):
+class TestAreVrfStaticRoute(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.VrfStaticRoute(
+            name=testlib.random_name(),
+            destination=testlib.random_netmask(),
+            nexthop_type="ip-address",
+            nexthop=testlib.random_ip(),
+            interface=state.eths[0],
+            admin_dist="10",
+            metric="1",
+        )
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.destination = testlib.random_netmask()
+
+
+class TestAreVrfStaticRouteV6(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.VrfStaticRouteV6(
+            name=testlib.random_name(),
+            destination="2001:db9:abcd:0012::0/64",
+            nexthop_type="ipv6-address",
+            nexthop=testlib.random_ipv6(),
+            interface=state.eths[1],
+            admin_dist="10",
+            metric="1",
+        )
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.nexthop = testlib.random_ipv6()
+
+
+class TestAreVrfBgpPeerGroup(MakeLogicalRouter):
     WITH_BGP = True
 
     def setup_state_obj(self, fw, state):
-        bgp_peer_group = network.VrfBgpPeerGroup(
+        state.obj = network.VrfBgpPeerGroup(
             name=testlib.random_name(),
             enable=True,
             address_family_ipv4=state.bgp_address_family_ipv4_name,
         )
-        state.obj = bgp_peer_group
         state.vrf.add(state.obj)
 
     def update_state_obj(self, fw, state):
         state.obj.enable = False
 
 
-class TestRoutingProfileBgpAuth(MakeLogicalRouter):
+class TestAreVrfBgpPeer(MakeLogicalRouter):
     WITH_BGP = True
 
     def setup_state_obj(self, fw, state):
-        bgp_auth = network.RoutingProfileBgpAuth(
+        state.obj = network.VrfBgpPeerGroup(
+            name=testlib.random_name(),
+            enable=True,
+            type="ibgp",
+            address_family_ipv4=state.bgp_address_family_ipv4_name,
+        )
+        state.bgp_peer = network.VrfBgpPeer(
+            name=testlib.random_name(),
+            peer_as=state.bgp_local_as,
+            local_address_interface=state.eths[0],
+            peer_address_type="fqdn",
+            peer_address_value="peer-test.example.com",
+        )
+        state.obj.add(state.bgp_peer)
+        state.vrf.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.obj.enable = False
+
+
+class TestAreRoutingProfileBgpAuth(MakeLogicalRouter):
+    WITH_BGP = True
+
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileBgpAuth(
             name=testlib.random_name(), secret=testlib.random_name(),
         )
-        state.obj = bgp_auth
         fw.add(state.obj)
 
     def update_state_obj(self, fw, state):
