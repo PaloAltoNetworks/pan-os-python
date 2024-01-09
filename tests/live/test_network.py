@@ -1,6 +1,6 @@
 import random
 
-from panos import network
+from panos import device, network
 from tests.live import testlib
 
 
@@ -1623,8 +1623,19 @@ class TestBgpRedistributionRule(MakeVirtualRouter):
         state.obj.enable = False
 
 
+class TestAdvancedRoutingEngine(testlib.FwFlow):
+    def setup_state_obj(self, fw, state):
+        advanced_routing_engine = device.AdvancedRoutingEngine(enable=True)
+        state.obj = advanced_routing_engine
+        fw.add(state.obj)
+
+
 class TestLogicalRouter(testlib.FwFlow):
     def create_dependencies(self, fw, state):
+        state.advanced_routing_engine_obj = device.AdvancedRoutingEngine(enable=True)
+        fw.add(state.advanced_routing_engine_obj)
+        state.advanced_routing_engine_obj.create()
+
         state.eth_obj = None
         state.eth = testlib.get_available_interfaces(fw)[0]
 
@@ -1663,6 +1674,7 @@ class TestLogicalRouter(testlib.FwFlow):
     def cleanup_dependencies(self, fw, state):
         try:
             state.eth_obj.delete()
+            state.advanced_routing_engine_obj.delete()
         except Exception:
             pass
 
@@ -1672,6 +1684,10 @@ class MakeLogicalRouter(testlib.FwFlow):
     WITH_BGP = False
 
     def create_dependencies(self, fw, state):
+        state.advanced_routing_engine_obj = device.AdvancedRoutingEngine(enable=True)
+        fw.add(state.advanced_routing_engine_obj)
+        state.advanced_routing_engine_obj.create()
+
         state.eths = testlib.get_available_interfaces(fw, 2)
 
         state.eth_obj_v4 = network.EthernetInterface(
@@ -1757,6 +1773,8 @@ class MakeLogicalRouter(testlib.FwFlow):
 
         try:
             state.eth_obj_v4.delete_similar()
+            state.eth_obj_v6.delete_similar()
+            state.advanced_routing_engine_obj.delete()
         except Exception:
             pass
 
