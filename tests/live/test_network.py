@@ -2352,9 +2352,7 @@ class TestAreRoutingProfileFilterAccessListIpv4(MakeLogicalRouter):
 class TestAreRoutingProfileFilterAccessListIpv6(MakeLogicalRouter):
     def setup_state_obj(self, fw, state):
         state.filter_access_list_entry_ipv6 = network.RoutingProfileFilterAccessListEntryIpv6(
-            1,
-            action="permit",
-            source_address_type="any",
+            1, action="permit", source_address_type="any",
         )
         state.obj = network.RoutingProfileFilterAccessList(
             testlib.random_name(), description="access list IPv6", type="ipv6",
