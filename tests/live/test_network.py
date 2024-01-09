@@ -2331,6 +2331,172 @@ class TestAreRoutingProfileOspfv3Redistribution(MakeLogicalRouter):
         state.obj.static_metric = random.randint(1, 50)
 
 
+class TestAreRoutingProfileFilterAccessListIpv4(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.filter_access_list_entry_ipv4 = network.RoutingProfileFilterAccessListEntryIpv4(
+            1,
+            action="permit",
+            source_address_type="any",
+            destination_address_type="any",
+        )
+        state.obj = network.RoutingProfileFilterAccessList(
+            testlib.random_name(), description="access list IPv4", type="ipv4",
+        )
+        state.obj.add(state.filter_access_list_entry_ipv4)
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.filter_access_list_entry_ipv4.action = "deny"
+
+
+class TestAreRoutingProfileFilterAccessListIpv6(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.filter_access_list_entry_ipv6 = network.RoutingProfileFilterAccessListEntryIpv6(
+            1,
+            action="permit",
+            source_address_type="any",
+        )
+        state.obj = network.RoutingProfileFilterAccessList(
+            testlib.random_name(), description="access list IPv6", type="ipv6",
+        )
+        state.obj.add(state.filter_access_list_entry_ipv6)
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.filter_access_list_entry_ipv6.action = "deny"
+
+
+class TestAreRoutingProfileFilterPrefixListIpv4(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.prefix_list_entry_ipv4 = network.RoutingProfileFilterPrefixListEntryIpv4(
+            1, action="deny", prefix="any"
+        )
+        state.obj = network.RoutingProfileFilterPrefixList(
+            testlib.random_name(), description="prefix list IPv4", type="ipv4"
+        )
+        state.obj.add(state.prefix_list_entry_ipv4)
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.prefix_list_entry_ipv4.action = "permit"
+
+
+class TestAreRoutingProfileFilterPrefixListIpv6(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.prefix_list_entry_ipv6 = network.RoutingProfileFilterPrefixListEntryIpv6(
+            1, action="deny", prefix="any"
+        )
+        state.obj = network.RoutingProfileFilterPrefixList(
+            testlib.random_name(), description="prefix list IPv6", type="ipv6",
+        )
+        state.obj.add(state.prefix_list_entry_ipv6)
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.prefix_list_entry_ipv6.action = "permit"
+
+
+class TestAreRoutingProfileFilterAsPathAccessList(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.as_path_prefix_entry = network.RoutingProfileFilterAsPathAccessListEntry(
+            1, action="permit", aspath_regex="123.*"
+        )
+        state.obj = network.RoutingProfileFilterAsPathAccessList(testlib.random_name())
+        state.obj.add(state.as_path_prefix_entry)
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.as_path_prefix_entry.action = "deny"
+
+
+class TestAreRoutingProfileFilterCommunityListEntryRegular(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.filter_community_regular = network.RoutingProfileFilterCommunityListEntryRegular(
+            1, action="permit", community=["accept-own", "no-peer"]
+        )
+        state.obj = network.RoutingProfileFilterCommunityList(testlib.random_name())
+        state.obj.add(state.filter_community_regular)
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.filter_community_regular.action = "deny"
+
+
+class TestAreRoutingProfileFilterCommunityListEntryLarge(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.filter_community_large = network.RoutingProfileFilterCommunityListEntryLarge(
+            1, action="permit", lc_regex=["123.*:456.*:987.*", "1.*:2.*:3.*"]
+        )
+        state.obj = network.RoutingProfileFilterCommunityList(
+            testlib.random_name(), type="large"
+        )
+        state.obj.add(state.filter_community_large)
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.filter_community_large.action = "deny"
+
+
+class TestAreRoutingProfileFilterCommunityListEntryExtended(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.filter_community_extended = network.RoutingProfileFilterCommunityListEntryExtended(
+            1, action="permit", ec_regex=["123.*:456.*", "1.*:2.*"]
+        )
+        state.obj = network.RoutingProfileFilterCommunityList(
+            testlib.random_name(), type="extended"
+        )
+        state.obj.add(state.filter_community_extended)
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.filter_community_extended.action = "deny"
+
+
+class TestAreRoutingProfileFilterRouteMaps(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.filter_route_map_entry = network.RoutingProfileFilterRouteMapsEntry(
+            1,
+            action="permit",
+            description="Test BGP route",
+            match_interface="ethernet1/1",
+            match_origin="egp",
+            match_metric="200",
+            match_tag="12",
+            match_local_preference="20",
+            match_peer="local",
+            set_aggregator_as="1200",
+            set_aggregator_router_id="12.12.12.12",
+            set_tag="21",
+            set_local_preference="31",
+            set_weight="11",
+            set_origin="egp",
+            set_atomic_aggregate=True,
+            set_metric_action="set",
+            set_metric_value="12",
+            set_originator_id="21.21.21.21",
+            set_overwrite_regular_community=True,
+            set_overwrite_large_community=True,
+            set_aspath_exclude=["1", "2"],
+            set_aspath_prepend=["21", "22"],
+            set_regular_community=["internet"],
+            set_large_community=["123:456:789"],
+        )
+        state.obj = network.RoutingProfileFilterRouteMaps(testlib.random_name())
+        state.obj.add(state.filter_route_map_entry)
+        fw.add(state.obj)
+
+    def update_state_obj(self, fw, state):
+        state.filter_route_map_entry.action = "deny"
+
+
+class TestAreRoutingProfileFilterRouteMapsRedistribution(MakeLogicalRouter):
+    def setup_state_obj(self, fw, state):
+        state.obj = network.RoutingProfileFilterRouteMapsRedistribution(
+            testlib.random_name()
+        )
+        fw.add(state.obj)
+
+
 class TestManagementProfile(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
         state.obj = network.ManagementProfile(

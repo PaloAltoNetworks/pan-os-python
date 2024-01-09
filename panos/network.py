@@ -8378,7 +8378,7 @@ class RoutingProfileFilterAsPathAccessList(VersionedPanObject):
 
     SUFFIX = ENTRY
 
-    CHILDTYPES = "network.RoutingProfileFilterAsPathAccessListEntry"
+    CHILDTYPES = ("network.RoutingProfileFilterAsPathAccessListEntry",)
 
     def _setup(self):
         self._xpaths.add_profile(
@@ -8565,7 +8565,7 @@ class RoutingProfileFilterRouteMaps(VersionedPanObject):
 
     SUFFIX = ENTRY
 
-    CHILDTYPES = "network.RoutingProfileFilterRouteMapsEntry"
+    CHILDTYPES = ("network.RoutingProfileFilterRouteMapsEntry",)
 
     def _setup(self):
         self._xpaths.add_profile(
@@ -8837,7 +8837,7 @@ class RoutingProfileFilterRouteMapsRedistribution(VersionedPanObject):
 
     SUFFIX = ENTRY
 
-    CHILDTYPES = "network.RoutingProfileFilterRouteMapsEntry"
+    CHILDTYPES = ("network.RoutingProfileFilterRouteMapsEntry",)
 
     def _setup(self):
         self._xpaths.add_profile(
