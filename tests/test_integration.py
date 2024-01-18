@@ -89,11 +89,26 @@ class TestNearestPandevice(unittest.TestCase):
         self.assertEqual(self.firewall, self.address_object.parent)
         self.assertEqual([], self.address_object.children)
         self.assertEqual(self.device_group, self.firewall.parent)
-        self.assertEqual([self.address_object,], self.firewall.children)
+        self.assertEqual(
+            [
+                self.address_object,
+            ],
+            self.firewall.children,
+        )
         self.assertEqual(self.panorama, self.device_group.parent)
-        self.assertEqual([self.firewall,], self.device_group.children)
+        self.assertEqual(
+            [
+                self.firewall,
+            ],
+            self.device_group.children,
+        )
         self.assertEqual(None, self.panorama.parent)
-        self.assertEqual([self.device_group,], self.panorama.children)
+        self.assertEqual(
+            [
+                self.device_group,
+            ],
+            self.panorama.children,
+        )
 
     def test_nearest_pandevice_from_addressobject_in_pano_dg_fw_ao_chain(self):
         """Runs nearest_pandevice() on the AddressObject.
@@ -325,7 +340,10 @@ class TestElementStr_7_0(unittest.TestCase):
 
     def test_element_str_from_firewall_with_pano_parent_and_systemsettings_child(self):
         expected = b"".join(
-            [b'<entry name="Serial"><vsys>', b'<entry name="vsys1" /></vsys></entry>',]
+            [
+                b'<entry name="Serial"><vsys>',
+                b'<entry name="vsys1" /></vsys></entry>',
+            ]
         )
 
         fw = panos.firewall.Firewall(
@@ -357,7 +375,10 @@ class TestElementStr_7_0(unittest.TestCase):
 
     def test_element_str_from_firewall_with_dg_pano_parents_and_multi_vsys(self):
         expected = b"".join(
-            [b'<entry name="serial"><vsys><entry name="vsys3" />', b"</vsys></entry>",]
+            [
+                b'<entry name="serial"><vsys><entry name="vsys3" />',
+                b"</vsys></entry>",
+            ]
         )
 
         fw = panos.firewall.Firewall(
@@ -615,7 +636,11 @@ class TestXpaths_7_0(unittest.TestCase):
     def test_edit_xpath_from_firewall(self):
         # This is not a valid xpath, but its what should happen
         # if there is no parent
-        expected = "".join(["/devices/entry[@name='serial']",])
+        expected = "".join(
+            [
+                "/devices/entry[@name='serial']",
+            ]
+        )
 
         fw = panos.firewall.Firewall("foo", vsys="vsys2", serial="serial")
 
@@ -626,7 +651,11 @@ class TestXpaths_7_0(unittest.TestCase):
     def test_set_xpath_from_firewall(self):
         # This is not a valid xpath, but its what should happen
         # if there is no parent
-        expected = "".join(["/devices",])
+        expected = "".join(
+            [
+                "/devices",
+            ]
+        )
 
         fw = panos.firewall.Firewall("foo", vsys="vsys2", serial="serial")
 

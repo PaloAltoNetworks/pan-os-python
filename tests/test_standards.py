@@ -107,6 +107,7 @@ for name, cls in inspect.getmembers(policies, inspect.isclass):
 
 # -- Fixtures --
 
+
 # PanObject / VersionedPanObject that has no NAME.
 @pytest.fixture(
     scope="function",

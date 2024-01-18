@@ -446,7 +446,6 @@ class PanObject(object):
             nextelement = root
 
             for section in path:
-
                 if section.find("|") != -1:
                     # This is an element variable, so create an element containing
                     # the variables's value
@@ -1648,7 +1647,13 @@ class PanObject(object):
             if var_type == "list":
                 if var is None:
                     update_needed = True
-                    setattr(obj, reference_var, [self,])
+                    setattr(
+                        obj,
+                        reference_var,
+                        [
+                            self,
+                        ],
+                    )
                     if update:
                         obj.update(reference_var)
                 elif not isinstance(var, list):
@@ -1992,7 +1997,9 @@ class PanObject(object):
         for chunk in chunk_instances_for_delete_similar(instances):
             dev.xapi.delete(
                 "{0}/{1}[{2}]".format(
-                    xpath, prefix, " or ".join(joiner.format(x.uid) for x in chunk),
+                    xpath,
+                    prefix,
+                    " or ".join(joiner.format(x.uid) for x in chunk),
                 ),
                 retry_on_peer=self.HA_SYNC,
             )
@@ -2124,14 +2131,13 @@ class PanObject(object):
             dict:  Hierarchy information about this object.
         """
         from panos.firewall import Firewall
-        from panos.panorama import DeviceGroup
-        from panos.panorama import Panorama
-        from panos.panorama import Template
-        from panos.panorama import TemplateStack
+        from panos.panorama import DeviceGroup, Panorama, Template, TemplateStack
 
         classes = panos.object_classes()
         configs = [
-            [self.__class__,],
+            [
+                self.__class__,
+            ],
         ]
         updated_configs = []
 
@@ -2143,7 +2149,10 @@ class PanObject(object):
                     configs.pop(num)
                     for p in parents:
                         configs.append(
-                            chain + [p,]
+                            chain
+                            + [
+                                p,
+                            ]
                         )
                     break
             else:
@@ -2801,7 +2810,8 @@ class VersionedPanObject(PanObject):
 
         raise AttributeError(
             "'{0}' object has no attribute '{1}'".format(
-                self.__class__.__name__, str(name),
+                self.__class__.__name__,
+                str(name),
             )
         )
 
@@ -2886,9 +2896,7 @@ class VersionedParamPath(VersioningSupport):
 
 
 class ValueEntry(VersionedPanObject):
-    """Base class for objects that only have a value element.
-
-    """
+    """Base class for objects that only have a value element."""
 
     ROOT = Root.VSYS
     SUFFIX = ENTRY
@@ -3722,7 +3730,12 @@ class PanDevice(PanObject):
 
     @classmethod
     def create_from_device(
-        cls, hostname, api_username=None, api_password=None, api_key=None, port=443,
+        cls,
+        hostname,
+        api_username=None,
+        api_password=None,
+        api_key=None,
+        port=443,
     ):
         """Factory method to create a :class:`panos.firewall.Firewall`
         or :class:`panos.panorama.Panorama` object from a live device
@@ -3744,18 +3757,33 @@ class PanDevice(PanObject):
         # Create generic PanDevice to connect and get information
         from panos import firewall, panorama
 
-        device = PanDevice(hostname, api_username, api_password, api_key, port,)
+        device = PanDevice(
+            hostname,
+            api_username,
+            api_password,
+            api_key,
+            port,
+        )
         system_info = device.refresh_system_info()
         version = system_info[0]
         model = system_info[1]
         if model == "Panorama" or model.startswith("M-"):
             instance = panorama.Panorama(
-                hostname, api_username, api_password, device.api_key, port,
+                hostname,
+                api_username,
+                api_password,
+                device.api_key,
+                port,
             )
         else:
             serial = system_info[2]
             instance = firewall.Firewall(
-                hostname, api_username, api_password, device.api_key, serial, port,
+                hostname,
+                api_username,
+                api_password,
+                device.api_key,
+                serial,
+                port,
             )
         instance._set_version_and_version_info(version)
         return instance
@@ -3903,10 +3931,16 @@ class PanDevice(PanObject):
 
         def classify_exception(self, e):
             if str(e) == "Invalid credentials.":
-                return err.PanInvalidCredentials(str(e), pan_device=self.pan_device,)
+                return err.PanInvalidCredentials(
+                    str(e),
+                    pan_device=self.pan_device,
+                )
             elif str(e).startswith("URLError:"):
                 if str(e).endswith("timed out"):
-                    return err.PanConnectionTimeout(str(e), pan_device=self.pan_device,)
+                    return err.PanConnectionTimeout(
+                        str(e),
+                        pan_device=self.pan_device,
+                    )
                 else:
                     # This could be that we have an old version of OpenSSL
                     # that doesn't support TLSv1.1, so check for that and give
@@ -4836,7 +4870,12 @@ class PanDevice(PanObject):
         logger.debug(
             self.id
             + ": commit requested: commit_all:%s sync:%s sync_all:%s cmd:%s"
-            % (str(commit_all), str(sync), str(sync_all), cmd,)
+            % (
+                str(commit_all),
+                str(sync),
+                str(sync_all),
+                cmd,
+            )
         )
         if commit_all:
             action = "all"
@@ -5603,7 +5642,8 @@ class PanDevice(PanObject):
         end = None
         if minutes is not None or seconds is not None:
             end = datetime.datetime.now() + datetime.timedelta(
-                minutes=minutes or 0, seconds=seconds or 0,
+                minutes=minutes or 0,
+                seconds=seconds or 0,
             )
 
         while True:

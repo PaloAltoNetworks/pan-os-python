@@ -122,7 +122,10 @@ def init():
 
             fw = random.choice(fws)
             panorama_fw_combinations.append(
-                ((pano, fw), desc(pano_version, fw_version),)
+                (
+                    (pano, fw),
+                    desc(pano_version, fw_version),
+                )
             )
 
 

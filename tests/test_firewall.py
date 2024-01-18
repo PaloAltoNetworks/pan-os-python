@@ -22,7 +22,9 @@ class TestFirewall(unittest.TestCase):
     def test_id_returns_serial(self):
         expected = "serial#"
 
-        fw = panos.firewall.Firewall(serial=expected,)
+        fw = panos.firewall.Firewall(
+            serial=expected,
+        )
 
         ret_val = fw.id
 
@@ -31,7 +33,9 @@ class TestFirewall(unittest.TestCase):
     def test_id_returns_hostname(self):
         expected = "hostName"
 
-        fw = panos.firewall.Firewall(hostname=expected,)
+        fw = panos.firewall.Firewall(
+            hostname=expected,
+        )
 
         ret_val = fw.id
 

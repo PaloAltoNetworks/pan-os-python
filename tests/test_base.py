@@ -84,7 +84,13 @@ class TestPanObject(unittest.TestCase):
         ret_value = self.obj.add(child)
 
         self.assertEqual(child, ret_value)
-        self.verify_object(self.obj, name=OBJECT_NAME, children=[child,])
+        self.verify_object(
+            self.obj,
+            name=OBJECT_NAME,
+            children=[
+                child,
+            ],
+        )
         self.verify_object(child, name=CHILD_NAME, parent=self.obj)
 
     def test_add_with_children(self):
@@ -113,7 +119,13 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj.insert(0, child)
 
         self.assertEqual(child, ret_val)
-        self.verify_object(self.obj, name=OBJECT_NAME, children=[child,])
+        self.verify_object(
+            self.obj,
+            name=OBJECT_NAME,
+            children=[
+                child,
+            ],
+        )
         self.verify_object(child, name=CHILD_NAME, parent=self.obj)
 
     def test_insert_with_children(self):
@@ -215,7 +227,13 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj.remove(child2)
 
         self.assertIsNone(ret_val)
-        self.verify_object(self.obj, name=OBJECT_NAME, children=[child1,])
+        self.verify_object(
+            self.obj,
+            name=OBJECT_NAME,
+            children=[
+                child1,
+            ],
+        )
         self.verify_object(child1, name=CHILD1_NAME, parent=self.obj)
         self.verify_object(child2, name=CHILD2_NAME)
 
@@ -455,7 +473,9 @@ class TestPanObject(unittest.TestCase):
         self.assertIsNone(ret_val)
         m_panos.set_config_changed.assert_called_once_with()
         m_panos.active().xapi.edit.assert_called_once_with(
-            PanDeviceXpath, PanDeviceElementStr, retry_on_peer=self.obj.HA_SYNC,
+            PanDeviceXpath,
+            PanDeviceElementStr,
+            retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath.assert_called_once_with()
         self.obj.element_str.assert_called_once_with()
@@ -487,7 +507,9 @@ class TestPanObject(unittest.TestCase):
         self.assertIsNone(ret_val)
         m_panos.set_config_changed.assert_called_once_with()
         m_panos.xapi.edit.assert_called_once_with(
-            PanDeviceXpath, PanDeviceElementStr, retry_on_peer=self.obj.HA_SYNC,
+            PanDeviceXpath,
+            PanDeviceElementStr,
+            retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath.assert_called_once_with()
         self.obj.element_str.assert_called_once_with()
@@ -517,7 +539,9 @@ class TestPanObject(unittest.TestCase):
         self.assertIsNone(ret_val)
         m_panos.set_config_changed.assert_called_once_with()
         m_panos.active().xapi.set.assert_called_once_with(
-            PanDeviceXpath, PanDeviceElementStr, retry_on_peer=self.obj.HA_SYNC,
+            PanDeviceXpath,
+            PanDeviceElementStr,
+            retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath_short.assert_called_once_with()
         self.obj.element_str.assert_called_once_with()
@@ -549,7 +573,9 @@ class TestPanObject(unittest.TestCase):
         self.assertIsNone(ret_val)
         m_panos.set_config_changed.assert_called_once_with()
         m_panos.xapi.set.assert_called_once_with(
-            PanDeviceXpath, PanDeviceElementStr, retry_on_peer=self.obj.HA_SYNC,
+            PanDeviceXpath,
+            PanDeviceElementStr,
+            retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath_short.assert_called_once_with()
         self.obj.element_str.assert_called_once_with()
@@ -577,7 +603,8 @@ class TestPanObject(unittest.TestCase):
         self.assertIsNone(ret_val)
         m_panos.set_config_changed.assert_called_once_with()
         m_panos.active().xapi.delete.assert_called_once_with(
-            PanDeviceXpath, retry_on_peer=self.obj.HA_SYNC,
+            PanDeviceXpath,
+            retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath.assert_called_once_with()
         for c in self.obj.children:
@@ -607,7 +634,8 @@ class TestPanObject(unittest.TestCase):
         self.obj.parent.remove.assert_called_once_with(self.obj)
         m_panos.set_config_changed.assert_called_once_with()
         m_panos.active().xapi.delete.assert_called_once_with(
-            PanDeviceXpath, retry_on_peer=self.obj.HA_SYNC,
+            PanDeviceXpath,
+            retry_on_peer=self.obj.HA_SYNC,
         )
         self.obj.xpath.assert_called_once_with()
         for c in self.obj.children:
@@ -1152,7 +1180,8 @@ class TestParentAwareXpathBasics(unittest.TestCase):
         parent = None
         obj = Base.ParentAwareXpath()
         obj.add_profile(
-            parents=("ParentClass1",), value="/some/path",
+            parents=("ParentClass1",),
+            value="/some/path",
         )
 
         self.assertRaises(ValueError, obj._get_versioned_value, (1, 0, 0), parent)
@@ -1290,7 +1319,8 @@ class TestVariableRefreshes(unittest.TestCase):
         ans = o.refresh_variable("entries")
 
         m.xapi.get.assert_called_once_with(
-            o.xpath() + "/multiple/entries", retry_on_peer=o.HA_SYNC,
+            o.xpath() + "/multiple/entries",
+            retry_on_peer=o.HA_SYNC,
         )
         self.assertEqual(ans, o.entries)
         self.assertEqual(ans, ["one", "two"])
@@ -1303,7 +1333,8 @@ class TestVariableRefreshes(unittest.TestCase):
         ans = o.refresh_variable("members")
 
         m.xapi.get.assert_called_once_with(
-            o.xpath() + "/multiple/members", retry_on_peer=o.HA_SYNC,
+            o.xpath() + "/multiple/members",
+            retry_on_peer=o.HA_SYNC,
         )
         self.assertEqual(ans, o.members)
         self.assertEqual(ans, ["first", "second"])
@@ -1314,7 +1345,8 @@ class TestVariableRefreshes(unittest.TestCase):
         ans = o.refresh_variable("someint")
 
         m.xapi.get.assert_called_once_with(
-            o.xpath() + "/someint", retry_on_peer=o.HA_SYNC,
+            o.xpath() + "/someint",
+            retry_on_peer=o.HA_SYNC,
         )
         self.assertEqual(ans, o.someint)
         self.assertEqual(ans, 42)
@@ -1334,7 +1366,8 @@ class TestVariableRefreshes(unittest.TestCase):
         ans = o.refresh_variable("action")
 
         m.xapi.get.assert_called_once_with(
-            o.xpath() + "/config/action", retry_on_peer=o.HA_SYNC,
+            o.xpath() + "/config/action",
+            retry_on_peer=o.HA_SYNC,
         )
         self.assertEqual(ans, o.action)
         self.assertEqual(ans, "DENY")
@@ -1345,7 +1378,8 @@ class TestVariableRefreshes(unittest.TestCase):
         ans = o.refresh_variable("action_uuid")
 
         m.xapi.get.assert_called_once_with(
-            o.xpath() + "/config/action", retry_on_peer=o.HA_SYNC,
+            o.xpath() + "/config/action",
+            retry_on_peer=o.HA_SYNC,
         )
         self.assertEqual(ans, o.action_uuid)
         self.assertEqual(ans, "1234-56-789")
@@ -1382,7 +1416,14 @@ class TestEqual(unittest.TestCase):
         self.assertEqual(o2.members, ["d", "c"])
 
     def test_str_list_field_is_equal(self):
-        o1 = MyVersionedObject("a", ["a",], ["c", "d"], 5)
+        o1 = MyVersionedObject(
+            "a",
+            [
+                "a",
+            ],
+            ["c", "d"],
+            5,
+        )
         o2 = MyVersionedObject("a", "a", ["c", "d"], 5)
 
         self.assertTrue(o1.equal(o2))
@@ -1527,14 +1568,18 @@ class TestDeleteSimilar(unittest.TestCase):
 
         listing = []
         for x in range(count):
-            obj = Base.PanObject("".join(random.choice(chars) for y in range(length)),)
+            obj = Base.PanObject(
+                "".join(random.choice(chars) for y in range(length)),
+            )
             obj.parent = mock.Mock()
             listing.append(obj)
 
         # Now tweak the first element for the tests, the rest don't matter.
         obj = listing[0]
 
-        obj._gather_bulk_info = mock.Mock(return_value=(dev, listing, None),)
+        obj._gather_bulk_info = mock.Mock(
+            return_value=(dev, listing, None),
+        )
         if suffix == "member":
             obj.SUFFIX = Base.MEMBER
         else:
@@ -1551,7 +1596,8 @@ class TestDeleteSimilar(unittest.TestCase):
 
         dev.xapi.delete.assert_called_once()
         dev.xapi.delete.assert_called_once_with(
-            "/mock/xpath/entry[@name='{0}']".format(obj.uid), retry_on_peer=obj.HA_SYNC,
+            "/mock/xpath/entry[@name='{0}']".format(obj.uid),
+            retry_on_peer=obj.HA_SYNC,
         )
 
     def test_delete_one_member(self):
@@ -1642,7 +1688,12 @@ class TestIsReady(unittest.TestCase):
     @mock.patch("time.sleep")
     def test_times_out(self, mocksleep):
         fw = Base.PanDevice("127.0.0.1", "admin", "secret", api_key="apikey")
-        fw.xapi.op = mock.Mock(side_effect=[Err.PanURLError, ValueError,],)
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                Err.PanURLError,
+                ValueError,
+            ],
+        )
 
         ans = fw.is_ready(seconds=0)
 

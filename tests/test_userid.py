@@ -67,8 +67,18 @@ class TestUserId(unittest.TestCase):
         )
         fw.xapi
         fw.userid.batch_start()
-        fw.userid.tag_user("user1", ["tag1",])
-        fw.userid.tag_user("user2", ["tag1",])
+        fw.userid.tag_user(
+            "user1",
+            [
+                "tag1",
+            ],
+        )
+        fw.userid.tag_user(
+            "user2",
+            [
+                "tag1",
+            ],
+        )
 
     def test_batch_untag_user(self):
         fw = panos.firewall.Firewall(
@@ -76,8 +86,18 @@ class TestUserId(unittest.TestCase):
         )
         fw.xapi
         fw.userid.batch_start()
-        fw.userid.untag_user("user1", ["tag1",])
-        fw.userid.untag_user("user2", ["tag1",])
+        fw.userid.untag_user(
+            "user1",
+            [
+                "tag1",
+            ],
+        )
+        fw.userid.untag_user(
+            "user2",
+            [
+                "tag1",
+            ],
+        )
 
 
 if __name__ == "__main__":
