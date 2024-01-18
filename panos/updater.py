@@ -233,7 +233,7 @@ class SoftwareUpdater(Updater):
         self.download_install(target_version, load_config, sync=True)
         # Reboot the device
         self._logger.info(
-            "Device %s is rebooting after upgrading to version  %s. This will take a while."
+            "Device %s is rebooting after upgrading to version %s. This will take a while."
             % (self.pandevice.id, version)
         )
         self.pandevice.restart()
@@ -256,36 +256,56 @@ class SoftwareUpdater(Updater):
         install_base: bool,
     ) -> PanOSVersion:
         current_version = PanOSVersion(self.pandevice.version)
+        if target_version != "latest" and current_version == target_version:
+            return None
         available_versions = list(map(PanOSVersion, self.versions.keys()))
         latest_version = max(available_versions)
         next_minor_version = self._next_minor_version(current_version)
+        if next_minor_version not in available_versions:
+            next_minor_version = None
         if install_base:
             if target_version == "latest":
-                return min(latest_version, next_minor_version)
-            elif latest_version < target_version:
-                return next_minor_version
-            elif not self._direct_upgrade_possible(current_version, target_version):
-                return next_minor_version
+                return (
+                    next_minor_version
+                    if next_minor_version is not None
+                    else latest_version
+                )
+            elif self._direct_upgrade_possible(
+                current_version, target_version, install_base
+            ):
+                # No minor upgrade needed to target
+                return target_version
+            elif next_minor_version is None:
+                return latest_version
             else:
-                return cast(PanOSVersion, target_version)
+                return next_minor_version
         else:
             if target_version == "latest":
-                return latest_version
-            elif latest_version < target_version:
-                return latest_version
+                if next_minor_version is None:
+                    return latest_version
+                else:
+                    return self._latest_patch_version(
+                        next_minor_version, available_versions
+                    )
+            elif self._direct_upgrade_possible(
+                current_version, target_version, install_base
+            ):
+                return target_version
             else:
-                return cast(PanOSVersion, target_version)
+                # More than one minor upgrade needed to target
+                return self._latest_patch_version(
+                    next_minor_version, available_versions
+                )
 
     def _current_version_is_target(
-        self, target_version: Union[PanOSVersion, str]
+        self, target_version: Union[PanOSVersion, Literal["latest"]]
     ) -> bool:
-        target_version = PanOSVersion(str(target_version))
         current_version = PanOSVersion(self.pandevice.version)
         available_versions = list(map(PanOSVersion, self.versions.keys()))
         latest_version = max(available_versions)
-        if current_version == target_version:
+        if target_version == "latest" and current_version == latest_version:
             return True
-        elif target_version == "latest" and current_version == latest_version:
+        elif current_version == target_version:
             return True
         else:
             return False
@@ -373,14 +393,21 @@ class SoftwareUpdater(Updater):
             not install_base
             and not self.versions[str(next_version.baseimage)]["downloaded"]
         ):
-            self.download(next_version.baseimage, sync=True)
+            if dryrun:
+                self._logger.info(
+                    "Device %s will download base image: %s"
+                    % (self.pandevice.id, next_version.baseimage)
+                )
+            else:
+                self.download(next_version.baseimage, sync=True)
 
         # Ensure the content pack is upgraded to the latest
-        self.pandevice.content.download_and_install_latest(sync=True)
+        if not dryrun:
+            self.pandevice.content.download_and_install_latest(sync=True)
 
         # Upgrade to the next version
         self._logger.info(
-            "Device %s will be upgraded to version: %s"
+            "Device %s will download and upgrade to version: %s"
             % (self.pandevice.id, next_version)
         )
         if dryrun:
@@ -412,7 +439,7 @@ class SoftwareUpdater(Updater):
         # Account for 10.2.x (only release with minor version of '2')
         if version.major == 10 and version.minor == 1:
             next_version = PanOSVersion("10.2.0")
-        elif version.minor == 1:
+        elif version.minor > 0:
             next_version = PanOSVersion(str(version.major + 1) + ".0.0")
         # There is no PAN-OS 5.1 for firewalls, so next minor release from 5.0.x is 6.0.0.
         elif (
@@ -436,7 +463,22 @@ class SoftwareUpdater(Updater):
         )
         return next_version
 
-    def _direct_upgrade_possible(self, current_version, target_version):
+    def _latest_patch_version(
+        self, version: Union[str, PanOSVersion], available_versions: List[PanOSVersion]
+    ):
+        if isstring(version):
+            version = PanOSVersion(version)
+        found_patch = False
+        latest_patch: PanOSVersion = PanOSVersion("0.0.0")
+        for v in available_versions:
+            if v.major == version.major and v.minor == version.minor:
+                latest_patch = max(latest_patch, v)
+                found_patch = True
+        return latest_patch if found_patch else None
+
+    def _direct_upgrade_possible(
+        self, current_version, target_version, install_base=True
+    ):
         """Check if current version can directly upgrade to target version
 
         :returns True if a direct upgrade is possible, False if not
@@ -461,7 +503,7 @@ class SoftwareUpdater(Updater):
             current_version.major == target_version.major
             and current_version.minor == 0
             and target_version.minor == 1
-            and target_version.patch == 0
+            and (not install_base or target_version.patch == 0)
         ):
             return True
 
@@ -471,9 +513,11 @@ class SoftwareUpdater(Updater):
             current_version.major + 1 == target_version.major
             and current_version.minor == 1
             and target_version.minor == 0
-            and target_version.patch == 0
+            and (not install_base or target_version.patch == 0)
         ):
             return True
+
+        # SPECIAL CASES
 
         # Upgrading a firewall from PAN-OS 5.0.x to 6.0.x
         # This is a special case because there is no PAN-OS 5.1.x
@@ -484,6 +528,17 @@ class SoftwareUpdater(Updater):
             and current_version.minor == 0
             and target_version == "6.0.0"
             and issubclass(type(self.pandevice), Firewall)
+        ):
+            return True
+
+        # Upgrade from PAN-OS 10.1.x to 10.2.x
+        # This is a special case because only minor release with a 2
+        if (
+            current_version.major == 10
+            and current_version.minor == 1
+            and target_version.major == 10
+            and target_version.minor == 2
+            and (not install_base or target_version.patch == 0)
         ):
             return True
 
