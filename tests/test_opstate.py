@@ -48,7 +48,9 @@ def _hit_count_fw_setup(*args):
     inner = "".join(ET.tostring(x, encoding="utf-8").decode("utf-8") for x in args)
 
     fw.op = mock.Mock(
-        return_value=ET.fromstring(HIT_COUNT_PREFIX + inner + HIT_COUNT_SUFFIX,)
+        return_value=ET.fromstring(
+            HIT_COUNT_PREFIX + inner + HIT_COUNT_SUFFIX,
+        )
     )
 
     rb = Rulebase()

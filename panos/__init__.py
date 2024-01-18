@@ -178,13 +178,12 @@ class PanOSVersion(LooseVersion):
         return "PanOSVersion ('%s')" % str(self)
 
     def __lt__(self, other):
-
         # Handle 'latest' is always higher
         if isstring(other) and other == "latest":
             return True
 
         other = stringToVersion(other)
-        for (x, y) in zip(self.mainrelease, other.mainrelease):
+        for x, y in zip(self.mainrelease, other.mainrelease):
             if x < y:
                 return True
             if x > y:
@@ -203,7 +202,6 @@ class PanOSVersion(LooseVersion):
         return not self.__lt__(other)
 
     def __eq__(self, other):
-
         # Handle 'latest' which is always different
         if isstring(other) and other == "latest":
             return False
@@ -241,7 +239,9 @@ def tree_legend_dot():
         result += (
             '{module} [style=filled fillcolor={color} URL="{url}'
             '/module-{module}.html" target="_blank"];'.format(
-                module=module, color=node_color(module), url=DOCUMENTATION_URL,
+                module=module,
+                color=node_color(module),
+                url=DOCUMENTATION_URL,
             )
         )
     result += "}"
@@ -286,7 +286,11 @@ def string_or_list(value):
             value,
         ]
     return (
-        list(value) if "__iter__" in dir(value) else [value,]
+        list(value)
+        if "__iter__" in dir(value)
+        else [
+            value,
+        ]
     )
 
 
@@ -463,8 +467,8 @@ def node_color(module):
 
 def object_classes():
     import inspect
-    from panos import errors
-    from panos import base
+
+    from panos import base, errors
 
     current_module = sys.modules[__name__]
 
@@ -476,15 +480,17 @@ def object_classes():
             if the_cls not in omits:
                 omits.append(the_cls)
 
-    from panos import device
-    from panos import firewall
-    from panos import ha
-    from panos import network
-    from panos import objects
-    from panos import panorama
-    from panos import plugins
-    from panos import policies
-    from panos import predefined
+    from panos import (
+        device,
+        firewall,
+        ha,
+        network,
+        objects,
+        panorama,
+        plugins,
+        policies,
+        predefined,
+    )
 
     classes = {}
     for pkg in (device, firewall, ha, network, objects, panorama, policies, predefined):

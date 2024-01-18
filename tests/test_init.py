@@ -28,7 +28,6 @@ class TestPanOSVersion(unittest.TestCase):
     """
 
     def setUp(self):
-
         self.c1 = panos.PanOSVersion("7.0.0-c1")
         self.c2 = panos.PanOSVersion("7.0.0-c2")
         self.b1 = panos.PanOSVersion("7.0.0-b1")
@@ -178,7 +177,8 @@ class TestStringToXml(unittest.TestCase):
 
         for x in self.quotes():
             self.assertEqual(
-                panos.string_to_xml("hello {0}world{0}".format(x), x), self._str(root),
+                panos.string_to_xml("hello {0}world{0}".format(x), x),
+                self._str(root),
             )
 
     def test_base_root_with_one_key_value(self):
@@ -188,7 +188,8 @@ class TestStringToXml(unittest.TestCase):
 
         for x in self.quotes():
             self.assertEqual(
-                panos.string_to_xml("foo bar {0}baz{0}".format(x), x), self._str(root),
+                panos.string_to_xml("foo bar {0}baz{0}".format(x), x),
+                self._str(root),
             )
 
     def test_base_root_with_two_key_values(self):

@@ -67,7 +67,11 @@ class TestUserID_FW(object):
         test4 = set(fw.userid.get_registered_ip(ips, tags[0:5]))
         assert test4 == set(ips)
         test5 = set(fw.userid.get_registered_ip(ips[0], tags[0]))
-        assert test5 == set([ips[0],])
+        assert test5 == set(
+            [
+                ips[0],
+            ]
+        )
         tests = [test1, test2, test3, test4, test5]
         assert len(test5) != 0
         assert all([test1 >= x for x in tests])

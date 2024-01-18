@@ -121,7 +121,10 @@ class SoftwareUpdater(Updater):
         )
         response = self._op(
             'request system software install %s version "%s"'
-            % ('load-config "{0}"'.format(load_config) if load_config else "", version,)
+            % (
+                'load-config "{0}"'.format(load_config) if load_config else "",
+                version,
+            )
         )
         if sync:
             result = self.pandevice.syncjob(response)

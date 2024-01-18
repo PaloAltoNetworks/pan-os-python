@@ -240,7 +240,9 @@ class ServiceObject(VersionedPanObject):
             )
         )
         params[-1].add_profile(
-            "8.1.0", path="protocol/{protocol}", values=["tcp", "udp", "sctp"],
+            "8.1.0",
+            path="protocol/{protocol}",
+            values=["tcp", "udp", "sctp"],
         )
         params.append(
             VersionedParamPath("source_port", path="protocol/{protocol}/source-port")
@@ -269,14 +271,20 @@ class ServiceObject(VersionedPanObject):
         params[-1].add_profile(
             "8.1.0",
             vartype="int",
-            condition={"enable_override_timeout": "yes", "protocol": "tcp",},
+            condition={
+                "enable_override_timeout": "yes",
+                "protocol": "tcp",
+            },
             path="protocol/{protocol}/override/{enable_override_timeout}/halfclose-timeout",
         )
         params.append(VersionedParamPath("override_time_wait_timeout", exclude=True))
         params[-1].add_profile(
             "8.1.0",
             vartype="int",
-            condition={"enable_override_timeout": "yes", "protocol": "tcp",},
+            condition={
+                "enable_override_timeout": "yes",
+                "protocol": "tcp",
+            },
             path="protocol/{protocol}/override/{enable_override_timeout}/timewait-timeout",
         )
 
@@ -355,7 +363,8 @@ class ApplicationObject(VersionedPanObject):
         # xpaths
         self._xpaths.add_profile(value="/application")
         self._xpaths.add_profile(
-            value='//*[contains(local-name(), "application")]', parents=("Predefined",),
+            value='//*[contains(local-name(), "application")]',
+            parents=("Predefined",),
         )
 
         # params
@@ -651,7 +660,8 @@ class ApplicationContainer(VersionedPanObject):
         # xpaths
         self._xpaths.add_profile(value="/application-container")
         self._xpaths.add_profile(
-            value='//*[contains(local-name(), "application")]', parents=("Predefined",),
+            value='//*[contains(local-name(), "application")]',
+            parents=("Predefined",),
         )
 
         # params
@@ -911,7 +921,9 @@ class LogForwardingProfileMatchListAction(VersionedPanObject):
             VersionedParamPath(
                 "action_type",
                 default="tagging",
-                values=["tagging",],
+                values=[
+                    "tagging",
+                ],
                 path="type/{action_type}",
             )
         )
@@ -1201,7 +1213,10 @@ class Edl(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "edl_type", default="ip", path="type", values=("ip", "domain", "url"),
+                "edl_type",
+                default="ip",
+                path="type",
+                values=("ip", "domain", "url"),
             ),
         )
         params[-1].add_profile(
@@ -1214,38 +1229,77 @@ class Edl(VersionedPanObject):
             path="type/{edl_type}",
             values=("ip", "domain", "url", "predefined-ip", "predefined-url"),
         )
-        params.append(VersionedParamPath("description", path="description",),)
-        params[-1].add_profile(
-            "8.0.0", path="type/{edl_type}/description",
+        params.append(
+            VersionedParamPath(
+                "description",
+                path="description",
+            ),
         )
-        params.append(VersionedParamPath("source", path="url",),)
         params[-1].add_profile(
-            "8.0.0", path="type/{edl_type}/url",
+            "8.0.0",
+            path="type/{edl_type}/description",
         )
-        params.append(VersionedParamPath("exceptions", exclude=True,),)
+        params.append(
+            VersionedParamPath(
+                "source",
+                path="url",
+            ),
+        )
         params[-1].add_profile(
-            "8.0.0", vartype="member", path="type/{edl_type}/exception-list",
+            "8.0.0",
+            path="type/{edl_type}/url",
         )
-        params.append(VersionedParamPath("certificate_profile", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "exceptions",
+                exclude=True,
+            ),
+        )
+        params[-1].add_profile(
+            "8.0.0",
+            vartype="member",
+            path="type/{edl_type}/exception-list",
+        )
+        params.append(
+            VersionedParamPath(
+                "certificate_profile",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
             "8.0.0",
             path="type/{edl_type}/certificate-profile",
             condition={"edl_type": ["ip", "domain", "url"]},
         )
-        params.append(VersionedParamPath("username", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "username",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
             "8.0.0",
             path="type/{edl_type}/auth/username",
             condition={"edl_type": ["ip", "domain", "url"]},
         )
-        params.append(VersionedParamPath("password", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "password",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
             "8.0.0",
             path="type/{edl_type}/auth/password",
             vartype="encrypted",
             condition={"edl_type": ["ip", "domain", "url"]},
         )
-        params.append(VersionedParamPath("expand_domain", exclude=True,),)
+        params.append(
+            VersionedParamPath(
+                "expand_domain",
+                exclude=True,
+            ),
+        )
         params[-1].add_profile(
             "9.0.0",
             path="type/{edl_type}/expand-domain",
@@ -1308,7 +1362,10 @@ class Edl(VersionedPanObject):
                 "friday",
                 "saturday",
             ),
-            condition={"edl_type": ["ip", "domain", "url"], "repeat": "weekly",},
+            condition={
+                "edl_type": ["ip", "domain", "url"],
+                "repeat": "weekly",
+            },
         )
         params.append(
             VersionedParamPath(
@@ -1322,7 +1379,10 @@ class Edl(VersionedPanObject):
             "8.0.0",
             vartype="int",
             path="type/{edl_type}/recurring/{repeat}/day-of-month",
-            condition={"edl_type": ["ip", "domain", "url"], "repeat": "monthly",},
+            condition={
+                "edl_type": ["ip", "domain", "url"],
+                "repeat": "monthly",
+            },
         )
 
         self._params = tuple(params)
