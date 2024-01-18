@@ -48,11 +48,11 @@ bandit:
 	bandit -r --ini .bandit
 
 format:
-	isort --recursive --atomic panos
+	isort --atomic panos
 	black .
 
 check-format:
-	isort --recursive --atomic --check-only panos
+	isort --atomic --check-only panos
 	black --check --diff .
 
 test:
