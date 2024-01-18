@@ -127,6 +127,12 @@ pan.DEBUG2 = pan.DEBUG1 - 1
 pan.DEBUG3 = pan.DEBUG2 - 1
 
 
+def stringToVersion(other):
+    if isstring(other):
+        other = PanOSVersion(other)
+    return other
+
+
 class PanOSVersion(LooseVersion):
     """LooseVersion with convenience properties to access version components"""
 
@@ -151,6 +157,10 @@ class PanOSVersion(LooseVersion):
         return self.version[0:3]
 
     @property
+    def minorrelease(self):
+        return self.version[0:2]
+
+    @property
     def subrelease(self):
         try:
             subrelease = str(self.version[4]) + str(self.version[5])
@@ -173,6 +183,19 @@ class PanOSVersion(LooseVersion):
         except IndexError:
             subrelease_num = None
         return subrelease_num
+
+    @property
+    def baseimage(self):
+        # Account for lack of PAN-OS 7.0.0
+        if self.major == 7 and self.minor == 0:
+            base_patch = "1"
+        else:
+            base_patch = "0"
+        version_string = str(self)
+        version_tokens = version_string.split("-")[0].split(".")
+        version_tokens[2] = base_patch
+        base_image_string = ".".join(version_tokens)
+        return PanOSVersion(base_image_string)
 
     def __repr__(self):
         return "PanOSVersion ('%s')" % str(self)
@@ -219,12 +242,6 @@ class PanOSVersion(LooseVersion):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
-
-def stringToVersion(other):
-    if isstring(other):
-        other = PanOSVersion(other)
-    return other
 
 
 def tree_legend_dot():
