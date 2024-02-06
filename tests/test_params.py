@@ -17,22 +17,74 @@ class FakeObject(VersionedPanObject):
 
         params = []
 
-        params.append(VersionedParamPath("uuid", vartype="attrib", path="uuid",),)
-        params.append(VersionedParamPath("size", vartype="int", path="size",),)
-        params.append(VersionedParamPath("listing", vartype="member", path="listing",),)
-        params.append(VersionedParamPath("pb1", vartype="exist", path="pb1",),)
-        params.append(VersionedParamPath("pb2", vartype="exist", path="pb2",),)
-        params.append(VersionedParamPath("live", vartype="yesno", path="live",),)
-        params.append(
-            VersionedParamPath("disabled", vartype="yesno", path="disabled",),
-        )
-        params.append(
-            VersionedParamPath("uuid2", vartype="attrib", path="level-2/uuid",),
-        )
-        params.append(VersionedParamPath("age", vartype="int", path="level-2/age",),)
         params.append(
             VersionedParamPath(
-                "interfaces", vartype="member", path="level-2/interface",
+                "uuid",
+                vartype="attrib",
+                path="uuid",
+            ),
+        )
+        params.append(
+            VersionedParamPath(
+                "size",
+                vartype="int",
+                path="size",
+            ),
+        )
+        params.append(
+            VersionedParamPath(
+                "listing",
+                vartype="member",
+                path="listing",
+            ),
+        )
+        params.append(
+            VersionedParamPath(
+                "pb1",
+                vartype="exist",
+                path="pb1",
+            ),
+        )
+        params.append(
+            VersionedParamPath(
+                "pb2",
+                vartype="exist",
+                path="pb2",
+            ),
+        )
+        params.append(
+            VersionedParamPath(
+                "live",
+                vartype="yesno",
+                path="live",
+            ),
+        )
+        params.append(
+            VersionedParamPath(
+                "disabled",
+                vartype="yesno",
+                path="disabled",
+            ),
+        )
+        params.append(
+            VersionedParamPath(
+                "uuid2",
+                vartype="attrib",
+                path="level-2/uuid",
+            ),
+        )
+        params.append(
+            VersionedParamPath(
+                "age",
+                vartype="int",
+                path="level-2/age",
+            ),
+        )
+        params.append(
+            VersionedParamPath(
+                "interfaces",
+                vartype="member",
+                path="level-2/interface",
             ),
         )
 
@@ -84,7 +136,8 @@ def _refresh_xml():
 # int at base level
 def test_render_int():
     _verify_render(
-        FakeObject("test", size=5), '<entry name="test"><size>5</size></entry>',
+        FakeObject("test", size=5),
+        '<entry name="test"><size>5</size></entry>',
     )
 
 
@@ -111,7 +164,8 @@ def test_parse_member():
 # exist at base level
 def test_render_exist():
     _verify_render(
-        FakeObject("test", pb1=True), '<entry name="test"><pb1 /></entry>',
+        FakeObject("test", pb1=True),
+        '<entry name="test"><pb1 /></entry>',
     )
 
 
@@ -139,7 +193,8 @@ def test_parse_yesno():
 # attrib
 def test_render_attrib():
     _verify_render(
-        FakeObject("test", uuid="123-456"), '<entry name="test" uuid="123-456" />',
+        FakeObject("test", uuid="123-456"),
+        '<entry name="test" uuid="123-456" />',
     )
 
 

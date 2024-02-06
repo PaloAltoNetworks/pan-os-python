@@ -39,7 +39,8 @@ class TestObject(unittest.TestCase):
             raise unittest.SkipTest("OLD_CLS does not have element_str()")
 
         self.assertEqual(
-            old.element_str(), new.element_str(),
+            old.element_str(),
+            new.element_str(),
         )
 
     def test_positionally_populated_objects_are_equal(self):
@@ -56,7 +57,8 @@ class TestObject(unittest.TestCase):
             raise unittest.SkipTest("OLD_CLS does not have element_str()")
 
         self.assertEqual(
-            old.element_str(), new.element_str(),
+            old.element_str(),
+            new.element_str(),
         )
 
     def test_keyword_populated_objects_are_equal(self):
@@ -73,7 +75,8 @@ class TestObject(unittest.TestCase):
             raise unittest.SkipTest("OLD_CLS does not have element_str()")
 
         self.assertEqual(
-            old.element_str(), new.element_str(),
+            old.element_str(),
+            new.element_str(),
         )
 
     def test_parsing_old_elmstring_works(self):
@@ -305,14 +308,18 @@ class TestVersionedObject(unittest.TestCase):
 def test_security_rule_hip_profiles():
     "security rules on 10.1.5 should not have hip-profiles"
     rule = panos.policies.SecurityRule(
-        name="test_rule", source=["0.0.0.0/0"], destination=["0.0.0.0/0"],
+        name="test_rule",
+        source=["0.0.0.0/0"],
+        destination=["0.0.0.0/0"],
     )
     rule._UNKNOWN_PANOS_VERSION = (10, 1, 5)
     st = rule.element_str(False).decode()
     assert "<hip-profiles>" not in st
 
     rule = panos.policies.SecurityRule(
-        name="test_rule", source=["0.0.0.0/0"], destination=["0.0.0.0/0"],
+        name="test_rule",
+        source=["0.0.0.0/0"],
+        destination=["0.0.0.0/0"],
     )
     rule._UNKNOWN_PANOS_VERSION = (9, 0, 0)
     st = rule.element_str(False).decode()

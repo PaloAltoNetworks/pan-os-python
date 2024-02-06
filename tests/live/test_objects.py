@@ -29,7 +29,8 @@ class TestStaticAddressGroup(testlib.DevFlow):
 
     def setup_state_obj(self, dev, state):
         state.obj = objects.AddressGroup(
-            testlib.random_name(), [x.name for x in state.aos[:2]],
+            testlib.random_name(),
+            [x.name for x in state.aos[:2]],
         )
         dev.add(state.obj)
 
@@ -71,7 +72,8 @@ class TestDynamicAddressGroup(testlib.DevFlow):
 
     def update_state_obj(self, dev, state):
         state.obj.dynamic_value = "'{0}' and '{1}'".format(
-            state.tags[2].name, state.tags[3].name,
+            state.tags[2].name,
+            state.tags[3].name,
         )
         state.obj.tag = state.tags[1].name
 
@@ -86,7 +88,9 @@ class TestDynamicAddressGroup(testlib.DevFlow):
 class TestTag(testlib.DevFlow):
     def setup_state_obj(self, dev, state):
         state.obj = objects.Tag(
-            testlib.random_name(), color="color1", comments="My new tag",
+            testlib.random_name(),
+            color="color1",
+            comments="My new tag",
         )
         dev.add(state.obj)
 

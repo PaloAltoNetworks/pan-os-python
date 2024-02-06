@@ -6,19 +6,11 @@
     "source.organizeImports": "explicit"
   },
   "python.testing.unittestEnabled": false,
-  "python.testing.nosetestsEnabled": false,
   "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": ["--no-cov"],
-  "python.linting.enabled": true,
-  "python.linting.pylintEnabled": false,
-  "python.linting.banditEnabled": true,
-  "python.linting.banditArgs": ["-r", "--ini .bandit"],
-  "python.linting.flake8Enabled": true,
-  "python.linting.flake8CategorySeverity.E": "Warning",
-  "python.linting.mypyEnabled": false,
-  "python.formatting.provider": "black",
+  "python.testing.pytestArgs": [
+    "--no-cov"
+  ],
   "editor.formatOnSave": true,
-  "restructuredtext.confPath": "${workspaceFolder}/docs",
   "cSpell.words": [
     "Vlan",
     "etree",
@@ -27,5 +19,13 @@
     "pandevice",
     "pan-os-python",
     "refreshall"
-  ]
+  ],
+  "black-formatter.importStrategy": "fromEnvironment",
+  "bandit.importStrategy": "fromEnvironment",
+  "bandit.args": [
+    "-r",
+    "--ini .bandit"
+  ],
+  "flake8.importStrategy": "fromEnvironment",
+  "flake8.args": ["--config=.flake8"]
 }

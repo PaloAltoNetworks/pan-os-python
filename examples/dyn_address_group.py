@@ -57,7 +57,6 @@ from panos.panorama import Panorama
 
 
 def main():
-
     # Get command line arguments
     parser = argparse.ArgumentParser(
         description="Tag an IP address on a Palo Alto Networks Next generation Firewall"
@@ -111,7 +110,11 @@ def main():
         logging.basicConfig(format=logging_format, level=logging_level)
 
     # Connect to the device and determine its type (Firewall or Panorama).
-    device = PanDevice.create_from_device(args.hostname, args.username, args.password,)
+    device = PanDevice.create_from_device(
+        args.hostname,
+        args.username,
+        args.password,
+    )
 
     # Panorama does not have a userid API, so exit.
     # You can use the userid API on a firewall with the Panorama 'target'

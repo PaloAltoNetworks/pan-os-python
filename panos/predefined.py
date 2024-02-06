@@ -111,10 +111,20 @@ class Predefined(object):
         )
 
     def _refresh_service(self, name=None):
-        return self._refresh([(objects.ServiceObject, "service_objects", None),], name,)
+        return self._refresh(
+            [
+                (objects.ServiceObject, "service_objects", None),
+            ],
+            name,
+        )
 
     def _refresh_tag(self, name=None):
-        return self._refresh([(objects.Tag, "tag_objects", None),], name,)
+        return self._refresh(
+            [
+                (objects.Tag, "tag_objects", None),
+            ],
+            name,
+        )
 
     def refresh_application(self, name):
         """Refresh a Single Predefined Application
