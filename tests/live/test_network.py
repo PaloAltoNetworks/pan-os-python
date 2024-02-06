@@ -6,7 +6,10 @@ from tests.live import testlib
 
 class TestZoneBasic(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
-        state.obj = network.Zone(testlib.random_name(), mode="layer3",)
+        state.obj = network.Zone(
+            testlib.random_name(),
+            mode="layer3",
+        )
         fw.add(state.obj)
 
     def update_state_obj(self, fw, state):
@@ -65,7 +68,10 @@ class TestStaticMac(testlib.FwFlow):
         state.parent.create()
 
     def setup_state_obj(self, fw, state):
-        state.obj = network.StaticMac(testlib.random_mac(), state.eths[0],)
+        state.obj = network.StaticMac(
+            testlib.random_mac(),
+            state.eths[0],
+        )
         state.parent.add(state.obj)
 
     def update_state_obj(self, fw, state):
@@ -102,7 +108,9 @@ class TestVlan(testlib.FwFlow):
 
     def setup_state_obj(self, fw, state):
         state.obj = network.Vlan(
-            testlib.random_name(), state.eths[0], state.vlan_interface.uid,
+            testlib.random_name(),
+            state.eths[0],
+            state.vlan_interface.uid,
         )
         fw.add(state.obj)
 
@@ -324,7 +332,9 @@ class TestL3Subinterface(testlib.FwFlow):
 
         state.eth = testlib.get_available_interfaces(fw)[0]
         state.parent = network.EthernetInterface(
-            state.eth, "layer3", ip=testlib.random_ip("/24"),
+            state.eth,
+            "layer3",
+            ip=testlib.random_ip("/24"),
         )
         fw.add(state.parent)
         state.parent.create()
@@ -368,7 +378,10 @@ class TestL2Subinterface(testlib.FwFlow):
         state.eth = None
 
         state.eth = testlib.get_available_interfaces(fw)[0]
-        state.parent = network.EthernetInterface(state.eth, "layer2",)
+        state.parent = network.EthernetInterface(
+            state.eth,
+            "layer2",
+        )
         fw.add(state.parent)
         state.parent.create()
 
@@ -376,7 +389,9 @@ class TestL2Subinterface(testlib.FwFlow):
         tag = random.randint(1, 4000)
         name = "{0}.{1}".format(state.eth, tag)
         state.obj = network.Layer2Subinterface(
-            name, tag, comment="This is my L2 subinterface",
+            name,
+            tag,
+            comment="This is my L2 subinterface",
         )
         state.parent.add(state.obj)
 
@@ -861,14 +876,16 @@ class MakeVirtualRouter(testlib.FwFlow):
 
             if self.WITH_BGP_IMPORT_RULE:
                 state.import_rule = network.BgpPolicyImportRule(
-                    name=testlib.random_name(), enable=True,
+                    name=testlib.random_name(),
+                    enable=True,
                 )
                 state.bgp.add(state.import_rule)
                 state.bgp.apply()
 
             if self.WITH_BGP_EXPORT_RULE:
                 state.export_rule = network.BgpPolicyExportRule(
-                    name=testlib.random_name(), enable=True,
+                    name=testlib.random_name(),
+                    enable=True,
                 )
                 state.bgp.add(state.export_rule)
                 state.bgp.apply()
@@ -1409,7 +1426,9 @@ class MakeBgpPolicyRule(MakeVirtualRouter):
             # 'match_afi': 'ip',
             # 'match_safi': 'ip',
             "match_route_table": "unicast",
-            "match_nexthop": [testlib.random_ip("/32"),],
+            "match_nexthop": [
+                testlib.random_ip("/32"),
+            ],
             "match_from_peer": state.peer.name,
             "match_med": random.randint(0, 4294967295),
             "match_as_path_regex": "as-path-regex",
@@ -1491,7 +1510,8 @@ class MakeBgpPolicyAddressPrefix(MakeVirtualRouter):
 
     def setup_state_obj(self, fw, state):
         state.obj = network.BgpPolicyAddressPrefix(
-            name=testlib.random_netmask(), exact=True,
+            name=testlib.random_netmask(),
+            exact=True,
         )
         if self.WITH_BGP_IMPORT_RULE:
             state.import_rule.add(state.obj)
@@ -1547,7 +1567,9 @@ class TestBgpPolicyConditionalAdvertisement(MakeVirtualRouter):
         )
         advert.extend(prefixes)
         state.obj = network.BgpPolicyConditionalAdvertisement(
-            name=testlib.random_name(), enable=True, used_by=state.pg.name,
+            name=testlib.random_name(),
+            enable=True,
+            used_by=state.pg.name,
         )
         state.obj.add(non_exist)
         state.obj.add(advert)
@@ -1930,7 +1952,8 @@ class TestAreRoutingProfileBgpAuth(MakeLogicalRouter):
 
     def setup_state_obj(self, fw, state):
         state.obj = network.RoutingProfileBgpAuth(
-            name=testlib.random_name(), secret=testlib.random_name(),
+            name=testlib.random_name(),
+            secret=testlib.random_name(),
         )
         fw.add(state.obj)
 
@@ -2333,14 +2356,18 @@ class TestAreRoutingProfileOspfv3Redistribution(MakeLogicalRouter):
 
 class TestAreRoutingProfileFilterAccessListIpv4(MakeLogicalRouter):
     def setup_state_obj(self, fw, state):
-        state.filter_access_list_entry_ipv4 = network.RoutingProfileFilterAccessListEntryIpv4(
-            1,
-            action="permit",
-            source_address_type="any",
-            destination_address_type="any",
+        state.filter_access_list_entry_ipv4 = (
+            network.RoutingProfileFilterAccessListEntryIpv4(
+                1,
+                action="permit",
+                source_address_type="any",
+                destination_address_type="any",
+            )
         )
         state.obj = network.RoutingProfileFilterAccessList(
-            testlib.random_name(), description="access list IPv4", type="ipv4",
+            testlib.random_name(),
+            description="access list IPv4",
+            type="ipv4",
         )
         state.obj.add(state.filter_access_list_entry_ipv4)
         fw.add(state.obj)
@@ -2351,11 +2378,17 @@ class TestAreRoutingProfileFilterAccessListIpv4(MakeLogicalRouter):
 
 class TestAreRoutingProfileFilterAccessListIpv6(MakeLogicalRouter):
     def setup_state_obj(self, fw, state):
-        state.filter_access_list_entry_ipv6 = network.RoutingProfileFilterAccessListEntryIpv6(
-            1, action="permit", source_address_type="any",
+        state.filter_access_list_entry_ipv6 = (
+            network.RoutingProfileFilterAccessListEntryIpv6(
+                1,
+                action="permit",
+                source_address_type="any",
+            )
         )
         state.obj = network.RoutingProfileFilterAccessList(
-            testlib.random_name(), description="access list IPv6", type="ipv6",
+            testlib.random_name(),
+            description="access list IPv6",
+            type="ipv6",
         )
         state.obj.add(state.filter_access_list_entry_ipv6)
         fw.add(state.obj)
@@ -2385,7 +2418,9 @@ class TestAreRoutingProfileFilterPrefixListIpv6(MakeLogicalRouter):
             1, action="deny", prefix="any"
         )
         state.obj = network.RoutingProfileFilterPrefixList(
-            testlib.random_name(), description="prefix list IPv6", type="ipv6",
+            testlib.random_name(),
+            description="prefix list IPv6",
+            type="ipv6",
         )
         state.obj.add(state.prefix_list_entry_ipv6)
         fw.add(state.obj)
@@ -2409,8 +2444,10 @@ class TestAreRoutingProfileFilterAsPathAccessList(MakeLogicalRouter):
 
 class TestAreRoutingProfileFilterCommunityListEntryRegular(MakeLogicalRouter):
     def setup_state_obj(self, fw, state):
-        state.filter_community_regular = network.RoutingProfileFilterCommunityListEntryRegular(
-            1, action="permit", community=["accept-own", "no-peer"]
+        state.filter_community_regular = (
+            network.RoutingProfileFilterCommunityListEntryRegular(
+                1, action="permit", community=["accept-own", "no-peer"]
+            )
         )
         state.obj = network.RoutingProfileFilterCommunityList(testlib.random_name())
         state.obj.add(state.filter_community_regular)
@@ -2422,8 +2459,10 @@ class TestAreRoutingProfileFilterCommunityListEntryRegular(MakeLogicalRouter):
 
 class TestAreRoutingProfileFilterCommunityListEntryLarge(MakeLogicalRouter):
     def setup_state_obj(self, fw, state):
-        state.filter_community_large = network.RoutingProfileFilterCommunityListEntryLarge(
-            1, action="permit", lc_regex=["123.*:456.*:987.*", "1.*:2.*:3.*"]
+        state.filter_community_large = (
+            network.RoutingProfileFilterCommunityListEntryLarge(
+                1, action="permit", lc_regex=["123.*:456.*:987.*", "1.*:2.*:3.*"]
+            )
         )
         state.obj = network.RoutingProfileFilterCommunityList(
             testlib.random_name(), type="large"
@@ -2437,8 +2476,10 @@ class TestAreRoutingProfileFilterCommunityListEntryLarge(MakeLogicalRouter):
 
 class TestAreRoutingProfileFilterCommunityListEntryExtended(MakeLogicalRouter):
     def setup_state_obj(self, fw, state):
-        state.filter_community_extended = network.RoutingProfileFilterCommunityListEntryExtended(
-            1, action="permit", ec_regex=["123.*:456.*", "1.*:2.*"]
+        state.filter_community_extended = (
+            network.RoutingProfileFilterCommunityListEntryExtended(
+                1, action="permit", ec_regex=["123.*:456.*", "1.*:2.*"]
+            )
         )
         state.obj = network.RoutingProfileFilterCommunityList(
             testlib.random_name(), type="extended"
@@ -2526,8 +2567,12 @@ class TestIkeCryptoProfile(testlib.FwFlow):
     def setup_state_obj(self, fw, state):
         state.obj = network.IkeCryptoProfile(
             testlib.random_name(),
-            authentication=["sha256",],
-            dh_group=["group1",],
+            authentication=[
+                "sha256",
+            ],
+            dh_group=[
+                "group1",
+            ],
             lifetime_minutes=42,
         )
         fw.add(state.obj)
@@ -2613,7 +2658,8 @@ class TestIkeIpv6Gateway(testlib.FwFlow):
             raise ValueError("IkeGateway not supported for version < 7.0")
 
         state.lbi = network.LoopbackInterface(
-            "loopback.{0}".format(random.randint(5, 20)), ipv6_enabled=True,
+            "loopback.{0}".format(random.randint(5, 20)),
+            ipv6_enabled=True,
         )
         state.lbi.add(network.IPv6Address(testlib.random_ipv6()))
         state.lbi.add(network.IPv6Address(testlib.random_ipv6()))

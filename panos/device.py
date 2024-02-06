@@ -421,7 +421,10 @@ class AdvancedRoutingEngine(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "enable", default=False, vartype="yesno", path="advance-routing",
+                "enable",
+                default=False,
+                vartype="yesno",
+                path="advance-routing",
             )
         )
 
@@ -1321,7 +1324,11 @@ class LdapServerProfile(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath("disabled", vartype="yesno", path="disabled",),
+            VersionedParamPath(
+                "disabled",
+                vartype="yesno",
+                path="disabled",
+            ),
         )
 
         self._params = tuple(params)
@@ -1467,7 +1474,10 @@ class SyslogServer(VersionedPanObject):
                 "facility",
                 default="LOG_USER",
                 path="facility",
-                values=["LOG_USER",] + ["LOG_LOCAL{0}".format(x) for x in range(8)],
+                values=[
+                    "LOG_USER",
+                ]
+                + ["LOG_LOCAL{0}".format(x) for x in range(8)],
             )
         )
 
@@ -2275,12 +2285,28 @@ class CertificateProfile(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "username_field_value", path="username-field/{username_field}",
+                "username_field_value",
+                path="username-field/{username_field}",
             )
         )
-        params.append(VersionedParamPath("domain", path="domain",))
-        params.append(VersionedParamPath("use_crl", path="use-crl",))
-        params.append(VersionedParamPath("use_ocsp", path="use-ocsp",))
+        params.append(
+            VersionedParamPath(
+                "domain",
+                path="domain",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "use_crl",
+                path="use-crl",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "use_ocsp",
+                path="use-ocsp",
+            )
+        )
         params.append(
             VersionedParamPath(
                 "crl_receive_timeout",
@@ -2307,27 +2333,50 @@ class CertificateProfile(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "block_unknown_certificate", vartype="yesno", path="block-unknown-cert",
+                "block_unknown_certificate",
+                vartype="yesno",
+                path="block-unknown-cert",
             )
         )
         params.append(
             VersionedParamPath(
-                "block_certificate_timeout", vartype="yesno", path="block-timeout-cert",
+                "block_certificate_timeout",
+                vartype="yesno",
+                path="block-timeout-cert",
             )
         )
         params.append(
-            VersionedParamPath("block_unauthenticated_certificate", exclude=True,)
+            VersionedParamPath(
+                "block_unauthenticated_certificate",
+                exclude=True,
+            )
         )
         params[-1].add_profile(
-            "7.1.0", vartype="yesno", path="block-unauthenticated-cert",
+            "7.1.0",
+            vartype="yesno",
+            path="block-unauthenticated-cert",
         )
-        params.append(VersionedParamPath("block_expired_certificate", exclude=True,))
-        params[-1].add_profile(
-            "8.1.0", vartype="yesno", path="block-expired-cert",
+        params.append(
+            VersionedParamPath(
+                "block_expired_certificate",
+                exclude=True,
+            )
         )
-        params.append(VersionedParamPath("ocsp_exclude_nonce", exclude=True,))
         params[-1].add_profile(
-            "9.0.0", path="ocsp-exclude-nonce", vartype="yesno",
+            "8.1.0",
+            vartype="yesno",
+            path="block-expired-cert",
+        )
+        params.append(
+            VersionedParamPath(
+                "ocsp_exclude_nonce",
+                exclude=True,
+            )
+        )
+        params[-1].add_profile(
+            "9.0.0",
+            path="ocsp-exclude-nonce",
+            vartype="yesno",
         )
 
         self._params = tuple(params)
@@ -2354,13 +2403,27 @@ class CertificateProfileCaCertificate(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath("default_ocsp_url", path="default-ocsp-url",))
         params.append(
-            VersionedParamPath("ocsp_verify_certificate", path="ocsp-verify-cert",)
+            VersionedParamPath(
+                "default_ocsp_url",
+                path="default-ocsp-url",
+            )
         )
-        params.append(VersionedParamPath("template_name", exclude=True,))
+        params.append(
+            VersionedParamPath(
+                "ocsp_verify_certificate",
+                path="ocsp-verify-cert",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "template_name",
+                exclude=True,
+            )
+        )
         params[-1].add_profile(
-            "9.0.0", path="template-name",
+            "9.0.0",
+            path="template-name",
         )
 
         self._params = tuple(params)
@@ -2395,7 +2458,8 @@ class SslDecrypt(VersionedPanObject):
 
         params.append(
             VersionedParamPath(
-                "forward_trust_certificate_rsa", path="forward-trust-certificate/rsa",
+                "forward_trust_certificate_rsa",
+                path="forward-trust-certificate/rsa",
             )
         )
         params.append(
@@ -2418,13 +2482,17 @@ class SslDecrypt(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "root_ca_excludes", vartype="member", path="root-ca-exclude-list",
+                "root_ca_excludes",
+                vartype="member",
+                path="root-ca-exclude-list",
             )
         )
         # Only option present on Panorama.
         params.append(
             VersionedParamPath(
-                "trusted_root_cas", vartype="member", path="trusted-root-CA",
+                "trusted_root_cas",
+                vartype="member",
+                path="trusted-root-CA",
             )
         )
         params.append(
@@ -2459,8 +2527,19 @@ class SslDecryptExcludeCert(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath("description", path="description",))
-        params.append(VersionedParamPath("exclude", vartype="yesno", path="exclude",))
+        params.append(
+            VersionedParamPath(
+                "description",
+                path="description",
+            )
+        )
+        params.append(
+            VersionedParamPath(
+                "exclude",
+                vartype="yesno",
+                path="exclude",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -2490,9 +2569,19 @@ class LocalUserDatabaseUser(VersionedPanObject):
         params = []
 
         params.append(
-            VersionedParamPath("password_hash", vartype="encrypted", path="phash",)
+            VersionedParamPath(
+                "password_hash",
+                vartype="encrypted",
+                path="phash",
+            )
         )
-        params.append(VersionedParamPath("disabled", vartype="yesno", path="disabled",))
+        params.append(
+            VersionedParamPath(
+                "disabled",
+                vartype="yesno",
+                path="disabled",
+            )
+        )
 
         self._params = tuple(params)
 
@@ -2533,6 +2622,12 @@ class LocalUserDatabaseGroup(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath("users", vartype="member", path="user",))
+        params.append(
+            VersionedParamPath(
+                "users",
+                vartype="member",
+                path="user",
+            )
+        )
 
         self._params = tuple(params)
