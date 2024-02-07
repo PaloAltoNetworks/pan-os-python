@@ -148,6 +148,8 @@ class Vsys(VersionedPanObject):
         "network.VlanInterface",
         "network.Vlan",
         "network.VirtualRouter",
+        "network.LogicalRouter",
+        "network.Vrf",
         "network.VirtualWire",
         "network.Layer2Subinterface",
         "network.Layer3Subinterface",
@@ -391,6 +393,38 @@ class SystemSettings(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "proxy_password", vartype="encrypted", path="secure-proxy-password"
+            )
+        )
+
+        self._params = tuple(params)
+
+
+class AdvancedRoutingEngine(VersionedPanObject):
+    """
+    Note: This is valid for PANS-OS 10.2+.
+
+    Args:
+        enable (bool): Enable advanced routing engine
+
+    """
+
+    NAME = None
+    ROOT = Root.DEVICE
+    CHILDTYPES = ()
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/deviceconfig/setting")
+
+        # params
+        params = []
+
+        params.append(
+            VersionedParamPath(
+                "enable",
+                default=False,
+                vartype="yesno",
+                path="advance-routing",
             )
         )
 

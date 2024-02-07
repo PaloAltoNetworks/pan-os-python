@@ -5,8 +5,11 @@ import pytest
 from panos import network
 
 
-def random_name():
-    return "".join(random.choice("abcdefghijklmnopqrstuvwxyz") for x in range(10))
+def random_name(max=None):
+    return "".join(
+        random.choice("abcdefghijklmnopqrstuvwxyz")
+        for x in range(10 if max is None else max)
+    )
 
 
 def random_ip(netmask=None):
