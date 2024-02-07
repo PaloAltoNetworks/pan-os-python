@@ -441,13 +441,15 @@ def test__direct_upgrade_possible_panorama_invalid(input_version, target_version
 def test_download_no_sync_to_peer_no_sync():
     fw = _fw()
     fw.software.versions = firewall_versionlist_to_test_dict.copy()
-    fw.xapi.op = mock.Mock(side_effect=[
-        None,
-        ValueError,
-    ])
+    fw.xapi.op = mock.Mock(
+        side_effect=[
+            None,
+            ValueError,
+        ]
+    )
     fw.syncjob = mock.Mock(return_value={"success": True})
 
-    ans = fw.software.download('11.0.0', False, False)
+    ans = fw.software.download("11.0.0", False, False)
 
     assert ans == True
     assert fw.xapi.op.call_count == 1
@@ -459,13 +461,15 @@ def test_download_no_sync_to_peer_no_sync():
 def test_download_sync_all():
     fw = _fw()
     fw.software.versions = firewall_versionlist_to_test_dict.copy()
-    fw.xapi.op = mock.Mock(side_effect=[
-        None,
-        ValueError,
-    ])
+    fw.xapi.op = mock.Mock(
+        side_effect=[
+            None,
+            ValueError,
+        ]
+    )
     fw.syncjob = mock.Mock(return_value={"success": True})
 
-    ans = fw.software.download('11.0.0', True, True)
+    ans = fw.software.download("11.0.0", True, True)
 
     assert isinstance(ans, dict)
     assert ans.get("success", None)
@@ -478,13 +482,15 @@ def test_download_sync_all():
 def test_install_no_load_config():
     fw = _fw()
     fw.software.versions = firewall_versionlist_to_test_dict.copy()
-    fw.xapi.op = mock.Mock(side_effect=[
-        None,
-        ValueError,
-    ])
+    fw.xapi.op = mock.Mock(
+        side_effect=[
+            None,
+            ValueError,
+        ]
+    )
     fw.syncjob = mock.Mock(return_value={"success": True})
 
-    ans = fw.software.install('11.0.0', None, False)
+    ans = fw.software.install("11.0.0", None, False)
 
     assert ans == True
     assert fw.xapi.op.call_count == 1
@@ -496,13 +502,15 @@ def test_install_no_load_config():
 def test_install_full_test():
     fw = _fw()
     fw.software.versions = firewall_versionlist_to_test_dict.copy()
-    fw.xapi.op = mock.Mock(side_effect=[
-        None,
-        ValueError,
-    ])
+    fw.xapi.op = mock.Mock(
+        side_effect=[
+            None,
+            ValueError,
+        ]
+    )
     fw.syncjob = mock.Mock(return_value={"success": True})
 
-    ans = fw.software.install('11.0.0', "foobar", True)
+    ans = fw.software.install("11.0.0", "foobar", True)
 
     assert isinstance(ans, dict)
     assert ans.get("success", None)
@@ -517,9 +525,11 @@ class TestDownloadInstall(TestCase):
         fw = _fw()
         fw.version = "10.1.0"
         fw.software.versions = firewall_versionlist_to_test_dict.copy()
-        fw.xapi.op = mock.Mock(side_effect=[
-            ValueError,
-        ])
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                ValueError,
+            ]
+        )
 
         with self.assertRaises(err.PanDeviceError):
             fw.software.download_install("10.100.1000", None, False)
@@ -528,9 +538,11 @@ class TestDownloadInstall(TestCase):
         fw = _fw()
         fw.version = "10.1.0"
         fw.software.versions = firewall_versionlist_to_test_dict.copy()
-        fw.xapi.op = mock.Mock(side_effect=[
-            ValueError,
-        ])
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                ValueError,
+            ]
+        )
 
         with self.assertRaises(err.PanDeviceError):
             fw.software.download_install(fw.version, None, False)
@@ -541,9 +553,11 @@ class TestDownloadInstall(TestCase):
         target = "10.2.0"
         fw.software.versions = firewall_versionlist_to_test_dict.copy()
         fw.software.versions[target]["downloaded"] = False
-        fw.xapi.op = mock.Mock(side_effect=[
-            ValueError,
-        ])
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                ValueError,
+            ]
+        )
         fw.software.download = mock.Mock()
         fw.software.install = mock.Mock(return_value={"success": True})
 
@@ -553,7 +567,9 @@ class TestDownloadInstall(TestCase):
         assert target == fw.software.download.call_args_list[0].args[0]
         assert fw.software.install.call_count == 1
         assert target == fw.software.install.call_args_list[0].args[0]
-        assert "loadconfig" == fw.software.install.call_args_list[0].kwargs["load_config"]
+        assert (
+            "loadconfig" == fw.software.install.call_args_list[0].kwargs["load_config"]
+        )
         assert True == fw.software.install.call_args_list[0].kwargs["sync"]
 
 
@@ -572,7 +588,6 @@ class TestDownloadInstallReboot(TestCase):
         assert fw.restart.call_count == 1
         assert fw.syncreboot.call_count == 1
 
-
     def test_no_sync(self):
         fw = _fw()
         fw.version = "10.1.0"
@@ -585,7 +600,6 @@ class TestDownloadInstallReboot(TestCase):
         assert ans is None
         assert fw.restart.call_count == 1
         assert fw.syncreboot.call_count == 0
-
 
     def test_with_sync(self):
         fw = _fw()
@@ -612,17 +626,18 @@ class TestUpgradeToVersion(TestCase):
         fw.software.check = mock.Mock()
         fw.software.download_install_reboot = mock.Mock()
         fw.content.download_and_install_latest = mock.Mock()
-        fw.xapi.op = mock.Mock(side_effect=[
-            ValueError,
-        ])
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                ValueError,
+            ]
+        )
 
-        ans = fw.software.upgrade_to_version('10.1.0', False)
+        ans = fw.software.upgrade_to_version("10.1.0", False)
 
         assert ans == True
         assert fw.software.check.call_count == 0
         assert fw.software.download_install_reboot.call_count == 0
         assert fw.content.download_and_install_latest.call_count == 0
-
 
     def test_upgrade_to_latest_when_on_latest_is_noop(self):
         fw = _fw()
@@ -632,9 +647,11 @@ class TestUpgradeToVersion(TestCase):
         fw.software.check = mock.Mock()
         fw.software.download_install_reboot = mock.Mock()
         fw.content.download_and_install_latest = mock.Mock()
-        fw.xapi.op = mock.Mock(side_effect=[
-            ValueError,
-        ])
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                ValueError,
+            ]
+        )
 
         ans = fw.software.upgrade_to_version("latest", False)
         assert fw.software.check.call_count == 0
@@ -642,7 +659,6 @@ class TestUpgradeToVersion(TestCase):
         assert fw.content.download_and_install_latest.call_count == 0
 
         assert ans == True
-
 
     def test_downgrade_raises_error(self):
         fw = _fw()
@@ -652,31 +668,36 @@ class TestUpgradeToVersion(TestCase):
         fw.software.check = mock.Mock()
         fw.software.download_install_reboot = mock.Mock()
         fw.content.download_and_install_latest = mock.Mock()
-        fw.xapi.op = mock.Mock(side_effect=[
-            ValueError,
-        ])
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                ValueError,
+            ]
+        )
 
         with self.assertRaises(err.PanDeviceError):
-            fw.software.upgrade_to_version('10.0.0', False)
+            fw.software.upgrade_to_version("10.0.0", False)
 
         assert fw.software.check.call_count == 0
         assert fw.software.download_install_reboot.call_count == 0
         assert fw.content.download_and_install_latest.call_count == 0
-
 
     def test_single_step_upgrade(self):
         fw = _fw()
         fw.version = "10.1.0"
         fw.is_ready = mock.Mock()
         fw.software.versions = firewall_versionlist_to_test_dict.copy()
+
         def update_version():
             fw.version = "10.1.1"
+
         fw.software.check = mock.Mock(side_effect=update_version)
         fw.software.download_install_reboot = mock.Mock()
         fw.content.download_and_install_latest = mock.Mock()
-        fw.xapi.op = mock.Mock(side_effect=[
-            ValueError,
-        ])
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                ValueError,
+            ]
+        )
 
         ans = fw.software.upgrade_to_version("10.1.1", False)
 
@@ -685,12 +706,12 @@ class TestUpgradeToVersion(TestCase):
         assert fw.software.download_install_reboot.call_args_list[0].args[0] == "10.1.1"
         assert fw.content.download_and_install_latest.call_count == 1
 
-
     def test_two_step_upgrade(self):
         fw = _fw()
         fw.version = "10.0.15"
         fw.is_ready = mock.Mock()
         fw.software.versions = firewall_versionlist_to_test_dict.copy()
+
         def update_version():
             if fw.version == "10.0.15":
                 fw.version = "10.1.0"
@@ -698,12 +719,15 @@ class TestUpgradeToVersion(TestCase):
                 fw.version = "10.2.0"
             else:
                 raise ValueError("called 3 times?")
+
         fw.software.check = mock.Mock(side_effect=update_version)
         fw.software.download_install_reboot = mock.Mock()
         fw.content.download_and_install_latest = mock.Mock()
-        fw.xapi.op = mock.Mock(side_effect=[
-            ValueError,
-        ])
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                ValueError,
+            ]
+        )
 
         ans = fw.software.upgrade_to_version("10.2.0", False)
 
@@ -714,20 +738,23 @@ class TestUpgradeToVersion(TestCase):
         assert fw.software.download_install_reboot.call_args_list[1].args[0] == "10.2.0"
         assert fw.content.download_and_install_latest.call_count == 2
 
-
     def test_7_0_1_upgrade(self):
         fw = _fw()
         fw.version = "6.1.1"
         fw.is_ready = mock.Mock()
         fw.software.versions = firewall_versionlist_to_test_dict.copy()
+
         def update_version():
             fw.version = "7.0.1"
+
         fw.software.check = mock.Mock(side_effect=update_version)
         fw.software.download_install_reboot = mock.Mock()
         fw.content.download_and_install_latest = mock.Mock()
-        fw.xapi.op = mock.Mock(side_effect=[
-            ValueError,
-        ])
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                ValueError,
+            ]
+        )
 
         ans = fw.software.upgrade_to_version("7.0.1", False)
 
@@ -736,12 +763,12 @@ class TestUpgradeToVersion(TestCase):
         assert fw.software.download_install_reboot.call_args_list[0].args[0] == "7.0.1"
         assert fw.content.download_and_install_latest.call_count == 1
 
-
     def test_9_0_to_12_0_1(self):
         fw = _fw()
         fw.version = "9.0.15"
         fw.is_ready = mock.Mock()
         fw.software.versions = firewall_versionlist_to_test_dict.copy()
+
         def update_version():
             if fw.version == "9.0.15":
                 fw.version = "9.1.0"
@@ -765,12 +792,15 @@ class TestUpgradeToVersion(TestCase):
                 fw.version = "12.0.1"
             else:
                 raise ValueError("called too many times")
+
         fw.software.check = mock.Mock(side_effect=update_version)
         fw.software.download_install_reboot = mock.Mock()
         fw.content.download_and_install_latest = mock.Mock()
-        fw.xapi.op = mock.Mock(side_effect=[
-            ValueError,
-        ])
+        fw.xapi.op = mock.Mock(
+            side_effect=[
+                ValueError,
+            ]
+        )
 
         ans = fw.software.upgrade_to_version("12.0.1", False)
 

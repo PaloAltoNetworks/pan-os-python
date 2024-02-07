@@ -412,7 +412,6 @@ class SoftwareUpdater(Updater):
         return next_version
 
     def _next_minor_version(self, version, available_version_list):
-
         # If version parameter is a string, convert to a PanOSVersion object
         if isstring(version):
             version = PanOSVersion(version)
