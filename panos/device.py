@@ -757,7 +757,7 @@ class AuthenticationProfile(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "failed_attempts", vartype="int", path="locakout/failed-attempts"
+                "failed_attempts", vartype="int", path="lockout/failed-attempts"
             )
         )
         params.append(
