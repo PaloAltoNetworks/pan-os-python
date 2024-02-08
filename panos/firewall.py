@@ -443,7 +443,7 @@ class Firewall(PanDevice):
                 "mem_total": int(match.group(3)),
                 "mem_free": int(match.group(4)),
                 "mem_used": int(match.group(5)),
-                "mem_buffer": int(match.group(6))
+                "mem_buffer": int(match.group(6)),
             }
         else:
             raise err.PanDeviceError(
