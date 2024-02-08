@@ -574,6 +574,7 @@ class ApplicationFilter(VersionedPanObject):
         has_known_vulnerabilities (bool):
         pervasive (bool):
         tag (list): Administrative tags
+        new_appid (bool):
 
     """
 
@@ -635,6 +636,10 @@ class ApplicationFilter(VersionedPanObject):
             VersionedParamPath("pervasive", path="pervasive", vartype="yesno")
         )
         params.append(VersionedParamPath("tag", path="tagging/tag", vartype="member"))
+
+        params.append(
+            VersionedParamPath("new_appid", path="new-appid", vartype="yesno")
+        )
 
         self._params = tuple(params)
 
