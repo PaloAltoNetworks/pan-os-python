@@ -97,8 +97,7 @@ class AddressGroup(VersionedPanObject):
         params.append(
             VersionedParamPath("static_value", path="static", vartype="member")
         )
-        params.append(VersionedParamPath(
-            "dynamic_value", path="dynamic/filter"))
+        params.append(VersionedParamPath("dynamic_value", path="dynamic/filter"))
         params.append(VersionedParamPath("description", path="description"))
         params.append(VersionedParamPath("tag", path="tag", vartype="member"))
 
@@ -246,18 +245,15 @@ class ServiceObject(VersionedPanObject):
             values=["tcp", "udp", "sctp"],
         )
         params.append(
-            VersionedParamPath(
-                "source_port", path="protocol/{protocol}/source-port")
+            VersionedParamPath("source_port", path="protocol/{protocol}/source-port")
         )
         params.append(
-            VersionedParamPath("destination_port",
-                               path="protocol/{protocol}/port")
+            VersionedParamPath("destination_port",path="protocol/{protocol}/port")
         )
         params.append(VersionedParamPath("description", path="description"))
         params.append(VersionedParamPath("tag", path="tag", vartype="member"))
         params.append(
-            VersionedParamPath("enable_override_timeout",
-                               default="no", exclude=True)
+            VersionedParamPath("enable_override_timeout",default="no", exclude=True)
         )
         params[-1].add_profile(
             "8.1.0",
@@ -271,8 +267,7 @@ class ServiceObject(VersionedPanObject):
             condition={"enable_override_timeout": "yes"},
             path="protocol/{protocol}/override/{enable_override_timeout}/timeout",
         )
-        params.append(VersionedParamPath(
-            "override_half_close_timeout", exclude=True))
+        params.append(VersionedParamPath("override_half_close_timeout", exclude=True))
         params[-1].add_profile(
             "8.1.0",
             vartype="int",
@@ -282,8 +277,7 @@ class ServiceObject(VersionedPanObject):
             },
             path="protocol/{protocol}/override/{enable_override_timeout}/halfclose-timeout",
         )
-        params.append(VersionedParamPath(
-            "override_time_wait_timeout", exclude=True))
+        params.append(VersionedParamPath("override_time_wait_timeout", exclude=True))
         params[-1].add_profile(
             "8.1.0",
             vartype="int",
@@ -317,8 +311,7 @@ class ServiceGroup(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            "value", path="members", vartype="member"))
+        params.append(VersionedParamPath("value", path="members", vartype="member"))
         params.append(VersionedParamPath("tag", path="tag", vartype="member"))
 
         self._params = tuple(params)
@@ -432,16 +425,13 @@ class ApplicationObject(VersionedPanObject):
         params.append(VersionedParamPath(
             "timeout", path="timeout", vartype="int"))
         params.append(
-            VersionedParamPath(
-                "tcp_timeout", path="tcp-timeout", vartype="int")
+            VersionedParamPath("tcp_timeout", path="tcp-timeout", vartype="int")
         )
         params.append(
-            VersionedParamPath(
-                "udp_timeout", path="udp-timeout", vartype="int")
+            VersionedParamPath("udp_timeout", path="udp-timeout", vartype="int")
         )
         params.append(
-            VersionedParamPath(
-                "tcp_half_closed_timeout", path="tcp-half-closed-timeout", vartype="int"
+            VersionedParamPath("tcp_half_closed_timeout", path="tcp-half-closed-timeout", vartype="int"
             )
         )
         params.append(
@@ -494,8 +484,7 @@ class ApplicationObject(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "pervasive_use", path="pervasive-use", vartype="yesno")
+            VersionedParamPath("pervasive_use", path="pervasive-use", vartype="yesno")
         )
         params.append(
             VersionedParamPath(
@@ -503,12 +492,10 @@ class ApplicationObject(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "virus_ident", path="virus-ident", vartype="yesno")
+            VersionedParamPath("virus_ident", path="virus-ident", vartype="yesno")
         )
         params.append(
-            VersionedParamPath(
-                "data_ident", path="data-ident", vartype="yesno")
+            VersionedParamPath("data_ident", path="data-ident", vartype="yesno")
         )
         params.append(VersionedParamPath("description", path="description"))
         params.append(VersionedParamPath("tag", path="tag", vartype="member"))
@@ -536,8 +523,7 @@ class ApplicationGroup(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            "value", path="members", vartype="member"))
+        params.append(VersionedParamPath("value", path="members", vartype="member"))
         params.append(VersionedParamPath("tag", path="tag", vartype="member"))
 
         self._params = tuple(params)
@@ -602,20 +588,15 @@ class ApplicationFilter(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            "category", path="category", vartype="member"))
+        params.append(VersionedParamPath("category", path="category", vartype="member"))
         params.append(
-            VersionedParamPath(
-                "subcategory", path="subcategory", vartype="member")
+            VersionedParamPath("subcategory", path="subcategory", vartype="member")
         )
         params.append(
-            VersionedParamPath(
-                "technology", path="technology", vartype="member")
+            VersionedParamPath("technology", path="technology", vartype="member")
         )
-        params.append(VersionedParamPath(
-            "risk", path="risk", vartype="member"))
-        params.append(VersionedParamPath(
-            "evasive", path="evasive", vartype="yesno"))
+        params.append(VersionedParamPath("risk", path="risk", vartype="member"))
+        params.append(VersionedParamPath("evasive", path="evasive", vartype="yesno"))
         params.append(
             VersionedParamPath(
                 "excessive_bandwidth_use",
@@ -628,8 +609,7 @@ class ApplicationFilter(VersionedPanObject):
                 "prone_to_misuse", path="prone-to-misuse", vartype="yesno"
             )
         )
-        params.append(VersionedParamPath(
-            "is_saas", path="is-saas", vartype="yesno"))
+        params.append(VersionedParamPath("is_saas", path="is-saas", vartype="yesno"))
         params.append(
             VersionedParamPath(
                 "transfers_files", path="transfers-files", vartype="yesno"
@@ -655,11 +635,9 @@ class ApplicationFilter(VersionedPanObject):
         params.append(
             VersionedParamPath("pervasive", path="pervasive", vartype="yesno")
         )
-        params.append(VersionedParamPath(
-            "tag", path="tagging/tag", vartype="member"))
+        params.append(VersionedParamPath("tag", path="tagging/tag", vartype="member"))
 
-        params.append(VersionedParamPath(
-            "new_appid", path="new-appid", vartype="yesno"))
+        params.append(VersionedParamPath("new_appid", path="new-appid", vartype="yesno"))
 
         self._params = tuple(params)
 
@@ -693,8 +671,7 @@ class ApplicationContainer(VersionedPanObject):
         params = []
 
         params.append(
-            VersionedParamPath(
-                "applications", path="functions", vartype="member")
+            VersionedParamPath("applications", path="functions", vartype="member")
         )
 
         self._params = tuple(params)
@@ -725,21 +702,16 @@ class SecurityProfileGroup(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            "virus", path="virus", vartype="member"))
-        params.append(VersionedParamPath(
-            "spyware", path="spyware", vartype="member"))
+        params.append(VersionedParamPath("virus", path="virus", vartype="member"))
+        params.append(VersionedParamPath("spyware", path="spyware", vartype="member"))
         params.append(
-            VersionedParamPath(
-                "vulnerability", path="vulnerability", vartype="member")
+            VersionedParamPath("vulnerability", path="vulnerability", vartype="member")
         )
         params.append(
-            VersionedParamPath(
-                "url_filtering", path="url-filtering", vartype="member")
+            VersionedParamPath("url_filtering", path="url-filtering", vartype="member")
         )
         params.append(
-            VersionedParamPath(
-                "file_blocking", path="file-blocking", vartype="member")
+            VersionedParamPath("file_blocking", path="file-blocking", vartype="member")
         )
         params.append(
             VersionedParamPath(
@@ -776,8 +748,7 @@ class CustomUrlCategory(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            "url_value", path="list", vartype="member"))
+        params.append(VersionedParamPath("url_value", path="list", vartype="member"))
         params.append(VersionedParamPath("description", path="description"))
         params.append(VersionedParamPath("type", exclude=True))
         params[-1].add_profile("9.0.0", path="type")
@@ -903,20 +874,16 @@ class LogForwardingProfileMatchList(VersionedPanObject):
             )
         )
         params.append(
-            VersionedParamPath(
-                "snmp_profiles", vartype="member", path="send-snmptrap")
+            VersionedParamPath("snmp_profiles", vartype="member", path="send-snmptrap")
         )
         params.append(
-            VersionedParamPath(
-                "email_profiles", vartype="member", path="send-email")
+            VersionedParamPath("email_profiles", vartype="member", path="send-email")
         )
         params.append(
-            VersionedParamPath("syslog_profiles",
-                               vartype="member", path="send-syslog")
+            VersionedParamPath("syslog_profiles",vartype="member", path="send-syslog")
         )
         params.append(
-            VersionedParamPath(
-                "http_profiles", vartype="member", path="send-http")
+            VersionedParamPath("http_profiles", vartype="member", path="send-http")
         )
 
         self._params = tuple(params)
@@ -976,8 +943,7 @@ class LogForwardingProfileMatchListAction(VersionedPanObject):
         params[-1].add_profile(
             "8.1.0",
             path="type/{action_type}/action",
-            values=["Azure-Security-Center-Integration",
-                    "add-tag", "remove-tag"],
+            values=["Azure-Security-Center-Integration","add-tag", "remove-tag"],
         )
         params.append(
             VersionedParamPath(
@@ -1201,8 +1167,7 @@ class Region(VersionedPanObject):
         # params
         params = []
 
-        params.append(VersionedParamPath(
-            "address", path="address", vartype="member"))
+        params.append(VersionedParamPath("address", path="address", vartype="member"))
         params.append(
             VersionedParamPath(
                 "latitude", path="geo-location/latitude", vartype="float"
