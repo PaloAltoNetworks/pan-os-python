@@ -18,7 +18,6 @@ the traditional interaction with the device via the GUI or CLI/API.
 
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org/)
-[![Powered by DepHell](https://img.shields.io/badge/Powered%20by-DepHell-red)](https://github.com/dephell/dephell)
 [![GitHub contributors](https://img.shields.io/github/contributors/PaloAltoNetworks/pan-os-python)](https://github.com/PaloAltoNetworks/pan-os-python/graphs/contributors/)
 
 -----
