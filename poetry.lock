@@ -579,17 +579,17 @@ tornado = "*"
 
 [[package]]
 name = "m2r"
-version = "0.2.1"
+version = "0.3.1"
 description = "Markdown and reStructuredText in a single file."
 optional = false
 python-versions = "*"
 files = [
-    {file = "m2r-0.2.1.tar.gz", hash = "sha256:bf90bad66cda1164b17e5ba4a037806d2443f2a4d5ddc9f6a5554a0322aaed99"},
+    {file = "m2r-0.3.1.tar.gz", hash = "sha256:aafb67fc49cfb1d89e46a3443ac747e15f4bb42df20ed04f067ad9efbee256ab"},
 ]
 
 [package.dependencies]
 docutils = "*"
-mistune = "*"
+mistune = "<2"
 
 [[package]]
 name = "markdown-it-py"
@@ -1461,4 +1461,4 @@ testing = ["contextlib2", "pathlib2", "unittest2"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^2.7 || ^3.5"
-content-hash = "51f9c8c3bda1cf97f8832a8ca6de3105a7dea786745d88134a63caa0282c7d14"
+content-hash = "381e7d077e7b165e7fef209993ae2a37dcdb26e82d5de1e8e008d3a46183a198"
