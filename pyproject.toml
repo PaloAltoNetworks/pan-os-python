@@ -45,7 +45,6 @@ flake8-mock = {version = "^0.4", python = "^3.8.1"}
 flake8-docstrings = {version = "^1.7.0", python = "^3.8.1"}
 flake8-variables-names = {version = "^0.0.6", python = "^3.8.1"}
 pep8-naming = {version = "^0.13.3", python = "^3.7"}
-poetry2setup = {version = "^1.1.0", python = ">=3.6"}
 fissix = {version = "^19.2b1", python = "^3.6"}
 sphinx = {version = "^2.3.1", python = "^3.5"}
 pytest-cov = {version = "^2.8.1", python = "^3.5"}

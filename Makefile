@@ -82,8 +82,6 @@ dist: clean
 
 sync-deps:
 	poetry export -f requirements.txt > requirements.txt
-	poetry2setup > setup.py
-	black setup.py
 
 local-setup:
 ifeq ($(wildcard ~/.local/bin/poetry),)
