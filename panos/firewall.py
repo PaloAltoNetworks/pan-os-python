@@ -383,7 +383,7 @@ class Firewall(PanDevice):
             Var("multi-vsys", vartype="bool"),
             Var("vsys_id", "vsys", default="vsys1"),
             Var("vsys_name"),
-            Var("ha/state/peer/serial", "serial_ha_peer"),
+            Var("ha/peer/serial", "serial_ha_peer"),
         )
         if len(xml[0]) > 1:
             # This is a 'show devices' op command
