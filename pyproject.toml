@@ -27,6 +27,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^2.7 || ^3.5"
 pan-python = "^0.17.0"
+m2r = "^0.3.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = {version = "^5.3.2", python = "^3.5"}
@@ -52,7 +53,7 @@ sphinx_rtd_theme = {version = "^0.4.3", python = "^3.5"}
 sphinx-autobuild = {version = "^0.7.1", python = "^3.5"}
 bandit = {version = "^1.7.6", python = "^3.8"}
 isort = {version = "^5.13.2", python = "^3.8"}
-m2r = "^0.2.1"
+m2r = "^0.3.1"
 mypy = {version = "^1.8.0", python = "^3.8"}
 packaging = {version = "^23.2", python = "^3.7"}
 docutils = {version = "^0.20.1", python = "^3.7"}
