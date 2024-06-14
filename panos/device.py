@@ -140,6 +140,7 @@ class Vsys(VersionedPanObject):
         "objects.DynamicUserGroup",
         "objects.Region",
         "objects.Edl",
+        "objects.TerminalServerAgent",
         "policies.Rulebase",
         "network.EthernetInterface",
         "network.AggregateInterface",
