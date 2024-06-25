@@ -4900,7 +4900,7 @@ class PanDevice(PanObject):
         except AttributeError:
             if exception:
                 raise err.PanCommitNotNeeded("Commit not needed", pan_device=self)
-            else:
+            elif commit_response.find("./msg/line") is not None:
                 # By getting here, there was no "./result/job" in the commit response,
                 # and there was no exception raised either, so capture the response message
                 commit_response_msg = commit_response.find("./msg/line").text
@@ -4921,6 +4921,7 @@ class PanDevice(PanObject):
                         "messages": [commit_response_msg],
                     }
                     return log_collector_group_push_result
+            else:
                 return
         if not sync:
             # Don't synchronize, just return
