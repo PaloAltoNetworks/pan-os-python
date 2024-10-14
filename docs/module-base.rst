@@ -11,3 +11,5 @@ Class Reference
 ---------------
 
 .. automodule:: panos.base
+   :members: PanObject
+   :no-index:

@@ -11,3 +11,4 @@ Class Reference
 ---------------
 
 .. automodule:: panos.predefined
+   :members:
