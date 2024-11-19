@@ -3046,9 +3046,10 @@ class BgpPeerGroup(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "export_nexthop",
-                path="type/{type}/export-nexthop",
-                values=("resolve", "use-self"),
+                "remove_private_as",
+                condition={"type": "ebgp"},
+                path="type/{type}/remove-private-as",
+                vartype="yesno",
             )
         )
         params.append(
@@ -3061,10 +3062,9 @@ class BgpPeerGroup(VersionedPanObject):
         )
         params.append(
             VersionedParamPath(
-                "remove_private_as",
-                condition={"type": "ebgp"},
-                path="type/{type}/remove-private-as",
-                vartype="yesno",
+                "export_nexthop",
+                path="type/{type}/export-nexthop",
+                values=("resolve", "use-self"),
             )
         )
 
