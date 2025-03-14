@@ -280,7 +280,7 @@ class Firewall(PanDevice):
         self.content_version = system_info["system"]["app-version"]
         self.multi_vsys = system_info["system"]["multi-vsys"] == "on"
 
-    def element(self):
+    def element(self, with_children=True, comparable=False):
         if self.serial is None:
             raise ValueError("Serial number must be set to generate element")
         entry = ET.Element("entry", {"name": self.serial})
