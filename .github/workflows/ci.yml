@@ -37,7 +37,7 @@ jobs:
         run: echo "dir=$(poetry config cache-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache poetry dependencies
-        uses: actions/cache@f5ce41475b483ad7581884324a6eca9f48f8dcc7 # v1
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: ${{ steps.poetry-cache.outputs.dir }}
           key:
@@ -73,7 +73,7 @@ jobs:
         run: echo "dir=$(poetry config cache-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache poetry dependencies
-        uses: actions/cache@f5ce41475b483ad7581884324a6eca9f48f8dcc7 # v1
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: ${{ steps.poetry-cache.outputs.dir }}
           key: ${{ runner.os }}-poetry-3.8-${{ hashFiles('**/poetry.lock') }}
@@ -110,7 +110,7 @@ jobs:
         run: echo "dir=$(poetry config cache-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache poetry dependencies
-        uses: actions/cache@f5ce41475b483ad7581884324a6eca9f48f8dcc7 # v1
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: ${{ steps.poetry-cache.outputs.dir }}
           key: ${{ runner.os }}-poetry-3.8-${{ hashFiles('**/poetry.lock') }}
