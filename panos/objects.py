@@ -1391,3 +1391,30 @@ class Edl(VersionedPanObject):
         )
 
         self._params = tuple(params)
+
+class TerminalServerAgent(VersionedPanObject):
+    """Terminal Server Agent Object.
+       Component of UserID to map users to traffic on terminal servers. 
+
+    Args:
+        name (str): Name of Terminal Server Agent Client
+        disabled (bool): Whether TS Agent is enabled
+        host (str): IP address of the host where Terminal Server Agent is installed
+        port (str): Port of the Terminal Server Agent
+    """
+    ROOT = Root.VSYS
+    SUFFIX = ENTRY
+
+    def _setup(self):
+        # xpaths
+        self._xpaths.add_profile(value="/ts-agent")
+
+        # params
+        params = []
+
+        params.append(VersionedParamPath("disabled", path="disabled"))
+        params.append(VersionedParamPath("host", path="host"))
+        params.append(VersionedParamPath("port", path="port"))
+
+        self._params = tuple(params)
+        
