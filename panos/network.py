@@ -449,7 +449,7 @@ class Interface(VsysOperations):
                 was updated (update=True).
 
         Returns:
-            Zone: The zone for this interface after the operation completes
+            VirtualRouter: The virtual router for this interface after the operation completes
 
         """
         # Don't add HA, layer 2 or aggregate-group interfaces to virtual router.
@@ -811,7 +811,7 @@ class AbstractSubinterface(object):
                 (Default: False)
 
         Returns:
-            Zone: The zone for this interface after the operation completes
+            VirtualRouter: The virtual router for this interface after the operation completes
 
         """
         interface = Layer3Subinterface(self.name, self.tag)
