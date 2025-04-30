@@ -16,3 +16,4 @@ Class Reference
 ---------------
 
 .. automodule:: panos.ha
+   :members:

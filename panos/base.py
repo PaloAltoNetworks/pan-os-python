@@ -5157,7 +5157,7 @@ class PanDevice(PanObject):
                     "name": device["devicename"],
                     "result": device["result"],
                     "starttime": device["tstart"],
-                    "endtime": device["tfin"],
+                    "endtime": device.get("tfin"),
                 }
                 # Errors and warnings might not have a full structure.  If it is just a string, then
                 # a TypeError will be produced, so in that case, just grab the string.
