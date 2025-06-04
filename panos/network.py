@@ -3017,10 +3017,9 @@ class BgpPeerGroup(VersionedPanObject):
         aggregated_confed_as_path (bool): the peers understand aggregated confederation AS path
         soft_reset_with_stored_info (bool): soft reset with stored info
         type (str): peer group type I('ebgp')/I('ibgp')/I('ebgp-confed')/I('ibgp-confed')
-        export_nexthop (str): export locally resolved nexthop I('resolve')/I('use-self')
-        import_nexthop (str): override nexthop with peer address I('original')/I('use-peer'), only with 'ebgp'
         remove_private_as (bool): remove private AS when exporting route, only with 'ebgp'
-
+        import_nexthop (str): override nexthop with peer address I('original')/I('use-peer'), only with 'ebgp'
+        export_nexthop (str): export locally resolved nexthop I('resolve')/I('use-self')
     """
 
     SUFFIX = ENTRY
