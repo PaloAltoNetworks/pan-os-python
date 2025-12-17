@@ -989,7 +989,7 @@ class PanoramaCommit(object):
             self.log_collectors,
             self.log_collector_groups,
             self.exclude_device_and_network,
-            self.exclude_shared_objects
+            self.exclude_shared_objects,
         ]
 
         return any(x for x in pp_list)
