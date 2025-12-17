@@ -590,8 +590,7 @@ class FirewallCommit(object):
             self.admins,
             self.exclude_device_and_network,
             self.exclude_shared_objects,
-            self.exclude_policy_and_objects,
-            self.force,
+            self.exclude_policy_and_objects
         ]
 
         return any(x for x in pp_list)
