@@ -192,11 +192,10 @@ class Vsys(VersionedPanObject):
         params.append(
             VersionedParamPath(
                 "logical_routers",
-                vartype="member",
-                path="import/network/logical-router",
-                version="10.2.0"
+                exclude=True
             )
         )
+        params[-1].add_profile("10.2.0", path="import/network/logical-router", vartype="member")
         params.append(
             VersionedParamPath(
                 "visible_vsys", vartype="member", path="import/visible-vsys"
