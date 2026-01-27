@@ -99,7 +99,7 @@ class Vsys(VersionedPanObject):
         vlans (list): A list of strings of VLANs
         virtual_wires (list): A list of strings of virtual wires
         virtual_routers (list): A list of strings of virtual routers
-        logical_routers (list): A list of strings of logical routers
+        logical_routers (list): (10.2+) A list of strings of logical routers
         visible_vsys (list): A list of strings of the vsys visible
         dns_proxy (str): DNS Proxy server
         decrypt_forwarding (bool): Allow forwarding of decrypted content
@@ -194,6 +194,7 @@ class Vsys(VersionedPanObject):
                 "logical_routers",
                 vartype="member",
                 path="import/network/logical-router",
+                version="10.2.0"
             )
         )
         params.append(
