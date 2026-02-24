@@ -3479,6 +3479,7 @@ class VsysOperations(VersionedPanObject):
             "vlan": "vlans",
             "virtual-wire": "virtual_wires",
             "virtual-router": "virtual_routers",
+            "logical-router": "logical_routers",
             "interface": "interface",
         }
         for key, param_name in import_to_vsys_param.items():
