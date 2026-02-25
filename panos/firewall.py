@@ -591,7 +591,6 @@ class FirewallCommit(object):
             self.exclude_device_and_network,
             self.exclude_shared_objects,
             self.exclude_policy_and_objects,
-            self.force,
         ]
 
         return any(x for x in pp_list)
@@ -622,11 +621,9 @@ class FirewallCommit(object):
                 ET.SubElement(partial, "shared-object").text = "excluded"
             if self.exclude_policy_and_objects:
                 ET.SubElement(partial, "policy-and-objects").text = "excluded"
+            fe.append(partial)
 
-            if self.force:
-                fe = ET.SubElement(root, "force")
-                fe.append(partial)
-            else:
-                root.append(partial)
+        if self.force:
+            fe = ET.SubElement(root, "force")
 
         return root
