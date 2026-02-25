@@ -1834,11 +1834,18 @@ class StaticRoute(VersionedPanObject):
             VersionedParamPath(
                 "nexthop_type",
                 default="ip-address",
-                values=["discard", "ip-address", "next-vr"],
+                values=["discard", "ip-address", "next-vr", "none"],
                 path="nexthop/{nexthop_type}",
+                condition={"nexthop_type": ["discard", "ip-address", "next-vr"]},
             )
         )
-        params.append(VersionedParamPath("nexthop", path="nexthop/{nexthop_type}"))
+        params.append(
+            VersionedParamPath(
+                "nexthop",
+                path="nexthop/{nexthop_type}",
+                condition={"nexthop_type": ["ip-address", "next-vr"]},
+            )
+        )
         params.append(VersionedParamPath("interface", path="interface"))
         params.append(
             VersionedParamPath("admin_dist", vartype="int", path="admin-dist")
