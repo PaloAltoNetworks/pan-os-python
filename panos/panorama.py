@@ -990,7 +990,6 @@ class PanoramaCommit(object):
             self.log_collector_groups,
             self.exclude_device_and_network,
             self.exclude_shared_objects,
-            self.force,
         ]
 
         return any(x for x in pp_list)
@@ -1031,12 +1030,10 @@ class PanoramaCommit(object):
                 ET.SubElement(partial, "device-and-network").text = "excluded"
             if self.exclude_shared_objects:
                 ET.SubElement(partial, "shared-object").text = "excluded"
+            root.append(partial)
 
-            if self.force:
-                fe = ET.SubElement(root, "force")
-                fe.append(partial)
-            else:
-                root.append(partial)
+        if self.force:
+            fe = ET.SubElement(root, "force")
 
         return root
 
