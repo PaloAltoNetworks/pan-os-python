@@ -1506,42 +1506,19 @@ class PanObject(object):
         elif vartype == "bool":
             return yesno(value)
 
-    def _set_reference(
+    def _get_all_objects_by_type(
         self,
-        reference_name,
         reference_type,
-        reference_var,
-        var_type,
-        exclusive,
         refresh,
-        update,
         running_config,
-        return_type,
         name_only,
-        **kwargs
+        reference_var
     ):
-        """Used by helper methods to set references between objects
-
-        For example, set_zone() would set the zone for an interface by creating a reference from
-        the zone to the interface. If the desired reference already exists then nothing happens.
-
-        This function has two modes:  refresh=True and refresh=False.  You
-        should only ever use refresh=False if:
-
-            1) all reference objects are in the current pan-os-python object tree
-            2) all reference objects are children attached to nearest_pandevice()
-            3) this is for firewall only, not a template / template stack
-            4) you're using firewall.vsys, not the device.Vsys object
-
-        If any of the above do not apply, you should be using refresh=True.
-
+        """
+        Returns all of the objects of the given type, ensuring that `reference_var` is refreshed and available to be
+        set, and the parent pandevice
         """
         parent = None
-        update_needed = False
-
-        if return_type not in ("bool", "object"):
-            raise ValueError("Unknown return_type specified: {0}".format(return_type))
-
         if refresh:
             """
             pan-os-python is too flexible:  users can use simple vsys mode or a
@@ -1616,6 +1593,22 @@ class PanObject(object):
             parent = self.nearest_pandevice()
             allobjects = parent.findall(reference_type)
 
+        return parent, allobjects
+
+    def _update_reference_in_objects(
+        self,
+        parent,
+        allobjects,
+        reference_name,
+        reference_type,
+        reference_var,
+        var_type,
+        exclusive,
+        update,
+        return_type,
+        **kwargs
+    ):
+        update_needed = False
         # Find any current references to self and remove them, unless it is the desired reference
         if exclusive:
             for obj in allobjects:
@@ -1677,6 +1670,61 @@ class PanObject(object):
 
         if return_type == "bool":
             return update_needed
+
+    def _set_reference(
+        self,
+        reference_name,
+        reference_type,
+        reference_var,
+        var_type,
+        exclusive,
+        refresh,
+        update,
+        running_config,
+        return_type,
+        name_only,
+        **kwargs
+    ):
+        """Used by helper methods to set references between objects
+
+        For example, set_zone() would set the zone for an interface by creating a reference from
+        the zone to the interface. If the desired reference already exists then nothing happens.
+
+        This function has two modes:  refresh=True and refresh=False.  You
+        should only ever use refresh=False if:
+
+            1) all reference objects are in the current pan-os-python object tree
+            2) all reference objects are children attached to nearest_pandevice()
+            3) this is for firewall only, not a template / template stack
+            4) you're using firewall.vsys, not the device.Vsys object
+
+        If any of the above do not apply, you should be using refresh=True.
+
+        """
+        if return_type not in ("bool", "object"):
+            raise ValueError("Unknown return_type specified: {0}".format(return_type))
+
+        # Get all the objects and the parent
+        parent, allobjects = self._get_all_objects_by_type(
+            reference_type,
+            refresh,
+            running_config,
+            name_only,
+            reference_var
+        )
+
+        return self._update_reference_in_objects(
+            parent,
+            allobjects,
+            reference_name,
+            reference_type,
+            reference_var,
+            var_type,
+            exclusive,
+            update,
+            return_type,
+            **kwargs
+        )
 
     def xml_merge(self, root, elements):
         """Merges other elements into the root element.

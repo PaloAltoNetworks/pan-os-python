@@ -1,4 +1,5 @@
 import random
+import traceback
 
 import pytest
 
@@ -47,11 +48,11 @@ def random_mac():
     return ":".join("{0:02x}".format(random.randint(0, 255)) for x in range(6))
 
 
-def get_available_interfaces(con, num=1):
+def get_available_interfaces(con, num=1, max_interfaces=10):
     ifaces = network.EthernetInterface.refreshall(con, add=False)
     ifaces = set(x.name for x in ifaces)
 
-    all_interfaces = set("ethernet1/{0}".format(x) for x in range(1, 10))
+    all_interfaces = set("ethernet1/{0}".format(x) for x in range(1, max_interfaces))
     available = all_interfaces.difference(ifaces)
 
     ans = []
@@ -73,6 +74,8 @@ class FwFlow(object):
         except Exception as e:
             print("SETUP ERROR: {0}".format(e))
             state.err = True
+            print(traceback.format_exc())
+
             pytest.skip("Setup failed")
 
     def create_dependencies(self, fw, state):
