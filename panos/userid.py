@@ -19,6 +19,7 @@
 
 import xml.etree.ElementTree as ET
 from copy import deepcopy
+from xml.sax.saxutils import escape, quoteattr
 
 from pan.xapi import PanXapiError
 
@@ -550,7 +551,7 @@ class UserId(object):
             "<show><user><group><list>",
         ]
         if style is not None:
-            msg.append("<entry name='{0}'/>".format(style))
+            msg.append("<entry name={0}/>".format(quoteattr(style)))
         msg.append("</list></group></user></show>")
         cmd = "".join(msg)
         vsys = self.device.vsys or "vsys1"
@@ -594,7 +595,11 @@ class UserId(object):
             list
 
         """
-        cmd = "<show><user><group><name>" + group + "</name></group></user></show>"
+        cmd = (
+            "<show><user><group><name>"
+            + escape(group)
+            + "</name></group></user></show>"
+        )
         vsys = self.device.vsys or "vsys1"
 
         resp = self.device.op(cmd, vsys=vsys, cmd_xml=False)
@@ -644,12 +649,12 @@ class UserId(object):
         if user is None:
             msg.append(
                 "<all>"
-                + "<limit>{0}</limit>".format(limit)
-                + "<start-point>{0}</start-point>".format(start)
+                + "<limit>{0}</limit>".format(escape(str(limit)))
+                + "<start-point>{0}</start-point>".format(escape(str(start)))
                 + "</all>"
             )
         else:
-            msg.append("<user>{0}</user>".format(user))
+            msg.append("<user>{0}</user>".format(escape(user)))
         msg.append("</registered-user></object></show>")
 
         cmd = ET.fromstring("".join(msg))

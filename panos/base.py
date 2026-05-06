@@ -29,6 +29,7 @@ import sys
 import time
 import xml.dom.minidom as minidom
 import xml.etree.ElementTree as ET
+from xml.sax.saxutils import escape as xml_escape
 
 import pan.commit
 import pan.xapi
@@ -3386,7 +3387,7 @@ class VsysOperations(VersionedPanObject):
 
         if vsys != "shared" and vsys is not None and self.XPATH_IMPORT is not None:
             xpath = self.xpath_import_base(vsys)
-            element = "<member>{0}</member>".format(self.uid)
+            element = "<member>{0}</member>".format(xml_escape(self.uid))
             device = self.nearest_pandevice()
             device.active().xapi.set(xpath, element, retry_on_peer=True)
 
