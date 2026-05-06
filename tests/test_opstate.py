@@ -12,7 +12,6 @@ from panos.policies import Rulebase
 from panos.policies import SecurityRule
 from panos.policies import AuditCommentLog
 
-
 HIT_COUNT_PREFIX = """
 <response>
     <result>

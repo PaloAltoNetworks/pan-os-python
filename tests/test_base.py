@@ -23,7 +23,8 @@ import xml.etree.ElementTree as ET
 import pan.xapi
 import panos.base as Base
 import panos.errors as Err
-
+import panos.firewall
+import panos.network
 
 OBJECT_NAME = "MyObjectName"
 VSYS = "vsys1"
@@ -1699,6 +1700,31 @@ class TestIsReady(unittest.TestCase):
 
         assert ans == False
         assert mocksleep.call_count == 0
+
+
+class TestVsysOperationsCreateImport(unittest.TestCase):
+    def test_create_import_escapes_uid(self):
+        evil_name = "zone&<bad>"
+        fw = panos.firewall.Firewall(
+            "fw1", "user", "passwd", "authkey", serial="S", vsys="vsys1"
+        )
+        vlan = panos.network.Vlan(evil_name)
+        fw.add(vlan)
+
+        with mock.patch.object(
+            panos.network.Vlan,
+            "XPATH_IMPORT",
+            new_callable=mock.PropertyMock,
+            return_value="/network/vlan",
+        ):
+            fw.xapi.set = mock.Mock()
+            vlan.create_import("vsys1")
+
+        args, _ = fw.xapi.set.call_args
+        element = args[1]
+        self.assertEqual(element, "<member>zone&amp;&lt;bad&gt;</member>")
+        parsed = ET.fromstring(element)
+        self.assertEqual(parsed.text, evil_name)
 
 
 if __name__ == "__main__":
