@@ -26,7 +26,12 @@ import panos.errors as err
 from panos import device, getlogger, string_or_list
 from panos.base import ENTRY, MEMBER, PanObject, Root
 from panos.base import VarPath as Var
-from panos.base import VersionedPanObject, VersionedParamPath, VsysOperations
+from panos.base import (
+    VersionedPanObject,
+    VersionedParamPath,
+    VsysOperations,
+    _xpath_safe,
+)
 
 logger = getlogger(__name__)
 
@@ -741,7 +746,7 @@ class Subinterface(Interface):
         if self._BASE_INTERFACE_NAME in path:
             base = self.uid.split(".")[0]
             path = path.replace(
-                self._BASE_INTERFACE_NAME, "entry[@name='{0}']".format(base)
+                self._BASE_INTERFACE_NAME, "entry[@name={0}]".format(_xpath_safe(base))
             )
 
         return path

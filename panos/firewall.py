@@ -27,6 +27,7 @@ import panos.errors as err
 from panos import device, getlogger, yesno
 from panos.base import ENTRY, PanDevice, Root
 from panos.base import VarPath as Var
+from panos.base import _xpath_safe
 
 logger = getlogger(__name__)
 
@@ -333,7 +334,7 @@ class Firewall(PanDevice):
             devices_xpath = self.devicegroup().xpath() + self.XPATH
             devices_xml = panorama.xapi.get(devices_xpath)
             dg_vsys = devices_xml.findall(
-                "result/devices/entry[@name='%s']/vsys/entry" % self.serial
+                "result/devices/entry[@name=%s]/vsys/entry" % _xpath_safe(self.serial)
             )
             if dg_vsys:
                 if len(dg_vsys) == 1:
@@ -344,7 +345,7 @@ class Firewall(PanDevice):
                     # It's not the only vsys, just delete the vsys
                     panorama.set_config_changed()
                     panorama.xapi.delete(
-                        self.xpath() + "/vsys/entry[@name='%s']" % self.vsys
+                        self.xpath() + "/vsys/entry[@name=%s]" % _xpath_safe(self.vsys)
                     )
         else:
             # This is a firewall under a panorama
@@ -392,7 +393,7 @@ class Firewall(PanDevice):
             )
             # Add system settings to firewall instances
             for fw in firewall_instances:
-                entry = xml.find("entry[@name='%s']" % fw.serial)
+                entry = xml.find("entry[@name=%s]" % _xpath_safe(fw.serial))
                 system = fw.find_or_create(None, device.SystemSettings)
                 system.hostname = entry.findtext("hostname")
                 system.ip_address = entry.findtext("ip-address")

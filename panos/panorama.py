@@ -28,7 +28,7 @@ import panos.errors as err
 from panos import base, firewall, getlogger, policies, yesno
 from panos.base import ENTRY, MEMBER, OpState, PanObject, Root
 from panos.base import VarPath as Var
-from panos.base import VersionedPanObject, VersionedParamPath
+from panos.base import VersionedPanObject, VersionedParamPath, _xpath_safe
 
 logger = getlogger(__name__)
 
@@ -643,7 +643,7 @@ class Panorama(base.PanDevice):
                 serial = str(device)
                 if serial is None:
                     continue
-                entry = devices_xml.find("entry[@name='%s']" % serial)
+                entry = devices_xml.find("entry[@name=%s]" % _xpath_safe(serial))
                 if entry is None:
                     if only_connected:
                         raise err.PanNotConnectedOnPanorama(
@@ -661,7 +661,10 @@ class Panorama(base.PanDevice):
                 except AttributeError:
                     continue
                 # Create entry if needed
-                if filtered_devices_xml.find("entry[@name='%s']" % serial) is None:
+                if (
+                    filtered_devices_xml.find("entry[@name=%s]" % _xpath_safe(serial))
+                    is None
+                ):
                     entry_copy = deepcopy(entry)
                     # If looking for specific vsys, erase all vsys in filtered entry
                     if vsys != "shared" and vsys is not None:
@@ -670,7 +673,7 @@ class Panorama(base.PanDevice):
                     filtered_devices_xml.append(entry_copy)
                 # Get specific vsys
                 if vsys != "shared" and vsys is not None:
-                    vsys_entry = entry.find("vsys/entry[@name='%s']" % vsys)
+                    vsys_entry = entry.find("vsys/entry[@name=%s]" % _xpath_safe(vsys))
                     if vsys_entry is None:
                         raise err.PanNotAttachedOnPanorama(
                             "Can't find device with serial %s and"
@@ -678,7 +681,7 @@ class Panorama(base.PanDevice):
                             % (serial, vsys, self.id)
                         )
                     vsys_section = filtered_devices_xml.find(
-                        "entry[@name='%s']/vsys" % serial
+                        "entry[@name=%s]/vsys" % _xpath_safe(serial)
                     )
                     vsys_section.append(vsys_entry)
             devices_xml = filtered_devices_xml
@@ -733,7 +736,8 @@ class Panorama(base.PanDevice):
                     continue
                 for fw_entry in dg_entry.find("devices"):
                     fw_entry_op = devicegroup_opxml.find(
-                        "entry/devices/entry[@name='%s']" % fw_entry.get("name")
+                        "entry/devices/entry[@name=%s]"
+                        % _xpath_safe(fw_entry.get("name"))
                     )
                     if fw_entry_op is not None:
                         panos.xml_combine(fw_entry, fw_entry_op)
@@ -748,7 +752,7 @@ class Panorama(base.PanDevice):
             dg_serials = [
                 entry.get("name")
                 for entry in devicegroup_configxml.findall(
-                    "entry[@name='%s']/devices/entry" % dg.name
+                    "entry[@name=%s]/devices/entry" % _xpath_safe(dg.name)
                 )
             ]
             # Find firewall with each serial
@@ -759,13 +763,14 @@ class Panorama(base.PanDevice):
                 all_dg_vsys = [
                     entry.get("name")
                     for entry in devicegroup_configxml.findall(
-                        "entry[@name='%s']/devices/entry[@name='%s']/vsys/entry"
-                        % (dg.name, dg_serial)
+                        "entry[@name=%s]/devices/entry[@name=%s]/vsys/entry"
+                        % (_xpath_safe(dg.name), _xpath_safe(dg_serial))
                     )
                 ]
                 # Collect the firewall serial entry to get current status information
                 fw_entry = devicegroup_configxml.find(
-                    "entry[@name='%s']/devices/entry[@name='%s']" % (dg.name, dg_serial)
+                    "entry[@name=%s]/devices/entry[@name=%s]"
+                    % (_xpath_safe(dg.name), _xpath_safe(dg_serial))
                 )
                 if not all_dg_vsys:
                     # This is a single-context firewall, assume vsys1
@@ -807,7 +812,8 @@ class Panorama(base.PanDevice):
                         shared_policy_status = fw_entry.findtext("shared-policy-status")
                         if shared_policy_status is None:
                             shared_policy_status = fw_entry.findtext(
-                                "vsys/entry[@name='%s']/shared-policy-status" % dg_vsys
+                                "vsys/entry[@name=%s]/shared-policy-status"
+                                % _xpath_safe(dg_vsys)
                             )
                         fw.state.set_shared_policy_synced(shared_policy_status)
 
