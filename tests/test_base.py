@@ -26,7 +26,6 @@ import panos.errors as Err
 import panos.firewall
 import panos.network
 
-
 OBJECT_NAME = "MyObjectName"
 VSYS = "vsys1"
 

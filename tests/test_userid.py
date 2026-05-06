@@ -100,7 +100,6 @@ class TestUserId(unittest.TestCase):
             ],
         )
 
-
     def test_get_user_tags_escapes_user(self):
         evil = "admin</user><all><limit>999999</limit></all><user>x"
         fw = panos.firewall.Firewall(

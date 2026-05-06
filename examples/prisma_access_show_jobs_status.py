@@ -20,10 +20,11 @@
 prisma_access_show_jobs_status.py
 ==========
 
-This script is an example on how to retrieve list of prisma access 
+This script is an example on how to retrieve list of prisma access
 jobs (commit and push), and how to get details of a specific job
 
 """
+
 __author__ = "bmigette"
 
 

@@ -1,11 +1,10 @@
-""" Tests specifically for classic objects.
+"""Tests specifically for classic objects.
 
 Note:  All tests in this file are for classic objects.  These are to try and
 make sure that the fix for classic objects with a self.NAME == None still
 work properly.
 
 """
-
 
 from panos import device
 

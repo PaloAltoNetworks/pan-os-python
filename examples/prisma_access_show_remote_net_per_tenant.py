@@ -20,10 +20,11 @@
 prisma_access_show_remote_net_per_tenant.py
 ==========
 
-This script is an example on how to retrieve list of prisma access 
+This script is an example on how to retrieve list of prisma access
 tenants and their remote networks
 
 """
+
 __author__ = "bmigette"
 
 

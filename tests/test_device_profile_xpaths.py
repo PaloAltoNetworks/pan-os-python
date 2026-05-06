@@ -57,7 +57,6 @@ from panos.device import Vsys
 from panos.panorama import Panorama
 from panos.panorama import Template
 
-
 OBJECTS = {
     SnmpServerProfile: [None, SnmpV2cServer, SnmpV3Server],
     EmailServerProfile: [

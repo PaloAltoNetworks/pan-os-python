@@ -33,7 +33,6 @@ import panos
 import panos.firewall
 import panos.policies
 
-
 HOSTNAME = "127.0.0.1"
 USERNAME = "admin"
 PASSWORD = "admin"
