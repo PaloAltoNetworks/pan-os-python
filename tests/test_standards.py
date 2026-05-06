@@ -18,7 +18,6 @@ from panos import policies
 from panos import predefined
 from panos import plugins
 
-
 # Versioning constants.
 #
 # When checking versioning, this is the highest major version to check for

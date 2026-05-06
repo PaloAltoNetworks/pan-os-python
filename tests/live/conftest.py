@@ -6,7 +6,6 @@ import pytest
 from panos import firewall
 from panos import panorama
 
-
 live_devices = {}
 one_fw_per_version = []
 one_device_type_per_version = []

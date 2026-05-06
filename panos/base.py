@@ -3831,9 +3831,11 @@ class PanDevice(PanObject):
             def method(self, *args, **kwargs):
                 retry_on_peer = kwargs.pop(
                     "retry_on_peer",
-                    True
-                    if super_method_name not in ("keygen", "op", "ad_hoc", "export")
-                    else False,
+                    (
+                        True
+                        if super_method_name not in ("keygen", "op", "ad_hoc", "export")
+                        else False
+                    ),
                 )
                 apply_on_peer = kwargs.pop("apply_on_peer", False)
                 ha_peer = self.pan_device.ha_peer

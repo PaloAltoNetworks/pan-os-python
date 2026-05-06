@@ -25,6 +25,7 @@ along with needed IPSEC Tunnel and IKEv2 Gateway.
 To use the script, you need to replace the variables below with desired values.
 
 """
+
 import logging
 import os
 import sys

@@ -20,10 +20,11 @@
 prisma_access_list_RN_regions_bw.py
 ==========
 
-This script is an example on how to retrieve list of prisma access 
+This script is an example on how to retrieve list of prisma access
 remote networks locations and bandwidth allocation and print it.
 
 """
+
 __author__ = "bmigette"
 
 

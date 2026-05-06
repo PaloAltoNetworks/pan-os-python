@@ -13,7 +13,6 @@ from panos.objects import ApplicationObject
 from panos.objects import ServiceObject
 from panos.objects import Tag
 
-
 PREDEFINED_CONFIG = {
     ApplicationContainer: {
         "single": "refresh_application",
