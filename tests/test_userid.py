@@ -17,6 +17,7 @@ except ImportError:
     import mock
 import sys
 import unittest
+import xml.etree.ElementTree as ET
 
 import panos.firewall
 import panos.panorama
@@ -98,6 +99,64 @@ class TestUserId(unittest.TestCase):
                 "tag1",
             ],
         )
+
+
+    def test_get_user_tags_escapes_user(self):
+        evil = "admin</user><all><limit>999999</limit></all><user>x"
+        fw = panos.firewall.Firewall(
+            "fw1", "user", "passwd", "authkey", serial="Serial", vsys="vsys1"
+        )
+        empty_response = ET.fromstring(
+            b"<response status='success'><result/></response>"
+        )
+        fw.op = mock.Mock(return_value=empty_response)
+
+        fw.userid.get_user_tags(user=evil)
+
+        sent = fw.op.call_args[1]["cmd"]
+        parsed = ET.fromstring(sent)
+        users = parsed.findall("./object/registered-user/user")
+        self.assertEqual(len(users), 1)
+        self.assertEqual(users[0].text, evil)
+        self.assertIsNone(parsed.find("./object/registered-user/all"))
+
+    def test_get_groups_escapes_style(self):
+        evil = "x'/><evil/><entry name='y"
+        fw = panos.firewall.Firewall(
+            "fw1", "user", "passwd", "authkey", serial="Serial", vsys="vsys1"
+        )
+        empty_response = ET.fromstring(
+            b"<response status='success'><result>\nTotal: 0\n</result></response>"
+        )
+        fw.op = mock.Mock(return_value=empty_response)
+
+        fw.userid.get_groups(style=evil)
+
+        sent = fw.op.call_args[0][0]
+        parsed = ET.fromstring(sent)
+        entries = parsed.findall("./user/group/list/entry")
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0].attrib["name"], evil)
+        self.assertIsNone(parsed.find(".//evil"))
+
+    def test_get_group_members_escapes_group(self):
+        evil = "g</name><evil/><name>x"
+        fw = panos.firewall.Firewall(
+            "fw1", "user", "passwd", "authkey", serial="Serial", vsys="vsys1"
+        )
+        empty_response = ET.fromstring(
+            b"<response status='success'><result>\nTotal: 0\n</result></response>"
+        )
+        fw.op = mock.Mock(return_value=empty_response)
+
+        fw.userid.get_group_members(evil)
+
+        sent = fw.op.call_args[0][0]
+        parsed = ET.fromstring(sent)
+        names = parsed.findall("./user/group/name")
+        self.assertEqual(len(names), 1)
+        self.assertEqual(names[0].text, evil)
+        self.assertIsNone(parsed.find(".//evil"))
 
 
 if __name__ == "__main__":
