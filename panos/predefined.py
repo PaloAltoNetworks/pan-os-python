@@ -21,6 +21,7 @@ from pan.xapi import PanXapiError
 
 import panos.errors as err
 from panos import getlogger, objects
+from panos.base import _xpath_safe
 from panos.updater import PanOSVersion
 
 logger = getlogger(__name__)
@@ -43,7 +44,7 @@ class Predefined(object):
 
     # xpath
     XPATH = "/config/predefined"
-    SINGLE_ENTRY_XPATH = "/entry[@name='{0}']"
+    SINGLE_ENTRY_XPATH = "/entry[@name={0}]"
     ALL_ENTRIES_XPATH = "/entry"
     CHILDTYPES = (
         "objects.ApplicationContainer",
@@ -76,7 +77,7 @@ class Predefined(object):
         x.parent = self
         xpath = x.xpath_nosuffix()
         if name is not None:
-            xpath += self.SINGLE_ENTRY_XPATH.format(name)
+            xpath += self.SINGLE_ENTRY_XPATH.format(_xpath_safe(name))
         else:
             xpath += self.ALL_ENTRIES_XPATH
 

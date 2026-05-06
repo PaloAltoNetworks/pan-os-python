@@ -36,6 +36,31 @@ from pan.config import PanConfig
 
 import panos
 import panos.errors as err
+
+# Defined before sub-module imports below: panos.userid imports _xpath_safe
+# from this module, so the symbol must exist by the time `from panos import
+# userid` triggers userid's module body.
+SELF = "/%s"
+ENTRY = "/entry[@name=%s]"
+MEMBER = "/member[text()=%s]"
+
+
+def _xpath_safe(val):
+    """Return val as an XPath 1.0 string literal, safe to inject into a predicate.
+
+    XPath 1.0 has no escape syntax for quotes inside string literals, so a value
+    containing quotes must be wrapped in the opposite quote, or split into a
+    concat() expression when both quote types are present.
+    """
+    val = "" if val is None else str(val)
+    if "'" not in val:
+        return "'" + val + "'"
+    if '"' not in val:
+        return '"' + val + '"'
+    parts = val.split("'")
+    return "concat('" + "', \"'\", '".join(parts) + "')"
+
+
 from panos import (
     chunk_instances_for_delete_similar,
     isstring,
@@ -48,9 +73,6 @@ from panos import (
 logger = panos.getlogger(__name__)
 
 Root = panos.enum("DEVICE", "VSYS", "MGTCONFIG", "PANORAMA", "PANORAMA_VSYS")
-SELF = "/%s"
-ENTRY = "/entry[@name='%s']"
-MEMBER = "/member[text()='%s']"
 
 
 # PanObject type
@@ -340,7 +362,7 @@ class PanObject(object):
                 # xpath was asked for.
                 addon = p.XPATH
                 if p.SUFFIX is not None:
-                    addon += p.SUFFIX % (p.uid,)
+                    addon += p.SUFFIX % (_xpath_safe(p.uid),)
                 path.insert(0, addon)
                 if p.__class__.__name__ == "Firewall" and p.parent is not None:
                     if p.parent.__class__.__name__ == "DeviceGroup":
@@ -412,7 +434,7 @@ class PanObject(object):
             xpath = "/config/shared"
         else:
             xpath = "/config/devices/entry[@name='localhost.localdomain']"
-            xpath += "/{0}/entry[@name='{1}']".format(label, vsys or "vsys1")
+            xpath += "/{0}/entry[@name={1}]".format(label, _xpath_safe(vsys or "vsys1"))
 
         return xpath
 
@@ -476,7 +498,7 @@ class PanObject(object):
                             regex,
                             matchedvar.path
                             + "/"
-                            + "entry[@name='%s']" % entry_value[0],
+                            + "entry[@name=%s]" % _xpath_safe(entry_value[0]),
                             section,
                         )
                         entryvar = matchedvar
@@ -860,7 +882,9 @@ class PanObject(object):
                 entry_value = panos.string_or_list(getattr(self, matchedvar.variable))
                 varpath = re.sub(
                     regex,
-                    matchedvar.path + "/" + "entry[@name='%s']" % entry_value[0],
+                    matchedvar.path
+                    + "/"
+                    + "entry[@name=%s]" % _xpath_safe(entry_value[0]),
                     varpath,
                 )
             else:
@@ -1448,7 +1472,9 @@ class PanObject(object):
                         replacement = replacement[0]
                     path = re.sub(
                         regex,
-                        matchedvar.path + "/" + "entry[@name='%s']" % replacement,
+                        matchedvar.path
+                        + "/"
+                        + "entry[@name=%s]" % _xpath_safe(replacement),
                         path,
                     )
                 else:
@@ -1983,10 +2009,10 @@ class PanObject(object):
         prefix = ""
         xpath = self.xpath_nosuffix()
         if self.SUFFIX == ENTRY:
-            joiner = "@name='{0}'"
+            joiner = "@name={0}"
             prefix = "entry"
         elif self.SUFFIX == MEMBER:
-            joiner = "text()='{0}'"
+            joiner = "text()={0}"
             prefix = "member"
 
         # After some testing, PAN-OS seems to be able to handle a DELETE API call
@@ -1999,7 +2025,7 @@ class PanObject(object):
                 "{0}/{1}[{2}]".format(
                     xpath,
                     prefix,
-                    " or ".join(joiner.format(x.uid) for x in chunk),
+                    " or ".join(joiner.format(_xpath_safe(x.uid)) for x in chunk),
                 ),
                 retry_on_peer=self.HA_SYNC,
             )
@@ -2036,7 +2062,9 @@ class PanObject(object):
         """Iterates over a vsys_dict, deleting the import for all instances."""
         for vsys_spec in vsys_dict.values():
             for objs in vsys_spec.values():
-                members = " or ".join("text()='{0}'".format(x.uid) for x in objs)
+                members = " or ".join(
+                    "text()={0}".format(_xpath_safe(x.uid)) for x in objs
+                )
                 xpath = "{0}/member[{1}]".format(objs[0].xpath_import_base(), members)
                 # API complains if you try to do this in one delete statement,
                 # so do one delete per vsys per path, just like when we set the
@@ -2431,7 +2459,7 @@ class VersionedPanObject(PanObject):
 
     _DEFAULT_NAME = None
     _TEMPLATE_DEVICE_XPATH = "/config/devices/entry[@name='localhost.localdomain']"
-    _TEMPLATE_VSYS_XPATH = _TEMPLATE_DEVICE_XPATH + "/vsys/entry[@name='{vsys}']"
+    _TEMPLATE_VSYS_XPATH = _TEMPLATE_DEVICE_XPATH + "/vsys/entry[@name={vsys}]"
     _TEMPLATE_MGTCONFIG_XPATH = "/config/mgt-config"
 
     def __init__(self, *args, **kwargs):
@@ -2638,7 +2666,7 @@ class VersionedPanObject(PanObject):
                 if ap.startswith("entry "):
                     junk, var_to_use = ap.split()
                     sol_value = panos.string_or_list(settings[var_to_use])[0]
-                    finder = "entry[@name='{0}']".format(sol_value)
+                    finder = "entry[@name={0}]".format(_xpath_safe(sol_value))
                     tag = "entry"
                     attribs["name"] = sol_value
                 elif ap == "entry[@name='localhost.localdomain']":
@@ -2725,8 +2753,8 @@ class VersionedPanObject(PanObject):
             p = None
             if token.startswith("entry "):
                 junk, var_to_use = token.split()
-                p = "entry[name='{0}']".format(
-                    *(x for x in self._value_as_list(settings[var_to_use]))
+                p = "entry[name={0}]".format(
+                    *(_xpath_safe(x) for x in self._value_as_list(settings[var_to_use]))
                 )
             else:
                 p = None
@@ -2835,7 +2863,7 @@ class VersionedPanObject(PanObject):
         """Returns the version specific xpath of this object."""
         panos_version = self.retrieve_panos_version()
         val = self._xpaths._get_versioned_value(panos_version, self.parent)
-        return val.format(vsys=self.vsys or "vsys1")
+        return val.format(vsys=_xpath_safe(self.vsys or "vsys1"))
 
 
 class VersionedParamPath(VersioningSupport):
@@ -3198,7 +3226,7 @@ class ParamPath(object):
                         return
                     settings[entry_var] = ans.attrib["name"]
                 sol_val = panos.string_or_list(settings[entry_var])[0]
-                path_str = "entry[@name='{0}']".format(sol_val)
+                path_str = "entry[@name={0}]".format(_xpath_safe(sol_val))
             else:
                 # Standard path part
                 try:
@@ -3420,8 +3448,8 @@ class VsysOperations(VersionedPanObject):
             p = p.parent
 
         if vsys != "shared" and vsys is not None and self.XPATH_IMPORT is not None:
-            xpath = "{0}/member[text()='{1}']".format(
-                self.xpath_import_base(vsys), self.uid
+            xpath = "{0}/member[text()={1}]".format(
+                self.xpath_import_base(vsys), _xpath_safe(self.uid)
             )
             device = self.nearest_pandevice()
             device.active().xapi.delete(xpath, retry_on_peer=True)

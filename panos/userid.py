@@ -24,6 +24,7 @@ from pan.xapi import PanXapiError
 
 import panos.errors as err
 from panos import getlogger, string_or_list, string_or_list_or_none
+from panos.base import _xpath_safe
 from panos.updater import PanOSVersion
 
 logger = getlogger(__name__)
@@ -244,7 +245,7 @@ class UserId(object):
             return
         tags = [self.prefix + t for t in tags]
         for c_ip in ip:
-            tagelement = register.find("./entry[@ip='%s']/tag" % c_ip)
+            tagelement = register.find("./entry[@ip=%s]/tag" % _xpath_safe(c_ip))
             if tagelement is None:
                 entry = ET.SubElement(register, "entry", {"ip": c_ip})
                 tagelement = ET.SubElement(entry, "tag")
@@ -275,7 +276,7 @@ class UserId(object):
             return
         tags = [self.prefix + t for t in tags]
         for c_ip in ip:
-            tagelement = unregister.find("./entry[@ip='%s']/tag" % c_ip)
+            tagelement = unregister.find("./entry[@ip=%s]/tag" % _xpath_safe(c_ip))
             if tagelement is None:
                 entry = ET.SubElement(unregister, "entry", {"ip": c_ip})
                 tagelement = ET.SubElement(entry, "tag")
