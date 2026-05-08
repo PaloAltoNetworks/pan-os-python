@@ -32,7 +32,7 @@ __version__ = "1.12.1"
 import logging
 import sys
 import xml.etree.ElementTree as ET
-from distutils.version import LooseVersion  # Used by PanOSVersion class
+import re
 
 # Warn if running on end-of-life python
 if sys.version_info < (3, 6):
@@ -127,7 +127,28 @@ pan.DEBUG2 = pan.DEBUG1 - 1
 pan.DEBUG3 = pan.DEBUG2 - 1
 
 
-class PanOSVersion(LooseVersion):
+class _LooseVersion:
+    """Minimal LooseVersion replacement; distutils was removed in Python 3.12."""
+
+    _component_re = re.compile(r"(\d+|[a-z]+|\.)")
+
+    def __init__(self, vstring=None):
+        if vstring:
+            self.parse(vstring)
+
+    def parse(self, vstring):
+        self.vstring = vstring
+        parts = [x for x in self._component_re.split(vstring) if x and x != "."]
+        self.version = [int(x) if x.isdigit() else x for x in parts]
+
+    def __str__(self):
+        return self.vstring
+
+    def __repr__(self):
+        return "LooseVersion ('%s')" % str(self)
+
+
+class PanOSVersion(_LooseVersion):
     """LooseVersion with convenience properties to access version components"""
 
     @property
