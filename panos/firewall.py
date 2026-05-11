@@ -621,7 +621,7 @@ class FirewallCommit(object):
                 ET.SubElement(partial, "shared-object").text = "excluded"
             if self.exclude_policy_and_objects:
                 ET.SubElement(partial, "policy-and-objects").text = "excluded"
-            fe.append(partial)
+            root.append(partial)
 
         if self.force:
             fe = ET.SubElement(root, "force")
