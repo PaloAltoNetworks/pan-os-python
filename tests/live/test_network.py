@@ -1,6 +1,9 @@
 import random
+import traceback
+from inspect import trace
 
 from panos import device, network
+from panos.network import Interface
 from tests.live import testlib
 
 
@@ -576,6 +579,44 @@ class TestStaticRoute(testlib.FwFlow):
         state.obj.interface = None
 
     def cleanup_dependencies(self, fw, state):
+        try:
+            state.vr.delete()
+        except Exception:
+            pass
+
+        try:
+            state.eth_obj.delete()
+        except Exception:
+            pass
+
+class TestVirtualRouterInterfaces(testlib.FwFlow):
+    def create_dependencies(self, fw, state):
+        # Disable ARE on the device so we're just using VR setup
+        advanced_routing_engine = device.AdvancedRoutingEngine(enable=False)
+        fw.add(advanced_routing_engine)
+        advanced_routing_engine.create()
+
+        state.eth_obj = None
+        state.eth = testlib.get_available_interfaces(fw, max_interfaces=7)[0]
+
+        state.eth_obj = network.EthernetInterface(
+            state.eth, "layer3", testlib.random_ip("/24")
+        )
+        fw.add(state.eth_obj)
+        state.eth_obj.create()
+
+        state.obj = network.VirtualRouter(testlib.random_name())
+        fw.add(state.obj)
+
+    def setup_state_obj(self, fw, state):
+        pass
+
+    def test_10_set_vr(self, fw, state_map):
+        state = self.sanity(fw, state_map)
+        state.eth_obj.set_virtual_router(state.obj.name)
+
+    def cleanup_dependencies(self, fw, state):
+        return
         try:
             state.vr.delete()
         except Exception:
@@ -1659,13 +1700,21 @@ class TestAreLogicalRouter(testlib.FwFlow):
         state.advanced_routing_engine_obj.create()
 
         state.eth_obj = None
-        state.eth = testlib.get_available_interfaces(fw)[0]
+        available_interfaces = testlib.get_available_interfaces(fw, 2, 7)
+        state.eth = available_interfaces[0]
+        state.eth_2 = available_interfaces[1]
 
         state.eth_obj = network.EthernetInterface(
             state.eth, "layer3", testlib.random_ip("/24")
         )
+        state.eth_obj_2 = network.EthernetInterface(
+            state.eth_2, "layer3", testlib.random_ip("/24")
+        )
         fw.add(state.eth_obj)
+        fw.add(state.eth_obj_2)
         state.eth_obj.create()
+        state.eth_obj_2.create()
+
 
     def setup_state_obj(self, fw, state):
         vrf = network.Vrf(
@@ -1690,8 +1739,25 @@ class TestAreLogicalRouter(testlib.FwFlow):
         )
         lr = network.LogicalRouter(testlib.random_name())
         lr.add(vrf)
+
+        lr_2 = network.LogicalRouter(testlib.random_name())
+        vrf2 = network.Vrf(
+            "default"
+        )
+        lr_2.add(vrf2)
+
         state.obj = lr
+        state.obj_2 = lr_2
         fw.add(state.obj)
+        fw.add(state.obj_2)
+        state.obj.create()
+        state.obj_2.create()
+
+    def test_10_set_lr_for_interface(self, fw, state_map):
+        """Test setting the LR for an interface instead of the other way around"""
+        state = self.sanity(fw, state_map)
+        eth: Interface = state.eth_obj_2
+        eth.set_logical_router(state.obj_2, update=True)
 
     def update_state_obj(self, fw, state):
         state.obj.ad_static = random.randint(10, 240)
@@ -1699,9 +1765,15 @@ class TestAreLogicalRouter(testlib.FwFlow):
 
     def cleanup_dependencies(self, fw, state):
         try:
+            fw.add(state.obj)
+            fw.add(state.obj_2)
+            state.obj.delete()
+            state.obj_2.delete()
             state.eth_obj.delete()
-            state.advanced_routing_engine_obj.delete()
-        except Exception:
+            state.eth_obj_2.delete()
+        except Exception as e:
+            print(traceback.format_exc())
+            print(e)
             pass
 
 
