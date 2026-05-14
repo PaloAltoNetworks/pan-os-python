@@ -547,6 +547,7 @@ class Interface(VsysOperations):
             update (bool): Apply the changes to the device (Default: False)
             running_config: If refresh is True, refresh from the running
                 configuration (Default: False)
+            vrf_name (str): Sets the vrf inside the LR. (Default: 'default')
             return_type (str): Specify what this function returns, can be
                 either 'object' (the default) or 'bool'.  If this is 'object',
                 then the return value is the LogicalRouter in question.  If
@@ -570,9 +571,11 @@ class Interface(VsysOperations):
             # If the LR isn't found, create it instead
             lr = LogicalRouter(name=lr_name)
             parent.add(lr)
-            vrf = Vrf(name=vrf_name)
-            lr.vrf = [vrf]
             lr.create()
+
+        # Create or locate the VRF
+        vrf = Vrf(name=vrf_name)
+        vrf.refreshall(lr)
 
         # Pass all the vrfs to the update method
         return self._update_reference_in_objects(

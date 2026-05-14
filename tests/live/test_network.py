@@ -1755,7 +1755,7 @@ class TestAreLogicalRouter(testlib.FwFlow):
         """Test setting the LR for an interface instead of the other way around"""
         state = self.sanity(fw, state_map)
         eth: Interface = state.eth_obj_2
-        eth.set_logical_router(state.obj_2, update=True)
+        eth.set_logical_router(state.obj_2.name, update=True)
 
     def update_state_obj(self, fw, state):
         state.obj.ad_static = random.randint(10, 240)
