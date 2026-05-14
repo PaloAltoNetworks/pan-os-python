@@ -527,6 +527,82 @@ class Interface(VsysOperations):
             False,
         )
 
+    def set_logical_router(
+        self,
+        lr_name,
+        refresh=False,
+        update=False,
+        running_config=False,
+        return_type="object",
+        vrf_name="default",
+        **kwargs
+    ):
+        """adds the given interface to the VRF by name.
+
+        This is more complicated than `set_virtual_router` as the logical routers have child VRF child elements, which
+        is where the interfaces are configured.
+
+        This will use the VRF name 'default' by default.
+
+        Args:
+            lr_name (str): The name of the LogicalRouter or
+                a :class:`panos.network.LogicalRouter` instance
+            refresh (bool): Refresh the relevant current state of the device
+                before taking action (Default: False)
+            update (bool): Apply the changes to the device (Default: False)
+            running_config: If refresh is True, refresh from the running
+                configuration (Default: False)
+            vrf_name (str): Sets the vrf inside the LR. (Default: 'default')
+            return_type (str): Specify what this function returns, can be
+                either 'object' (the default) or 'bool'.  If this is 'object',
+                then the return value is the LogicalRouter in question.  If
+                this is 'bool', then the return value is a boolean that tells
+                you about if the live device needs updates (update=False) or
+                was updated (update=True).
+        """
+
+        # First we get all the logical routers
+        parent, all_logical_routers = self._get_all_objects_by_type(
+            LogicalRouter,
+            refresh,
+            running_config,
+            name_only=False,
+            reference_var="vrf",
+        )
+        target_lr: LogicalRouter | None
+
+        target_lr = next((lr for lr in all_logical_routers if lr.uid == lr_name), None)
+        if not target_lr:
+            # If the LR isn't found, create it instead
+            target_lr = LogicalRouter(name=lr_name)
+            parent.add(target_lr)
+            vrf = Vrf(name=vrf_name)
+            target_lr.add(vrf)
+
+        # Remove interface from other LRs first
+        for lr in all_logical_routers:
+            Vrf.refreshall(lr)
+            if lr.name != lr_name:
+                for vrf in lr.findall(Vrf):
+                    if vrf.interface:
+                        if self.name in vrf.interface:
+                            vrf.interface.remove(self.name)
+                            if update:
+                                vrf.update("interface")
+
+        return self._update_reference_in_objects(
+            target_lr,
+            target_lr.findall(Vrf),
+            reference_name=vrf_name,
+            reference_var="interface",
+            reference_type=Vrf,
+            var_type="list",
+            return_type=return_type,
+            update=update,
+            exclusive=True,
+            **kwargs
+        )
+
     def get_counters(self):
         """Pull the counters for an interface
 
