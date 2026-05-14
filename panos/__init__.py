@@ -30,9 +30,9 @@ __version__ = "1.12.5"
 
 
 import logging
+import re
 import sys
 import xml.etree.ElementTree as ET
-import re
 
 # Warn if running on end-of-life python
 if sys.version_info < (3, 6):
