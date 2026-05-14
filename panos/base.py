@@ -1507,12 +1507,7 @@ class PanObject(object):
             return yesno(value)
 
     def _get_all_objects_by_type(
-        self,
-        reference_type,
-        refresh,
-        running_config,
-        name_only,
-        reference_var
+        self, reference_type, refresh, running_config, name_only, reference_var
     ):
         """
         Returns all of the objects of the given type, ensuring that `reference_var` is refreshed and available to be
@@ -1706,11 +1701,7 @@ class PanObject(object):
 
         # Get all the objects and the parent
         parent, allobjects = self._get_all_objects_by_type(
-            reference_type,
-            refresh,
-            running_config,
-            name_only,
-            reference_var
+            reference_type, refresh, running_config, name_only, reference_var
         )
 
         return self._update_reference_in_objects(

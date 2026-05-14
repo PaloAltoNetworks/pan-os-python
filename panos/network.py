@@ -561,7 +561,7 @@ class Interface(VsysOperations):
             refresh,
             running_config,
             name_only=False,
-            reference_var="interface"
+            reference_var="interface",
         )
         lr: LogicalRouter | None
 
@@ -587,8 +587,6 @@ class Interface(VsysOperations):
             exclusive=True,
             **kwargs
         )
-
-
 
     def get_counters(self):
         """Pull the counters for an interface

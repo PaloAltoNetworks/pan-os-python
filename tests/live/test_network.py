@@ -589,6 +589,7 @@ class TestStaticRoute(testlib.FwFlow):
         except Exception:
             pass
 
+
 class TestVirtualRouterInterfaces(testlib.FwFlow):
     def create_dependencies(self, fw, state):
         # Disable ARE on the device so we're just using VR setup
@@ -1715,7 +1716,6 @@ class TestAreLogicalRouter(testlib.FwFlow):
         state.eth_obj.create()
         state.eth_obj_2.create()
 
-
     def setup_state_obj(self, fw, state):
         vrf = network.Vrf(
             "default",
@@ -1741,9 +1741,7 @@ class TestAreLogicalRouter(testlib.FwFlow):
         lr.add(vrf)
 
         lr_2 = network.LogicalRouter(testlib.random_name())
-        vrf2 = network.Vrf(
-            "default"
-        )
+        vrf2 = network.Vrf("default")
         lr_2.add(vrf2)
 
         state.obj = lr
