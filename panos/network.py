@@ -540,7 +540,7 @@ class Interface(VsysOperations):
         This will use the VRF name 'default' by default.
 
         Args:
-            logical_router_name (str): The name of the LogicalRouter or
+            lr_name (str): The name of the LogicalRouter or
                 a :class:`panos.network.LogicalRouter` instance
             refresh (bool): Refresh the relevant current state of the device
                 before taking action (Default: False)

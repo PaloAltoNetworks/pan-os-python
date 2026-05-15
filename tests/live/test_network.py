@@ -617,7 +617,6 @@ class TestVirtualRouterInterfaces(testlib.FwFlow):
         state.eth_obj.set_virtual_router(state.obj.name)
 
     def cleanup_dependencies(self, fw, state):
-        return
         try:
             state.vr.delete()
         except Exception:
@@ -1752,7 +1751,6 @@ class TestAreLogicalRouter(testlib.FwFlow):
         state.obj_2.create()
 
         lr_2.refresh()
-        print(f"LR_2 CHILDREN: {lr_2.vrf}")
 
     def test_10_set_lr_for_interface(self, fw, state_map):
         """Test setting the LR for an interface instead of the other way around"""
