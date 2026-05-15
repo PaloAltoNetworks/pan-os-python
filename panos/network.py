@@ -586,7 +586,6 @@ class Interface(VsysOperations):
                             if update:
                                 vrf.update("interface")
 
-
         return self._update_reference_in_objects(
             target_lr,
             target_lr.findall(Vrf),

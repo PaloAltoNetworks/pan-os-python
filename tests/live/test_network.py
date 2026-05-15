@@ -1780,9 +1780,9 @@ class TestAreLogicalRouter(testlib.FwFlow):
         try:
             fw.add(state.obj)
             fw.add(state.obj_2)
-            fw.remove_by_name("test-new-lr", network.LogicalRouter)
-            state.obj.delete()
-            state.obj_2.delete()
+            lrs = network.LogicalRouter.refreshall(fw)
+            for lr in lrs:
+                lr.delete()
             state.eth_obj.delete()
             state.eth_obj_2.delete()
         except Exception as e:
