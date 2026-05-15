@@ -564,7 +564,7 @@ class Interface(VsysOperations):
             name_only=False,
             reference_var="vrf",
         )
-        lr: LogicalRouter | None
+        target_lr: LogicalRouter | None
 
         target_lr = next((lr for lr in all_logical_routers if lr.uid == lr_name), None)
         if not target_lr:
