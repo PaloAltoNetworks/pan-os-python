@@ -562,25 +562,34 @@ class Interface(VsysOperations):
             refresh,
             running_config,
             name_only=False,
-            reference_var="interface",
+            reference_var="vrf",
         )
         lr: LogicalRouter | None
 
-        lr = next((lr for lr in all_logical_routers if lr.uid == lr_name), None)
-        if not lr:
+        target_lr = next((lr for lr in all_logical_routers if lr.uid == lr_name), None)
+        if not target_lr:
             # If the LR isn't found, create it instead
-            lr = LogicalRouter(name=lr_name)
-            parent.add(lr)
-            lr.create()
+            target_lr = LogicalRouter(name=lr_name)
+            parent.add(target_lr)
+            vrf = Vrf(name=vrf_name)
+            target_lr.add(vrf)
+            target_lr.create()
 
-        # Create or locate the VRF
-        vrf = Vrf(name=vrf_name)
-        vrf.refreshall(lr)
+        # Remove interface from other LRs first
+        for lr in all_logical_routers:
+            Vrf.refreshall(lr)
+            if lr.name != lr_name:
+                for vrf in lr.findall(Vrf):
+                    if vrf.interface:
+                        if self.name in vrf.interface:
+                            vrf.interface.remove(self.name)
+                            if update:
+                                vrf.update("interface")
 
-        # Pass all the vrfs to the update method
+
         return self._update_reference_in_objects(
-            lr,
-            lr.vrf,
+            target_lr,
+            target_lr.findall(Vrf),
             reference_name=vrf_name,
             reference_var="interface",
             reference_type=Vrf,

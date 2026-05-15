@@ -1751,11 +1751,26 @@ class TestAreLogicalRouter(testlib.FwFlow):
         state.obj.create()
         state.obj_2.create()
 
+        lr_2.refresh()
+        print(f"LR_2 CHILDREN: {lr_2.vrf}")
+
     def test_10_set_lr_for_interface(self, fw, state_map):
         """Test setting the LR for an interface instead of the other way around"""
         state = self.sanity(fw, state_map)
         eth: Interface = state.eth_obj_2
         eth.set_logical_router(state.obj_2.name, update=True)
+
+    def test_11_change_lr_for_interface(self, fw, state_map):
+        """Test setting the LR for an interface instead of the other way around"""
+        state = self.sanity(fw, state_map)
+        eth: Interface = state.eth_obj_2
+        eth.set_logical_router(state.obj.name, update=True, refresh=True)
+
+    def test_11_change_lr_for_interface_add_new_lr(self, fw, state_map):
+        """Test setting the LR for an interface instead of the other way around"""
+        state = self.sanity(fw, state_map)
+        eth: Interface = state.eth_obj
+        eth.set_logical_router("test-new-lr", update=True, refresh=True)
 
     def update_state_obj(self, fw, state):
         state.obj.ad_static = random.randint(10, 240)
@@ -1765,6 +1780,7 @@ class TestAreLogicalRouter(testlib.FwFlow):
         try:
             fw.add(state.obj)
             fw.add(state.obj_2)
+            fw.remove_by_name("test-new-lr", network.LogicalRouter)
             state.obj.delete()
             state.obj_2.delete()
             state.eth_obj.delete()
