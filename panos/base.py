@@ -1604,13 +1604,19 @@ class PanObject(object):
         **kwargs
     ):
         update_needed = False
-        # Find any current references to self and remove them, unless it is the desired reference
+
+        # Resolve target upfront for identity-based skip
+        target_obj = None
+        if reference_name is not None:
+            target_obj = parent.find_or_create(reference_name, reference_type, **kwargs)
+
+        # Find any current references to self and remove them, unless it is the target
         if exclusive:
             for obj in allobjects:
                 references = getattr(obj, reference_var)
                 if not references:
                     continue
-                elif reference_name is not None and obj.uid == reference_name:
+                elif target_obj is not None and obj is target_obj:
                     continue
                 elif isinstance(references, list) and self in references:
                     update_needed = True
@@ -1628,40 +1634,39 @@ class PanObject(object):
                     if update:
                         obj.update(reference_var)
 
-        # Add new reference to self in requested object
-        if reference_name is not None:
-            obj = parent.find_or_create(reference_name, reference_type, **kwargs)
-            var = getattr(obj, reference_var)
+        # Add new reference to self in target object
+        if target_obj is not None:
+            var = getattr(target_obj, reference_var)
             if var_type == "list":
                 if var is None:
                     update_needed = True
                     setattr(
-                        obj,
+                        target_obj,
                         reference_var,
                         [
                             self,
                         ],
                     )
                     if update:
-                        obj.update(reference_var)
+                        target_obj.update(reference_var)
                 elif not isinstance(var, list):
                     if var != self and var != str(self):
                         update_needed = True
-                        setattr(obj, reference_var, [var, self])
+                        setattr(target_obj, reference_var, [var, self])
                         if update:
-                            obj.update(reference_var)
+                            target_obj.update(reference_var)
                 elif self not in var and str(self) not in var:
                     update_needed = True
                     var.append(self)
                     if update:
-                        obj.update(reference_var)
+                        target_obj.update(reference_var)
             elif var != self and var != str(self):
                 update_needed = True
-                setattr(obj, reference_var, self)
+                setattr(target_obj, reference_var, self)
                 if update:
-                    obj.update(reference_var)
+                    target_obj.update(reference_var)
             if return_type == "object":
-                return obj
+                return target_obj
 
         if return_type == "bool":
             return update_needed
@@ -1678,12 +1683,18 @@ class PanObject(object):
         running_config,
         return_type,
         name_only,
+        parent_type=None,
+        parent_name=None,
         **kwargs
     ):
         """Used by helper methods to set references between objects
 
         For example, set_zone() would set the zone for an interface by creating a reference from
         the zone to the interface. If the desired reference already exists then nothing happens.
+
+        When parent_type and parent_name are provided, handles nested references
+        where reference_type objects are children of parent_type objects
+        (e.g., LogicalRouter -> Vrf -> interface).
 
         This function has two modes:  refresh=True and refresh=False.  You
         should only ever use refresh=False if:
@@ -1699,10 +1710,34 @@ class PanObject(object):
         if return_type not in ("bool", "object"):
             raise ValueError("Unknown return_type specified: {0}".format(return_type))
 
-        # Get all the objects and the parent
+        object_type = parent_type if parent_type is not None else reference_type
+
         parent, allobjects = self._get_all_objects_by_type(
-            reference_type, refresh, running_config, name_only, reference_var
+            object_type,
+            refresh,
+            running_config,
+            name_only=name_only,
+            reference_var=reference_var,
         )
+
+        if parent_type is not None:
+            for parent_obj in allobjects:
+                reference_type.refreshall(parent_obj)
+
+            target_parent = next(
+                (p for p in allobjects if p.uid == parent_name), None
+            )
+            if not target_parent:
+                target_parent = parent.find_or_create(
+                    parent_name, parent_type
+                )
+
+            all_children = []
+            for parent_obj in allobjects:
+                all_children.extend(parent_obj.findall(reference_type))
+
+            parent = target_parent
+            allobjects = all_children
 
         return self._update_reference_in_objects(
             parent,

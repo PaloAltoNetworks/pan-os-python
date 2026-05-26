@@ -530,14 +530,12 @@ class Interface(VsysOperations):
         running_config=False,
         return_type="object",
         vrf_name="default",
-        **kwargs
     ):
-        """adds the given interface to the VRF by name.
+        """Set the logical router for this interface
 
-        This is more complicated than `set_virtual_router` as the logical routers have child VRF child elements, which
-        is where the interfaces are configured.
-
-        This will use the VRF name 'default' by default.
+        Creates a reference to this interface in the specified logical router's
+        VRF and removes references to this interface from all other logical
+        routers. The logical router will be created if it doesn't exist.
 
         Args:
             lr_name (str): The name of the LogicalRouter or
@@ -547,56 +545,27 @@ class Interface(VsysOperations):
             update (bool): Apply the changes to the device (Default: False)
             running_config: If refresh is True, refresh from the running
                 configuration (Default: False)
-            vrf_name (str): Sets the vrf inside the LR. (Default: 'default')
+            vrf_name (str): The VRF name inside the LR. (Default: 'default')
             return_type (str): Specify what this function returns, can be
                 either 'object' (the default) or 'bool'.  If this is 'object',
-                then the return value is the LogicalRouter in question.  If
+                then the return value is the Vrf in question.  If
                 this is 'bool', then the return value is a boolean that tells
                 you about if the live device needs updates (update=False) or
                 was updated (update=True).
         """
-
-        # First we get all the logical routers
-        parent, all_logical_routers = self._get_all_objects_by_type(
-            LogicalRouter,
+        return self._set_reference(
+            vrf_name,
+            Vrf,
+            "interface",
+            "list",
+            True,
             refresh,
+            update,
             running_config,
-            name_only=False,
-            reference_var="vrf",
-        )
-        target_lr: LogicalRouter | None
-
-        target_lr = next((lr for lr in all_logical_routers if lr.uid == lr_name), None)
-        if not target_lr:
-            # If the LR isn't found, create it instead
-            target_lr = LogicalRouter(name=lr_name)
-            parent.add(target_lr)
-            vrf = Vrf(name=vrf_name)
-            target_lr.add(vrf)
-            target_lr.create()
-
-        # Remove interface from other LRs first
-        for lr in all_logical_routers:
-            Vrf.refreshall(lr)
-            if lr.name != lr_name:
-                for vrf in lr.findall(Vrf):
-                    if vrf.interface:
-                        if self.name in vrf.interface:
-                            vrf.interface.remove(self.name)
-                            if update:
-                                vrf.update("interface")
-
-        return self._update_reference_in_objects(
-            target_lr,
-            target_lr.findall(Vrf),
-            reference_name=vrf_name,
-            reference_var="interface",
-            reference_type=Vrf,
-            var_type="list",
-            return_type=return_type,
-            update=update,
-            exclusive=True,
-            **kwargs
+            return_type,
+            False,
+            parent_type=LogicalRouter,
+            parent_name=lr_name,
         )
 
     def get_counters(self):
