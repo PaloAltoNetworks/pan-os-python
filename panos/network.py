@@ -573,7 +573,6 @@ class Interface(VsysOperations):
             parent.add(target_lr)
             vrf = Vrf(name=vrf_name)
             target_lr.add(vrf)
-            target_lr.create()
 
         # Remove interface from other LRs first
         for lr in all_logical_routers:
