@@ -556,6 +556,19 @@ class PanObject(object):
             return parsed.toprettyxml(indent="\t", encoding="utf-8")
         return ET.tostring(self.element(), encoding="utf-8")
 
+    def element_str_inner(self):
+        """XML of this object's child elements only, without the root entry/member wrapper.
+
+        Used by create() when issuing set() against the entry's own xpath. PAN-OS
+        expects inner content only at that xpath — passing the full <entry> wrapper
+        causes a schema error ("may need to override template object first").
+
+        Returns:
+            bytes: concatenated XML of child elements, empty bytes if none.
+        """
+        root = self.element()
+        return b"".join(ET.tostring(child) for child in root)
+
     def _root_element(self):
         if self.SUFFIX == ENTRY:
             return ET.Element("entry", {"name": self.uid})
@@ -672,18 +685,20 @@ class PanObject(object):
         # For entry/member objects, use edit() against the entry's own xpath rather than
         # For entry/member objects, use set() against the entry's own xpath rather than
         # the parent container xpath. PAN-OS records set() on an entry xpath as a CREATE
-        # owned by the calling admin. Using the parent container xpath is recorded as an
-        # EDIT on the container and changes admin lock ownership, breaking partial commits
-        # for other admins. xapi.edit() cannot be used here because PAN-OS rejects edit()
-        # on a non-existent entry — only set() creates new entries reliably.
+        # For entry/member objects, use set() against the entry's own xpath with inner
+        # content only (no <entry> wrapper). PAN-OS records this as a CREATE owned by
+        # the calling admin. Using the parent container xpath is recorded as an EDIT on
+        # the container and changes admin lock ownership, breaking partial commits for
+        # other admins. Passing the full <entry> wrapper at the entry xpath causes a
+        # PAN-OS schema error ("may need to override template object first").
         if self.SUFFIX in (ENTRY, MEMBER):
             if self.HA_SYNC:
                 device.active().xapi.set(
-                    self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC
+                    self.xpath(), self.element_str_inner(), retry_on_peer=self.HA_SYNC
                 )
             else:
                 device.xapi.set(
-                    self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC
+                    self.xpath(), self.element_str_inner(), retry_on_peer=self.HA_SYNC
                 )
         else:
             if self.HA_SYNC:
