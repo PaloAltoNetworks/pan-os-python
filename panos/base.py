@@ -556,23 +556,6 @@ class PanObject(object):
             return parsed.toprettyxml(indent="\t", encoding="utf-8")
         return ET.tostring(self.element(), encoding="utf-8")
 
-    def element_str_inner(self):
-        """The XML of this object's children only, without the root entry/member wrapper.
-
-        Used by create() to issue a set call against the entry's own xpath rather than
-        the parent container xpath. This matches how the GUI writes config: target the
-        entry directly with its inner content so that PAN-OS records a CREATE on the
-        entry instead of an EDIT on the parent container (which would change admin lock
-        ownership to the calling admin).
-
-        Returns:
-            str: XML of the child elements as a concatenated byte string, or an empty
-                 byte string if the root has no children.
-
-        """
-        root = self.element()
-        return b"".join(ET.tostring(child, encoding="utf-8") for child in root)
-
     def _root_element(self):
         if self.SUFFIX == ENTRY:
             return ET.Element("entry", {"name": self.uid})
@@ -686,20 +669,29 @@ class PanObject(object):
             device.id + ': create called on %s object "%s"' % (type(self), self.uid)
         )
         device.set_config_changed()
-        # For entry/member objects, target the entry's own xpath with inner content only.
-        # This matches how the GUI writes config: PAN-OS records a CREATE on the entry
-        # rather than an EDIT on the parent container, which would change admin lock
-        # ownership to the calling admin.
+        # For entry/member objects, use edit() against the entry's own xpath rather than
+        # set() against the parent container xpath. PAN-OS records edit() on an entry xpath
+        # as a CREATE owned by the calling admin; set() against the parent container is
+        # recorded as an EDIT on the container and changes admin lock ownership to the
+        # calling admin, which breaks partial commits for other admins.
         if self.SUFFIX in (ENTRY, MEMBER):
-            xpath = self.xpath()
-            element = self.element_str_inner()
+            if self.HA_SYNC:
+                device.active().xapi.edit(
+                    self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC
+                )
+            else:
+                device.xapi.edit(
+                    self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC
+                )
         else:
-            xpath = self.xpath_short()
-            element = self.element_str()
-        if self.HA_SYNC:
-            device.active().xapi.set(xpath, element, retry_on_peer=self.HA_SYNC)
-        else:
-            device.xapi.set(xpath, element, retry_on_peer=self.HA_SYNC)
+            if self.HA_SYNC:
+                device.active().xapi.set(
+                    self.xpath_short(), self.element_str(), retry_on_peer=self.HA_SYNC
+                )
+            else:
+                device.xapi.set(
+                    self.xpath_short(), self.element_str(), retry_on_peer=self.HA_SYNC
+                )
         for child in self.children:
             child._check_child_methods("create")
 
