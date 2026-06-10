@@ -556,6 +556,23 @@ class PanObject(object):
             return parsed.toprettyxml(indent="\t", encoding="utf-8")
         return ET.tostring(self.element(), encoding="utf-8")
 
+    def element_str_inner(self):
+        """The XML of this object's children only, without the root entry/member wrapper.
+
+        Used by create() to issue a set call against the entry's own xpath rather than
+        the parent container xpath. This matches how the GUI writes config: target the
+        entry directly with its inner content so that PAN-OS records a CREATE on the
+        entry instead of an EDIT on the parent container (which would change admin lock
+        ownership to the calling admin).
+
+        Returns:
+            str: XML of the child elements as a concatenated byte string, or an empty
+                 byte string if the root has no children.
+
+        """
+        root = self.element()
+        return b"".join(ET.tostring(child, encoding="utf-8") for child in root)
+
     def _root_element(self):
         if self.SUFFIX == ENTRY:
             return ET.Element("entry", {"name": self.uid})
@@ -669,13 +686,20 @@ class PanObject(object):
             device.id + ': create called on %s object "%s"' % (type(self), self.uid)
         )
         device.set_config_changed()
-        element = self.element_str()
-        if self.HA_SYNC:
-            device.active().xapi.set(
-                self.xpath_short(), element, retry_on_peer=self.HA_SYNC
-            )
+        # For entry/member objects, target the entry's own xpath with inner content only.
+        # This matches how the GUI writes config: PAN-OS records a CREATE on the entry
+        # rather than an EDIT on the parent container, which would change admin lock
+        # ownership to the calling admin.
+        if self.SUFFIX in (ENTRY, MEMBER):
+            xpath = self.xpath()
+            element = self.element_str_inner()
         else:
-            device.xapi.set(self.xpath_short(), element, retry_on_peer=self.HA_SYNC)
+            xpath = self.xpath_short()
+            element = self.element_str()
+        if self.HA_SYNC:
+            device.active().xapi.set(xpath, element, retry_on_peer=self.HA_SYNC)
+        else:
+            device.xapi.set(xpath, element, retry_on_peer=self.HA_SYNC)
         for child in self.children:
             child._check_child_methods("create")
 
