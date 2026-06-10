@@ -670,17 +670,19 @@ class PanObject(object):
         )
         device.set_config_changed()
         # For entry/member objects, use edit() against the entry's own xpath rather than
-        # set() against the parent container xpath. PAN-OS records edit() on an entry xpath
-        # as a CREATE owned by the calling admin; set() against the parent container is
-        # recorded as an EDIT on the container and changes admin lock ownership to the
-        # calling admin, which breaks partial commits for other admins.
+        # For entry/member objects, use set() against the entry's own xpath rather than
+        # the parent container xpath. PAN-OS records set() on an entry xpath as a CREATE
+        # owned by the calling admin. Using the parent container xpath is recorded as an
+        # EDIT on the container and changes admin lock ownership, breaking partial commits
+        # for other admins. xapi.edit() cannot be used here because PAN-OS rejects edit()
+        # on a non-existent entry — only set() creates new entries reliably.
         if self.SUFFIX in (ENTRY, MEMBER):
             if self.HA_SYNC:
-                device.active().xapi.edit(
+                device.active().xapi.set(
                     self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC
                 )
             else:
-                device.xapi.edit(
+                device.xapi.set(
                     self.xpath(), self.element_str(), retry_on_peer=self.HA_SYNC
                 )
         else:

@@ -584,10 +584,11 @@ class TestPanObject(unittest.TestCase):
             c._check_child_methods.assert_called_once_with("create")
 
     @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
-    def test_create_entry_suffix_uses_edit_on_entry_xpath(self, m_uid):
-        # ENTRY-suffix objects must use xapi.edit() against the entry's own xpath so
-        # that PAN-OS records a CREATE on the entry rather than an EDIT on the parent
-        # container (which would change admin lock ownership to the calling admin).
+    def test_create_entry_suffix_uses_set_on_entry_xpath(self, m_uid):
+        # ENTRY-suffix objects must use xapi.set() against the entry's own xpath (not
+        # the parent container xpath) so that PAN-OS records a CREATE on the entry
+        # rather than an EDIT on the parent container, which would change admin lock
+        # ownership to the calling admin and break partial commits for others.
         PanDeviceId = "42"
         PanDeviceXpath = "path/to/entry"
         PanDeviceElementStr = "element string"
@@ -605,7 +606,7 @@ class TestPanObject(unittest.TestCase):
 
         self.assertIsNone(ret_val)
         m_panos.set_config_changed.assert_called_once_with()
-        m_panos.active().xapi.edit.assert_called_once_with(
+        m_panos.active().xapi.set.assert_called_once_with(
             PanDeviceXpath,
             PanDeviceElementStr,
             retry_on_peer=self.obj.HA_SYNC,
@@ -633,7 +634,7 @@ class TestPanObject(unittest.TestCase):
 
         self.assertIsNone(ret_val)
         m_panos.set_config_changed.assert_called_once_with()
-        m_panos.xapi.edit.assert_called_once_with(
+        m_panos.xapi.set.assert_called_once_with(
             PanDeviceXpath,
             PanDeviceElementStr,
             retry_on_peer=self.obj.HA_SYNC,
