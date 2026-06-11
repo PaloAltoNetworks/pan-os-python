@@ -584,6 +584,65 @@ class TestPanObject(unittest.TestCase):
             c._check_child_methods.assert_called_once_with("create")
 
     @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
+    def test_create_entry_suffix_uses_set_on_entry_xpath_with_inner_element(self, m_uid):
+        # ENTRY-suffix objects must use xapi.set() against the entry's own xpath with
+        # inner content only (no <entry> wrapper). Passing the full element_str() at
+        # the entry xpath causes PAN-OS schema error; using parent xpath causes an EDIT
+        # on the container changing admin lock ownership and breaking partial commits.
+        PanDeviceId = "42"
+        PanDeviceXpath = "path/to/entry"
+        PanDeviceInnerElement = b"<from>any</from>"
+
+        self.obj.SUFFIX = Base.ENTRY
+
+        spec = {"id": PanDeviceId}
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
+        self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
+        self.obj.element_str_inner = mock.Mock(return_value=PanDeviceInnerElement)
+        m_uid.return_value = "uid"
+
+        ret_val = self.obj.create()
+
+        self.assertIsNone(ret_val)
+        m_panos.set_config_changed.assert_called_once_with()
+        m_panos.active().xapi.set.assert_called_once_with(
+            PanDeviceXpath,
+            PanDeviceInnerElement,
+            retry_on_peer=self.obj.HA_SYNC,
+        )
+        self.obj.xpath.assert_called_once_with()
+        self.obj.element_str_inner.assert_called_once_with()
+
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
+    def test_create_entry_suffix_without_ha_sync(self, m_uid):
+        PanDeviceId = "42"
+        PanDeviceXpath = "path/to/entry"
+        PanDeviceInnerElement = b"<from>any</from>"
+
+        self.obj.SUFFIX = Base.ENTRY
+        self.obj.HA_SYNC = False
+
+        spec = {"id": PanDeviceId}
+        m_panos = mock.Mock(**spec)
+        self.obj.nearest_pandevice = mock.Mock(return_value=m_panos)
+        self.obj.xpath = mock.Mock(return_value=PanDeviceXpath)
+        self.obj.element_str_inner = mock.Mock(return_value=PanDeviceInnerElement)
+        m_uid.return_value = "uid"
+
+        ret_val = self.obj.create()
+
+        self.assertIsNone(ret_val)
+        m_panos.set_config_changed.assert_called_once_with()
+        m_panos.xapi.set.assert_called_once_with(
+            PanDeviceXpath,
+            PanDeviceInnerElement,
+            retry_on_peer=self.obj.HA_SYNC,
+        )
+        self.obj.xpath.assert_called_once_with()
+        self.obj.element_str_inner.assert_called_once_with()
+
+    @mock.patch("panos.base.PanObject.uid", new_callable=mock.PropertyMock)
     def test_delete_with_ha_sync_no_parent(self, m_uid):
         PanDeviceId = "42"
         PanDeviceXpath = "path"
