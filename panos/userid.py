@@ -18,6 +18,7 @@
 """User-ID and Dynamic Address Group updates using the User-ID API"""
 
 import xml.etree.ElementTree as ET
+from panos._xml_safety import safe_fromstring
 from copy import deepcopy
 from xml.sax.saxutils import escape, quoteattr
 
@@ -62,7 +63,7 @@ class UserId(object):
         self.ignore_dup_errors = ignore_dup_errors
 
         # Build the initial uid-message
-        self._uidmessage = ET.fromstring(
+        self._uidmessage = safe_fromstring(
             "<uid-message>"
             + "<version>1.0</version>"
             + "<type>update</type>"
@@ -658,7 +659,7 @@ class UserId(object):
             msg.append("<user>{0}</user>".format(escape(user)))
         msg.append("</registered-user></object></show>")
 
-        cmd = ET.fromstring("".join(msg))
+        cmd = safe_fromstring("".join(msg))
         if user is None:
             start_elm = cmd.find("./object/registered-user/all/start-point")
 
