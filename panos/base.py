@@ -4765,6 +4765,8 @@ class PanDevice(PanObject):
         else:
             for fw, state in ((self, self_state), (self.ha_peer, peer_state)):
                 fw._ha_active = state == "active"
+                # Reached this device for its state, so it is no longer failed.
+                fw.ha_failed = False
             return self_state
 
     def synchronize_config(self):
