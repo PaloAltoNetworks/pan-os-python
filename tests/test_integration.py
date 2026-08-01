@@ -260,6 +260,56 @@ class TestElementStr_7_0(unittest.TestCase):
 
         self.assertEqual(expected, ret_val)
 
+    # VirtualRouter with nexthop_type=None StaticRoute child
+    def test_element_str_from_virtualrouter_with_sr_none(self):
+        """StaticRoute > VirtualRouter"""
+        expected = b"".join(
+            [
+                b'<entry name="default"><interface><member>ethernet1/3</member>',
+                b"</interface><routing-table><ip><static-route>",
+                b'<entry name="my none route"><destination>3.3.3.3/32',
+                b"</destination>",
+                b"<interface>ethernet1/4</interface><metric>10</metric>",
+                b"</entry></static-route></ip></routing-table></entry>",
+            ]
+        )
+
+        vro = panos.network.VirtualRouter("default", "ethernet1/3")
+        sro = panos.network.StaticRoute(
+            "my none route", "3.3.3.3/32", None, None, "ethernet1/4"
+        )
+
+        vro.add(sro)
+
+        ret_val = vro.element_str()
+
+        self.assertEqual(expected, ret_val)
+
+    # VirtualRouter with nexthop_type 'none' StaticRoute child
+    def test_element_str_from_virtualrouter_with_sr_none_str(self):
+        """StaticRoute > VirtualRouter"""
+        expected = b"".join(
+            [
+                b'<entry name="default"><interface><member>ethernet1/3</member>',
+                b"</interface><routing-table><ip><static-route>",
+                b'<entry name="my none route"><destination>3.3.3.3/32',
+                b"</destination>",
+                b"<interface>ethernet1/4</interface><metric>10</metric>",
+                b"</entry></static-route></ip></routing-table></entry>",
+            ]
+        )
+
+        vro = panos.network.VirtualRouter("default", "ethernet1/3")
+        sro = panos.network.StaticRoute(
+            "my none route", "3.3.3.3/32", "none", None, "ethernet1/4"
+        )
+
+        vro.add(sro)
+
+        ret_val = vro.element_str()
+
+        self.assertEqual(expected, ret_val)
+
     # 3) EthernetInterface
     def test_element_str_from_ethernetinterface(self):
         expected = b"".join(
