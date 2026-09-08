@@ -329,8 +329,8 @@ class ApplicationObject(VersionedPanObject):
         default_type (str): Default identification type of the application
         default_port (list): Default ports
         default_ip_protocol (str): Default IP protocol
-        default_icmp_type (int): Default ICMP type
-        default_icmp_code (int): Default ICMP code
+        default_icmp_type (str): Default ICMP type
+        default_icmp_code (str): Default ICMP code
         parent_app (str): Parent Application for which this app falls under
         timeout (int): Default timeout
         tcp_timeout (int): TCP timeout
@@ -405,7 +405,6 @@ class ApplicationObject(VersionedPanObject):
             VersionedParamPath(
                 "default_icmp_type",
                 path="default/{default_type}/type",
-                vartype="int",
                 condition={
                     "default_type": ["ident-by-icmp-type", "ident-by-icmp6-type"]
                 },
@@ -415,7 +414,6 @@ class ApplicationObject(VersionedPanObject):
             VersionedParamPath(
                 "default_icmp_code",
                 path="default/{default_type}/code",
-                vartype="int",
                 condition={
                     "default_type": ["ident-by-icmp-type", "ident-by-icmp6-type"]
                 },
