@@ -210,7 +210,7 @@ class PanObject(object):
             return ""
 
     def add(self, child):
-        """Add a child node to this node
+        """Add a child node to this node.
 
         Args:
             child (PanObject): Node to add as a child
@@ -218,13 +218,18 @@ class PanObject(object):
         Returns:
             PanObject: Child node
 
+        Raises:
+            ValueError: If the child is this node itself
+
         """
+        if child is self:
+            raise ValueError("An object cannot be added as its own child")
         child.parent = self
         self.children.append(child)
         return child
 
     def insert(self, index, child):
-        """Insert a child node at a specific index
+        """Insert a child node at a specific index.
 
         This is useful for ordering or reordering security policy rules
 
@@ -235,18 +240,29 @@ class PanObject(object):
         Returns:
             PanObject: Child node
 
+        Raises:
+            ValueError: If the child is this node itself
+
         """
+        if child is self:
+            raise ValueError("An object cannot be added as its own child")
         child.parent = self
         self.children.insert(index, child)
         return child
 
     def extend(self, children):
-        """Add a list of child nodes to this node
+        """Add a list of child nodes to this node.
 
         Args:
             children (list): List of PanObject instances
 
+        Raises:
+            ValueError: If the children include this node itself
+
         """
+        children = list(children)
+        if any(child is self for child in children):
+            raise ValueError("An object cannot be added as its own child")
         for child in children:
             child.parent = self
         self.children.extend(children)

@@ -20,6 +20,7 @@ import unittest
 import uuid
 import xml.etree.ElementTree as ET
 
+import pytest
 import pan.xapi
 import panos.base as Base
 import panos.errors as Err
@@ -77,6 +78,32 @@ class TestPanObject(unittest.TestCase):
         ret_val = self.obj.uid
 
         self.assertEqual(expected, ret_val)
+
+    def test_add_self_leaves_tree_unchanged(self):
+        """Reject self-parenting without modifying the tree."""
+        with pytest.raises(ValueError):
+            self.obj.add(self.obj)
+        assert self.obj.parent is None
+        assert self.obj.children == []
+
+    def test_insert_self_leaves_tree_unchanged(self):
+        """Reject self-insertion without modifying the tree."""
+        with pytest.raises(ValueError):
+            self.obj.insert(0, self.obj)
+        assert self.obj.parent is None
+        assert self.obj.children == []
+
+    def test_extend_self_leaves_all_parents_unchanged(self):
+        """Reject self-extension before changing any parent links."""
+        existing = self.obj.add(Base.PanObject("existing"))
+        other_parent = Base.PanObject("other")
+        child = other_parent.add(Base.PanObject("child"))
+        with pytest.raises(ValueError):
+            self.obj.extend([child, self.obj])
+        assert self.obj.parent is None
+        assert self.obj.children == [existing]
+        assert child.parent is other_parent
+        assert other_parent.children == [child]
 
     def test_add_without_children(self):
         CHILD_NAME = "child"
