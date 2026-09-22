@@ -27,6 +27,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^2.7 || ^3.5"
 pan-python = "^0.17.0"
+defusedxml = "^0.7.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = {version = "^5.3.2", python = "^3.5"}

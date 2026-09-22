@@ -1,3 +1,6 @@
-pan-python==0.17.0 \
+defusedxml==0.7.1 ; python_version >= "2.7" and python_version < "3.0.dev0" or python_version >= "3.5" and python_version < "4.0" \
+    --hash=sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69 \
+    --hash=sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61
+pan-python==0.17.0 ; python_version >= "2.7" and python_version < "3.0" or python_version >= "3.5" and python_version < "4.0" \
     --hash=sha256:9c074ea2f69a63996a6fefe8935d60dca61660e14715ac19d257ea9b1c41c6e2 \
     --hash=sha256:f4674e40763c46d5933244b3059a57884e4e28205ef6d0f9ce2dc2013e3db010

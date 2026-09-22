@@ -19,8 +19,11 @@ import sys
 import unittest
 import xml.etree.ElementTree as ET
 
+import defusedxml.common
+
 import panos.firewall
 import panos.panorama
+import panos.userid
 
 
 class TestUserId(unittest.TestCase):
@@ -156,6 +159,17 @@ class TestUserId(unittest.TestCase):
         self.assertEqual(len(names), 1)
         self.assertEqual(names[0].text, evil)
         self.assertIsNone(parsed.find(".//evil"))
+
+    def test_userid_uses_defused_xml_parser(self):
+        # panos.userid must parse XML through defusedxml, not the
+        # unprotected stdlib parser, to avoid XXE/billion-laughs attacks.
+        xxe_payload = (
+            "<?xml version='1.0'?>"
+            "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]>"
+            "<uid-message>&xxe;</uid-message>"
+        )
+        with self.assertRaises(defusedxml.common.EntitiesForbidden):
+            panos.userid.defused_ET.fromstring(xxe_payload)
 
 
 if __name__ == "__main__":
