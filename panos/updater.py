@@ -29,6 +29,26 @@ from panos.errors import PanDeviceXapiError, PanURLError
 logger = getlogger(__name__)
 
 
+def _maintenance_num(version):
+    """Hotfix number for a version. A base image such as 10.1.13 ranks as 0."""
+    if version.subrelease_num is None:
+        return 0
+    return version.subrelease_num
+
+
+def _base_image_preferred(candidate, incumbent):
+    """True when candidate should replace an equal-patch incumbent.
+
+    PAN-OS will not load 10.2.0-h3 until the 10.2.0 base image is downloaded,
+    so the base image is the right next hop when both are published.
+    """
+    candidate_is_base = candidate.subrelease_type != "h"
+    incumbent_is_base = incumbent.subrelease_type != "h"
+    if candidate_is_base != incumbent_is_base:
+        return candidate_is_base
+    return _maintenance_num(candidate) < _maintenance_num(incumbent)
+
+
 class Updater(object):
     """This class is instantiated by the PanDevice class as a software update subsystem"""
 
@@ -418,7 +438,7 @@ class SoftwareUpdater(Updater):
 
         # Initial values before iterating over list of available versions
         next_minor_found = False
-        next_minor_patch_number = 999
+        next_version = None
 
         # Create a map or PanOSVersion objects to represent all the
         # available versions the device has reported, and iterate
@@ -432,10 +452,16 @@ class SoftwareUpdater(Updater):
                 # Examples: 9.1 from 9.0, 10.2 from 10.1
                 next_minor_found = True
 
-                if available_version.patch < next_minor_patch_number:
-                    # Looking for the lowest patch version of this newer
-                    # minor version
-                    next_minor_patch_number = available_version.patch
+                if (
+                    next_version is None
+                    or available_version.patch < next_version.patch
+                    or (
+                        available_version.patch == next_version.patch
+                        and _base_image_preferred(available_version, next_version)
+                    )
+                ):
+                    # Lowest patch of the next minor. On that patch, the base
+                    # image (10.2.0) must be chosen ahead of a hotfix (10.2.0-h3).
                     next_version = available_version
 
         if not next_minor_found:
@@ -516,7 +542,8 @@ class SoftwareUpdater(Updater):
                 current_version.patch < target_version.patch
                 or (
                     current_version.patch == target_version.patch
-                    and current_version.subrelease_num < target_version.subrelease_num
+                    and _maintenance_num(current_version)
+                    < _maintenance_num(target_version)
                 )
             )
         ):
