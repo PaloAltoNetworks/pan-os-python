@@ -62,6 +62,27 @@ def _xpath_safe(val):
     return "concat('" + "', \"'\", '".join(parts) + "')"
 
 
+def _coerce_int_param(value):
+    """Parse a vartype=int value, keeping PAN-OS literals that are not a single integer.
+
+    Panorama template variables (``$groupID``) and multi-type ICMP values
+    (``13,14``) are returned unchanged. Any other non-integer still raises
+    ValueError, matching the previous int() conversion.
+    """
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    if value is None:
+        raise ValueError("int param is empty")
+    raw = str(value).strip()
+    if raw.startswith("$"):
+        return raw
+    if re.fullmatch(r"-?\d+(?:,-?\d+)+", raw):
+        return raw
+    return int(raw)
+
+
 from panos import (
     chunk_instances_for_delete_similar,
     isstring,
@@ -1529,7 +1550,7 @@ class PanObject(object):
         elif vartype is None:
             return value
         elif vartype == "int":
-            return int(value)
+            return _coerce_int_param(value)
         elif vartype == "bool":
             return yesno(value)
 
@@ -3333,7 +3354,7 @@ class ParamPath(object):
         ):
             pass
         elif self.vartype == "int":
-            elm.text = str(int(value))
+            elm.text = str(_coerce_int_param(value))
         elif self.vartype == "encrypted" and comparable:
             elm.text = self._sha1_hash(str(value))
         elif self.vartype == "attrib":
@@ -3379,7 +3400,7 @@ class ParamPath(object):
         ):
             pass
         elif self.vartype == "int":
-            settings[self.param] = int(elm.text)
+            settings[self.param] = _coerce_int_param(elm.text)
         elif self.vartype == "attrib":
             settings[self.param] = elm.attrib.get(attr, None)
         else:

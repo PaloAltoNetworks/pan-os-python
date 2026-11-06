@@ -1352,6 +1352,32 @@ class TestVariableRefreshes(unittest.TestCase):
         self.assertEqual(ans, o.someint)
         self.assertEqual(ans, 42)
 
+    def test_int_param_keeps_template_variable_and_icmp_type_list(self):
+        m, o = self.obj("someint", None, "$groupID")
+        self.assertEqual(o.refresh_variable("someint"), "$groupID")
+
+        m, o = self.obj("someint", None, "13,14")
+        self.assertEqual(o.refresh_variable("someint"), "13,14")
+
+        param = Base.ParamPath("someint", path="someint", vartype="int")
+        written = ET.Element("someint")
+        param._set_inner_xml_tag_text(written, "$groupID")
+        self.assertEqual(written.text, "$groupID")
+        written = ET.Element("type")
+        param._set_inner_xml_tag_text(written, "13,14")
+        self.assertEqual(written.text, "13,14")
+        written = ET.Element("someint")
+        param._set_inner_xml_tag_text(written, 42)
+        self.assertEqual(written.text, "42")
+
+        self.assertEqual(Base.PanObject._convert_var("$groupID", "int"), "$groupID")
+        self.assertEqual(Base.PanObject._convert_var("13,14", "int"), "13,14")
+        self.assertEqual(Base.PanObject._convert_var("7", "int"), 7)
+        with self.assertRaises(ValueError):
+            param.parse_value_from_xml_last_tag(
+                ET.fromstring("<someint>nope</someint>"), {}, None
+            )
+
     def test_base_attrib_refresh(self):
         m, o = self.obj("entry", {"name": "foo", "uuid": "1234-56-789"}, "")
 
