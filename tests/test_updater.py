@@ -215,6 +215,32 @@ def test__direct_upgrade_possible_firewall_valid_expected_next_versions(
     )
 
 
+def test_direct_upgrade_from_base_release_to_hotfix():
+    """Issue #565: 10.1.13 -> 10.1.13-h1 used to raise TypeError."""
+    fw = _fw()
+    assert fw.software._direct_upgrade_possible(
+        "10.1.13", "10.1.13-h1", ["10.1.13", "10.1.13-h1"]
+    )
+    assert fw.software._direct_upgrade_possible(
+        "10.1.13-h1", "10.1.13-h3", ["10.1.13-h1", "10.1.13-h3"]
+    )
+    assert not fw.software._direct_upgrade_possible(
+        "10.1.13-h1", "10.1.13", ["10.1.13", "10.1.13-h1"]
+    )
+
+
+def test_next_minor_prefers_base_image_over_hotfix():
+    """Issue #572: 10.2.0-h3 was selected even though 10.2.0 was published."""
+    fw = _fw()
+    versions = ["10.2.0-h3", "10.2.4", "10.2.0", "10.1.16"]
+    nxt = fw.software._next_minor_version(PanOSVersion("10.1.16"), versions)
+    assert str(nxt) == "10.2.0"
+
+    only_hotfix = ["10.2.0-h3", "10.1.16"]
+    nxt = fw.software._next_minor_version(PanOSVersion("10.1.16"), only_hotfix)
+    assert str(nxt) == "10.2.0-h3"
+
+
 # Test invalid direct upgrades return False
 @pytest.mark.parametrize(
     "input_version, target_version", firewall_invalid_direct_upgrade_paths
