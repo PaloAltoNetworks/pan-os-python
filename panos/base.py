@@ -4965,35 +4965,42 @@ class PanDevice(PanObject):
         self.config_changed = []
         self.config_locked = False
         self.commit_locked = False
-        # Determine if a commit was needed and get the job id
-        try:
-            jobid = commit_response.find("./result/job").text
-        except AttributeError:
+        # Determine if a commit was needed and get the job id.
+        # A missing job is normal when nothing changed. The device then returns a
+        # status line and no <job>. Falling through used jobid before it was set.
+        job_elm = None
+        if commit_response is not None:
+            job_elm = commit_response.find("./result/job")
+        jobid = job_elm.text if job_elm is not None else None
+        if jobid is None or jobid == "":
             if exception:
                 raise err.PanCommitNotNeeded("Commit not needed", pan_device=self)
-            elif commit_response.find("./msg/line") is not None:
-                # By getting here, there was no "./result/job" in the commit response,
-                # and there was no exception raised either, so capture the response message
-                commit_response_msg = commit_response.find("./msg/line").text
+            commit_response_msg = None
+            if commit_response is not None:
+                for path in (
+                    "./msg/line",
+                    "./result/msg/line",
+                    "./msg",
+                    "./result/msg",
+                ):
+                    line = commit_response.find(path)
+                    if line is not None and line.text:
+                        commit_response_msg = line.text
+                        break
+            if commit_response_msg:
                 self._logger.debug("No job id. Msg: " + commit_response_msg)
-
-                # One scenario for arriving here in the the code is pushing to Log Collector Groups (LCG),
-                # they don't have a job ID, so test for the relevant message to see if this is the case
+                # Log Collector Group pushes have no job ID.
                 if (
                     "Generated config and committed to connected collectors in group"
                     in commit_response_msg
                 ):
-                    # With no real job ID to return, construct a reasonable response.
-                    # There is currently no way to check the push to LCG was a success, so assume it was
-                    log_collector_group_push_result = {
+                    return {
                         "success": True,
                         "result": "Ok",
                         "jobid": "0",
                         "messages": [commit_response_msg],
                     }
-                    return log_collector_group_push_result
-            else:
-                return
+            return None
         if not sync:
             # Don't synchronize, just return
             self._logger.debug("Commit initiated (async), job id: %s" % (jobid,))
