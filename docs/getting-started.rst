@@ -294,7 +294,7 @@ Create an address object on a firewall::
 In this example, add() makes the AddressObject a child of the Firewall. This does not make any change to
 the live device. The create() method pushes the new AddressObject to the live device represented by 'fw'.
 
-If you lose the handle to the AddressObject, you can always retreive it from a parent node with one of
+If you lose the handle to the AddressObject, you can always retrieve it from a parent node with one of
 the `find` methods. For example::
 
     webserver = fw.find("Apache-webserver", AddressObject)
